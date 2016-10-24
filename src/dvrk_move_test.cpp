@@ -15,6 +15,7 @@
 #include <math.h>
 #include "dvrk_arm.hpp"
 
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "irob_dvrk_move_test");
@@ -46,23 +47,25 @@ int main(int argc, char **argv)
     psm1.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 
     double rad_increment = 0.1;
-    double r = 0.01;
+    double r = 0.02;
     std::vector<double> pos1;
     		pos1.push_back(sin(0.0)*r);
     		pos1.push_back(cos(0.0)*r);
     		pos1.push_back(-0.068558);
    	     	psm1.moveCartesianAbsolute(pos1);
    	     	ros::Duration(1.0).sleep();
-    while(true) {
-    	for (double ang = 0.0; ang <= 2.0*M_PI; ang+= rad_increment)
+    while(ros::ok()) {
+    	for (double ang = 0.0; ang <= 2.0*M_PI && ros::ok(); ang+= rad_increment)
     	{
    			std::vector<double> pos;
     		pos.push_back(sin(ang)*r);
     		pos.push_back(cos(ang)*r);
     		pos.push_back(-0.068558);
    	     	psm1.moveCartesianAbsolute(pos);
+   	     	ros::spinOnce();
     	}
     }	
+    std::cout << "Stopping prigram..." << std::endl;
 	return 0;
 }
 

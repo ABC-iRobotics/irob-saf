@@ -26,7 +26,19 @@ class Point3D {
    	
    	Point3D operator+=(const Point3D&);
    	Point3D operator-=(const Point3D&);
+   	
+   	Point3D operator/=(const double&);
+   	Point3D operator*=(const double&);
+   	
+   	Point3D operator+(const Point3D&) const;
+   	Point3D operator-(const Point3D&) const;
+   	
+   	Point3D operator*(const double&) const;
+   	Point3D operator/(const double&) const;
+   	
+   	double distance(const Point3D&) const;
    
+   friend std::ostream& operator<<(std::ostream&, const Point3D&);
 };
 
 
