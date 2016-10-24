@@ -60,12 +60,12 @@ int main(int argc, char **argv)
    			std::vector<double> pos;
     		pos.push_back(sin(ang)*r);
     		pos.push_back(cos(ang)*r);
-    		pos.push_back(-0.068558);
+    		pos.push_back(-0.068558-(sin(ang)*r));
    	     	psm1.moveCartesianAbsolute(pos);
    	     	ros::spinOnce();
     	}
     }	
-    std::cout << "Stopping prigram..." << std::endl;
+    std::cout << std::endl << "Stopping prigram..." << std::endl;
 	return 0;
 }
 

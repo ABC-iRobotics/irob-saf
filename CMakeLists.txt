@@ -115,11 +115,11 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
-	add_library(point_3d
-  include/point_3d.hpp src/point_3d.cpp
+	add_library(vector_3d
+  include/vector_3d.hpp src/vector_3d.cpp
  )
  
- set_target_properties(point_3d PROPERTIES LINKER_LANGUAGE CXX)
+ set_target_properties(vector_3d PROPERTIES LINKER_LANGUAGE CXX)
 
  add_library(dvrk_arm
   include/dvrk_arm.hpp src/dvrk_arm.cpp
@@ -164,7 +164,7 @@ add_executable(dvrk_move_test src/dvrk_move_test.cpp src/dvrk_arm.cpp)
    ${catkin_LIBRARIES}
   dvrk_arm_topics
    dvrk_arm_types
-   point_3d
+   vector_3d
  )
 
  target_link_libraries(dvrk_move_publisher
