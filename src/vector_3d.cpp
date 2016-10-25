@@ -96,6 +96,11 @@
    		return tmp;
    	}
    	
+   	double Vector3D::length() const
+   	{
+   		return sqrt((x*x)+(y*y)+(z*z));
+   	}
+   	
    	double Vector3D::distance(const Vector3D& other) const
    	{
    		Vector3D d = *this - other;

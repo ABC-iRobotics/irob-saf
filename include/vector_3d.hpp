@@ -36,6 +36,8 @@ class Vector3D {
    	Vector3D operator*(const double&) const;
    	Vector3D operator/(const double&) const;
    	
+   	double length() const;
+   	
    	double distance(const Vector3D&) const;
    
    friend std::ostream& operator<<(std::ostream&, const Vector3D&);

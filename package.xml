@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>dvrk_automation</name>
-  <version>0.0.0</version>
-  <description>The irob_dvrk package</description>
+  <name>irob-dvrk-automation</name>
+  <version>0.0.1</version>
+  <description>The irob-dvrk-automation package</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 
