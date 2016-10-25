@@ -1,0 +1,3 @@
+<launch>
+  <node name="dvrk_move_test" pkg="irob-dvrk-automation" type="dvrk_move_test" />
+</launch>

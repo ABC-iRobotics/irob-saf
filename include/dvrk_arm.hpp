@@ -18,6 +18,10 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "dvrk_arm_types.hpp"
 #include "dvrk_arm_topics.hpp"
+#include "vector_3d.hpp"
+#include "quaternion.hpp"
+#include "trajectory.hpp"
+
 
 class DVRKArm {
 
@@ -61,15 +65,26 @@ public:
 
     bool subscribe(const DVRKArmTopics);
     bool advertise(const DVRKArmTopics);
+    
+    double getJointStateCurrent(int);
+    Vector3D getPositionCartesianCurrent();
+    Quaternion getOrientationCartesianCurrent();
 
     //DVRK actions
     bool home();
     bool setRobotState(std::string);
     void moveJointRelative(int, double );
-    void moveCartesianRelative(std::vector<double>);
-    void moveCartesianAbsolute(std::vector<double>);
+    void moveJointAbsolute(int, double );
+    void moveCartesianRelative(Vector3D);
+    void moveCartesianAbsolute(Vector3D);
+    void moveCartesianAbsolute(Quaternion);
+    void moveCartesianAbsolute(Vector3D, Quaternion);
 
-
+	void playTrajectory(Trajectory<Vector3D>&);
+	void playTrajectory(Trajectory<Quaternion>&);
+	void playTrajectory(Trajectory<Vector3D>&, Trajectory<Quaternion>&);
+	void playTrajectory(int, Trajectory<double>&);
+	
 };
 
 #endif /* DVRK_ARM_HPP_ */

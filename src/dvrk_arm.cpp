@@ -43,8 +43,8 @@ void DVRKArm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) {
 
 void DVRKArm::positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr& msg) {
      position_cartesian_current = *msg;
-     ROS_INFO("State cartesian:\n");
-         ROS_INFO("X: %f\tY: %f\tZ: %f\n",position_cartesian_current.pose.position.x, position_cartesian_current.pose.position.y, position_cartesian_current.pose.position.z);
+     //ROS_INFO("State cartesian:\n");
+         //ROS_INFO("X: %f\tY: %f\tZ: %f\n",position_cartesian_current.pose.position.x, position_cartesian_current.pose.position.y, position_cartesian_current.pose.position.z);
 }
 
 bool DVRKArm::subscribe(DVRKArmTopics topic) {
@@ -103,6 +103,31 @@ bool DVRKArm::advertise(DVRKArmTopics topic) {
 /*
  * DVRK actions
  */
+double DVRKArm::getJointStateCurrent(int index)
+{
+	ros::spinOnce();
+ 	return position_joint.position[index];
+}
+ 
+Vector3D DVRKArm::getPositionCartesianCurrent()
+{
+ 	ros::spinOnce();
+ 	Vector3D ret(position_cartesian_current.pose.position.x,
+ 		 position_cartesian_current.pose.position.y,
+ 		  position_cartesian_current.pose.position.z);
+    return ret;
+}
+
+Quaternion DVRKArm::getOrientationCartesianCurrent()
+{
+	ros::spinOnce();
+ 	Quaternion ret(position_cartesian_current.pose.orientation.x,
+ 		position_cartesian_current.pose.orientation.y, 
+ 		position_cartesian_current.pose.orientation.z, 
+ 		position_cartesian_current.pose.orientation.w);
+    return ret;
+}
+
 
 bool DVRKArm::home() {
     while (true) {
@@ -159,15 +184,27 @@ void DVRKArm::moveJointRelative(int joint_idx, double movement)
     ros::Duration(0.1).sleep();
 }
 
-void DVRKArm::moveCartesianRelative(std::vector<double> movement)
+void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
+{
+    ros::spinOnce();
+    //ROS_INFO("Position not received!\n");
+    sensor_msgs::JointState new_position_joint = position_joint;
+    // TODO safety
+    new_position_joint.position[joint_idx] = pos;
+    position_joint_pub.publish(new_position_joint);
+    ros::spinOnce();
+    ros::Duration(0.1).sleep();
+}
+
+void DVRKArm::moveCartesianRelative(Vector3D movement)
 {
     ros::spinOnce();
     geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
     // TODO safety
 
-    new_position_cartesian.position.x += movement[0];
-    new_position_cartesian.position.y += movement[1];
-    new_position_cartesian.position.z += movement[2];
+    new_position_cartesian.position.x += movement.x;
+    new_position_cartesian.position.y += movement.y;
+    new_position_cartesian.position.z += movement.z;
 
     position_cartesian_pub.publish(new_position_cartesian);
     ros::spinOnce();
@@ -175,19 +212,102 @@ void DVRKArm::moveCartesianRelative(std::vector<double> movement)
 
 }
 
-void DVRKArm::moveCartesianAbsolute(std::vector<double> position)
+void DVRKArm::moveCartesianAbsolute(Vector3D position)
 {
     ros::spinOnce();
     geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
     // TODO safety
 
-    new_position_cartesian.position.x = position[0];
-    new_position_cartesian.position.y = position[1];
-    new_position_cartesian.position.z = position[2];
+    new_position_cartesian.position.x = position.x;
+    new_position_cartesian.position.y = position.y;
+    new_position_cartesian.position.z = position.z;
 
     position_cartesian_pub.publish(new_position_cartesian);
     ros::spinOnce();
-    ros::Duration(0.1).sleep();
+    //ros::Duration(0.1).sleep();
 
 }
+
+void DVRKArm::moveCartesianAbsolute(Quaternion orientation)
+{
+    ros::spinOnce();
+    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
+    // TODO safety
+
+    new_position_cartesian.orientation.x = orientation.x;
+    new_position_cartesian.orientation.y = orientation.y;
+    new_position_cartesian.orientation.z = orientation.z;
+    new_position_cartesian.orientation.w = orientation.w;
+
+    position_cartesian_pub.publish(new_position_cartesian);
+    ros::spinOnce();
+    //ros::Duration(0.1).sleep();
+
+}
+
+void DVRKArm::moveCartesianAbsolute(Vector3D position, Quaternion orientation)
+{
+    ros::spinOnce();
+    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
+    // TODO safety
+
+    new_position_cartesian.position.x = position.x;
+    new_position_cartesian.position.y = position.y;
+    new_position_cartesian.position.z = position.z;
+    
+    new_position_cartesian.orientation.x = orientation.x;
+    new_position_cartesian.orientation.y = orientation.y;
+    new_position_cartesian.orientation.z = orientation.z;
+    new_position_cartesian.orientation.w = orientation.w;
+
+    position_cartesian_pub.publish(new_position_cartesian);
+    ros::spinOnce();
+    //ros::Duration(0.1).sleep();
+
+}
+
+/*
+ * Trajectories
+ */
+void DVRKArm::playTrajectory(Trajectory<Vector3D>& tr)
+{
+	for (int i = 0; i < tr.size() && ros::ok(); i++)
+	{
+		moveCartesianAbsolute(tr[i]);
+		ros::Duration(tr.dt).sleep();
+	}
+
+}
+
+void DVRKArm::playTrajectory(Trajectory<Quaternion>& tr)
+{
+	for (int i = 0; i < tr.size() && ros::ok(); i++)
+	{
+		moveCartesianAbsolute(tr[i]);
+		ros::Duration(tr.dt).sleep();
+	}
+}
+
+void DVRKArm::playTrajectory(Trajectory<Vector3D>& p, Trajectory<Quaternion>& o)
+{
+	for (int i = 0; i < p.size() && ros::ok(); i++)
+	{
+		moveCartesianAbsolute(p[i], o[i]);
+		
+		//TODO p.dt != o.dt
+		ros::Duration(p.dt).sleep();
+	}
+}
+
+void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
+{
+	for (int i = 0; i < tr.size() && ros::ok(); i++)
+	{
+		moveJointAbsolute(jointIndex, tr[i]);
+		ros::Duration(tr.dt).sleep();
+	}
+}
+
+
+
 

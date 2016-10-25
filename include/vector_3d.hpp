@@ -43,5 +43,4 @@ class Vector3D {
    friend std::ostream& operator<<(std::ostream&, const Vector3D&);
 };
 
-
 #endif

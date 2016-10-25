@@ -14,6 +14,7 @@
 #include <vector>
 #include <math.h>
 #include "dvrk_arm.hpp"
+#include "trajectory_factory.hpp"
 
 
 int main(int argc, char **argv)
@@ -36,35 +37,36 @@ int main(int argc, char **argv)
 
     psm1.home();
     psm1.setRobotState(DVRKArm::STATE_POSITION_JOINT);
-
-	//ros::spin();
-    double increment = 0.005;
-    for (double p = 0.0; p <= 0.07; p+= increment)
-    {
-        psm1.moveJointRelative(2, increment);
-    }
-
+    
+    double speed_divider = 10.0;
+    
+	// init
+	int init_joint_idx = 2;
+	Trajectory<double>* to_enable_cartesian = 
+   		TrajectoryFactory::linearTrajectory(
+   			psm1.getJointStateCurrent(init_joint_idx), 0.07, 1.0*speed_divider, 0.05);
+		psm1.playTrajectory(init_joint_idx, *to_enable_cartesian);
+   	ros::Duration(0.5).sleep();
+   	 
+   	delete(to_enable_cartesian);
+   	
+   	// cartesian
     psm1.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 
-    double rad_increment = 0.1;
     double r = 0.02;
-    std::vector<double> pos1;
-    		pos1.push_back(sin(0.0)*r);
-    		pos1.push_back(cos(0.0)*r);
-    		pos1.push_back(-0.068558);
-   	     	psm1.moveCartesianAbsolute(pos1);
-   	     	ros::Duration(1.0).sleep();
+    
+    Trajectory<Vector3D>* circle_tr =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
+    		psm1.getPositionCartesianCurrent(), 
+			2*M_PI, psm1.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
+			5.0*speed_divider, 0.1);   
+   	    
     while(ros::ok()) {
-    	for (double ang = 0.0; ang <= 2.0*M_PI && ros::ok(); ang+= rad_increment)
-    	{
-   			std::vector<double> pos;
-    		pos.push_back(sin(ang)*r);
-    		pos.push_back(cos(ang)*r);
-    		pos.push_back(-0.068558-(sin(ang)*r));
-   	     	psm1.moveCartesianAbsolute(pos);
-   	     	ros::spinOnce();
-    	}
+    	psm1.playTrajectory(*circle_tr);
     }	
+    delete(circle_tr);
+    
+    psm1.home();
     std::cout << std::endl << "Stopping prigram..." << std::endl;
 	return 0;
 }
