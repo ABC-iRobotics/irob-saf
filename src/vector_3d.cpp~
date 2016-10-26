@@ -115,7 +115,7 @@
    		return os << p.x <<"\t" << p.y << "\t" << p.z;
    	}
    	
-   	std::istream& operator>>(std::istream& is, Vector3D& p)
+   	std::istream& operator>>(std::istream& is, Vector3D& o)
    	{
    		is >> p.x >> std::ws >> p.y >> std::ws >> p.z >> std::ws;
    		return is;

@@ -1,0 +1,11 @@
+<launch>
+  <arg name="trlog" default="/home/dvrk_nat/dvrk_logs/dvrk_tr_log.dat"/>
+  
+  <node name="dvrk_move_test"
+   	pkg="irob-dvrk-automation" type="dvrk_move_test_no_init" output="screen"/>
+   	
+  <node name="dvrk_log_trajectory"
+  	pkg="irob-dvrk-automation" type="dvrk_log_trajectory" output="screen" 
+  	args="$(arg trlog)"/>
+  	
+</launch>

@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
     ros::Rate loop_rate(10);
 
-    DVRKArm psm2(nh, DVRKArmTypes::PSM1);
+    DVRKArm psm2(nh, DVRKArmTypes::PSM2);
 
     psm2.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
     psm2.advertise(DVRKArmTopics::SET_ROBOT_STATE);
@@ -36,19 +36,9 @@ int main(int argc, char **argv)
     psm2.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
 
     //psm2.home();
-    psm2.setRobotState(DVRKArm::STATE_POSITION_JOINT);
     
     double speed_divider = 1.0;
     
-	// init
-	int init_joint_idx = 2;
-	Trajectory<double>* to_enable_cartesian = 
-   		TrajectoryFactory::linearTrajectory(
-   			psm2.getJointStateCurrent(init_joint_idx), 0.07, 1.0*speed_divider, 0.05);
-		psm2.playTrajectory(init_joint_idx, *to_enable_cartesian);
-   	ros::Duration(0.5).sleep();
-   	 
-   	delete(to_enable_cartesian);
    	
    	// cartesian
     psm2.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
@@ -66,7 +56,7 @@ int main(int argc, char **argv)
     }	
     delete(circle_tr);
     
-    psm2.home();
+    //psm2.home();
     std::cout << std::endl << "Stopping prigram..." << std::endl;
 	return 0;
 }

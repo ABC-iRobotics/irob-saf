@@ -112,7 +112,9 @@ double DVRKArm::getJointStateCurrent(int index)
 Vector3D DVRKArm::getPositionCartesianCurrent()
 {
  	ros::spinOnce();
- 	Vector3D ret(position_cartesian_current);
+ 	Vector3D ret(position_cartesian_current.pose.position.x,
+ 		 position_cartesian_current.pose.position.y,
+ 		  position_cartesian_current.pose.position.z);
     return ret;
 }
 

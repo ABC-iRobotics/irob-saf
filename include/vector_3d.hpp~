@@ -43,7 +43,7 @@ class Vector3D {
    	double distance(const Vector3D&) const;
    
    	friend std::ostream& operator<<(std::ostream&, const Vector3D&);
-	friend std::istream& operator>>(std::istream&, Vector3D&);
+	//friend std::ostream& operator>>(std::ostream&, Vector3D&);
 };
 
 #endif

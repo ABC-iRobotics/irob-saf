@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
     ros::Rate loop_rate(10);
 
-    DVRKArm psm2(nh, DVRKArmTypes::PSM1);
+    DVRKArm psm2(nh, DVRKArmTypes::PSM2);
 
     psm2.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
     psm2.advertise(DVRKArmTopics::SET_ROBOT_STATE);

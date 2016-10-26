@@ -15,6 +15,8 @@
 #include <math.h>
 #include "dvrk_arm.hpp"
 #include "trajectory_factory.hpp"
+#include <fstream>
+#include <string>
 
 
 int main(int argc, char **argv)
@@ -36,37 +38,36 @@ int main(int argc, char **argv)
     psm2.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
 
     //psm2.home();
-    psm2.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+    Trajectory<Vector3D> tr(0.1);
     
-    double speed_divider = 1.0;
-    
-	// init
-	int init_joint_idx = 2;
-	Trajectory<double>* to_enable_cartesian = 
-   		TrajectoryFactory::linearTrajectory(
-   			psm2.getJointStateCurrent(init_joint_idx), 0.07, 1.0*speed_divider, 0.05);
-		psm2.playTrajectory(init_joint_idx, *to_enable_cartesian);
-   	ros::Duration(0.5).sleep();
-   	 
-   	delete(to_enable_cartesian);
-   	
+    std::ifstream logfile (argv[1]);
+    if (logfile.is_open())
+  	{
+    	while (!logfile.eof() )
+    	{
+    		Vector3D v;
+      		logfile >> v;
+      		tr.addPoint(v);
+      		//std::cout << v << std::endl;
+    	}
+    	logfile.close();
+
    	// cartesian
     psm2.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 
-    double r = 0.02;
+	Trajectory<Vector3D>* to_start = 
+   		TrajectoryFactory::linearTrajectory(
+   			psm2.getPositionCartesianCurrent(), tr[0], 2.0, 0.1);
+		psm2.playTrajectory(*to_start);
+   	ros::Duration(0.5).sleep();
+   	 
+   	delete(to_start);	
+	
+    psm2.playTrajectory(tr);
     
-    Trajectory<Vector3D>* circle_tr =
-    		TrajectoryFactory::circleTrajectoryHorizontal(
-    		psm2.getPositionCartesianCurrent(), 
-			2*M_PI, psm2.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
-			3.0*speed_divider, 0.1);   
-   	    
-    while(ros::ok()) {
-    	psm2.playTrajectory(*circle_tr);
-    }	
-    delete(circle_tr);
-    
-    psm2.home();
+    }
+   	else std::cout << "Unable to open file";
+    //psm2.home();
     std::cout << std::endl << "Stopping prigram..." << std::endl;
 	return 0;
 }
