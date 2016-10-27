@@ -1,0 +1,12 @@
+<!-- Launch file to play a logged trajectory -->
+
+<launch>
+  <arg name="arm" default="PSM1"/>
+  <arg name="init_needed" default="no_init_pos"/>
+  <arg name="filename" default="/home/dvrk_nat/dvrk_logs/dvrk_tr_log.dat"/>
+  
+  <node name="dvrk_play_logged_trajectory"
+  	pkg="irob-dvrk-automation" type="dvrk_play_logged_trajectory" output="screen" 
+  	args="$(arg arm) $(arg init_needed) $(arg filename)"/>
+  	
+</launch>
