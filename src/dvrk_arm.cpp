@@ -68,11 +68,11 @@ bool DVRKArm::subscribe(DVRKArmTopics topic) {
     }
     else
     {
-        ROS_INFO("Subscribing to invalid topic %s\n", topic.getFullName(arm_typ).c_str());
+        ROS_INFO("Subscribing to invalid topic %s", topic.getFullName(arm_typ).c_str());
         return false;
     }
 
-    ROS_INFO("Subscribed to topic %s\n", topic.getFullName(arm_typ).c_str());
+    ROS_INFO("Subscribed to topic %s", topic.getFullName(arm_typ).c_str());
     return true;
 }
 
@@ -93,10 +93,10 @@ bool DVRKArm::advertise(DVRKArmTopics topic) {
                                    topic.getFullName(arm_typ), 1000);
     }
     else {
-         ROS_INFO("Advertising invalid topic %s\n", topic.getFullName(arm_typ).c_str());
+         ROS_INFO("Advertising invalid topic %s", topic.getFullName(arm_typ).c_str());
          return false;
     }
-    ROS_INFO("Advertised topic %s\n", topic.getFullName(arm_typ).c_str());
+    ROS_INFO("Advertised topic %s", topic.getFullName(arm_typ).c_str());
     return true;
 }
 
@@ -162,7 +162,7 @@ bool DVRKArm::setRobotState(std::string state)
             ROS_INFO("State set to %s", state.c_str());
             return true;
         } else {
-            ROS_INFO("State set to %s\n", robot_state.data.c_str());
+            ROS_INFO("State set to %s", robot_state.data.c_str());
         }
 
         ros::spinOnce();
@@ -269,40 +269,59 @@ void DVRKArm::moveCartesianAbsolute(Vector3D position, Quaternion orientation)
  */
 void DVRKArm::playTrajectory(Trajectory<Vector3D>& tr)
 {
+	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
 		moveCartesianAbsolute(tr[i]);
-		ros::Duration(tr.dt).sleep();
+		loop_rate.sleep();
 	}
 
 }
 
 void DVRKArm::playTrajectory(Trajectory<Quaternion>& tr)
 {
+	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
 		moveCartesianAbsolute(tr[i]);
-		ros::Duration(tr.dt).sleep();
+		loop_rate.sleep();
 	}
 }
 
 void DVRKArm::playTrajectory(Trajectory<Vector3D>& p, Trajectory<Quaternion>& o)
 {
+	ros::Rate loop_rate(1.0/p.dt);
 	for (int i = 0; i < p.size() && ros::ok(); i++)
 	{
 		moveCartesianAbsolute(p[i], o[i]);
 		
 		//TODO p.dt != o.dt
-		ros::Duration(p.dt).sleep();
+		loop_rate.sleep();
 	}
 }
 
 void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 {
+	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
 		moveJointAbsolute(jointIndex, tr[i]);
-		ros::Duration(tr.dt).sleep();
+		loop_rate.sleep();
+	}
+}
+
+void DVRKArm::recordTrajectory(Trajectory<Vector3D>& tr) 
+{
+	ros::Rate loop_rate(1.0/tr.dt);
+	// Skip invalid points
+	while (ros::ok() && getPositionCartesianCurrent().length() < 0.001)
+  	{
+  		loop_rate.sleep();
+  	}
+	while(ros::ok())
+	{
+		tr.addPoint(getPositionCartesianCurrent());
+		loop_rate.sleep();
 	}
 }
 

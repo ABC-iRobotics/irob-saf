@@ -22,16 +22,13 @@ int main(int argc, char **argv)
 
 	if (argc < 5) 
 	{
-		std::cout 
-			<< "Use with params: PSM1/PSM2; init_pos/no_init_pos; rate; speed_divider" 
-			<< std::endl;
+		std::cout << 
+		"Use with params: PSM1/PSM2; init_pos/no_init_pos; rate; speed_divider" 
+		<< std::endl;
 		return 1;
 	}
 	
-    ros::init(argc, argv, "irob_dvrk_move_test");
-    ros::NodeHandle nh;
-    
-    std::istringstream ss1(argv[3]);
+	std::istringstream ss1(argv[3]);
 	int rate_command;
 	ss1 >> rate_command;
 	
@@ -40,8 +37,12 @@ int main(int argc, char **argv)
 	ss2 >> speed_divider;	
 		
 	double dt = 1.0/ rate_command;
-    ros::Rate loop_rate(rate_command);
 	
+	
+	// Initialize node
+    ros::init(argc, argv, "irob_dvrk_move_test");
+    ros::NodeHandle nh;
+  
     DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]));
 
     psm.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
@@ -53,13 +54,13 @@ int main(int argc, char **argv)
     psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
     psm.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
 
-    //psm.home();    
-    
-	
-	if (argv[2] == "init_pos")
+    //psm.home(); 
+       
+	// Init position if necessary
+	if (std::string(argv[2]) == "init_pos")
 	{
 		// init
-		ROS_INFO("Going to init position...\n");
+		ROS_INFO("Going to init position...");
 		psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
 		int init_joint_idx = 2;
 		Trajectory<double>* to_enable_cartesian = 
@@ -71,8 +72,8 @@ int main(int argc, char **argv)
    		delete(to_enable_cartesian);
    	}
    	
-   	// cartesian
-   	ROS_INFO("Starting programmed movement...\n");
+   	// Make circles
+   	ROS_INFO("Starting programmed movement...");
    	ROS_INFO("Loop rate:\t%d Hz\n", rate_command);
    	ROS_INFO("Speed divider:\t%d\n", speed_divider);
     psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
     delete(circle_tr);
     
     //psm2.home();
-    ROS_INFO("Stopping prigram...\n");
+    std::cout << std::endl << "Stopping program..." << std::endl;
     ros::shutdown();
 	return 0;
 }

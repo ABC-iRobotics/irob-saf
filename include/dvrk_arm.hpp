@@ -85,6 +85,8 @@ public:
 	void playTrajectory(Trajectory<Vector3D>&, Trajectory<Quaternion>&);
 	void playTrajectory(int, Trajectory<double>&);
 	
+	void recordTrajectory(Trajectory<Vector3D>&);
+	
 };
 
 #endif /* DVRK_ARM_HPP_ */

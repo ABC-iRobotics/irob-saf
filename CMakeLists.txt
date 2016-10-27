@@ -166,7 +166,7 @@ add_executable(dvrk_move_publisher src/dvrk_move_publisher.cpp)
 add_executable(dvrk_move_test src/dvrk_move_test.cpp)
 add_executable(dvrk_move_test_no_init src/dvrk_move_test_no_init.cpp)
 add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
-add_executable(dvrk_move_read_trajectory src/dvrk_move_read_trajectory.cpp)
+add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -213,7 +213,7 @@ add_executable(dvrk_move_read_trajectory src/dvrk_move_read_trajectory.cpp)
    ${catkin_LIBRARIES}
     dvrk_arm
  )
-  target_link_libraries( dvrk_move_read_trajectory
+  target_link_libraries( dvrk_play_logged_trajectory
    ${catkin_LIBRARIES}
     dvrk_arm
  )
