@@ -19,55 +19,81 @@
 
 int main(int argc, char **argv)
 {
+
+	if (argc < 5) 
+	{
+		std::cout 
+			<< "Use with params: PSM1/PSM2; init_pos/no_init_pos; rate; speed_divider" 
+			<< std::endl;
+		return 1;
+	}
+	
     ros::init(argc, argv, "irob_dvrk_move_test");
     ros::NodeHandle nh;
-
-    ros::Rate loop_rate(10);
-
-    DVRKArm psm2(nh, DVRKArmTypes::PSM1);
-
-    psm2.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
-    psm2.advertise(DVRKArmTopics::SET_ROBOT_STATE);
-
-    psm2.subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
-    psm2.advertise(DVRKArmTopics::SET_POSITION_JOINT);
-
-    psm2.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
-    psm2.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
-
-    //psm2.home();
-    psm2.setRobotState(DVRKArm::STATE_POSITION_JOINT);
     
-    double speed_divider = 1.0;
+    std::istringstream ss1(argv[3]);
+	int rate_command;
+	ss1 >> rate_command;
+	
+	std::istringstream ss2(argv[4]);
+	int speed_divider;
+	ss2 >> speed_divider;	
+		
+	double dt = 1.0/ rate_command;
+    ros::Rate loop_rate(rate_command);
+	
+    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]));
+
+    psm.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
+    psm.advertise(DVRKArmTopics::SET_ROBOT_STATE);
+
+    psm.subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
+    psm.advertise(DVRKArmTopics::SET_POSITION_JOINT);
+
+    psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
+    psm.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
+
+    //psm.home();    
     
-	// init
-	int init_joint_idx = 2;
-	Trajectory<double>* to_enable_cartesian = 
+	
+	if (argv[2] == "init_pos")
+	{
+		// init
+		ROS_INFO("Going to init position...\n");
+		psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+		int init_joint_idx = 2;
+		Trajectory<double>* to_enable_cartesian = 
    		TrajectoryFactory::linearTrajectory(
-   			psm2.getJointStateCurrent(init_joint_idx), 0.07, 1.0*speed_divider, 0.05);
-		psm2.playTrajectory(init_joint_idx, *to_enable_cartesian);
-   	ros::Duration(0.5).sleep();
+   			psm.getJointStateCurrent(init_joint_idx), 
+   			0.07, 1.0*speed_divider, 0.05);
+		psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 
-   	delete(to_enable_cartesian);
+   		delete(to_enable_cartesian);
+   	}
    	
    	// cartesian
-    psm2.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+   	ROS_INFO("Starting programmed movement...\n");
+   	ROS_INFO("Loop rate:\t%d Hz\n", rate_command);
+   	ROS_INFO("Speed divider:\t%d\n", speed_divider);
+    psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+    ros::Duration(1.0).sleep();
 
     double r = 0.02;
     
     Trajectory<Vector3D>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
-    		psm2.getPositionCartesianCurrent(), 
-			2*M_PI, psm2.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
+    		psm.getPositionCartesianCurrent(), 
+			2*M_PI, psm.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
 			3.0*speed_divider, 0.1);   
    	    
     while(ros::ok()) {
-    	psm2.playTrajectory(*circle_tr);
+    	psm.playTrajectory(*circle_tr);
     }	
     delete(circle_tr);
     
-    psm2.home();
-    std::cout << std::endl << "Stopping prigram..." << std::endl;
+    //psm2.home();
+    ROS_INFO("Stopping prigram...\n");
+    ros::shutdown();
 	return 0;
 }
 

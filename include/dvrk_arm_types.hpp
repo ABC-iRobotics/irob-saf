@@ -24,6 +24,21 @@ class DVRKArmTypes {
   public:
     std::string getName() const {return std::string(name);}
     int getDof() const { return dof;}
+    
+    static const DVRKArmTypes typeForString(std::string name)
+    {
+    	if (name == MTML.name)
+    		return MTML;
+    	if (name == MTMR.name)
+    		return MTMR;
+    	if (name == PSM1.name)
+    		return PSM1;
+    	if (name == PSM2.name)
+    		return PSM2;
+    	if (name == ECM.name)
+    		return ECM;
+    	return PSM1;
+    }
 };
 
 #endif
