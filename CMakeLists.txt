@@ -126,6 +126,11 @@ add_library(quaternion
  )
  set_target_properties(quaternion PROPERTIES LINKER_LANGUAGE CXX)
  
+ add_library(pose
+  include/pose.hpp src/pose.cpp
+ )
+ set_target_properties(pose PROPERTIES LINKER_LANGUAGE CXX)
+ 
  add_library(trajectory
   include/trajectory.hpp 
  )
@@ -193,6 +198,7 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    quaternion
    trajectory
    trajectory_factory
+   pose
  )
 
  target_link_libraries(dvrk_move_publisher

@@ -16,11 +16,14 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "std_msgs/Float32.h"
 #include "dvrk_arm_types.hpp"
 #include "dvrk_arm_topics.hpp"
 #include "vector_3d.hpp"
 #include "quaternion.hpp"
+#include "pose.hpp"
 #include "trajectory.hpp"
+
 
 
 class DVRKArm {
@@ -51,6 +54,7 @@ private:
     ros::Publisher robot_state_pub;
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
+    ros::Publisher position_jaw_pub;
 
 
 
@@ -69,6 +73,7 @@ public:
     double getJointStateCurrent(int);
     Vector3D getPositionCartesianCurrent();
     Quaternion getOrientationCartesianCurrent();
+    Pose getPoseCurrent();
 
     //DVRK actions
     bool home();
@@ -79,13 +84,16 @@ public:
     void moveCartesianAbsolute(Vector3D);
     void moveCartesianAbsolute(Quaternion);
     void moveCartesianAbsolute(Vector3D, Quaternion);
+    void moveCartesianAbsolute(Pose);
 
 	void playTrajectory(Trajectory<Vector3D>&);
 	void playTrajectory(Trajectory<Quaternion>&);
 	void playTrajectory(Trajectory<Vector3D>&, Trajectory<Quaternion>&);
+	void playTrajectory(Trajectory<Pose>&);
 	void playTrajectory(int, Trajectory<double>&);
 	
 	void recordTrajectory(Trajectory<Vector3D>&);
+	void recordTrajectory(Trajectory<Pose>&);
 	
 };
 

@@ -92,6 +92,11 @@ bool DVRKArm::advertise(DVRKArmTopics topic) {
         position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
                                    topic.getFullName(arm_typ), 1000);
     }
+    else if(topic == DVRKArmTopics::SET_POSITION_JAW)
+    {
+        position_jaw_pub = nh.advertise<std_msgs::Float32>(
+                                   topic.getFullName(arm_typ), 1000);
+    }
     else {
          ROS_INFO("Advertising invalid topic %s", topic.getFullName(arm_typ).c_str());
          return false;
@@ -123,6 +128,13 @@ Quaternion DVRKArm::getOrientationCartesianCurrent()
  		position_cartesian_current.pose.orientation.y, 
  		position_cartesian_current.pose.orientation.z, 
  		position_cartesian_current.pose.orientation.w);
+    return ret;
+}
+
+Pose DVRKArm::getPoseCurrent()
+{
+ 	ros::spinOnce();
+ 	Pose ret(position_cartesian_current, position_joint.position[6]);
     return ret;
 }
 
@@ -264,6 +276,32 @@ void DVRKArm::moveCartesianAbsolute(Vector3D position, Quaternion orientation)
 
 }
 
+void DVRKArm::moveCartesianAbsolute(Pose pose)
+{
+    ros::spinOnce();
+    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
+    std_msgs::Float32 new_position_jaw;
+    // TODO safety
+
+    new_position_cartesian.position.x = pose.position.x;
+    new_position_cartesian.position.y = pose.position.y;
+    new_position_cartesian.position.z = pose.position.z;
+    
+    new_position_cartesian.orientation.x = pose.orientation.x;
+    new_position_cartesian.orientation.y = pose.orientation.y;
+    new_position_cartesian.orientation.z = pose.orientation.z;
+    new_position_cartesian.orientation.w = pose.orientation.w;
+    
+    new_position_jaw.data = pose.jaw;
+
+    position_cartesian_pub.publish(new_position_cartesian);
+    position_jaw_pub.publish(new_position_jaw);
+    
+    ros::spinOnce();
+    //ros::Duration(0.1).sleep();
+
+}
+
 /*
  * Trajectories
  */
@@ -300,6 +338,17 @@ void DVRKArm::playTrajectory(Trajectory<Vector3D>& p, Trajectory<Quaternion>& o)
 	}
 }
 
+void DVRKArm::playTrajectory(Trajectory<Pose>& tr)
+{
+	ros::Rate loop_rate(1.0/tr.dt);
+	for (int i = 0; i < tr.size() && ros::ok(); i++)
+	{
+		moveCartesianAbsolute(tr[i]);
+		
+		loop_rate.sleep();
+	}
+}
+
 void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
@@ -321,6 +370,21 @@ void DVRKArm::recordTrajectory(Trajectory<Vector3D>& tr)
 	while(ros::ok())
 	{
 		tr.addPoint(getPositionCartesianCurrent());
+		loop_rate.sleep();
+	}
+}
+
+void DVRKArm::recordTrajectory(Trajectory<Pose>& tr) 
+{
+	ros::Rate loop_rate(1.0/tr.dt);
+	// Skip invalid points
+	while (ros::ok() && getPositionCartesianCurrent().length() < 0.001)
+  	{
+  		loop_rate.sleep();
+  	}
+	while(ros::ok())
+	{
+		tr.addPoint(getPoseCurrent());
 		loop_rate.sleep();
 	}
 }

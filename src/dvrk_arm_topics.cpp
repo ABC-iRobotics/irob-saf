@@ -31,4 +31,7 @@ const DVRKArmTopics DVRKArmTopics::SET_POSITION_CARTESIAN
 
 const DVRKArmTopics DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT
                     = DVRKArmTopics("position_cartesian_current");
+                    
+const DVRKArmTopics DVRKArmTopics::SET_POSITION_JAW
+                    = DVRKArmTopics("set_jaw_position");
 

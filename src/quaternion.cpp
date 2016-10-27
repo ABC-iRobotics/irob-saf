@@ -40,6 +40,13 @@
    	
    	std::ostream& operator<<(std::ostream& os, const Quaternion& q)
    	{
-   		return os << "(" << q.x <<", " << q.y << ", " << q.z << "," << q.w << ")";
+   		return os << q.x <<"\t" << q.y << "\t" << q.z << "\t" << q.w;
+   	}
+   	
+   	std::istream& operator>>(std::istream& is, Quaternion& q)
+   	{
+   		is >> q.x >> std::ws >> q.y >> std::ws >> q.z >> std::ws 
+   			>> q.w >> std::ws;
+   		return is;
    	}
 

@@ -39,6 +39,7 @@ class Quaternion {
    	
    
    friend std::ostream& operator<<(std::ostream&, const Quaternion&);
+   friend std::istream& operator>>(std::istream&, Quaternion&);
 };
 
 #endif

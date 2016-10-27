@@ -45,12 +45,13 @@ int main(int argc, char **argv)
 
     psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
     psm.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
+    psm.advertise(DVRKArmTopics::SET_POSITION_JAW);
 
     //psm.home();
     
     // Load trajectory from file
     try	{
-		Trajectory<Vector3D> tr(argv[3]);
+		Trajectory<Pose> tr(argv[3]);
     	ROS_INFO(
     	"Trajectory of %d points with %f sample rate succesfully loaded from %s"
     		,tr.size(), tr.dt, argv[3]);
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
 		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 		Trajectory<Vector3D>* to_start = 
    			TrajectoryFactory::linearTrajectory(
-   				psm.getPositionCartesianCurrent(), tr[0], 2.0, tr.dt);
+   				psm.getPositionCartesianCurrent(), tr[0].position, 2.0, tr.dt);
 		
 		psm.playTrajectory(*to_start);
    		ros::Duration(0.5).sleep();

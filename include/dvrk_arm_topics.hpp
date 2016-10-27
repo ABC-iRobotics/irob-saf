@@ -20,6 +20,7 @@ class DVRKArmTopics {
     static const DVRKArmTopics GET_STATE_JOINT_CURRENT;
     static const DVRKArmTopics SET_POSITION_CARTESIAN;
     static const DVRKArmTopics GET_POSITION_CARTESIAN_CURRENT;
+    static const DVRKArmTopics SET_POSITION_JAW;
 
 
   private:

@@ -17,6 +17,7 @@
 #include "trajectory_factory.hpp"
 #include <fstream>
 #include <stdexcept>
+#include "pose.hpp"
 
 
 int main(int argc, char **argv)
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
     psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
     
     // Record trajectory
-	Trajectory<Vector3D> tr_to_log(dt);
+	Trajectory<Pose> tr_to_log(dt);
 	ROS_INFO("Start recording trajectory...");
 	psm.recordTrajectory(tr_to_log);
 	std::cout << std::endl << "Record stopped" << std::endl;
