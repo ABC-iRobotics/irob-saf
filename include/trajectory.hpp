@@ -24,16 +24,25 @@ class Trajectory
  	private:
  		std::vector<T> points;
    	public:
+   		Trajectory();
    		Trajectory(double);
    		Trajectory(std::string);
+   		Trajectory(const Trajectory<T>&);
 		void clear();
 		void addPoint(T);
 		T operator[](const int) const;
 		int size() const;
 		double getLengthSec() const;
 		void writeToFile(std::string) const;
+		
+		void swap(Trajectory<T>&);
+		Trajectory<T> operator=(const Trajectory<T>&);
+		
+		Trajectory<T> operator+=(const Trajectory<T>&);
+   		Trajectory<T> operator+(const Trajectory<T>&);
 	
-		friend std::ostream& operator<<(std::ostream& os, const Trajectory<T>& tr)
+		friend std::ostream& operator<<(std::ostream& os
+			, const Trajectory<T>& tr)
 		{		
 			//TODO fix
 			os << "Trajectory:" << std::endl;
@@ -44,6 +53,8 @@ class Trajectory
    
 };
 
+template <class T>
+Trajectory<T>::Trajectory(): dt(0.1){}
 
 template <class T>
 Trajectory<T>::Trajectory(double dt): dt(dt){}
@@ -68,6 +79,56 @@ Trajectory<T>::Trajectory(std::string filename)
     }
     logfile.close();
 }
+
+template <class T>
+Trajectory<T>::Trajectory(const Trajectory<T>& other): dt(other.dt)
+{
+	for (int i = 0; i < other.size(); i++)
+		points.push_back(other[i]);
+}
+
+template <class T>
+void Trajectory<T>::swap(Trajectory<T>& other)
+{
+	Trajectory<T> tmp(*this);
+	
+	dt = other.dt;
+	points = other.points;
+		
+	other.dt = tmp.dt;
+	other.points = tmp.points;	
+}
+		
+template <class T>
+Trajectory<T> Trajectory<T>::operator=(const Trajectory<T>& other)
+{
+	Trajectory<T> tmp(other);
+   	this->swap(tmp);
+   	return *this;
+}
+
+//Concat Trajectories
+template <class T>
+Trajectory<T> Trajectory<T>::operator+=(const Trajectory<T>& other) 
+{
+	if (dt != other.dt)
+		// TODO err
+   	for (int i = 0; i < other.size(); i++)
+		points.push_back(other[i]);
+	
+   	return *this;
+}
+
+//Concat Trajectories
+template <class T>
+Trajectory<T> Trajectory<T>::operator+(const Trajectory<T>& other) 
+{
+	Trajectory<T> tmp(*this);
+	tmp += other;
+	
+   	return tmp;
+}
+   	
 
 template <class T>
 void Trajectory<T>::clear()

@@ -28,15 +28,15 @@ class Pose {
    	void swap(Pose&);
    	Pose operator=(const Pose&);
    	
-   	/*Vector3D operator+=(const Vector3D&);
-   	Vector3D operator-=(const Vector3D&);
+   	Pose operator+=(const Vector3D&);
+   	Pose operator-=(const Vector3D&);
    	
-   	Vector3D operator/=(const double&);
+   	/*Vector3D operator/=(const double&);
    	Vector3D operator*=(const double&);
-   	
-   	Vector3D operator+(const Vector3D&) const;
-   	Vector3D operator-(const Vector3D&) const;
-   	
+   	*/
+   	Pose operator+(const Vector3D&) const;
+   	Pose operator-(const Vector3D&) const;
+   	/*
    	Vector3D operator*(const double&) const;
    	Vector3D operator/(const double&) const;
    	

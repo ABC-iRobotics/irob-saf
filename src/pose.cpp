@@ -60,6 +60,32 @@
    		return *this;
    	}
    	
+   	Pose Pose::operator+=(const Vector3D& v) 
+   	{
+   		position += v;
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator-=(const Vector3D& v) 
+   	{
+   		position -= v;   		
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator+(const Vector3D& v) const
+   	{
+   		Pose tmp(*this);
+   		tmp += v;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator-(const Vector3D& v) const
+   	{
+   		Pose tmp(*this);
+   		tmp -= v;
+   		return tmp;
+   	}
+   	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{
    		return os << p.position <<"\t" << p.orientation << "\t" << p.jaw;
