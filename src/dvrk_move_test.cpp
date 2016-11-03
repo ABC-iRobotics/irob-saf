@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 		Trajectory<double>* to_enable_cartesian = 
    		TrajectoryFactory::linearTrajectory(
    			psm.getJointStateCurrent(init_joint_idx), 
-   			0.07, 1.0*speed_divider, 0.05);
+   			0.07, 1.0*speed_divider, dt);
 		psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 
    		delete(to_enable_cartesian);
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
-			3.0*speed_divider, 0.1);   
+			3.0*speed_divider, dt);   
    	    
     while(ros::ok()) {
     	psm.playTrajectory(*circle_tr);

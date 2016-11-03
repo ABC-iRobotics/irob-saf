@@ -6,6 +6,8 @@
  */
 
 #include "dvrk_arm.hpp"
+#include <numeric>
+#include <chrono>
 
 
 const std::string DVRKArm::HOME_CMD
@@ -14,8 +16,10 @@ const std::string DVRKArm::HOME_DONE
                     = "DVRK_READY";
 const std::string DVRKArm::STATE_POSITION_JOINT
                     = "DVRK_POSITION_JOINT";
+                   // = "DVRK_POSITION_GOAL_JOINT";
 const std::string DVRKArm::STATE_POSITION_CARTESIAN
-                    ="DVRK_POSITION_GOAL_CARTESIAN";
+                    ="DVRK_POSITION_CARTESIAN";
+                   // ="DVRK_POSITION_GOAL_CARTESIAN";
 
 
 DVRKArm::DVRKArm(ros::NodeHandle nh, DVRKArmTypes arm_typ): nh(nh), arm_typ(arm_typ) {
@@ -191,7 +195,7 @@ void DVRKArm::moveJointRelative(int joint_idx, double movement)
     new_position_joint.position[joint_idx] += movement;
     position_joint_pub.publish(new_position_joint);
     ros::spinOnce();
-    ros::Duration(0.1).sleep();
+    //ros::Duration(0.1).sleep();
 }
 
 void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
@@ -203,7 +207,7 @@ void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
     new_position_joint.position[joint_idx] = pos;
     position_joint_pub.publish(new_position_joint);
     ros::spinOnce();
-    ros::Duration(0.1).sleep();
+    //ros::Duration(0.1).sleep();
 }
 
 void DVRKArm::moveCartesianRelative(Vector3D movement)
@@ -218,7 +222,7 @@ void DVRKArm::moveCartesianRelative(Vector3D movement)
 
     position_cartesian_pub.publish(new_position_cartesian);
     ros::spinOnce();
-    ros::Duration(0.1).sleep();
+    //ros::Duration(0.1).sleep();
 
 }
 
@@ -308,10 +312,23 @@ void DVRKArm::moveCartesianAbsolute(Pose pose)
 void DVRKArm::playTrajectory(Trajectory<Vector3D>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
+	//int cnt = 0;
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
+		//auto start = std::chrono::high_resolution_clock::now();
+		
 		moveCartesianAbsolute(tr[i]);
+		
 		loop_rate.sleep();
+		/*
+		std::chrono::duration<double> elapsed =
+	 			std::chrono::high_resolution_clock::now()-start;
+	 	cnt ++;
+	 	if (cnt >= 10)
+	 	{
+			ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
+			cnt = 0;
+		}*/
 	}
 
 }

@@ -21,13 +21,14 @@ const DVRKArmTopics DVRKArmTopics::GET_ROBOT_STATE
 
 const DVRKArmTopics DVRKArmTopics::SET_POSITION_JOINT
                     = DVRKArmTopics("set_position_joint");
+                    // = DVRKArmTopics("set_position_goal_joint");
 
 const DVRKArmTopics DVRKArmTopics::GET_STATE_JOINT_CURRENT
                     = DVRKArmTopics("state_joint_current");
 
 const DVRKArmTopics DVRKArmTopics::SET_POSITION_CARTESIAN
-                    = DVRKArmTopics("set_position_goal_cartesian");
-                    //= DVRKArmTopics("set_position_cartesian");
+                    = DVRKArmTopics("set_position_cartesian");
+                    //= DVRKArmTopics("set_position_goal_cartesian");
 
 const DVRKArmTopics DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT
                     = DVRKArmTopics("position_cartesian_current");

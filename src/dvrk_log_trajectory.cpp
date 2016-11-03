@@ -17,7 +17,6 @@
 #include "trajectory_factory.hpp"
 #include <fstream>
 #include <stdexcept>
-#include "pose.hpp"
 
 
 int main(int argc, char **argv)
