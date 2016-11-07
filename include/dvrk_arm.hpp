@@ -19,10 +19,10 @@
 #include "std_msgs/Float32.h"
 #include "dvrk_arm_types.hpp"
 #include "dvrk_arm_topics.hpp"
-#include "vector_3d.hpp"
-#include "quaternion.hpp"
 #include "pose.hpp"
 #include "trajectory.hpp"
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
 
 
 
@@ -71,8 +71,8 @@ public:
     bool advertise(const DVRKArmTopics);
     
     double getJointStateCurrent(int);
-    Vector3D getPositionCartesianCurrent();
-    Quaternion getOrientationCartesianCurrent();
+    Eigen::Vector3d getPositionCartesianCurrent();
+    Eigen::Quaternion<double> getOrientationCartesianCurrent();
     Pose getPoseCurrent();
 
     //DVRK actions
@@ -80,19 +80,18 @@ public:
     bool setRobotState(std::string);
     void moveJointRelative(int, double );
     void moveJointAbsolute(int, double );
-    void moveCartesianRelative(Vector3D);
-    void moveCartesianAbsolute(Vector3D);
-    void moveCartesianAbsolute(Quaternion);
-    void moveCartesianAbsolute(Vector3D, Quaternion);
+    void moveCartesianRelative(Eigen::Vector3d);
+    void moveCartesianAbsolute(Eigen::Vector3d);
+    void moveCartesianAbsolute(Eigen::Quaternion<double>);
+    void moveCartesianAbsolute(Eigen::Vector3d, Eigen::Quaternion<double>);
     void moveCartesianAbsolute(Pose);
 
-	void playTrajectory(Trajectory<Vector3D>&);
-	void playTrajectory(Trajectory<Quaternion>&);
-	void playTrajectory(Trajectory<Vector3D>&, Trajectory<Quaternion>&);
+	void playTrajectory(Trajectory<Eigen::Vector3d>&);
+	void playTrajectory(Trajectory<Eigen::Quaternion<double>>&);
 	void playTrajectory(Trajectory<Pose>&);
 	void playTrajectory(int, Trajectory<double>&);
 	
-	void recordTrajectory(Trajectory<Vector3D>&);
+	void recordTrajectory(Trajectory<Eigen::Vector3d>&);
 	void recordTrajectory(Trajectory<Pose>&);
 	
 };

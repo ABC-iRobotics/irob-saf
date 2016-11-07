@@ -76,30 +76,31 @@ int main(int argc, char **argv)
    	
    	// Make circles
    	ROS_INFO("Starting programmed movement...");
-   	ROS_INFO("Loop rate:\t%d Hz\n", rate_command);
-   	ROS_INFO("Speed divider:\t%d\n", speed_divider);
+   	ROS_INFO("Loop rate:\t%d Hz", rate_command);
+   	ROS_INFO("Speed divider:\t%d", speed_divider);
     psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+
     ros::Duration(1.0).sleep();
 
     double r = 0.02;
     
-    Pose poseto(0.000526785,	-0.0046757,	0.00448445,	0.665926	,0.633638,	0.237784,	-0.313854,	0);
+    Pose poseto( 0.0105937964763,0.0409808721132, -0.0676489437985,  -0.134924830481, 0.66488253694, 0.694115432261,0.240687076699, 0);
     
     Trajectory<Pose>* circle_tr =
     		TrajectoryFactory::linearTrajectory(
     		psm.getPoseCurrent(), 
-			 poseto,
+			poseto,
 			3.0*speed_divider, dt); 
     
-    /*Trajectory<Vector3D>* circle_tr =
+    /*Trajectory<Eigen::Vector3d>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
-			2*M_PI, psm.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
+			2*M_PI, psm.getPositionCartesianCurrent() + Eigen::Vector3d(0.0, -r, 0.0),
 			3.0*speed_divider, dt);   */
    	    
-    while(ros::ok()) {
+   // while(ros::ok()) {
     	psm.playTrajectory(*circle_tr);
-    }	
+   // }	
     delete(circle_tr);
     
     //psm2.home();

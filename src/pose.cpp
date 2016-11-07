@@ -13,29 +13,34 @@
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}
  			
    	Pose::Pose(double px, double py, double pz, 
-   		double ox, double oy, double oz,double ow,
+   		double ow, double ox, double oy,double oz,
    		double jaw): 
    			position(px, py, pz),
-   			orientation(ox, oy, oz, ow), jaw(jaw) {}
+   			orientation( ow, ox, oy, oz), jaw(jaw) {}
    			
    	Pose::Pose(const Pose& other): position(other.position), 
    		orientation(other.orientation), jaw(other.jaw) {}
    		
+   	Pose::Pose(const geometry_msgs::Pose& msg, double jaw): 
+		position(msg.position.x, msg.position.y, msg.position.z), 			orientation(msg.orientation.w, msg.orientation.x, msg.orientation.y,
+				 msg.orientation.z), 
+		jaw(jaw){}	
+   		
 	Pose::Pose(const geometry_msgs::PoseStamped& msg, double jaw): 
-		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation(msg.pose.orientation.x, msg.pose.orientation.y,
-				 msg.pose.orientation.z, msg.pose.orientation.w), 
+		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+				 msg.pose.orientation.z), 
 		jaw(jaw){}	
 
    	void Pose::swap(Pose& other) 
    	{
    		Pose tmp(*this);
    		
-   		position.swap(other.position);
-   		orientation.swap(other.orientation);
+   		position = other.position;
+   		orientation = other.orientation;
    		jaw = other.jaw;
    		
-   		other.position.swap(tmp.position);
-   		other.orientation.swap(tmp.orientation);
+   		other.position = tmp.position;
+   		other.orientation = tmp.orientation;
    		other.jaw = tmp.jaw;
    	}
    	
@@ -46,159 +51,77 @@
    		return *this;
    	}
    	
-   	Pose Pose::operator+=(const Vector3D& v) 
+   	Pose Pose::operator+=(const Eigen::Vector3d& v) 
    	{
    		position += v;
    		return *this;
    	}
    	
-   	Pose Pose::operator-=(const Vector3D& v) 
+   	Pose Pose::operator-=(const Eigen::Vector3d& v) 
    	{
    		position -= v;   		
    		return *this;
    	}
+   
    	
-   	Pose Pose::operator+=(const Quaternion& q) 
-   	{
-   		orientation += q;
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator-=(const Quaternion& q) 
-   	{
-   		orientation -= q;   		
-   		return *this;
-   	}
-   	
-   	// jaw
-   	Pose Pose::operator+=(const double& jaw) 
-   	{
-   		this->jaw += jaw;
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator-=(const double& q) 
-   	{
-   		this->jaw -= jaw; 		
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator+=(const Pose& p) 
-   	{
-   		position += p.position;
-   		orientation += p.orientation;
-   		//orientation.normalize();
-   		jaw += p.jaw; 
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator-=(const Pose& p) 
-   	{
-   		position -= p.position;
-   		orientation -= p.orientation; 
-   		jaw -= p.jaw;   		
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator*=(const double& d) 
-   	{
-   		position *= d;
-   		orientation *= d;
-   		jaw *= d;  
-   		return *this;
-   	}
-   	
-   	Pose Pose::operator/=(const double& d) 
-   	{
-   		position /= d;
-   		orientation /= d;
-   		jaw /= d;   		
-   		return *this;
-   	}
-   	
-   	
-   	//
-   	
-   	Pose Pose::operator+(const Vector3D& v) const
+   	Pose Pose::operator+(const Eigen::Vector3d& v) const
    	{
    		Pose tmp(*this);
    		tmp += v;
    		return tmp;
    	}
    	
-   	Pose Pose::operator-(const Vector3D& v) const
+   	Pose Pose::operator-(const Eigen::Vector3d& v) const
    	{
    		Pose tmp(*this);
    		tmp -= v;
    		return tmp;
+   	}   	
+   	
+   	Pose Pose::interpolate(double a, const Pose& other) const
+   	{
+   		Pose res;
+   		res.orientation = orientation.slerp(a, other.orientation);
+   		res.position = ((1-a) * position) + ((a) * other.position);
+   		res.jaw = ((1-a) * jaw) + ((a) * other.jaw);
+   		return res;
    	}
    	
-   	Pose Pose::operator+(const Quaternion& q) const
+   	geometry_msgs::Pose Pose::toRosPose() const
    	{
-   		Pose tmp(*this);
-   		tmp += q;
-   		return tmp;
+   		geometry_msgs::Pose ret;
+   		ret.position.x = position.x();
+   		ret.position.y = position.y();
+   		ret.position.z = position.z();
+   		ret.orientation.w = orientation.w();
+   		ret.orientation.x = orientation.x();
+   		ret.orientation.y = orientation.y();
+   		ret.orientation.z = orientation.z();
+   		return ret;
    	}
    	
-   	Pose Pose::operator-(const Quaternion& q) const
+   	std_msgs::Float32 Pose::toRosJaw() const
    	{
-   		Pose tmp(*this);
-   		tmp -= q;
-   		return tmp;
-   	}
-   	
-   	//jaw
-   	Pose Pose::operator+(const double& jaw) const
-   	{
-   		Pose tmp(*this);
-   		tmp += jaw;
-   		return tmp;
-   	}
-   	
-   	Pose Pose::operator-(const double& jaw) const
-   	{
-   		Pose tmp(*this);
-   		tmp -= jaw;
-   		return tmp;
-   	}
-   	
-   	Pose Pose::operator+(const Pose& p) const
-   	{
-   		Pose tmp(*this);
-   		tmp += p;
-   		return tmp;
-   	}
-   	
-   	Pose Pose::operator-(const Pose& p) const
-   	{
-   		Pose tmp(*this);
-   		tmp -= p;
-   		return tmp;
-   	}
-   	
-   	Pose Pose::operator*(const double& d) const
-   	{
-   		Pose tmp(*this);
-   		tmp *= d;
-   		return tmp;
-   	}
-   	
-   	Pose Pose::operator/(const double& d) const
-   	{
-   		Pose tmp(*this);
-   		tmp /= d;
-   		return tmp;
+   	 	std_msgs::Float32 ret;
+   	 	ret.data = jaw;
+   	 	return ret;
    	}
    	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{
-   		return os << p.position <<"\t" << p.orientation << "\t" << p.jaw;
+   		return os << p.position.x() <<"\t" << p.position.y() <<"\t"
+   					<< p.position.z() <<"\t"<< p.orientation.w() <<"\t"
+   					<< p.orientation.x() <<"\t"<< p.orientation.y() <<"\t"
+   					<< p.orientation.z() <<"\t" << p.jaw;
    	}
    	
    	std::istream& operator>>(std::istream& is, Pose& p)
    	{
-   		is >> p.position >> std::ws >> p.orientation >> std::ws 
-   			>> p.jaw >> std::ws;
+
+   		is >> p.position.x() >> std::ws >> p.position.y() 
+   		>> std::ws >> p.position.z() >> std::ws >> p.orientation.w()
+   		>> std::ws >> p.orientation.x() >> std::ws >> p.orientation.y()
+   		>> std::ws >> p.orientation.z()>> std::ws >> p.jaw >> std::ws;
    		return is;
    	}
    	

@@ -18,6 +18,8 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
 
 
 int main(int argc, char **argv)
@@ -74,7 +76,7 @@ int main(int argc, char **argv)
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");
 		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
-		Trajectory<Vector3D>* to_start = 
+		Trajectory<Eigen::Vector3d>* to_start = 
    			TrajectoryFactory::linearTrajectory(
    				psm.getPositionCartesianCurrent(), tr[0].position, 2.0, tr.dt);
 		
