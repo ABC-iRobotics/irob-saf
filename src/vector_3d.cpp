@@ -9,6 +9,7 @@
 #include <math.h>
 #include "vector_3d.hpp"
 
+
  	Vector3D::Vector3D(): x(0.0), y(0.0), z(0.0) {}
    	Vector3D::Vector3D(double x, double y, double z): x(x), y(y), z(z) {}
    	Vector3D::Vector3D(const Vector3D& other): x(other.x), y(other.y), z(other.z) {}

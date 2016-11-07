@@ -9,14 +9,13 @@
 #define QUATERNION_HPP_
 
 #include <iostream>
-
+#include "vector_3d.hpp"
+// TODO replace with double w, Vector3D v
 class Quaternion {
  
    public:
-   	double x;
-   	double y;
-   	double z;
    	double w;
+   	Vector3D v;
    	
    	Quaternion();
    	Quaternion(double, double, double, double);
@@ -25,7 +24,7 @@ class Quaternion {
    	void swap(Quaternion&);
    	Quaternion operator=(const Quaternion&);
    	
-   	/*Quaternion operator+=(const Quaternion&);
+   	Quaternion operator+=(const Quaternion&);
    	Quaternion operator-=(const Quaternion&);
    	
    	Quaternion operator/=(const double&);
@@ -35,7 +34,11 @@ class Quaternion {
    	Quaternion operator-(const Quaternion&) const;
    	
    	Quaternion operator*(const double&) const;
-   	Quaternion operator/(const double&) const;*/
+   	Quaternion operator/(const double&) const;
+   	
+   	double length() const;
+   	
+   	Quaternion normalize();
    	
    
    friend std::ostream& operator<<(std::ostream&, const Quaternion&);

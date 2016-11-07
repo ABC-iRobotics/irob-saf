@@ -14,7 +14,9 @@
 #include <vector>
 #include <math.h>
 #include "dvrk_arm.hpp"
+#include "pose.hpp"
 #include "trajectory_factory.hpp"
+
 
 
 int main(int argc, char **argv)
@@ -81,11 +83,19 @@ int main(int argc, char **argv)
 
     double r = 0.02;
     
-    Trajectory<Vector3D>* circle_tr =
+    Pose poseto(0.000526785,	-0.0046757,	0.00448445,	0.665926	,0.633638,	0.237784,	-0.313854,	0);
+    
+    Trajectory<Pose>* circle_tr =
+    		TrajectoryFactory::linearTrajectory(
+    		psm.getPoseCurrent(), 
+			 poseto,
+			3.0*speed_divider, dt); 
+    
+    /*Trajectory<Vector3D>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + Vector3D(0.0, -r, 0.0),
-			3.0*speed_divider, dt);   
+			3.0*speed_divider, dt);   */
    	    
     while(ros::ok()) {
     	psm.playTrajectory(*circle_tr);

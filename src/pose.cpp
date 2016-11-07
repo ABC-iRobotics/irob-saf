@@ -29,27 +29,13 @@
    	void Pose::swap(Pose& other) 
    	{
    		Pose tmp(*this);
-   		position.x = other.position.x;
-   		position.y = other.position.y;
-   		position.z = other.position.z;
    		
-   		orientation.x = other.orientation.x;
-   		orientation.y = other.orientation.y;
-   		orientation.z = other.orientation.z;
-   		orientation.w = other.orientation.w;
-   		
+   		position.swap(other.position);
+   		orientation.swap(other.orientation);
    		jaw = other.jaw;
    		
-   		
-   		other.position.x = tmp.position.x;
-   		other.position.y = tmp.position.y;
-   		other.position.z = tmp.position.z;
-   		
-   		other.orientation.x = tmp.orientation.x;
-   		other.orientation.y = tmp.orientation.y;
-   		other.orientation.z = tmp.orientation.z;
-   		other.orientation.w = tmp.orientation.w;
-   		
+   		other.position.swap(tmp.position);
+   		other.orientation.swap(tmp.orientation);
    		other.jaw = tmp.jaw;
    	}
    	
@@ -72,6 +58,67 @@
    		return *this;
    	}
    	
+   	Pose Pose::operator+=(const Quaternion& q) 
+   	{
+   		orientation += q;
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator-=(const Quaternion& q) 
+   	{
+   		orientation -= q;   		
+   		return *this;
+   	}
+   	
+   	// jaw
+   	Pose Pose::operator+=(const double& jaw) 
+   	{
+   		this->jaw += jaw;
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator-=(const double& q) 
+   	{
+   		this->jaw -= jaw; 		
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator+=(const Pose& p) 
+   	{
+   		position += p.position;
+   		orientation += p.orientation;
+   		//orientation.normalize();
+   		jaw += p.jaw; 
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator-=(const Pose& p) 
+   	{
+   		position -= p.position;
+   		orientation -= p.orientation; 
+   		jaw -= p.jaw;   		
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator*=(const double& d) 
+   	{
+   		position *= d;
+   		orientation *= d;
+   		jaw *= d;  
+   		return *this;
+   	}
+   	
+   	Pose Pose::operator/=(const double& d) 
+   	{
+   		position /= d;
+   		orientation /= d;
+   		jaw /= d;   		
+   		return *this;
+   	}
+   	
+   	
+   	//
+   	
    	Pose Pose::operator+(const Vector3D& v) const
    	{
    		Pose tmp(*this);
@@ -83,6 +130,63 @@
    	{
    		Pose tmp(*this);
    		tmp -= v;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator+(const Quaternion& q) const
+   	{
+   		Pose tmp(*this);
+   		tmp += q;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator-(const Quaternion& q) const
+   	{
+   		Pose tmp(*this);
+   		tmp -= q;
+   		return tmp;
+   	}
+   	
+   	//jaw
+   	Pose Pose::operator+(const double& jaw) const
+   	{
+   		Pose tmp(*this);
+   		tmp += jaw;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator-(const double& jaw) const
+   	{
+   		Pose tmp(*this);
+   		tmp -= jaw;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator+(const Pose& p) const
+   	{
+   		Pose tmp(*this);
+   		tmp += p;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator-(const Pose& p) const
+   	{
+   		Pose tmp(*this);
+   		tmp -= p;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator*(const double& d) const
+   	{
+   		Pose tmp(*this);
+   		tmp *= d;
+   		return tmp;
+   	}
+   	
+   	Pose Pose::operator/(const double& d) const
+   	{
+   		Pose tmp(*this);
+   		tmp /= d;
    		return tmp;
    	}
    	

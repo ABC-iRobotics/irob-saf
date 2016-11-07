@@ -248,9 +248,9 @@ void DVRKArm::moveCartesianAbsolute(Quaternion orientation)
     geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
     // TODO safety
 
-    new_position_cartesian.orientation.x = orientation.x;
-    new_position_cartesian.orientation.y = orientation.y;
-    new_position_cartesian.orientation.z = orientation.z;
+    new_position_cartesian.orientation.v.x = orientation.x;
+    new_position_cartesian.orientation.v.y = orientation.y;
+    new_position_cartesian.orientation.v.z = orientation.z;
     new_position_cartesian.orientation.w = orientation.w;
 
     position_cartesian_pub.publish(new_position_cartesian);

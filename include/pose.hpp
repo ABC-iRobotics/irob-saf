@@ -31,15 +31,36 @@ class Pose {
    	Pose operator+=(const Vector3D&);
    	Pose operator-=(const Vector3D&);
    	
-   	/*Vector3D operator/=(const double&);
-   	Vector3D operator*=(const double&);
-   	*/
+   	Pose operator+=(const Quaternion&);
+   	Pose operator-=(const Quaternion&);
+   	
+   	Pose operator+=(const Pose&);
+   	Pose operator-=(const Pose&);
+   	
+   	// jaw
+   	Pose operator+=(const double&);
+   	Pose operator-=(const double&);
+   	
+   	Pose operator*=(const double&);
+   	Pose operator/=(const double&);
+   	
    	Pose operator+(const Vector3D&) const;
    	Pose operator-(const Vector3D&) const;
-   	/*
-   	Vector3D operator*(const double&) const;
-   	Vector3D operator/(const double&) const;
    	
+   	Pose operator+(const Quaternion&) const;
+   	Pose operator-(const Quaternion&) const;
+   	
+   	Pose operator+(const Pose&) const;
+   	Pose operator-(const Pose&) const;
+   	
+   	//jaw
+   	Pose operator+(const double&) const;
+   	Pose operator-(const double&) const;
+   	
+   	Pose operator*(const double&) const;
+   	Pose operator/(const double&) const;
+   	
+   	/*
    	double length() const;
    	
    	double distance(const Vector3D&) const;

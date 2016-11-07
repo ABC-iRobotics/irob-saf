@@ -19,32 +19,18 @@ class TrajectoryFactory
 	private:
 		TrajectoryFactory() {}
 	public:
-		static Trajectory<Vector3D>* linearTrajectory(Vector3D start, 
-			Vector3D end, double T, double dt)
+		template <class P>
+		static Trajectory<P>* linearTrajectory(P start,P end, 
+											double T, double dt)
 		{
-			Trajectory<Vector3D>* tr = new Trajectory<Vector3D>(dt);
+			Trajectory<P>* tr = new Trajectory<P>(dt);
 			int N = (int)round(T / dt)+1;
 			for (int i = 0; i < N-1; i++)
 			{
-				Vector3D p = (start +(end-start)*(i/(double)N));
+				P p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
 				tr->addPoint(p);
 			}
 			tr->addPoint(end);
-			return tr;
-		}
-		
-		static Trajectory<double>* linearTrajectory(double start, 
-			double end, double T, double dt)
-		{
-			Trajectory<double>* tr = new Trajectory<double>(dt);
-			int N = (int)round(T / dt)+1;
-			for (int i = 0; i < N-1; i++)
-			{
-				double p = (start +(end-start)*(i/(double)N));
-				tr->addPoint(p);
-			}
-			tr->addPoint(end);
-			
 			return tr;
 		}
 		
