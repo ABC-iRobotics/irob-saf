@@ -21,6 +21,9 @@ class DVRKArmTopics {
     static const DVRKArmTopics SET_POSITION_CARTESIAN;
     static const DVRKArmTopics GET_POSITION_CARTESIAN_CURRENT;
     static const DVRKArmTopics SET_POSITION_JAW;
+    
+    static const DVRKArmTopics GET_ERROR;
+    static const DVRKArmTopics GET_WARNING;
 
 
   private:
@@ -38,7 +41,7 @@ class DVRKArmTopics {
 
     std::string getFullName(DVRKArmTypes type)
     {
-    	return "/" + TOPIC_NAMESPACE + "/" + type.getName() + "/" + name;
+    	return "/" + TOPIC_NAMESPACE + "/" + type.name + "/" + name;
     }
 };
 

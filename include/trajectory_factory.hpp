@@ -39,7 +39,8 @@ class TrajectoryFactory
 		
 		
 		
-		static Trajectory<Eigen::Vector3d>* circleTrajectoryHorizontal(Eigen::Vector3d start, 
+		static Trajectory<Eigen::Vector3d>* circleTrajectoryHorizontal(
+			Eigen::Vector3d start, 
 			double toAngle, Eigen::Vector3d center,
 			double T, double dt)
 		{

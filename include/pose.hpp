@@ -13,10 +13,20 @@
 #include "std_msgs/Float32.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
+#include <math.h>
 
 class Pose {
  
    public:
+   	
+   	struct Distance { 
+    	double cartesian;
+    	double angle;
+    	double jaw;
+    	
+    	friend std::ostream& operator<<(std::ostream&, const Distance&);
+  	};
+   
    	Eigen::Vector3d position;
    	Eigen::Quaternion<double> orientation;
    	double jaw;
@@ -38,6 +48,11 @@ class Pose {
    	Pose operator-(const Eigen::Vector3d&) const;
    	
    	Pose interpolate(double, const Pose&) const;
+   	
+   	Distance dist(const Pose&) const;
+   	Distance dist(const Eigen::Vector3d&) const;
+   	Distance dist(const Eigen::Quaternion<double>&) const;
+   	Distance dist(double) const;
    	
    	geometry_msgs::Pose toRosPose() const;
     std_msgs::Float32 toRosJaw() const;

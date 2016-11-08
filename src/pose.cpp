@@ -107,6 +107,44 @@
    	 	return ret;
    	}
    	
+   	Pose::Distance Pose::dist(const Pose& other) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = (position - other.position).norm();
+   		double cosAlha1_2 = orientation.dot(other.orientation);
+   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.jaw = abs(jaw - other.jaw);
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(const Eigen::Vector3d& otherPos) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = (position - otherPos).norm();
+   		d.angle = 0.0;
+   		d.jaw = 0.0;
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(const Eigen::Quaternion<double>& otherOrientation) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = 0.0;
+   		double cosAlha1_2 = orientation.dot(otherOrientation);
+   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.jaw = 0.0;
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(double otherJaw) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = 0.0;
+   		d.angle = 0.0;
+   		d.jaw = abs(jaw - otherJaw);
+   		return d;
+   	}
+   	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{
    		return os << p.position.x() <<"\t" << p.position.y() <<"\t"
@@ -123,6 +161,12 @@
    		>> std::ws >> p.orientation.x() >> std::ws >> p.orientation.y()
    		>> std::ws >> p.orientation.z()>> std::ws >> p.jaw >> std::ws;
    		return is;
+   	}
+   	
+   	std::ostream& operator<<(std::ostream& os, const Pose::Distance& d)
+   	{
+   		return os << d.cartesian <<"\t" << d.angle <<"\t"
+   					<< d.jaw;
    	}
    	
    	

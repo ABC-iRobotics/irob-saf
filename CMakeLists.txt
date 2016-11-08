@@ -116,6 +116,11 @@ include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen)
 
 ## Declare a C++ library
 
+add_library(dvrk_utils
+  include/dvrk_utils.hpp
+ )
+ set_target_properties(dvrk_utils PROPERTIES LINKER_LANGUAGE CXX)
+
  add_library(pose
   include/pose.hpp src/pose.cpp
  )
@@ -186,6 +191,7 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    trajectory
    trajectory_factory
    pose
+   dvrk_utils
  )
 
  target_link_libraries(dvrk_move_publisher

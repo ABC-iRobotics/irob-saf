@@ -22,6 +22,7 @@
 int main(int argc, char **argv)
 {
 
+	// Check command line arguments
 	if (argc < 5) 
 	{
 		std::cout << 
@@ -39,72 +40,79 @@ int main(int argc, char **argv)
 	ss2 >> speed_divider;	
 		
 	double dt = 1.0/ rate_command;
+	Trajectory<double>* to_enable_cartesian;
+	Trajectory<Pose>* circle_tr;
 	
 	
-	// Initialize node
+	// Initialize ros node
     ros::init(argc, argv, "irob_dvrk_move_test");
     ros::NodeHandle nh;
-  
-    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]));
-
-    psm.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
-    psm.advertise(DVRKArmTopics::SET_ROBOT_STATE);
-
-    psm.subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
-    psm.advertise(DVRKArmTopics::SET_POSITION_JOINT);
-
-    psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
-    psm.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
-
-    //psm.home(); 
+    
+    // Robot control
+  	try {
+    	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	//psm.home(); 
        
-	// Init position if necessary
-	if (std::string(argv[2]) == "init_pos")
-	{
-		// init
-		ROS_INFO("Going to init position...");
-		psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
-		int init_joint_idx = 2;
-		Trajectory<double>* to_enable_cartesian = 
-   		TrajectoryFactory::linearTrajectory(
-   			psm.getJointStateCurrent(init_joint_idx), 
-   			0.07, 1.0*speed_divider, dt);
-		psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
+		// Init position if necessary
+		if (std::string(argv[2]) == "init_pos")
+		{
+			// init
+			ROS_INFO_STREAM("Going to init position...");
+			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+			int init_joint_idx = 2;
+			to_enable_cartesian = 
+   			TrajectoryFactory::linearTrajectory(
+   				psm.getJointStateCurrent(init_joint_idx), 
+   				0.07, 1.0*speed_divider, dt);
+			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 
-   		delete(to_enable_cartesian);
-   	}
+   		}
    	
-   	// Make circles
-   	ROS_INFO("Starting programmed movement...");
-   	ROS_INFO("Loop rate:\t%d Hz", rate_command);
-   	ROS_INFO("Speed divider:\t%d", speed_divider);
-    psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+   		// Make circles
+   		ROS_INFO_STREAM("Starting programmed movement...");
+   		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
+   		ROS_INFO_STREAM("Speed divider:\t"<< speed_divider);
+   	
+   	 	psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 
-    ros::Duration(1.0).sleep();
+    	ros::Duration(1.0).sleep();
 
-    double r = 0.02;
+    	double r = 0.02;
     
-    Pose poseto( 0.0105937964763,0.0409808721132, -0.0676489437985,  -0.134924830481, 0.66488253694, 0.694115432261,0.240687076699, 0);
+    	Pose poseto( 0.0105937964763,0.0409808721132,
+    		 -0.0676489437985,  -0.134924830481, 
+    		 0.66488253694, 0.694115432261,0.240687076699, 0);
     
-    Trajectory<Pose>* circle_tr =
+    	circle_tr =
     		TrajectoryFactory::linearTrajectory(
     		psm.getPoseCurrent(), 
 			poseto,
 			3.0*speed_divider, dt); 
     
-    /*Trajectory<Eigen::Vector3d>* circle_tr =
+    	/*Trajectory<Eigen::Vector3d>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
-			2*M_PI, psm.getPositionCartesianCurrent() + Eigen::Vector3d(0.0, -r, 0.0),
+			2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, -r, 0.0),
 			3.0*speed_divider, dt);   */
    	    
-   // while(ros::ok()) {
-    	psm.playTrajectory(*circle_tr);
-   // }	
-    delete(circle_tr);
+    	while(ros::ok()) {
+    		psm.playTrajectory(*circle_tr);
+    	}	
     
-    //psm2.home();
-    std::cout << std::endl << "Stopping program..." << std::endl;
+    	//psm2.home();
+    	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
+    	
+    } catch (const std::exception& e) {
+  		ROS_ERROR_STREAM(e.what());
+  		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
+  	}
+    
+    // Remove garbage
+    delete(circle_tr);
+    delete(to_enable_cartesian);
+    
+    // Exit
     ros::shutdown();
 	return 0;
 }

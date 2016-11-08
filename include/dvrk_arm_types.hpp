@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include "pose.hpp"
 
 class DVRKArmTypes {
   public:
@@ -13,18 +15,20 @@ class DVRKArmTypes {
     static const DVRKArmTypes PSM2;
     static const DVRKArmTypes ECM;
 
-  private:
-
+	// Attributes
     const std::string name;
     const int dof;
+    const Pose::Distance maxDistPose;
+    const std::vector<double> maxDistJoint;
 
   private:
-    DVRKArmTypes( std::string name,   int dof): name(name), dof(dof) { }
+    DVRKArmTypes( std::string name, int dof,
+    			Pose::Distance maxDistPose, std::vector<double> maxDistJoint): 
+    			name(name), dof(dof), 
+    			maxDistPose(maxDistPose),
+    			maxDistJoint(maxDistJoint) { }
 
-  public:
-    std::string getName() const {return std::string(name);}
-    int getDof() const { return dof;}
-    
+  public:    
     static const DVRKArmTypes typeForString(std::string name)
     {
     	if (name == MTML.name)
@@ -38,6 +42,11 @@ class DVRKArmTypes {
     	if (name == ECM.name)
     		return ECM;
     	return PSM1;
+    }
+    
+    bool operator==(const DVRKArmTypes& other) const
+    {
+    	return name == other.name;
     }
 };
 
