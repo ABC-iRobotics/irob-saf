@@ -11,7 +11,10 @@
 #include <iostream>
 #include <vector>
 #include "trajectory.hpp"
+#include "pose.hpp"
 #include <math.h>
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
 
 class TrajectoryFactory
 {
@@ -19,55 +22,59 @@ class TrajectoryFactory
 	private:
 		TrajectoryFactory() {}
 	public:
-		static Trajectory<Vector3D>* linearTrajectory(Vector3D start, 
-			Vector3D end, double T, double dt)
+		template <class P>
+		static Trajectory<P>* linearTrajectory(P start,P end, 
+											double T, double dt)
 		{
-			Trajectory<Vector3D>* tr = new Trajectory<Vector3D>(dt);
+			Trajectory<P>* tr = new Trajectory<P>(dt);
 			int N = (int)round(T / dt)+1;
 			for (int i = 0; i < N-1; i++)
 			{
-				Vector3D p = (start +(end-start)*(i/(double)N));
+				P p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
 				tr->addPoint(p);
 			}
 			tr->addPoint(end);
 			return tr;
 		}
 		
-		static Trajectory<double>* linearTrajectory(double start, 
-			double end, double T, double dt)
-		{
-			Trajectory<double>* tr = new Trajectory<double>(dt);
-			int N = (int)round(T / dt)+1;
-			for (int i = 0; i < N-1; i++)
-			{
-				double p = (start +(end-start)*(i/(double)N));
-				tr->addPoint(p);
-			}
-			tr->addPoint(end);
-			
-			return tr;
-		}
 		
-		static Trajectory<Vector3D>* circleTrajectoryHorizontal(Vector3D start, 
-			double toAngle, Vector3D center,
+		
+		static Trajectory<Eigen::Vector3d>* circleTrajectoryHorizontal(
+			Eigen::Vector3d start, 
+			double toAngle, Eigen::Vector3d center,
 			double T, double dt)
 		{
-			Trajectory<Vector3D>* tr = new Trajectory<Vector3D>(dt);
+			Trajectory<Eigen::Vector3d>* tr = new Trajectory<Eigen::Vector3d>(dt);
 			int N = (int)round(T / dt)+1;
 			
 			double ang = 0.0;
 			for (int i = 0; i < N; i++, ang+=toAngle/N)
 			{
-				Vector3D p = start-center;
-				Vector3D p1(p.x*cos(ang)-p.y*sin(ang), 
-					p.y*cos(ang)+p.x*sin(ang), p.z);
-				Vector3D p2 = p1+center;
+				Eigen::Vector3d p = start-center;
+				Eigen::Vector3d p1(p.x()*cos(ang)-p.y()*sin(ang), 
+					p.y()*cos(ang)+p.x()*sin(ang), p.z());
+				Eigen::Vector3d p2 = p1+center;
 				tr->addPoint(p2);
 			}
 			return tr;
 		}
 
 };
+
+template <>
+Trajectory<Pose>* TrajectoryFactory::linearTrajectory<Pose>(
+			Pose start,Pose end, double T, double dt)
+{
+	Trajectory<Pose>* tr = new Trajectory<Pose>(dt);
+	int N = (int)round(T / dt);
+	for (int i = 0; i < N; i++)
+	{
+		Pose p = start.interpolate(((double)i)/N, end);
+		tr->addPoint(p);
+	}
+	tr->addPoint(end);
+	return tr;
+}
 
 
 

@@ -35,4 +35,10 @@ const DVRKArmTopics DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT
                     
 const DVRKArmTopics DVRKArmTopics::SET_POSITION_JAW
                     = DVRKArmTopics("set_jaw_position");
+                    
+const DVRKArmTopics DVRKArmTopics::GET_ERROR
+                    = DVRKArmTopics("error");
+                    
+const DVRKArmTopics DVRKArmTopics::GET_WARNING
+                    = DVRKArmTopics("warning");
 

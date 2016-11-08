@@ -18,11 +18,13 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
 
 
 int main(int argc, char **argv)
 {
-	
+	// Check command line arguments
 	if (argc < 4) 
 	{
 		std::cout 
@@ -31,30 +33,23 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	
-	// Initialize node
+	// Initialize ros node
     ros::init(argc, argv, "irob_dvrk_play_logged_trajectory");
     ros::NodeHandle nh;
-
-    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]));
-
-    psm.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
-    psm.advertise(DVRKArmTopics::SET_ROBOT_STATE);
-
-    psm.subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
-    psm.advertise(DVRKArmTopics::SET_POSITION_JOINT);
-
-    psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
-    psm.advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
-    psm.advertise(DVRKArmTopics::SET_POSITION_JAW);
-
-    //psm.home();
     
-    // Load trajectory from file
-    try	{
+	// Robot control
+	Trajectory<double>* to_enable_cartesian;
+	Trajectory<Eigen::Vector3d>* to_start;
+  	try {
+    	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	//psm.home();
+    
+    	// Load trajectory from file
 		Trajectory<Pose> tr(argv[3]);
-    	ROS_INFO(
-    	"Trajectory of %d points with %f sample rate succesfully loaded from %s"
-    		,tr.size(), tr.dt, argv[3]);
+    	ROS_INFO_STREAM(
+    	"Trajectory of "<< tr.size() << " points with "
+    					<< tr.dt << " sample rate succesfully loaded from "
+    					<< argv[3]);
     
     	// Init position if necessary
     	if (std::string(argv[2]) == "init_pos")
@@ -62,35 +57,42 @@ int main(int argc, char **argv)
 			ROS_INFO("Going to init position...");
 			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
-			Trajectory<double>* to_enable_cartesian = 
+			to_enable_cartesian = 
    			TrajectoryFactory::linearTrajectory(
    				psm.getJointStateCurrent(init_joint_idx), 
    				0.07, 2.0, 0.05);
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 
-   			delete(to_enable_cartesian);
+   			
    		}
 
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");
 		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
-		Trajectory<Vector3D>* to_start = 
+		to_start = 
    			TrajectoryFactory::linearTrajectory(
    				psm.getPositionCartesianCurrent(), tr[0].position, 2.0, tr.dt);
 		
 		psm.playTrajectory(*to_start);
    		ros::Duration(0.5).sleep();
-   		delete(to_start);	
+   			
 	
 		// Play loaded trajectory
 		ROS_INFO("Playing loaded trajectory...");
     	psm.playTrajectory(tr);
+    	
+    	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     
-    	std::cout << std::endl << "Stopping program..." << std::endl;
-    
-    } catch (const std::exception& e) {
-  		ROS_ERROR("%s", e.what());
+    }catch (const std::exception& e) {
+  		ROS_ERROR_STREAM(e.what());
+  		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
   	}
+  	
+  	// Exit
+  	delete(to_enable_cartesian);
+  	delete(to_start);
+  	
+    ros::shutdown();
 	return 0;
 }
 

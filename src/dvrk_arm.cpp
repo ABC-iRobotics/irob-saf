@@ -22,36 +22,65 @@ const std::string DVRKArm::STATE_POSITION_CARTESIAN
                    // ="DVRK_POSITION_GOAL_CARTESIAN";
 
 
-DVRKArm::DVRKArm(ros::NodeHandle nh, DVRKArmTypes arm_typ): nh(nh), arm_typ(arm_typ) {
-	// TODO Auto-generated constructor stub
+DVRKArm::DVRKArm(ros::NodeHandle nh, DVRKArmTypes arm_typ, bool isActive): 
+							nh(nh), arm_typ(arm_typ)
+{
+
+	// Subscribe and advertise topics
+	subscribe(DVRKArmTopics::GET_ROBOT_STATE);
+    subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
+    subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
+    subscribe(DVRKArmTopics::GET_ERROR);
+    subscribe(DVRKArmTopics::GET_WARNING);
+    
+    if (isActive == ACTIVE)
+    {
+    	advertise(DVRKArmTopics::SET_ROBOT_STATE);
+    	advertise(DVRKArmTopics::SET_POSITION_JOINT);
+    	advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
+    	
+    	if (arm_typ == DVRKArmTypes::PSM1 || arm_typ == DVRKArmTypes::PSM2)
+    		advertise(DVRKArmTopics::SET_POSITION_JAW);
+    }
+    
 }
 
-DVRKArm::~DVRKArm() {
+DVRKArm::~DVRKArm()
+{
 	// TODO Auto-generated destructor stub
 }
 
 /*
  * Callbacks
  */
-void DVRKArm::robotStateCB(const std_msgs::String msg) {
+void DVRKArm::robotStateCB(const std_msgs::String msg)
+{
     robot_state = msg;
-    //ROS_INFO("Robot state: %s", msg.data.c_str());
 }
 
-void DVRKArm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) {
+void DVRKArm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
+{
     position_joint = *msg;
-    //ROS_INFO("Joint state:\n");
-   // for (int i = 0; i < arm_typ.getDof(); i++)
-        //ROS_INFO("\tJoint %d:\t%f\n", i, position_joint.position[i]);
 }
 
-void DVRKArm::positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr& msg) {
+void DVRKArm::positionCartesianCurrentCB(
+				const geometry_msgs::PoseStampedConstPtr& msg) 
+{
      position_cartesian_current = *msg;
-     //ROS_INFO("State cartesian:\n");
-         //ROS_INFO("X: %f\tY: %f\tZ: %f\n",position_cartesian_current.pose.position.x, position_cartesian_current.pose.position.y, position_cartesian_current.pose.position.z);
 }
 
-bool DVRKArm::subscribe(DVRKArmTopics topic) {
+void DVRKArm::errorCB(const std_msgs::String msg) 
+{
+     error = msg;
+}
+
+void DVRKArm::warningCB(const std_msgs::String msg) 
+{
+     warning = msg;
+}
+
+bool DVRKArm::subscribe(DVRKArmTopics topic) 
+{
     if(topic == DVRKArmTopics::GET_ROBOT_STATE)
     {
         robot_state_sub = nh.subscribe<std_msgs::String>(
@@ -60,27 +89,44 @@ bool DVRKArm::subscribe(DVRKArmTopics topic) {
     }
     else if( topic == DVRKArmTopics::GET_STATE_JOINT_CURRENT)
     {
-        state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
+        state_joint_current_sub 
+        				= nh.subscribe<sensor_msgs::JointState>(
                         topic.getFullName(arm_typ), 1000,
                         &DVRKArm::stateJointCurrentCB,this);
     }
     else if( topic == DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT)
     {
-        position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
+        position_cartesian_current_sub 
+        				= nh.subscribe<geometry_msgs::PoseStamped>(
                         topic.getFullName(arm_typ), 1000,
                         &DVRKArm::positionCartesianCurrentCB,this);
     }
+    else if( topic == DVRKArmTopics::GET_ERROR)
+    {
+       	error_sub 	= nh.subscribe<std_msgs::String>(
+                        topic.getFullName(arm_typ), 1000,
+                        &DVRKArm::errorCB,this);
+    }
+    else if( topic == DVRKArmTopics::GET_WARNING)
+    {
+       	warning_sub 	= nh.subscribe<std_msgs::String>(
+                        topic.getFullName(arm_typ), 1000,
+                        &DVRKArm::warningCB,this);
+    }
     else
     {
-        ROS_INFO("Subscribing to invalid topic %s", topic.getFullName(arm_typ).c_str());
+        ROS_WARN_STREAM("Subscribing to invalid topic " 
+        	<<  topic.getFullName(arm_typ));
         return false;
     }
 
-    ROS_INFO("Subscribed to topic %s", topic.getFullName(arm_typ).c_str());
+    ROS_INFO_STREAM("Subscribed to topic " 
+    	<< topic.getFullName(arm_typ));
     return true;
 }
 
-bool DVRKArm::advertise(DVRKArmTopics topic) {
+bool DVRKArm::advertise(DVRKArmTopics topic) 
+{
     if(topic == DVRKArmTopics::SET_ROBOT_STATE)
     {
         robot_state_pub = nh.advertise<std_msgs::String>(
@@ -117,18 +163,29 @@ double DVRKArm::getJointStateCurrent(int index)
 	ros::spinOnce();
  	return position_joint.position[index];
 }
+
+std::vector<double> DVRKArm::getJointStateCurrent()
+{
+	ros::spinOnce();
+	std::vector<double> ret(arm_typ.dof);
+	
+		ret = position_joint.position;
+ 	return ret;
+}
  
-Vector3D DVRKArm::getPositionCartesianCurrent()
+Eigen::Vector3d DVRKArm::getPositionCartesianCurrent()
 {
  	ros::spinOnce();
- 	Vector3D ret(position_cartesian_current);
+ 	Eigen::Vector3d ret(position_cartesian_current.pose.position.x,
+ 						position_cartesian_current.pose.position.y,
+ 						position_cartesian_current.pose.position.z);
     return ret;
 }
 
-Quaternion DVRKArm::getOrientationCartesianCurrent()
+Eigen::Quaternion<double> DVRKArm::getOrientationCartesianCurrent()
 {
 	ros::spinOnce();
- 	Quaternion ret(position_cartesian_current.pose.orientation.x,
+ 	Eigen::Quaternion<double> ret(position_cartesian_current.pose.orientation.x,
  		position_cartesian_current.pose.orientation.y, 
  		position_cartesian_current.pose.orientation.z, 
  		position_cartesian_current.pose.orientation.w);
@@ -138,12 +195,22 @@ Quaternion DVRKArm::getOrientationCartesianCurrent()
 Pose DVRKArm::getPoseCurrent()
 {
  	ros::spinOnce();
- 	Pose ret(position_cartesian_current, position_joint.position[6]);
-    return ret;
+ 	if (arm_typ == DVRKArmTypes::PSM1 || arm_typ == DVRKArmTypes::PSM2)
+ 	{
+ 		Pose ret(position_cartesian_current, position_joint.position[6]);
+ 		return ret;
+ 	}
+ 	else
+ 	{
+ 		Pose ret(position_cartesian_current, 0.0);
+ 		return ret;
+ 	}
+    
 }
 
 
-bool DVRKArm::home() {
+bool DVRKArm::home()
+{
     while (true) {
         std_msgs::String msg;
         std::stringstream ss;
@@ -153,7 +220,7 @@ bool DVRKArm::home() {
         ros::Duration(0.5).sleep();
 
         if (robot_state.data == HOME_DONE) {
-            ROS_INFO("State set to Home");
+            ROS_INFO_STREAM("State set to Home");
             return true;
         } else {
             //ROS_INFO("State set to %s\n", robot_state.data.c_str());
@@ -175,10 +242,10 @@ bool DVRKArm::setRobotState(std::string state)
         ros::Duration(0.5).sleep();
 
         if (robot_state.data == state) {
-            ROS_INFO("State set to %s", state.c_str());
+            ROS_INFO_STREAM("State set to " << state);
             return true;
         } else {
-            ROS_INFO("State set to %s", robot_state.data.c_str());
+            ROS_INFO_STREAM("State set to " << robot_state.data);
         }
 
         ros::spinOnce();
@@ -188,128 +255,336 @@ bool DVRKArm::setRobotState(std::string state)
 
 void DVRKArm::moveJointRelative(int joint_idx, double movement)
 {
-    ros::spinOnce();
-    //ROS_INFO("Position not received!\n");
+   	// Collect data
+    std::vector<double> currJoint = getJointStateCurrent();
     sensor_msgs::JointState new_position_joint = position_joint;
-    // TODO safety
     new_position_joint.position[joint_idx] += movement;
+    
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    std::vector<double> distance(arm_typ.dof);
+    for (int i = 0; i < arm_typ.dof; i++) {
+    	distance[i] = abs(new_position_joint.position[i]-currJoint[i]);
+    }
+    for (int i = 0; i < arm_typ.dof; i++)
+    {
+    	if (distance[i] > arm_typ.maxDistJoint[i])
+   		{
+    		std::stringstream errstring;
+    		errstring << "Desired joint vector too far from current." 
+    					<< std::endl
+    					<< "Desired joint vector:\t" 
+    					<< new_position_joint.position
+    					<< std::endl
+    					<< "Current joint vector:\t" 
+    					<< currJoint
+    					<< std::endl
+    					<< "Distance:\t" 
+    					<< distance
+    					<< std::endl
+    					<< "MaxDistance:\t" 
+    					<< arm_typ.maxDistJoint
+    					<< std::endl;
+			throw std::runtime_error(errstring.str());
+		}
+	}
+    // End safety
+    
+    // Publish movement
     position_joint_pub.publish(new_position_joint);
     ros::spinOnce();
-    //ros::Duration(0.1).sleep();
 }
 
 void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
 {
-    ros::spinOnce();
-    //ROS_INFO("Position not received!\n");
+	// Collect data
+    std::vector<double> currJoint = getJointStateCurrent();
     sensor_msgs::JointState new_position_joint = position_joint;
-    // TODO safety
     new_position_joint.position[joint_idx] = pos;
+    
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    std::vector<double> distance(arm_typ.dof);
+    for (int i = 0; i < arm_typ.dof; i++) {
+    	distance[i] = abs(new_position_joint.position[i]-currJoint[i]);
+    }
+    for (int i = 0; i < arm_typ.dof; i++)
+    {
+    	if (distance[i] > arm_typ.maxDistJoint[i])
+   		{
+    		std::stringstream errstring;
+    		errstring << "Desired joint vector too far from current." 
+    					<< std::endl
+    					<< "Desired joint vector:\t" 
+    					<< new_position_joint.position
+    					<< std::endl
+    					<< "Current joint vector:\t" 
+    					<< currJoint
+    					<< std::endl
+    					<< "Distance:\t" 
+    					<< distance
+    					<< std::endl
+    					<< "MaxDistance:\t" 
+    					<< arm_typ.maxDistJoint
+    					<< std::endl;
+			throw std::runtime_error(errstring.str());
+		}
+	}
+    // End safety
+    
+    // Publish movement
     position_joint_pub.publish(new_position_joint);
     ros::spinOnce();
-    //ros::Duration(0.1).sleep();
 }
 
-void DVRKArm::moveCartesianRelative(Vector3D movement)
+void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement)
 {
-    ros::spinOnce();
-    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
-    // TODO safety
-
-    new_position_cartesian.position.x += movement.x;
-    new_position_cartesian.position.y += movement.y;
-    new_position_cartesian.position.z += movement.z;
-
-    position_cartesian_pub.publish(new_position_cartesian);
-    ros::spinOnce();
-    //ros::Duration(0.1).sleep();
-
-}
-
-void DVRKArm::moveCartesianAbsolute(Vector3D position)
-{
-    ros::spinOnce();
-    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
-    // TODO safety
-
-    new_position_cartesian.position.x = position.x;
-    new_position_cartesian.position.y = position.y;
-    new_position_cartesian.position.z = position.z;
-
-    position_cartesian_pub.publish(new_position_cartesian);
-    ros::spinOnce();
-    //ros::Duration(0.1).sleep();
-
-}
-
-void DVRKArm::moveCartesianAbsolute(Quaternion orientation)
-{
-    ros::spinOnce();
-    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
-    // TODO safety
-
-    new_position_cartesian.orientation.x = orientation.x;
-    new_position_cartesian.orientation.y = orientation.y;
-    new_position_cartesian.orientation.z = orientation.z;
-    new_position_cartesian.orientation.w = orientation.w;
-
-    position_cartesian_pub.publish(new_position_cartesian);
-    ros::spinOnce();
-    //ros::Duration(0.1).sleep();
-
-}
-
-void DVRKArm::moveCartesianAbsolute(Vector3D position, Quaternion orientation)
-{
-    ros::spinOnce();
-    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
-    // TODO safety
-
-    new_position_cartesian.position.x = position.x;
-    new_position_cartesian.position.y = position.y;
-    new_position_cartesian.position.z = position.z;
+    // Collect data
+	Pose currPose = getPoseCurrent();
+    Pose pose = currPose;
+    pose += movement;
+    geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+  	// Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
     
-    new_position_cartesian.orientation.x = orientation.x;
-    new_position_cartesian.orientation.y = orientation.y;
-    new_position_cartesian.orientation.z = orientation.z;
-    new_position_cartesian.orientation.w = orientation.w;
-
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose);
+    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
+    	d.angle > arm_typ.maxDistPose.angle ||  
+    	d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    
+    // End safety
+    
+    // Publish movement
     position_cartesian_pub.publish(new_position_cartesian);
     ros::spinOnce();
     //ros::Duration(0.1).sleep();
 
+}
+
+void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position)
+{
+    // Collect data
+	Pose currPose = getPoseCurrent();
+    Pose pose = currPose;
+    pose.position = position;
+    geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose);
+    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
+    	d.angle > arm_typ.maxDistPose.angle ||  
+    	d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    
+    // End safety
+    
+    // Publish movement
+    position_cartesian_pub.publish(new_position_cartesian);
+    ros::spinOnce();
+    //ros::Duration(0.1).sleep();
+
+}
+
+void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation)
+{
+	// Collect data
+	Pose currPose = getPoseCurrent();
+    Pose pose = currPose;
+    pose.orientation = orientation;
+   	geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+   	
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose);
+    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
+    	d.angle > arm_typ.maxDistPose.angle ||  
+    	d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    // End safety
+    
+    // Publish movement
+    position_cartesian_pub.publish(new_position_cartesian);
+    ros::spinOnce();
 }
 
 void DVRKArm::moveCartesianAbsolute(Pose pose)
 {
-    ros::spinOnce();
-    geometry_msgs::Pose new_position_cartesian = position_cartesian_current.pose;
-    std_msgs::Float32 new_position_jaw;
-    // TODO safety
-
-    new_position_cartesian.position.x = pose.position.x;
-    new_position_cartesian.position.y = pose.position.y;
-    new_position_cartesian.position.z = pose.position.z;
+	// Collect data
+    Pose currPose = getPoseCurrent();
+    geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
     
-    new_position_cartesian.orientation.x = pose.orientation.x;
-    new_position_cartesian.orientation.y = pose.orientation.y;
-    new_position_cartesian.orientation.z = pose.orientation.z;
-    new_position_cartesian.orientation.w = pose.orientation.w;
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
     
-    new_position_jaw.data = pose.jaw;
-
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose);
+    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
+    	d.angle > arm_typ.maxDistPose.angle ||  
+    	d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    // End safety
+    
+    // Publish movement
     position_cartesian_pub.publish(new_position_cartesian);
     position_jaw_pub.publish(new_position_jaw);
-    
     ros::spinOnce();
-    //ros::Duration(0.1).sleep();
+}
 
+void DVRKArm::moveJawRelative(double movement)
+{
+	// Collect data
+    Pose currPose = getPoseCurrent();
+    Pose pose = currPose;
+    pose.jaw += movement;
+    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
+    
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose.jaw);
+    if (d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    // End safety
+    
+    // Publish movement
+    position_jaw_pub.publish(new_position_jaw);
+    ros::spinOnce();
+}
+
+void DVRKArm::moveJawAbsolute(double jaw)
+{
+	// Collect data
+    Pose currPose = getPoseCurrent();
+    Pose pose = currPose;
+    pose.jaw = jaw;
+    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
+    
+    // Safety
+    if (!warning.data.empty())
+    {
+    	ROS_WARN_STREAM(warning.data);
+    	warning.data.clear();
+    }
+    
+    if (!error.data.empty())
+   		throw std::runtime_error(error.data);
+    
+    Pose::Distance d = currPose.dist(pose.jaw);
+    if (d.jaw > arm_typ.maxDistPose.jaw)
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose too far from current."<< std::endl
+    			<< "Desired pose:\t" << pose << std::endl
+    			<< "Current pose:\t" << currPose << std::endl
+    			<< "Distance:\t" << d << std::endl
+    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+		throw std::runtime_error(errstring.str());
+	}
+    // End safety
+    
+    // Publish movement
+    position_jaw_pub.publish(new_position_jaw);
+    ros::spinOnce();
 }
 
 /*
  * Trajectories
  */
-void DVRKArm::playTrajectory(Trajectory<Vector3D>& tr)
+void DVRKArm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	//int cnt = 0;
@@ -333,24 +608,12 @@ void DVRKArm::playTrajectory(Trajectory<Vector3D>& tr)
 
 }
 
-void DVRKArm::playTrajectory(Trajectory<Quaternion>& tr)
+void DVRKArm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
 		moveCartesianAbsolute(tr[i]);
-		loop_rate.sleep();
-	}
-}
-
-void DVRKArm::playTrajectory(Trajectory<Vector3D>& p, Trajectory<Quaternion>& o)
-{
-	ros::Rate loop_rate(1.0/p.dt);
-	for (int i = 0; i < p.size() && ros::ok(); i++)
-	{
-		moveCartesianAbsolute(p[i], o[i]);
-		
-		//TODO p.dt != o.dt
 		loop_rate.sleep();
 	}
 }
@@ -361,7 +624,6 @@ void DVRKArm::playTrajectory(Trajectory<Pose>& tr)
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
 		moveCartesianAbsolute(tr[i]);
-		
 		loop_rate.sleep();
 	}
 }
@@ -376,11 +638,11 @@ void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 	}
 }
 
-void DVRKArm::recordTrajectory(Trajectory<Vector3D>& tr) 
+void DVRKArm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
-	while (ros::ok() && getPositionCartesianCurrent().length() < 0.001)
+	while (ros::ok() && getPositionCartesianCurrent().norm() < 0.001)
   	{
   		loop_rate.sleep();
   	}
@@ -395,7 +657,7 @@ void DVRKArm::recordTrajectory(Trajectory<Pose>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
-	while (ros::ok() && getPositionCartesianCurrent().length() < 0.001)
+	while (ros::ok() && getPositionCartesianCurrent().norm() < 0.001)
   	{
   		loop_rate.sleep();
   	}
@@ -405,6 +667,8 @@ void DVRKArm::recordTrajectory(Trajectory<Pose>& tr)
 		loop_rate.sleep();
 	}
 }
+
+
 
 
 

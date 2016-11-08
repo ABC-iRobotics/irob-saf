@@ -13,43 +13,34 @@
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}
  			
    	Pose::Pose(double px, double py, double pz, 
-   		double ox, double oy, double oz,double ow,
+   		double ow, double ox, double oy,double oz,
    		double jaw): 
    			position(px, py, pz),
-   			orientation(ox, oy, oz, ow), jaw(jaw) {}
+   			orientation( ow, ox, oy, oz), jaw(jaw) {}
    			
    	Pose::Pose(const Pose& other): position(other.position), 
    		orientation(other.orientation), jaw(other.jaw) {}
    		
+   	Pose::Pose(const geometry_msgs::Pose& msg, double jaw): 
+		position(msg.position.x, msg.position.y, msg.position.z), 			orientation(msg.orientation.w, msg.orientation.x, msg.orientation.y,
+				 msg.orientation.z), 
+		jaw(jaw){}	
+   		
 	Pose::Pose(const geometry_msgs::PoseStamped& msg, double jaw): 
-		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation(msg.pose.orientation.x, msg.pose.orientation.y,
-				 msg.pose.orientation.z, msg.pose.orientation.w), 
+		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+				 msg.pose.orientation.z), 
 		jaw(jaw){}	
 
    	void Pose::swap(Pose& other) 
    	{
    		Pose tmp(*this);
-   		position.x = other.position.x;
-   		position.y = other.position.y;
-   		position.z = other.position.z;
    		
-   		orientation.x = other.orientation.x;
-   		orientation.y = other.orientation.y;
-   		orientation.z = other.orientation.z;
-   		orientation.w = other.orientation.w;
-   		
+   		position = other.position;
+   		orientation = other.orientation;
    		jaw = other.jaw;
    		
-   		
-   		other.position.x = tmp.position.x;
-   		other.position.y = tmp.position.y;
-   		other.position.z = tmp.position.z;
-   		
-   		other.orientation.x = tmp.orientation.x;
-   		other.orientation.y = tmp.orientation.y;
-   		other.orientation.z = tmp.orientation.z;
-   		other.orientation.w = tmp.orientation.w;
-   		
+   		other.position = tmp.position;
+   		other.orientation = tmp.orientation;
    		other.jaw = tmp.jaw;
    	}
    	
@@ -60,42 +51,122 @@
    		return *this;
    	}
    	
-   	Pose Pose::operator+=(const Vector3D& v) 
+   	Pose Pose::operator+=(const Eigen::Vector3d& v) 
    	{
    		position += v;
    		return *this;
    	}
    	
-   	Pose Pose::operator-=(const Vector3D& v) 
+   	Pose Pose::operator-=(const Eigen::Vector3d& v) 
    	{
    		position -= v;   		
    		return *this;
    	}
+   
    	
-   	Pose Pose::operator+(const Vector3D& v) const
+   	Pose Pose::operator+(const Eigen::Vector3d& v) const
    	{
    		Pose tmp(*this);
    		tmp += v;
    		return tmp;
    	}
    	
-   	Pose Pose::operator-(const Vector3D& v) const
+   	Pose Pose::operator-(const Eigen::Vector3d& v) const
    	{
    		Pose tmp(*this);
    		tmp -= v;
    		return tmp;
+   	}   	
+   	
+   	Pose Pose::interpolate(double a, const Pose& other) const
+   	{
+   		Pose res;
+   		res.orientation = orientation.slerp(a, other.orientation);
+   		res.position = ((1-a) * position) + ((a) * other.position);
+   		res.jaw = ((1-a) * jaw) + ((a) * other.jaw);
+   		return res;
+   	}
+   	
+   	geometry_msgs::Pose Pose::toRosPose() const
+   	{
+   		geometry_msgs::Pose ret;
+   		ret.position.x = position.x();
+   		ret.position.y = position.y();
+   		ret.position.z = position.z();
+   		ret.orientation.w = orientation.w();
+   		ret.orientation.x = orientation.x();
+   		ret.orientation.y = orientation.y();
+   		ret.orientation.z = orientation.z();
+   		return ret;
+   	}
+   	
+   	std_msgs::Float32 Pose::toRosJaw() const
+   	{
+   	 	std_msgs::Float32 ret;
+   	 	ret.data = jaw;
+   	 	return ret;
+   	}
+   	
+   	Pose::Distance Pose::dist(const Pose& other) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = (position - other.position).norm();
+   		double cosAlha1_2 = orientation.dot(other.orientation);
+   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.jaw = abs(jaw - other.jaw);
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(const Eigen::Vector3d& otherPos) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = (position - otherPos).norm();
+   		d.angle = 0.0;
+   		d.jaw = 0.0;
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(const Eigen::Quaternion<double>& otherOrientation) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = 0.0;
+   		double cosAlha1_2 = orientation.dot(otherOrientation);
+   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.jaw = 0.0;
+   		return d;
+   	}
+   	
+   	Pose::Distance Pose::dist(double otherJaw) const
+   	{
+   		Pose::Distance d;
+   		d.cartesian = 0.0;
+   		d.angle = 0.0;
+   		d.jaw = abs(jaw - otherJaw);
+   		return d;
    	}
    	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{
-   		return os << p.position <<"\t" << p.orientation << "\t" << p.jaw;
+   		return os << p.position.x() <<"\t" << p.position.y() <<"\t"
+   					<< p.position.z() <<"\t"<< p.orientation.w() <<"\t"
+   					<< p.orientation.x() <<"\t"<< p.orientation.y() <<"\t"
+   					<< p.orientation.z() <<"\t" << p.jaw;
    	}
    	
    	std::istream& operator>>(std::istream& is, Pose& p)
    	{
-   		is >> p.position >> std::ws >> p.orientation >> std::ws 
-   			>> p.jaw >> std::ws;
+
+   		is >> p.position.x() >> std::ws >> p.position.y() 
+   		>> std::ws >> p.position.z() >> std::ws >> p.orientation.w()
+   		>> std::ws >> p.orientation.x() >> std::ws >> p.orientation.y()
+   		>> std::ws >> p.orientation.z()>> std::ws >> p.jaw >> std::ws;
    		return is;
+   	}
+   	
+   	std::ostream& operator<<(std::ostream& os, const Pose::Distance& d)
+   	{
+   		return os << d.cartesian <<"\t" << d.angle <<"\t"
+   					<< d.jaw;
    	}
    	
    	

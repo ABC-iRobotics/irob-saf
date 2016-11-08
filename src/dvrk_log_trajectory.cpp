@@ -21,6 +21,7 @@
 
 int main(int argc, char **argv)
 {
+	// Check command line arguments
 	if (argc < 4) {
 		std::cout 
 			<< "Use with params: PSM1/PSM2; rate; filename" 
@@ -40,15 +41,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "irob_dvrk_log_trajectory");
     ros::NodeHandle nh;
 
-    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]));
-	
-    psm.subscribe(DVRKArmTopics::GET_ROBOT_STATE);
-    psm.subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
-    psm.subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
+    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::PASSIVE);
     
     // Record trajectory
 	Trajectory<Pose> tr_to_log(dt);
-	ROS_INFO("Start recording trajectory...");
+	ROS_INFO_STREAM("Start recording trajectory...");
 	psm.recordTrajectory(tr_to_log);
 	std::cout << std::endl << "Record stopped" << std::endl;
 	
@@ -58,7 +55,9 @@ int main(int argc, char **argv)
   		std::cerr << e.what() << std::endl;
   	}
    	
-   	std::cout << std::endl << "Stopping program..." << std::endl;
+   	std::cout << std::endl << "Program finished succesfully, shutting down ..."
+   		 << std::endl;
+   	
    	ros::shutdown();
 	return 0;
 }

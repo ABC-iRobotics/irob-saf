@@ -8,41 +8,59 @@
 #define POSE_HPP_
 
 #include <iostream>
-#include "vector_3d.hpp"
-#include "quaternion.hpp"
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "std_msgs/Float32.h"
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
+#include <math.h>
 
 class Pose {
  
    public:
-   	Vector3D position;
-   	Quaternion orientation;
+   	
+   	struct Distance { 
+    	double cartesian;
+    	double angle;
+    	double jaw;
+    	
+    	friend std::ostream& operator<<(std::ostream&, const Distance&);
+  	};
+   
+   	Eigen::Vector3d position;
+   	Eigen::Quaternion<double> orientation;
    	double jaw;
    	
    	Pose();
    	Pose(double, double, double, double, double, double, double, double);
    	Pose(const Pose&);
+	Pose(const geometry_msgs::Pose&, double jaw);
 	Pose(const geometry_msgs::PoseStamped&, double jaw);
-   	Pose(const Vector3D&, const Quaternion&, double);
+   	Pose(const Eigen::Vector3d&, const Eigen::Quaternion<double>&, double);
    	
    	void swap(Pose&);
    	Pose operator=(const Pose&);
    	
-   	Pose operator+=(const Vector3D&);
-   	Pose operator-=(const Vector3D&);
+   	Pose operator+=(const Eigen::Vector3d&);
+   	Pose operator-=(const Eigen::Vector3d&);
    	
-   	/*Vector3D operator/=(const double&);
-   	Vector3D operator*=(const double&);
-   	*/
-   	Pose operator+(const Vector3D&) const;
-   	Pose operator-(const Vector3D&) const;
+   	Pose operator+(const Eigen::Vector3d&) const;
+   	Pose operator-(const Eigen::Vector3d&) const;
+   	
+   	Pose interpolate(double, const Pose&) const;
+   	
+   	Distance dist(const Pose&) const;
+   	Distance dist(const Eigen::Vector3d&) const;
+   	Distance dist(const Eigen::Quaternion<double>&) const;
+   	Distance dist(double) const;
+   	
+   	geometry_msgs::Pose toRosPose() const;
+    std_msgs::Float32 toRosJaw() const;
+   	
    	/*
-   	Vector3D operator*(const double&) const;
-   	Vector3D operator/(const double&) const;
-   	
    	double length() const;
    	
-   	double distance(const Vector3D&) const;
+   	double distance(const Eigen::Vector3d&) const;
    */
    	friend std::ostream& operator<<(std::ostream&, const Pose&);
 	friend std::istream& operator>>(std::istream&, Pose&);

@@ -112,20 +112,15 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen)
 
 ## Declare a C++ library
-add_library(vector_3d
-  include/vector_3d.hpp src/vector_3d.cpp
- )
- 
- set_target_properties(vector_3d PROPERTIES LINKER_LANGUAGE CXX)
 
-add_library(quaternion
-  include/quaternion.hpp src/quaternion.cpp
+add_library(dvrk_utils
+  include/dvrk_utils.hpp
  )
- set_target_properties(quaternion PROPERTIES LINKER_LANGUAGE CXX)
- 
+ set_target_properties(dvrk_utils PROPERTIES LINKER_LANGUAGE CXX)
+
  add_library(pose
   include/pose.hpp src/pose.cpp
  )
@@ -169,7 +164,6 @@ add_library(trajectory_factory
 ## Declare a C++ executable
 add_executable(dvrk_move_publisher src/dvrk_move_publisher.cpp)
 add_executable(dvrk_move_test src/dvrk_move_test.cpp)
-add_executable(dvrk_move_test_no_init src/dvrk_move_test_no_init.cpp)
 add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
@@ -194,11 +188,10 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    ${catkin_LIBRARIES}
   dvrk_arm_topics
    dvrk_arm_types
-   vector_3d
-   quaternion
    trajectory
    trajectory_factory
    pose
+   dvrk_utils
  )
 
  target_link_libraries(dvrk_move_publisher
@@ -206,11 +199,6 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
  )
 
  target_link_libraries(dvrk_move_test
-   ${catkin_LIBRARIES}
-    dvrk_arm
- )
- 
-  target_link_libraries(dvrk_move_test_no_init
    ${catkin_LIBRARIES}
     dvrk_arm
  )
