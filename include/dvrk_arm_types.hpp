@@ -18,15 +18,15 @@ class DVRKArmTypes {
 	// Attributes
     const std::string name;
     const int dof;
-    const Pose::Distance maxDistPose;
-    const std::vector<double> maxDistJoint;
+    const Pose::Distance maxVelPose; // unit/sec
+    const std::vector<double> maxVelJoint; // unit/sec
 
   private:
     DVRKArmTypes( std::string name, int dof,
-    			Pose::Distance maxDistPose, std::vector<double> maxDistJoint): 
+    			Pose::Distance maxVelPose, std::vector<double> maxVelJoint): 
     			name(name), dof(dof), 
-    			maxDistPose(maxDistPose),
-    			maxDistJoint(maxDistJoint) { }
+    			maxVelPose(maxVelPose),
+    			maxVelJoint(maxVelJoint) { }
 
   public:    
     static const DVRKArmTypes typeForString(std::string name)

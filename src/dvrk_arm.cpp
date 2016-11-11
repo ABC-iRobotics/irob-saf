@@ -161,6 +161,11 @@ bool DVRKArm::advertise(DVRKArmTopics topic)
 double DVRKArm::getJointStateCurrent(int index)
 {
 	ros::spinOnce();
+	if (index > ((int)position_joint.position.size())-1)
+	{
+		ROS_WARN_STREAM("Joint index too big or no joint position information.");
+		return NAN;
+	}
  	return position_joint.position[index];
 }
 
@@ -240,7 +245,8 @@ bool DVRKArm::setRobotState(std::string state)
         msg.data = ss.str();
         robot_state_pub.publish(msg);
         ros::Duration(0.5).sleep();
-
+		ros::spinOnce();
+		checkErrors();
         if (robot_state.data == state) {
             ROS_INFO_STREAM("State set to " << state);
             return true;
@@ -253,7 +259,7 @@ bool DVRKArm::setRobotState(std::string state)
     return false;
 }
 
-void DVRKArm::moveJointRelative(int joint_idx, double movement)
+void DVRKArm::moveJointRelative(int joint_idx, double movement, double dt)
 {
    	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
@@ -261,41 +267,8 @@ void DVRKArm::moveJointRelative(int joint_idx, double movement)
     new_position_joint.position[joint_idx] += movement;
     
     // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    std::vector<double> distance(arm_typ.dof);
-    for (int i = 0; i < arm_typ.dof; i++) {
-    	distance[i] = abs(new_position_joint.position[i]-currJoint[i]);
-    }
-    for (int i = 0; i < arm_typ.dof; i++)
-    {
-    	if (distance[i] > arm_typ.maxDistJoint[i])
-   		{
-    		std::stringstream errstring;
-    		errstring << "Desired joint vector too far from current." 
-    					<< std::endl
-    					<< "Desired joint vector:\t" 
-    					<< new_position_joint.position
-    					<< std::endl
-    					<< "Current joint vector:\t" 
-    					<< currJoint
-    					<< std::endl
-    					<< "Distance:\t" 
-    					<< distance
-    					<< std::endl
-    					<< "MaxDistance:\t" 
-    					<< arm_typ.maxDistJoint
-    					<< std::endl;
-			throw std::runtime_error(errstring.str());
-		}
-	}
+    checkErrors();
+    checkVelJoint(new_position_joint, currJoint, dt);
     // End safety
     
     // Publish movement
@@ -303,49 +276,16 @@ void DVRKArm::moveJointRelative(int joint_idx, double movement)
     ros::spinOnce();
 }
 
-void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
+void DVRKArm::moveJointAbsolute(int joint_idx, double pos, double dt)
 {
 	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
     sensor_msgs::JointState new_position_joint = position_joint;
     new_position_joint.position[joint_idx] = pos;
     
-    // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    std::vector<double> distance(arm_typ.dof);
-    for (int i = 0; i < arm_typ.dof; i++) {
-    	distance[i] = abs(new_position_joint.position[i]-currJoint[i]);
-    }
-    for (int i = 0; i < arm_typ.dof; i++)
-    {
-    	if (distance[i] > arm_typ.maxDistJoint[i])
-   		{
-    		std::stringstream errstring;
-    		errstring << "Desired joint vector too far from current." 
-    					<< std::endl
-    					<< "Desired joint vector:\t" 
-    					<< new_position_joint.position
-    					<< std::endl
-    					<< "Current joint vector:\t" 
-    					<< currJoint
-    					<< std::endl
-    					<< "Distance:\t" 
-    					<< distance
-    					<< std::endl
-    					<< "MaxDistance:\t" 
-    					<< arm_typ.maxDistJoint
-    					<< std::endl;
-			throw std::runtime_error(errstring.str());
-		}
-	}
+   	// Safety
+    checkErrors();
+    checkVelJoint(new_position_joint, currJoint, dt);
     // End safety
     
     // Publish movement
@@ -353,37 +293,17 @@ void DVRKArm::moveJointAbsolute(int joint_idx, double pos)
     ros::spinOnce();
 }
 
-void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement)
+void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
     Pose pose = currPose;
     pose += movement;
     geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+  	
   	// Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose);
-    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
-    	d.angle > arm_typ.maxDistPose.angle ||  
-    	d.jaw > arm_typ.maxDistPose.jaw)
-    {
-    	std::stringstream errstring;
-    	errstring << "Desired pose too far from current."<< std::endl
-    			<< "Desired pose:\t" << pose << std::endl
-    			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
-		throw std::runtime_error(errstring.str());
-	}
-    
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
@@ -393,37 +313,17 @@ void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement)
 
 }
 
-void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position)
+void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
     Pose pose = currPose;
     pose.position = position;
     geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
+    
     // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose);
-    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
-    	d.angle > arm_typ.maxDistPose.angle ||  
-    	d.jaw > arm_typ.maxDistPose.jaw)
-    {
-    	std::stringstream errstring;
-    	errstring << "Desired pose too far from current."<< std::endl
-    			<< "Desired pose:\t" << pose << std::endl
-    			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
-		throw std::runtime_error(errstring.str());
-	}
-    
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
@@ -433,7 +333,7 @@ void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position)
 
 }
 
-void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation)
+void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
 {
 	// Collect data
 	Pose currPose = getPoseCurrent();
@@ -442,28 +342,8 @@ void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation)
    	geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
    	
     // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose);
-    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
-    	d.angle > arm_typ.maxDistPose.angle ||  
-    	d.jaw > arm_typ.maxDistPose.jaw)
-    {
-    	std::stringstream errstring;
-    	errstring << "Desired pose too far from current."<< std::endl
-    			<< "Desired pose:\t" << pose << std::endl
-    			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
-		throw std::runtime_error(errstring.str());
-	}
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
@@ -471,7 +351,7 @@ void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation)
     ros::spinOnce();
 }
 
-void DVRKArm::moveCartesianAbsolute(Pose pose)
+void DVRKArm::moveCartesianAbsolute(Pose pose, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -479,28 +359,8 @@ void DVRKArm::moveCartesianAbsolute(Pose pose)
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
     
     // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose);
-    if (d.cartesian > arm_typ.maxDistPose.cartesian ||	
-    	d.angle > arm_typ.maxDistPose.angle ||  
-    	d.jaw > arm_typ.maxDistPose.jaw)
-    {
-    	std::stringstream errstring;
-    	errstring << "Desired pose too far from current."<< std::endl
-    			<< "Desired pose:\t" << pose << std::endl
-    			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
-		throw std::runtime_error(errstring.str());
-	}
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
@@ -509,7 +369,7 @@ void DVRKArm::moveCartesianAbsolute(Pose pose)
     ros::spinOnce();
 }
 
-void DVRKArm::moveJawRelative(double movement)
+void DVRKArm::moveJawRelative(double movement, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -518,26 +378,8 @@ void DVRKArm::moveJawRelative(double movement)
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
     
     // Safety
-    if (!warning.data.empty())
-    {
-    	ROS_WARN_STREAM(warning.data);
-    	warning.data.clear();
-    }
-    
-    if (!error.data.empty())
-   		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose.jaw);
-    if (d.jaw > arm_typ.maxDistPose.jaw)
-    {
-    	std::stringstream errstring;
-    	errstring << "Desired pose too far from current."<< std::endl
-    			<< "Desired pose:\t" << pose << std::endl
-    			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
-		throw std::runtime_error(errstring.str());
-	}
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
@@ -545,7 +387,7 @@ void DVRKArm::moveJawRelative(double movement)
     ros::spinOnce();
 }
 
-void DVRKArm::moveJawAbsolute(double jaw)
+void DVRKArm::moveJawAbsolute(double jaw, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -554,7 +396,18 @@ void DVRKArm::moveJawAbsolute(double jaw)
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
     
     // Safety
-    if (!warning.data.empty())
+    checkErrors();
+    checkVelCartesian(pose, currPose, dt);
+    // End safety
+    
+    // Publish movement
+    position_jaw_pub.publish(new_position_jaw);
+    ros::spinOnce();
+}
+
+void DVRKArm::checkErrors()
+{
+	if (!warning.data.empty())
     {
     	ROS_WARN_STREAM(warning.data);
     	warning.data.clear();
@@ -562,23 +415,56 @@ void DVRKArm::moveJawAbsolute(double jaw)
     
     if (!error.data.empty())
    		throw std::runtime_error(error.data);
-    
-    Pose::Distance d = currPose.dist(pose.jaw);
-    if (d.jaw > arm_typ.maxDistPose.jaw)
+}
+
+void DVRKArm::checkVelCartesian(const Pose& pose, 
+								const Pose& currPose, double dt)
+{
+	Pose::Distance d = currPose.dist(pose)/dt;
+    if (d.cartesian > arm_typ.maxVelPose.cartesian ||	
+    	d.angle > arm_typ.maxVelPose.angle ||  
+    	d.jaw > arm_typ.maxVelPose.jaw)
     {
     	std::stringstream errstring;
     	errstring << "Desired pose too far from current."<< std::endl
     			<< "Desired pose:\t" << pose << std::endl
     			<< "Current pose:\t" << currPose << std::endl
-    			<< "Distance:\t" << d << std::endl
-    			<< "MaxDistance:\t" << arm_typ.maxDistPose << std::endl;
+    			<< "Velocity:\t" << d << std::endl
+    			<< "MaxVelocity:\t" << arm_typ.maxVelPose << std::endl;
 		throw std::runtime_error(errstring.str());
 	}
-    // End safety
-    
-    // Publish movement
-    position_jaw_pub.publish(new_position_jaw);
-    ros::spinOnce();
+}
+
+void DVRKArm::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
+						const std::vector<double>& currJoint, double dt)
+{
+	std::vector<double> distance(arm_typ.dof);
+    for (int i = 0; i < arm_typ.dof; i++) {
+    	distance[i] = std::abs(new_position_joint.position[i]-currJoint[i])/dt;
+    }
+    for (int i = 0; i < arm_typ.dof; i++)
+    { 		
+    	if (distance[i] > arm_typ.maxVelJoint[i])
+   		{
+    		std::stringstream errstring;
+    		errstring << "Desired joint vector too far from current." 
+    					<< std::endl
+    					<< "Desired joint vector:\t" 
+    					<< new_position_joint.position
+    					<< std::endl
+    					<< "Current joint vector:\t" 
+    					<< currJoint
+    					<< std::endl
+    					<< "Velocity:\t" 
+    					<< distance
+    					<< std::endl
+    					<< "MaxVelocity:\t" 
+    					<< arm_typ.maxVelJoint
+    					<< std::endl;
+    		//ROS_ERROR_STREAM(errstring.str());
+			throw std::runtime_error(errstring.str());
+		}
+	}
 }
 
 /*
@@ -592,7 +478,7 @@ void DVRKArm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
 	{
 		//auto start = std::chrono::high_resolution_clock::now();
 		
-		moveCartesianAbsolute(tr[i]);
+		moveCartesianAbsolute(tr[i],tr.dt);
 		
 		loop_rate.sleep();
 		/*
@@ -613,7 +499,7 @@ void DVRKArm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
-		moveCartesianAbsolute(tr[i]);
+		moveCartesianAbsolute(tr[i],tr.dt);
 		loop_rate.sleep();
 	}
 }
@@ -623,7 +509,7 @@ void DVRKArm::playTrajectory(Trajectory<Pose>& tr)
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
-		moveCartesianAbsolute(tr[i]);
+		moveCartesianAbsolute(tr[i],tr.dt);
 		loop_rate.sleep();
 	}
 }
@@ -633,7 +519,7 @@ void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
 	{
-		moveJointAbsolute(jointIndex, tr[i]);
+		moveJointAbsolute(jointIndex, tr[i],tr.dt);
 		loop_rate.sleep();
 	}
 }

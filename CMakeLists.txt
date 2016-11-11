@@ -162,7 +162,6 @@ add_library(trajectory_factory
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(dvrk_move_publisher src/dvrk_move_publisher.cpp)
 add_executable(dvrk_move_test src/dvrk_move_test.cpp)
 add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
@@ -194,20 +193,16 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    dvrk_utils
  )
 
- target_link_libraries(dvrk_move_publisher
-   ${catkin_LIBRARIES}
- )
-
  target_link_libraries(dvrk_move_test
    ${catkin_LIBRARIES}
     dvrk_arm
  )
  
- target_link_libraries(dvrk_log_trajectory
+  target_link_libraries( dvrk_play_logged_trajectory
    ${catkin_LIBRARIES}
     dvrk_arm
  )
-  target_link_libraries( dvrk_play_logged_trajectory
+ target_link_libraries( dvrk_log_trajectory
    ${catkin_LIBRARIES}
     dvrk_arm
  )

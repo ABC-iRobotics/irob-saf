@@ -23,7 +23,7 @@
 #include "trajectory.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <math.h>
+#include <cmath>
 #include "dvrk_utils.hpp"
 
 
@@ -90,15 +90,15 @@ public:
     //DVRK actions
     bool home();
     bool setRobotState(std::string);
-    void moveJointRelative(int, double );
-    void moveJointAbsolute(int, double );
-    void moveCartesianRelative(Eigen::Vector3d);
-    void moveCartesianAbsolute(Eigen::Vector3d);
-    void moveCartesianAbsolute(Eigen::Quaternion<double>);
-    void moveCartesianAbsolute(Pose);
+    void moveJointRelative(int, double, double = 0.01 );
+    void moveJointAbsolute(int, double, double = 0.01 );
+    void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
+    void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
+    void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
+    void moveCartesianAbsolute(Pose, double = 0.01);
     
-    void moveJawRelative(double);
-    void moveJawAbsolute(double);
+    void moveJawRelative(double, double = 0.01);
+    void moveJawAbsolute(double, double = 0.01);
 
 	void playTrajectory(Trajectory<Eigen::Vector3d>&);
 	void playTrajectory(Trajectory<Eigen::Quaternion<double>>&);
@@ -107,6 +107,11 @@ public:
 	
 	void recordTrajectory(Trajectory<Eigen::Vector3d>&);
 	void recordTrajectory(Trajectory<Pose>&);
+	
+	void checkErrors();
+	void checkVelCartesian(const Pose&, const Pose&, double);
+	void checkVelJoint(const sensor_msgs::JointState&, 
+						const std::vector<double>&, double);
 	
 };
 

@@ -41,6 +41,8 @@ int main(int argc, char **argv)
 		
 	double dt = 1.0/ rate_command;
 	Trajectory<double>* to_enable_cartesian;
+	Trajectory<double>* err_tr;
+	int joint_idx = 6;
 	Trajectory<Pose>* circle_tr;
 	
 	
@@ -54,20 +56,30 @@ int main(int argc, char **argv)
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary
-		if (std::string(argv[2]) == "init_pos")
-		{
+		//if (std::string(argv[2]) == "init_pos")
+		//{
 			// init
-			ROS_INFO_STREAM("Going to init position...");
+			/*ROS_INFO_STREAM("Going to init position...");
 			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
-			int init_joint_idx = 2;
+			int init_joint_idx = 0;
 			to_enable_cartesian = 
    			TrajectoryFactory::linearTrajectory(
    				psm.getJointStateCurrent(init_joint_idx), 
-   				0.07, 1.0/speed, dt);
+   				1.0, 1.0*speed_divider, dt);
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
-   	 		
-   		}
-  
+   	 		*/
+   		//}
+   		
+   		ROS_INFO_STREAM("Start err calibration for joint " << 
+   						joint_idx << " ...");
+   						
+   
+   		err_tr = TrajectoryFactory::linearTrajectory(
+   				psm.getJointStateCurrent(joint_idx), 2.0,
+   				10.0/speed, dt);
+   
+		psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+		psm.playTrajectory(joint_idx, *err_tr);
    	
    		// Make circles
    		ROS_INFO_STREAM("Starting programmed movement...");
@@ -80,19 +92,22 @@ int main(int argc, char **argv)
 
     	double r = 0.02;
     
-    	/*circle_tr =
+    	Pose poseto( 0.0105937964763,0.0409808721132,
+    		 -0.0676489437985,  -0.134924830481, 
+    		 0.66488253694, 0.694115432261,0.240687076699, 0);
+    
+    	circle_tr =
     		TrajectoryFactory::linearTrajectory(
     		psm.getPoseCurrent(), 
 			poseto,
 			3.0/speed, dt); 
-    	*/
-    	
-    	Trajectory<Eigen::Vector3d>* circle_tr =
+    
+    	/*Trajectory<Eigen::Vector3d>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, -r, 0.0),
-			3.0/speed, dt);   
+			3.0/speed, dt);   */
    	    
     	while(ros::ok()) {
     		psm.playTrajectory(*circle_tr);

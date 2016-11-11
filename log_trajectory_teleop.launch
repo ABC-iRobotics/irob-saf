@@ -3,7 +3,7 @@
 <launch>
   <arg name="arm" default="PSM1"/>
   <arg name="rate" default="10"/>
-  <arg name="filename" default="/home/dvrk_nat/dvrk_logs/dvrk_tr_log.dat"/>
+  <arg name="filename" default="/home/dvrk_nat/catkin_ws/data/dvrk_tr_log.dat"/>
   
   <node name="dvrk_log_trajectory"
   	pkg="irob-dvrk-automation" type="dvrk_log_trajectory" output="screen" 

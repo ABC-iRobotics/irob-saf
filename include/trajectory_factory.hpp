@@ -12,7 +12,7 @@
 #include <vector>
 #include "trajectory.hpp"
 #include "pose.hpp"
-#include <math.h>
+#include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 
@@ -28,12 +28,28 @@ class TrajectoryFactory
 		{
 			Trajectory<P>* tr = new Trajectory<P>(dt);
 			int N = (int)round(T / dt)+1;
-			for (int i = 0; i < N-1; i++)
+			for (int i = 0; i < N; i++)
 			{
 				P p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
 				tr->addPoint(p);
 			}
 			tr->addPoint(end);
+			return tr;
+		}
+		
+		template <class P>
+		static Trajectory<P>* acceleratingTrajectory(P start, P stepStep,
+											P maxStep, double dt)
+		{
+			Trajectory<P>* tr = new Trajectory<P>(dt);
+			P pos = start;
+			P step = 0.0;
+			while (step < maxStep)
+			{
+				pos += step;
+				tr->addPoint(pos);
+				step += stepStep;
+			}
 			return tr;
 		}
 		
@@ -66,7 +82,7 @@ Trajectory<Pose>* TrajectoryFactory::linearTrajectory<Pose>(
 			Pose start,Pose end, double T, double dt)
 {
 	Trajectory<Pose>* tr = new Trajectory<Pose>(dt);
-	int N = (int)round(T / dt);
+	int N = (int)round(T / dt)+1;
 	for (int i = 0; i < N; i++)
 	{
 		Pose p = start.interpolate(((double)i)/N, end);

@@ -13,7 +13,7 @@
 #include "std_msgs/Float32.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <math.h>
+#include <cmath>
 
 class Pose {
  
@@ -23,6 +23,11 @@ class Pose {
     	double cartesian;
     	double angle;
     	double jaw;
+    	
+    	Distance operator*=(double);
+    	Distance operator/=(double);
+    	Distance operator*(double) const;
+    	Distance operator/(double) const;
     	
     	friend std::ostream& operator<<(std::ostream&, const Distance&);
   	};

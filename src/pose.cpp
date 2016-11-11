@@ -112,8 +112,8 @@
    		Pose::Distance d;
    		d.cartesian = (position - other.position).norm();
    		double cosAlha1_2 = orientation.dot(other.orientation);
-   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
-   		d.jaw = abs(jaw - other.jaw);
+   		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.jaw = std::abs(jaw - other.jaw);
    		return d;
    	}
    	
@@ -131,7 +131,7 @@
    		Pose::Distance d;
    		d.cartesian = 0.0;
    		double cosAlha1_2 = orientation.dot(otherOrientation);
-   		d.angle = abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
+   		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
    		d.jaw = 0.0;
    		return d;
    	}
@@ -141,9 +141,40 @@
    		Pose::Distance d;
    		d.cartesian = 0.0;
    		d.angle = 0.0;
-   		d.jaw = abs(jaw - otherJaw);
+   		d.jaw = std::abs(jaw - otherJaw);
    		return d;
    	}
+   	
+   	Pose::Distance Pose::Distance::operator*=(double d)
+   	{
+   		cartesian *= d;
+   		angle *= d;
+   		jaw *= d;
+   		return *this;
+   	}
+   	
+    Pose::Distance Pose::Distance::operator/=(double d)
+   	{
+   		cartesian /= d;
+   		angle /= d;
+   		jaw /= d;
+   		return *this;
+   	}
+   	
+   	
+    Pose::Distance Pose::Distance::operator*(double d) const
+    {
+    	 Pose::Distance ret(*this);
+    	 ret *= d;
+    	 return ret;
+    }
+    
+    Pose::Distance Pose::Distance::operator/(double d) const
+    {
+    	 Pose::Distance ret(*this);
+    	 ret /= d;
+    	 return ret;
+    }
    	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{
