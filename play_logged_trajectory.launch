@@ -3,7 +3,7 @@
 <launch>
   <arg name="arm" default="PSM1"/>
   <arg name="init_needed" default="no_init_pos"/>
-  <arg name="filename" default="/home/dvrk_nat/catkin_ws/data/dvrk_tr_log.dat"/>
+  <arg name="filename" default="/home/tamas/catkin_ws/data/dvrk_tr_log.dat"/>
   
   <node name="dvrk_play_logged_trajectory"
   	pkg="irob-dvrk-automation" type="dvrk_play_logged_trajectory" output="screen" 

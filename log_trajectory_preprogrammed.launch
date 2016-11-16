@@ -4,13 +4,13 @@
 
   <arg name="arm" default="PSM1"/>
   <arg name="init_needed" default="no_init_pos"/>
-  <arg name="filename" default="/home/dvrk_nat/catkin_ws/data/dvrk_tr_log.dat"/>
+  <arg name="filename" default="/home/tamas/catkin_ws/data/dvrk_tr_log.dat"/>
   <arg name="rate" default="10"/>
-  <arg name="speed_divider" default="1"/>
+  <arg name="speed" default="1"/>
   
   <node name="dvrk_move_test"
   	pkg="irob-dvrk-automation" type="dvrk_move_test" output="screen" 
-  	args="$(arg arm) $(arg init_needed) $(arg rate) $(arg speed_divider)"/>
+  	args="$(arg arm) $(arg init_needed) $(arg rate) $(arg speed)"/>
   
   <node name="dvrk_log_trajectory"
   	pkg="irob-dvrk-automation" type="dvrk_log_trajectory" output="screen" 

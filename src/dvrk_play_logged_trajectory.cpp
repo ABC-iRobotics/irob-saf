@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     
 	// Robot control
 	Trajectory<double>* to_enable_cartesian;
-	Trajectory<Eigen::Vector3d>* to_start;
+	Trajectory<Pose>* to_start;
   	try {
     	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
     	//psm.home();
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 		Trajectory<Pose> tr(argv[3]);
     	ROS_INFO_STREAM(
     	"Trajectory of "<< tr.size() << " points with "
-    					<< tr.dt << " sample rate succesfully loaded from "
+    					<< 1.0/tr.dt << " sample rate succesfully loaded from "
     					<< argv[3]);
     
     	// Init position if necessary
@@ -58,9 +58,9 @@ int main(int argc, char **argv)
 			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			TrajectoryFactory::linearTrajectoryWithT(
+   			TrajectoryFactory::linearTrajectoryWithAcc(
    				psm.getJointStateCurrent(init_joint_idx), 
-   				0.07, 2.0, 0.05);
+   				0.07, 0.02, 1.0, tr.dt);
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 
    			
@@ -70,8 +70,10 @@ int main(int argc, char **argv)
 		ROS_INFO("Going to start point of loaded trajectory...");
 		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 		to_start = 
-   			TrajectoryFactory::linearTrajectoryWithT(
-   				psm.getPositionCartesianCurrent(), tr[0].position, 2.0, tr.dt);
+   			TrajectoryFactory::linearTrajectoryWithAcc(
+    		psm.getPoseCurrent(), 
+			tr[0],
+			0.01,0.2, tr.dt); 
 		
 		psm.playTrajectory(*to_start);
    		ros::Duration(0.5).sleep();
