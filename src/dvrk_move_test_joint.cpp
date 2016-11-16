@@ -74,7 +74,7 @@ int main(int argc, char **argv)
    						joint_idx << " ...");
    						
    
-   		err_tr = TrajectoryFactory::linearTrajectory(
+   		err_tr = TrajectoryFactory::linearTrajectoryWithT(
    				psm.getJointStateCurrent(joint_idx), 2.0,
    				10.0/speed, dt);
    
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     		 0.66488253694, 0.694115432261,0.240687076699, 0);
     
     	circle_tr =
-    		TrajectoryFactory::linearTrajectory(
+    		TrajectoryFactory::linearTrajectoryWithT(
     		psm.getPoseCurrent(), 
 			poseto,
 			3.0/speed, dt); 

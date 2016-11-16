@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			TrajectoryFactory::linearTrajectory(
+   			TrajectoryFactory::linearTrajectoryWithT(
    				psm.getJointStateCurrent(init_joint_idx), 
    				0.07, 2.0, 0.05);
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 		ROS_INFO("Going to start point of loaded trajectory...");
 		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
 		to_start = 
-   			TrajectoryFactory::linearTrajectory(
+   			TrajectoryFactory::linearTrajectoryWithT(
    				psm.getPositionCartesianCurrent(), tr[0].position, 2.0, tr.dt);
 		
 		psm.playTrajectory(*to_start);

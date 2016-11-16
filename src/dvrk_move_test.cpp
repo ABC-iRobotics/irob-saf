@@ -61,15 +61,16 @@ int main(int argc, char **argv)
 			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			TrajectoryFactory::linearTrajectory(
+   			TrajectoryFactory::linearTrajectoryWithAcc(
    				psm.getJointStateCurrent(init_joint_idx), 
-   				0.07, 1.0/speed, dt);
+   				0.07, 0.02*speed, 1.0, dt);
+ 			
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
    	 		
    		}
   
    	
-   		// Make circles
+   		// Do preprogrammed movement
    		ROS_INFO_STREAM("Starting programmed movement...");
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
@@ -79,26 +80,37 @@ int main(int argc, char **argv)
     	ros::Duration(1.0).sleep();
 
     	double r = 0.02;
+    	
+    	Pose poseto(0.0271533,	0.028501,	-0.0355035,
+    		-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
     
-    	/*circle_tr =
-    		TrajectoryFactory::linearTrajectory(
+    	Trajectory<Pose>* to_tr =
+    		TrajectoryFactory::linearTrajectoryWithAcc(
     		psm.getPoseCurrent(), 
 			poseto,
-			3.0/speed, dt); 
-    	*/
+			0.01*speed,1.0, dt); 
+	
+		Trajectory<Pose>* back_tr =
+    		TrajectoryFactory::linearTrajectoryWithAcc(
+			poseto, psm.getPoseCurrent(),
+			0.01*speed,1.0, dt); 
     	
-    	Trajectory<Eigen::Vector3d>* circle_tr =
+    	
+    	/*Trajectory<Eigen::Vector3d>* circle_tr =
     		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, -r, 0.0),
-			3.0/speed, dt);   
+			3.0/speed, dt);*/   
    	    
     	while(ros::ok()) {
-    		psm.playTrajectory(*circle_tr);
+    		psm.playTrajectory(*to_tr);
+    		ros::Duration(1.0).sleep();
+    		psm.playTrajectory(*back_tr);
+    		ros::Duration(1.0).sleep();
     	}	
     
-    	//psm2.home();
+    	//psm.home();
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     } catch (const std::exception& e) {
