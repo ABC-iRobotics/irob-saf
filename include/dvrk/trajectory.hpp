@@ -5,8 +5,8 @@
  *      Author: tamas
  */
 
-#ifndef TRAJECTORY_HPP_
-#define TRAJECTORY_HPP_
+#ifndef DVRK_TRAJECTORY_HPP_
+#define DVRK_TRAJECTORY_HPP_
 
 #include <iostream>
 #include <ros/ros.h>
@@ -15,6 +15,7 @@
 #include <string>
 #include <stdexcept>
 
+namespace dvrk { 
 
 template <class T>
 class Trajectory 
@@ -182,6 +183,6 @@ void Trajectory<T>::writeToFile(std::string filename) const
 		<<" points succesfully logged to " << filename << std::endl;
 }
 
-
+}
 
 #endif

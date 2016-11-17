@@ -13,9 +13,9 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include "dvrk_arm.hpp"
-#include "pose.hpp"
-#include "trajectory_factory.hpp"
+#include "dvrk/arm.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory_factory.hpp"
 
 
 
@@ -40,10 +40,10 @@ int main(int argc, char **argv)
 	ss2 >> speed;	
 		
 	double dt = 1.0/ rate_command;
-	Trajectory<double>* to_enable_cartesian;
-	Trajectory<double>* err_tr;
+	dvrk::Trajectory<double>* to_enable_cartesian;
+	dvrk::Trajectory<double>* err_tr;
 	int joint_idx = 6;
-	Trajectory<Pose>* circle_tr;
+	dvrk::Trajectory<dvrk::Pose>* circle_tr;
 	
 	
 	// Initialize ros node
@@ -52,7 +52,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
+    	 dvrk::Arm::ACTIVE);
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary
@@ -74,11 +75,11 @@ int main(int argc, char **argv)
    						joint_idx << " ...");
    						
    
-   		err_tr = TrajectoryFactory::linearTrajectoryWithT(
+   		err_tr = dvrk::TrajectoryFactory::linearTrajectoryWithT(
    				psm.getJointStateCurrent(joint_idx), 2.0,
    				10.0/speed, dt);
    
-		psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+		psm.setRobotState(dvrk::Arm::STATE_POSITION_JOINT);
 		psm.playTrajectory(joint_idx, *err_tr);
    	
    		// Make circles
@@ -86,13 +87,13 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+   	 	psm.setRobotState(dvrk::Arm::STATE_POSITION_CARTESIAN);
 
     	ros::Duration(1.0).sleep();
 
     	double r = 0.02;
     
-    	Pose poseto( 0.0105937964763,0.0409808721132,
+    	dvrk::Pose poseto( 0.0105937964763,0.0409808721132,
     		 -0.0676489437985,  -0.134924830481, 
     		 0.66488253694, 0.694115432261,0.240687076699, 0);
     

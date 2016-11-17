@@ -7,7 +7,9 @@
 
 #include <iostream>
 #include <math.h>
-#include "pose.hpp"
+#include "dvrk/pose.hpp"
+
+namespace dvrk {
 
  	Pose::Pose(): position(0.0, 0.0, 0.0), 
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}
@@ -202,7 +204,7 @@
    	
    	
    	
-   	
+}
    	
    	
    	

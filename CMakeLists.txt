@@ -112,55 +112,21 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen)
+include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen include/dvrk)
 
 ## Declare a C++ library
 
-add_library(dvrk_utils
-  include/dvrk_utils.hpp
- )
- set_target_properties(dvrk_utils PROPERTIES LINKER_LANGUAGE CXX)
-
- add_library(pose
-  include/pose.hpp src/pose.cpp
- )
- set_target_properties(pose PROPERTIES LINKER_LANGUAGE CXX)
- 
- add_library(trajectory
-  include/trajectory.hpp 
- )
- set_target_properties(trajectory PROPERTIES LINKER_LANGUAGE CXX)
+file(GLOB dvrk_lib_src
+    "src/dvrk/*.cpp"
+)
 
 
-add_library(trajectory_factory
-  include/trajectory_factory.hpp 
- )
- 
- set_target_properties(trajectory_factory PROPERTIES LINKER_LANGUAGE CXX)
- 
- add_library(dvrk_arm
-  include/dvrk_arm.hpp src/dvrk_arm.cpp
- )
- 
- set_target_properties(dvrk_arm PROPERTIES LINKER_LANGUAGE CXX)
- 
- add_library(psm
-  include/psm.hpp src/psm.cpp
- )
- 
- set_target_properties(psm PROPERTIES LINKER_LANGUAGE CXX)
+add_library( dvrk_lib STATIC
+       ${dvrk_lib_src}
+       )
 
- add_library(dvrk_arm_types
-  include/dvrk_arm_types.hpp src/dvrk_arm_types.cpp
- )
- 
- set_target_properties(dvrk_arm_types PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
- add_library(dvrk_arm_topics
-   include/dvrk_arm_topics.hpp src/dvrk_arm_topics.cpp
- )
- 
- set_target_properties(dvrk_arm_topics PROPERTIES LINKER_LANGUAGE CXX)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -179,43 +145,22 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 ## Specify libraries to link a library or executable target against
 
 
-  target_link_libraries(dvrk_arm_topics
+  target_link_libraries(dvrk_lib
  ${catkin_LIBRARIES}
-   dvrk_arm_types
  )
  
-  target_link_libraries(trajectory_factory
- ${catkin_LIBRARIES}
-   trajectory
- )
-
-  target_link_libraries(dvrk_arm
-   ${catkin_LIBRARIES}
-  dvrk_arm_topics
-   dvrk_arm_types
-   trajectory
-   trajectory_factory
-   pose
-   dvrk_utils
- )
- 
- target_link_libraries(psm
-   ${catkin_LIBRARIES}
-  dvrk_arm
- )
-
  target_link_libraries(dvrk_move_test
    ${catkin_LIBRARIES}
-    psm
+    dvrk_lib
  )
  
   target_link_libraries( dvrk_play_logged_trajectory
    ${catkin_LIBRARIES}
-    psm
+    dvrk_lib
  )
  target_link_libraries( dvrk_log_trajectory
    ${catkin_LIBRARIES}
-    psm
+    dvrk_lib
  )
 
 

@@ -5,17 +5,19 @@
  *      Author: tamas
  */
 
-#ifndef TRAJECTORY_FACTORY_HPP_
-#define TRAJECTORY_FACTORY_HPP_
+#ifndef DVRK_TRAJECTORY_FACTORY_HPP_
+#define DVRK_TRAJECTORY_FACTORY_HPP_
 
 #include <iostream>
 #include <vector>
 #include <ros/ros.h>
-#include "trajectory.hpp"
-#include "pose.hpp"
+#include "dvrk/trajectory.hpp"
+#include "dvrk/pose.hpp"
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
+
+namespace dvrk {
 
 class TrajectoryFactory
 {
@@ -247,6 +249,6 @@ Trajectory<Eigen::Vector3d>* TrajectoryFactory::linearTrajectoryWithSpeed<Eigen:
 }
 
 
-
+}
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * dvrk_arm.hpp
+ * arm.hpp
  *
  *  Created on: 2016. okt. 10.
  *      Author: tamas
@@ -17,18 +17,19 @@
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float32.h"
-#include "dvrk_arm_types.hpp"
-#include "dvrk_arm_topics.hpp"
-#include "pose.hpp"
-#include "trajectory.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include "dvrk_utils.hpp"
+#include "dvrk/arm_types.hpp"
+#include "dvrk/topics.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory.hpp"
+#include "dvrk/utils.hpp"
 
 
+namespace dvrk {
 
-class DVRKArm {
+class Arm {
 
 public:
     // Constants
@@ -41,7 +42,7 @@ public:
     
 
 protected:
-    const DVRKArmTypes arm_typ;
+    const ArmTypes arm_typ;
     ros::NodeHandle nh;
 
     // States
@@ -64,12 +65,12 @@ protected:
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
     
-    bool subscribe(const DVRKArmTopics);
-    bool advertise(const DVRKArmTopics);
+    bool subscribe(const Topics);
+    bool advertise(const Topics);
 
 public:
-    DVRKArm(ros::NodeHandle, DVRKArmTypes, bool);
-	virtual ~DVRKArm();
+	Arm(ros::NodeHandle, ArmTypes, bool);
+	~Arm();
 
     // Callbacks
     void robotStateCB(const std_msgs::String);
@@ -111,6 +112,8 @@ public:
 						const std::vector<double>&, double);
 	
 };
+
+}
 
 
 #endif /* DVRK_ARM_HPP_ */

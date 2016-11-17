@@ -13,10 +13,10 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include "dvrk_arm.hpp"
-#include "psm.hpp"
-#include "pose.hpp"
-#include "trajectory_factory.hpp"
+#include "dvrk/arm.hpp"
+#include "dvrk/psm.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory_factory.hpp"
 
 
 
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 	ss2 >> speed;	
 		
 	double dt = 1.0/ rate_command;
-	Trajectory<double>* to_enable_cartesian;
-	Trajectory<Pose>* circle_tr;
+	dvrk::Trajectory<double>* to_enable_cartesian;
+	dvrk::Trajectory<dvrk::Pose>* circle_tr;
 	
 	
 	// Initialize ros node
@@ -51,7 +51,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	PSM psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
+    	 dvrk::PSM::ACTIVE);
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary
@@ -59,10 +60,10 @@ int main(int argc, char **argv)
 		{
 			// init
 			ROS_INFO_STREAM("Going to init position...");
-			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+			psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			TrajectoryFactory::linearTrajectoryWithAcc(
+   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
    				psm.getJointStateCurrent(init_joint_idx), 
    				0.07, 0.02*speed, 1.0, dt);
  			
@@ -76,23 +77,23 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
 
     	ros::Duration(1.0).sleep();
 
     	double r = 0.02;
     	
-    	Pose poseto(0.0271533,	0.028501,	-0.0355035,
+    	dvrk::Pose poseto(0.0271533,	0.028501,	-0.0355035,
     		-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
     
-    	Trajectory<Pose>* to_tr =
-    		TrajectoryFactory::linearTrajectoryWithAcc(
+    	dvrk::Trajectory<dvrk::Pose>* to_tr =
+    		dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
     		psm.getPoseCurrent(), 
 			poseto,
 			0.01*speed,1.0, dt); 
 	
-		Trajectory<Pose>* back_tr =
-    		TrajectoryFactory::linearTrajectoryWithAcc(
+		dvrk::Trajectory<dvrk::Pose>* back_tr =
+    		dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
 			poseto, psm.getPoseCurrent(),
 			0.01*speed,1.0, dt); 
     	

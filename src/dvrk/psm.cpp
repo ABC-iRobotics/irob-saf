@@ -5,19 +5,20 @@
  *      Author: tamas
  */
 
-#include "psm.hpp"
+#include "dvrk/psm.hpp"
 #include <numeric>
 #include <chrono>
 
+namespace dvrk {
 
-PSM::PSM(ros::NodeHandle nh, DVRKArmTypes arm_typ, bool isActive): DVRKArm(nh, arm_typ, isActive)
+PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, isActive)
 {
-	if (!(arm_typ == DVRKArmTypes::PSM1 || 
-  							arm_typ == DVRKArmTypes::PSM2))
+	if (!(arm_typ == ArmTypes::PSM1 || 
+  							arm_typ == ArmTypes::PSM2))
   		throw std::runtime_error(
   		"Tried to create PSM object for ECM or MTM arm type.");
   			
-   	advertise(DVRKArmTopics::SET_POSITION_JAW);
+   	advertise(Topics::SET_POSITION_JAW);
     
 }
 
@@ -27,16 +28,16 @@ PSM::~PSM()
 }
 
 
-bool PSM::advertise(DVRKArmTopics topic) 
+bool PSM::advertise(Topics topic) 
 {
-	if(topic == DVRKArmTopics::SET_POSITION_JAW)
+	if(topic == Topics::SET_POSITION_JAW)
     {
         position_jaw_pub = nh.advertise<std_msgs::Float32>(
                                    topic.getFullName(arm_typ), 1000);
         ROS_INFO("Advertised topic %s", topic.getFullName(arm_typ).c_str());
         return true;
     }
-    return DVRKArm::advertise(topic);
+    return Arm::advertise(topic);
 }
 
 Pose PSM::getPoseCurrent()
@@ -104,6 +105,6 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
 }
 
 
-
+}
 
 

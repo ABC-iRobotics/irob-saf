@@ -5,8 +5,8 @@
  *      Author: tamas
  */
 
-#ifndef PSM_HPP_
-#define PSM_HPP_
+#ifndef DVRK_PSM_HPP_
+#define DVRK_PSM_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -17,30 +17,30 @@
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float32.h"
-#include "dvrk_arm_types.hpp"
-#include "dvrk_arm_topics.hpp"
-#include "pose.hpp"
-#include "trajectory.hpp"
+#include "dvrk/arm_types.hpp"
+#include "dvrk/topics.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include "dvrk_utils.hpp"
-#include "dvrk_arm.hpp"
+#include "dvrk/utils.hpp"
+#include "dvrk/arm.hpp"
 
+namespace dvrk {
 
-
-class PSM: public DVRKArm {
+class PSM: public Arm {
 
 
 private:
 
     // Publishers
     ros::Publisher position_jaw_pub;
-    bool advertise(const DVRKArmTopics);
+    bool advertise(const Topics);
 
 public:
-    PSM(ros::NodeHandle, DVRKArmTypes, bool);
-	virtual ~PSM();
+    PSM(ros::NodeHandle, ArmTypes, bool);
+	~PSM();
     
     Pose getPoseCurrent();
     
@@ -50,5 +50,6 @@ public:
 	
 };
 
+}
 
-#endif /* PSM_HPP_ */
+#endif /* DVRK_PSM_HPP_ */

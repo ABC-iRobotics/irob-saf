@@ -4,16 +4,18 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "pose.hpp"
+#include "dvrk/pose.hpp"
 
-class DVRKArmTypes {
+namespace dvrk {
+
+class ArmTypes {
   public:
     // Enum value DECLARATIONS - they are defined later
-    static const DVRKArmTypes MTML;
-    static const DVRKArmTypes MTMR;
-    static const DVRKArmTypes PSM1;
-    static const DVRKArmTypes PSM2;
-    static const DVRKArmTypes ECM;
+    static const ArmTypes MTML;
+    static const ArmTypes MTMR;
+    static const ArmTypes PSM1;
+    static const ArmTypes PSM2;
+    static const ArmTypes ECM;
 
 	// Attributes
     const std::string name;
@@ -22,14 +24,14 @@ class DVRKArmTypes {
     const std::vector<double> maxVelJoint; // unit/sec
 
   private:
-    DVRKArmTypes( std::string name, int dof,
+    ArmTypes( std::string name, int dof,
     			Pose::Distance maxVelPose, std::vector<double> maxVelJoint): 
     			name(name), dof(dof), 
     			maxVelPose(maxVelPose),
     			maxVelJoint(maxVelJoint) { }
 
   public:    
-    static const DVRKArmTypes typeForString(std::string name)
+    static const ArmTypes typeForString(std::string name)
     {
     	if (name == MTML.name)
     		return MTML;
@@ -44,10 +46,11 @@ class DVRKArmTypes {
     	return PSM1;
     }
     
-    bool operator==(const DVRKArmTypes& other) const
+    bool operator==(const ArmTypes& other) const
     {
     	return name == other.name;
     }
 };
+}
 
 #endif

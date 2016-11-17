@@ -13,8 +13,8 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include "dvrk_arm.hpp"
-#include "trajectory_factory.hpp"
+#include "dvrk/arm.hpp"
+#include "dvrk/trajectory_factory.hpp"
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -38,14 +38,15 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     
 	// Robot control
-	Trajectory<double>* to_enable_cartesian;
-	Trajectory<Pose>* to_start;
+	dvrk::Trajectory<double>* to_enable_cartesian;
+	dvrk::Trajectory<dvrk::Pose>* to_start;
   	try {
-    	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
+    	 dvrk::Arm::ACTIVE);
     	//psm.home();
     
     	// Load trajectory from file
-		Trajectory<Pose> tr(argv[3]);
+		dvrk::Trajectory<dvrk::Pose> tr(argv[3]);
     	ROS_INFO_STREAM(
     	"Trajectory of "<< tr.size() << " points with "
     					<< 1.0/tr.dt << " sample rate succesfully loaded from "
@@ -55,10 +56,10 @@ int main(int argc, char **argv)
     	if (std::string(argv[2]) == "init_pos")
 		{
 			ROS_INFO("Going to init position...");
-			psm.setRobotState(DVRKArm::STATE_POSITION_JOINT);
+			psm.setRobotState(dvrk::Arm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			TrajectoryFactory::linearTrajectoryWithAcc(
+   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
    				psm.getJointStateCurrent(init_joint_idx), 
    				0.07, 0.02, 1.0, tr.dt);
 			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
@@ -68,9 +69,9 @@ int main(int argc, char **argv)
 
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");
-		psm.setRobotState(DVRKArm::STATE_POSITION_CARTESIAN);
+		psm.setRobotState(dvrk::Arm::STATE_POSITION_CARTESIAN);
 		to_start = 
-   			TrajectoryFactory::linearTrajectoryWithAcc(
+   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
     		psm.getPoseCurrent(), 
 			tr[0],
 			0.01,0.2, tr.dt); 

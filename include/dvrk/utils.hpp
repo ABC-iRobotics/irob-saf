@@ -1,5 +1,5 @@
 /*
- * dvrk_utils.hpp
+ * utils.hpp
  *
  *  Created on: 2016. nov. 8.
  *      Author: tamas
@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 
+namespace dvrk {
 
 template<typename T>
 std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
@@ -26,6 +27,6 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
     return out;
 }
 
-
+}
 
 #endif /* DVRK_UTILS_HPP_ */

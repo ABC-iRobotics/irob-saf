@@ -5,44 +5,45 @@
  *      Author: tamas
  */
 
-#include "dvrk_arm.hpp"
+#include "dvrk/arm.hpp"
 #include <numeric>
 #include <chrono>
 
+namespace dvrk {
 
-const std::string DVRKArm::HOME_CMD
+const std::string Arm::HOME_CMD
                     = "Home";
-const std::string DVRKArm::HOME_DONE
+const std::string Arm::HOME_DONE
                     = "DVRK_READY";
-const std::string DVRKArm::STATE_POSITION_JOINT
+const std::string Arm::STATE_POSITION_JOINT
                     = "DVRK_POSITION_JOINT";
                    // = "DVRK_POSITION_GOAL_JOINT";
-const std::string DVRKArm::STATE_POSITION_CARTESIAN
+const std::string Arm::STATE_POSITION_CARTESIAN
                     ="DVRK_POSITION_CARTESIAN";
                    // ="DVRK_POSITION_GOAL_CARTESIAN";
 
 
-DVRKArm::DVRKArm(ros::NodeHandle nh, DVRKArmTypes arm_typ, bool isActive): 
+Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
 							nh(nh), arm_typ(arm_typ)
 {
 
 	// Subscribe and advertise topics
-	subscribe(DVRKArmTopics::GET_ROBOT_STATE);
-    subscribe(DVRKArmTopics::GET_STATE_JOINT_CURRENT);
-    subscribe(DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT);
-    subscribe(DVRKArmTopics::GET_ERROR);
-    subscribe(DVRKArmTopics::GET_WARNING);
+	subscribe(Topics::GET_ROBOT_STATE);
+    subscribe(Topics::GET_STATE_JOINT_CURRENT);
+    subscribe(Topics::GET_POSITION_CARTESIAN_CURRENT);
+    subscribe(Topics::GET_ERROR);
+    subscribe(Topics::GET_WARNING);
     
     if (isActive == ACTIVE)
     {
-    	advertise(DVRKArmTopics::SET_ROBOT_STATE);
-    	advertise(DVRKArmTopics::SET_POSITION_JOINT);
-    	advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
+    	advertise(Topics::SET_ROBOT_STATE);
+    	advertise(Topics::SET_POSITION_JOINT);
+    	advertise(Topics::SET_POSITION_CARTESIAN);
     }
     
 }
 
-DVRKArm::~DVRKArm()
+Arm::~Arm()
 {
 	// TODO Auto-generated destructor stub
 }
@@ -50,65 +51,65 @@ DVRKArm::~DVRKArm()
 /*
  * Callbacks
  */
-void DVRKArm::robotStateCB(const std_msgs::String msg)
+void Arm::robotStateCB(const std_msgs::String msg)
 {
     robot_state = msg;
 }
 
-void DVRKArm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
+void Arm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
 {
     position_joint = *msg;
 }
 
-void DVRKArm::positionCartesianCurrentCB(
+void Arm::positionCartesianCurrentCB(
 				const geometry_msgs::PoseStampedConstPtr& msg) 
 {
      position_cartesian_current = *msg;
 }
 
-void DVRKArm::errorCB(const std_msgs::String msg) 
+void Arm::errorCB(const std_msgs::String msg) 
 {
      error = msg;
 }
 
-void DVRKArm::warningCB(const std_msgs::String msg) 
+void Arm::warningCB(const std_msgs::String msg) 
 {
      warning = msg;
 }
 
-bool DVRKArm::subscribe(DVRKArmTopics topic) 
+bool Arm::subscribe(Topics topic) 
 {
-    if(topic == DVRKArmTopics::GET_ROBOT_STATE)
+    if(topic == Topics::GET_ROBOT_STATE)
     {
         robot_state_sub = nh.subscribe<std_msgs::String>(
                         topic.getFullName(arm_typ), 1000,
-                        &DVRKArm::robotStateCB,this);
+                        &Arm::robotStateCB,this);
     }
-    else if( topic == DVRKArmTopics::GET_STATE_JOINT_CURRENT)
+    else if( topic == Topics::GET_STATE_JOINT_CURRENT)
     {
         state_joint_current_sub 
         				= nh.subscribe<sensor_msgs::JointState>(
                         topic.getFullName(arm_typ), 1000,
-                        &DVRKArm::stateJointCurrentCB,this);
+                        &Arm::stateJointCurrentCB,this);
     }
-    else if( topic == DVRKArmTopics::GET_POSITION_CARTESIAN_CURRENT)
+    else if( topic == Topics::GET_POSITION_CARTESIAN_CURRENT)
     {
         position_cartesian_current_sub 
         				= nh.subscribe<geometry_msgs::PoseStamped>(
                         topic.getFullName(arm_typ), 1000,
-                        &DVRKArm::positionCartesianCurrentCB,this);
+                        &Arm::positionCartesianCurrentCB,this);
     }
-    else if( topic == DVRKArmTopics::GET_ERROR)
+    else if( topic == Topics::GET_ERROR)
     {
        	error_sub 	= nh.subscribe<std_msgs::String>(
                         topic.getFullName(arm_typ), 1000,
-                        &DVRKArm::errorCB,this);
+                        &Arm::errorCB,this);
     }
-    else if( topic == DVRKArmTopics::GET_WARNING)
+    else if( topic == Topics::GET_WARNING)
     {
        	warning_sub 	= nh.subscribe<std_msgs::String>(
                         topic.getFullName(arm_typ), 1000,
-                        &DVRKArm::warningCB,this);
+                        &Arm::warningCB,this);
     }
     else
     {
@@ -122,19 +123,19 @@ bool DVRKArm::subscribe(DVRKArmTopics topic)
     return true;
 }
 
-bool DVRKArm::advertise(DVRKArmTopics topic) 
+bool Arm::advertise(Topics topic) 
 {
-    if(topic == DVRKArmTopics::SET_ROBOT_STATE)
+    if(topic == Topics::SET_ROBOT_STATE)
     {
         robot_state_pub = nh.advertise<std_msgs::String>(
                                     topic.getFullName(arm_typ), 1000);
     }
-    else if(topic == DVRKArmTopics::SET_POSITION_JOINT)
+    else if(topic == Topics::SET_POSITION_JOINT)
     {
         position_joint_pub = nh.advertise<sensor_msgs::JointState>(
                                    topic.getFullName(arm_typ), 1000);
     }
-    else if(topic == DVRKArmTopics::SET_POSITION_CARTESIAN)
+    else if(topic == Topics::SET_POSITION_CARTESIAN)
     {
         position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
                                    topic.getFullName(arm_typ), 1000);
@@ -151,7 +152,7 @@ bool DVRKArm::advertise(DVRKArmTopics topic)
 /*
  * DVRK actions
  */
-double DVRKArm::getJointStateCurrent(int index)
+double Arm::getJointStateCurrent(int index)
 {
 	ros::spinOnce();
 	if (index > ((int)position_joint.position.size())-1)
@@ -162,7 +163,7 @@ double DVRKArm::getJointStateCurrent(int index)
  	return position_joint.position[index];
 }
 
-std::vector<double> DVRKArm::getJointStateCurrent()
+std::vector<double> Arm::getJointStateCurrent()
 {
 	ros::spinOnce();
 	std::vector<double> ret(arm_typ.dof);
@@ -171,7 +172,7 @@ std::vector<double> DVRKArm::getJointStateCurrent()
  	return ret;
 }
  
-Eigen::Vector3d DVRKArm::getPositionCartesianCurrent()
+Eigen::Vector3d Arm::getPositionCartesianCurrent()
 {
  	ros::spinOnce();
  	Eigen::Vector3d ret(position_cartesian_current.pose.position.x,
@@ -180,7 +181,7 @@ Eigen::Vector3d DVRKArm::getPositionCartesianCurrent()
     return ret;
 }
 
-Eigen::Quaternion<double> DVRKArm::getOrientationCartesianCurrent()
+Eigen::Quaternion<double> Arm::getOrientationCartesianCurrent()
 {
 	ros::spinOnce();
  	Eigen::Quaternion<double> ret(position_cartesian_current.pose.orientation.x,
@@ -190,7 +191,7 @@ Eigen::Quaternion<double> DVRKArm::getOrientationCartesianCurrent()
     return ret;
 }
 
-Pose DVRKArm::getPoseCurrent()
+Pose Arm::getPoseCurrent()
 {
  	ros::spinOnce();
  	Pose ret(position_cartesian_current, 0.0);
@@ -199,7 +200,7 @@ Pose DVRKArm::getPoseCurrent()
 }
 
 
-bool DVRKArm::home()
+bool Arm::home()
 {
     while (true) {
         std_msgs::String msg;
@@ -221,7 +222,7 @@ bool DVRKArm::home()
     return false;
 }
 
-bool DVRKArm::setRobotState(std::string state)
+bool Arm::setRobotState(std::string state)
 {
     while (true) {
         std_msgs::String msg;
@@ -244,7 +245,7 @@ bool DVRKArm::setRobotState(std::string state)
     return false;
 }
 
-void DVRKArm::moveJointRelative(int joint_idx, double movement, double dt)
+void Arm::moveJointRelative(int joint_idx, double movement, double dt)
 {
    	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
@@ -261,7 +262,7 @@ void DVRKArm::moveJointRelative(int joint_idx, double movement, double dt)
     ros::spinOnce();
 }
 
-void DVRKArm::moveJointAbsolute(int joint_idx, double pos, double dt)
+void Arm::moveJointAbsolute(int joint_idx, double pos, double dt)
 {
 	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
@@ -278,7 +279,7 @@ void DVRKArm::moveJointAbsolute(int joint_idx, double pos, double dt)
     ros::spinOnce();
 }
 
-void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
+void Arm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
@@ -298,7 +299,7 @@ void DVRKArm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 
 }
 
-void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
+void Arm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
@@ -318,7 +319,7 @@ void DVRKArm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 
 }
 
-void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
+void Arm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
 {
 	// Collect data
 	Pose currPose = getPoseCurrent();
@@ -336,7 +337,7 @@ void DVRKArm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, doubl
     ros::spinOnce();
 }
 
-void DVRKArm::moveCartesianAbsolute(Pose pose, double dt)
+void Arm::moveCartesianAbsolute(Pose pose, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -352,7 +353,7 @@ void DVRKArm::moveCartesianAbsolute(Pose pose, double dt)
     ros::spinOnce();
 }
 
-void DVRKArm::checkErrors()
+void Arm::checkErrors()
 {
 	if (!warning.data.empty())
     {
@@ -364,7 +365,7 @@ void DVRKArm::checkErrors()
    		throw std::runtime_error(error.data);
 }
 
-void DVRKArm::checkVelCartesian(const Pose& pose, 
+void Arm::checkVelCartesian(const Pose& pose, 
 								const Pose& currPose, double dt)
 {
 	Pose::Distance d = currPose.dist(pose)/dt;
@@ -382,7 +383,7 @@ void DVRKArm::checkVelCartesian(const Pose& pose,
 	}
 }
 
-void DVRKArm::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
+void Arm::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
 						const std::vector<double>& currJoint, double dt)
 {
 	std::vector<double> distance(arm_typ.dof);
@@ -417,7 +418,7 @@ void DVRKArm::checkVelJoint(const sensor_msgs::JointState& new_position_joint,
 /*
  * Trajectories
  */
-void DVRKArm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
+void Arm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	//int cnt = 0;
@@ -441,7 +442,7 @@ void DVRKArm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
 
 }
 
-void DVRKArm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
+void Arm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
@@ -451,7 +452,7 @@ void DVRKArm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
 	}
 }
 
-void DVRKArm::playTrajectory(Trajectory<Pose>& tr)
+void Arm::playTrajectory(Trajectory<Pose>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
@@ -461,7 +462,7 @@ void DVRKArm::playTrajectory(Trajectory<Pose>& tr)
 	}
 }
 
-void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
+void Arm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	for (int i = 0; i < tr.size() && ros::ok(); i++)
@@ -471,7 +472,7 @@ void DVRKArm::playTrajectory(int jointIndex, Trajectory<double>& tr)
 	}
 }
 
-void DVRKArm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
+void Arm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
@@ -486,7 +487,7 @@ void DVRKArm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr)
 	}
 }
 
-void DVRKArm::recordTrajectory(Trajectory<Pose>& tr) 
+void Arm::recordTrajectory(Trajectory<Pose>& tr) 
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
@@ -502,7 +503,7 @@ void DVRKArm::recordTrajectory(Trajectory<Pose>& tr)
 }
 
 
-
+}
 
 
 

@@ -13,8 +13,8 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include "dvrk_arm.hpp"
-#include "trajectory_factory.hpp"
+#include "dvrk/arm.hpp"
+#include "dvrk/trajectory_factory.hpp"
 #include <fstream>
 #include <stdexcept>
 
@@ -41,10 +41,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "irob_dvrk_log_trajectory");
     ros::NodeHandle nh;
 
-    DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::PASSIVE);
+    dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(argv[1]), dvrk::Arm::PASSIVE);
     
     // Record trajectory
-	Trajectory<Pose> tr_to_log(dt);
+	dvrk::Trajectory<dvrk::Pose> tr_to_log(dt);
 	ROS_INFO_STREAM("Start recording trajectory...");
 	psm.recordTrajectory(tr_to_log);
 	std::cout << std::endl << "Record stopped" << std::endl;
