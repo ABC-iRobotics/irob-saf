@@ -14,6 +14,7 @@
 #include <vector>
 #include <math.h>
 #include "dvrk_arm.hpp"
+#include "psm.hpp"
 #include "pose.hpp"
 #include "trajectory_factory.hpp"
 
@@ -50,7 +51,7 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	DVRKArm psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
+    	PSM psm(nh, DVRKArmTypes::typeForString(argv[1]), DVRKArm::ACTIVE);
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary

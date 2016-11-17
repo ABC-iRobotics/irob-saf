@@ -143,6 +143,12 @@ add_library(trajectory_factory
  )
  
  set_target_properties(dvrk_arm PROPERTIES LINKER_LANGUAGE CXX)
+ 
+ add_library(psm
+  include/psm.hpp src/psm.cpp
+ )
+ 
+ set_target_properties(psm PROPERTIES LINKER_LANGUAGE CXX)
 
  add_library(dvrk_arm_types
   include/dvrk_arm_types.hpp src/dvrk_arm_types.cpp
@@ -192,19 +198,24 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    pose
    dvrk_utils
  )
+ 
+ target_link_libraries(psm
+   ${catkin_LIBRARIES}
+  dvrk_arm
+ )
 
  target_link_libraries(dvrk_move_test
    ${catkin_LIBRARIES}
-    dvrk_arm
+    psm
  )
  
   target_link_libraries( dvrk_play_logged_trajectory
    ${catkin_LIBRARIES}
-    dvrk_arm
+    psm
  )
  target_link_libraries( dvrk_log_trajectory
    ${catkin_LIBRARIES}
-    dvrk_arm
+    psm
  )
 
 

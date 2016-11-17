@@ -38,9 +38,6 @@ DVRKArm::DVRKArm(ros::NodeHandle nh, DVRKArmTypes arm_typ, bool isActive):
     	advertise(DVRKArmTopics::SET_ROBOT_STATE);
     	advertise(DVRKArmTopics::SET_POSITION_JOINT);
     	advertise(DVRKArmTopics::SET_POSITION_CARTESIAN);
-    	
-    	if (arm_typ == DVRKArmTypes::PSM1 || arm_typ == DVRKArmTypes::PSM2)
-    		advertise(DVRKArmTopics::SET_POSITION_JAW);
     }
     
 }
@@ -142,12 +139,8 @@ bool DVRKArm::advertise(DVRKArmTopics topic)
         position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
                                    topic.getFullName(arm_typ), 1000);
     }
-    else if(topic == DVRKArmTopics::SET_POSITION_JAW)
+    else 
     {
-        position_jaw_pub = nh.advertise<std_msgs::Float32>(
-                                   topic.getFullName(arm_typ), 1000);
-    }
-    else {
          ROS_INFO("Advertising invalid topic %s", topic.getFullName(arm_typ).c_str());
          return false;
     }
@@ -200,17 +193,9 @@ Eigen::Quaternion<double> DVRKArm::getOrientationCartesianCurrent()
 Pose DVRKArm::getPoseCurrent()
 {
  	ros::spinOnce();
- 	if (arm_typ == DVRKArmTypes::PSM1 || arm_typ == DVRKArmTypes::PSM2)
- 	{
- 		Pose ret(position_cartesian_current, position_joint.position[6]);
- 		return ret;
- 	}
- 	else
- 	{
- 		Pose ret(position_cartesian_current, 0.0);
- 		return ret;
- 	}
-    
+ 	Pose ret(position_cartesian_current, 0.0);
+ 	return ret;
+
 }
 
 
@@ -356,7 +341,6 @@ void DVRKArm::moveCartesianAbsolute(Pose pose, double dt)
 	// Collect data
     Pose currPose = getPoseCurrent();
     geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
-    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
     
     // Safety
     checkErrors();
@@ -365,43 +349,6 @@ void DVRKArm::moveCartesianAbsolute(Pose pose, double dt)
     
     // Publish movement
     position_cartesian_pub.publish(new_position_cartesian);
-    position_jaw_pub.publish(new_position_jaw);
-    ros::spinOnce();
-}
-
-void DVRKArm::moveJawRelative(double movement, double dt)
-{
-	// Collect data
-    Pose currPose = getPoseCurrent();
-    Pose pose = currPose;
-    pose.jaw += movement;
-    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
-    
-    // Safety
-    checkErrors();
-    checkVelCartesian(pose, currPose, dt);
-    // End safety
-    
-    // Publish movement
-    position_jaw_pub.publish(new_position_jaw);
-    ros::spinOnce();
-}
-
-void DVRKArm::moveJawAbsolute(double jaw, double dt)
-{
-	// Collect data
-    Pose currPose = getPoseCurrent();
-    Pose pose = currPose;
-    pose.jaw = jaw;
-    std_msgs::Float32 new_position_jaw = pose.toRosJaw();
-    
-    // Safety
-    checkErrors();
-    checkVelCartesian(pose, currPose, dt);
-    // End safety
-    
-    // Publish movement
-    position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
 }
 

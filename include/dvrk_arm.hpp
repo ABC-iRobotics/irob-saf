@@ -40,7 +40,7 @@ public:
     static const bool PASSIVE = false;
     
 
-private:
+protected:
     const DVRKArmTypes arm_typ;
     ros::NodeHandle nh;
 
@@ -63,7 +63,6 @@ private:
     ros::Publisher robot_state_pub;
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
-    ros::Publisher position_jaw_pub;
     
     bool subscribe(const DVRKArmTopics);
     bool advertise(const DVRKArmTopics);
@@ -85,7 +84,7 @@ public:
     std::vector<double> getJointStateCurrent();
     Eigen::Vector3d getPositionCartesianCurrent();
     Eigen::Quaternion<double> getOrientationCartesianCurrent();
-    Pose getPoseCurrent();
+    virtual Pose getPoseCurrent();
 
     //DVRK actions
     bool home();
@@ -95,10 +94,8 @@ public:
     void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
     void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
     void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
-    void moveCartesianAbsolute(Pose, double = 0.01);
+    virtual void moveCartesianAbsolute(Pose, double = 0.01);
     
-    void moveJawRelative(double, double = 0.01);
-    void moveJawAbsolute(double, double = 0.01);
 
 	void playTrajectory(Trajectory<Eigen::Vector3d>&);
 	void playTrajectory(Trajectory<Eigen::Quaternion<double>>&);
