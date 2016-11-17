@@ -11,10 +11,10 @@
 #include "sensor_msgs/JointState.h"
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include "dvrk/arm.hpp"
-#include "dvrk/pose.hpp"
 #include "dvrk/trajectory_factory.hpp"
 
 

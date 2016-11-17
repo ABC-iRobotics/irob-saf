@@ -11,11 +11,11 @@
 #include <iostream>
 #include <vector>
 #include <ros/ros.h>
-#include "dvrk/trajectory.hpp"
-#include "dvrk/pose.hpp"
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
+#include "dvrk/trajectory.hpp"
+#include "dvrk/pose.hpp"
 
 namespace dvrk {
 

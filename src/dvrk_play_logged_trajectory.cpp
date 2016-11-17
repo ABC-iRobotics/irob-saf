@@ -11,15 +11,17 @@
 #include "sensor_msgs/JointState.h"
 #include <iostream>
 #include <sstream>
-#include <vector>
-#include <math.h>
-#include "dvrk/arm.hpp"
-#include "dvrk/trajectory_factory.hpp"
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <vector>
+#include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
+#include "dvrk/arm.hpp"
+#include "dvrk/trajectory_factory.hpp"
+
+
 
 
 int main(int argc, char **argv)

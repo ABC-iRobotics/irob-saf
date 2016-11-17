@@ -17,15 +17,15 @@
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float32.h"
-#include "dvrk/arm_types.hpp"
-#include "dvrk/topics.hpp"
-#include "dvrk/pose.hpp"
-#include "dvrk/trajectory.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
 #include "dvrk/utils.hpp"
 #include "dvrk/arm.hpp"
+#include "dvrk/arm_types.hpp"
+#include "dvrk/topics.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory.hpp"
 
 namespace dvrk {
 
