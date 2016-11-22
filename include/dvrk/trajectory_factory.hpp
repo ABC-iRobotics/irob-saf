@@ -25,168 +25,136 @@ class TrajectoryFactory
 	private:
 		TrajectoryFactory() {}
 	public:
+		
+
+		
+		/*
+		 *	Uniform ramp between x1 and x2
+		 */
+		static Trajectory<double> uniformRamp(int N, 
+								double x1=0.0, double x2=1.0)
+		{
+			Trajectory<double> v;
+			for (int i = 0; i < N; i++)
+			{
+				v.addPoint(interpolate(((double)i)/(N-1), x1, x2));
+			}
+			return v;
+		}
+		
+		/*
+		 *	Accelerating ramp between x1 and x2
+		 *	For decceleration: acceleratingRamp(N, x2, x1).reverse()
+		 */
+		static Trajectory<double> acceleratingRamp(int N, 
+								double x1=0.0, double x2=1.0)
+		{
+			Trajectory<double> v, steps;
+			//double maxStep = (std::sqrt(1.0+(8*N))-1.0)/2.0;
+			double maxStep = (2.0*(x2-x1))/N;
+			steps = uniformRamp(N, 0.0, maxStep);
+			
+			double a = x1;
+			for (int i; i < N; i++)
+			{
+				a += steps[i];
+				v.addPoint(interpolate(a, x1, x2));
+			}
+			return v;
+		}
+		
+		/*
+		 *	Smooth ramp between x1 and x2
+		 */
+		static Trajectory<double> smoothenedRamp(int Nfull, int Nacc,
+								double x1=0.0, double x2=1.0)
+		{
+			Trajectory<double> v, steps;
+		
+			double accRatio = ((double)Nacc) / Nfull;
+			//double maxStep = std::sqrt((accRatio*accRatio)+2)-accRatio;
+			double maxStep = (x2-x1)/(Nfull-Nacc);
+			steps = uniformRamp(Nacc, 0.0, maxStep);
+			
+			double a = x1;
+			for (int i; i < Nacc; i++)
+			{
+				a += steps[i];
+				v.addPoint(interpolate(a, x1, x2));
+			}
+			
+			for (int i; i < Nfull-(2*Nacc); i++)
+			{
+				a += maxStep;
+				v.addPoint(interpolate(a, x1, x2));
+			}
+			
+			steps.reverse();
+			
+			for (int i; i < Nacc; i++)
+			{
+				a += steps[i];
+				v.addPoint(interpolate(a, x1, x2));
+			}
+			//ROS_INFO_STREAM(v);
+			return v;
+		}
+	
 		template <class P>
-		static Trajectory<P>* linearTrajectoryWithT(P start,P end, 
+		static Trajectory<P> linearTrajectoryForTime(P start,P end, 
 											double T, double dt)
 		{
-			Trajectory<P>* tr = new Trajectory<P>(dt);
-			int N = (int)round(T / dt);
-			for (int i = 0; i <= N; i++)
+			Trajectory<P> tr(dt);
+			int N = (int)round(T / dt)+1;
+			Trajectory<double> ramp = uniformRamp(N);
+			for (int i = 0; i < ramp.size(); i++)
 			{
-				P p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
-				tr->addPoint(p);
+				tr.addPoint(interpolate(ramp[i], start, end));
 			}
 			return tr;
 		}
 		
 		template <class P>
-		static Trajectory<P>* linearTrajectoryWithSpeed(P start,P end, 
+		static Trajectory<P> linearTrajectoryForSpeed(P start,P end, 
 											double speed, double dt)
 		{
-			Trajectory<P>* tr = new Trajectory<P>(dt);
+			Trajectory<P> tr(dt);
 			double stepSize = speed * dt;
-			int N = (int)round(std::abs(end - start) / stepSize);
-			for (int i = 0; i <= N; i++)
+			int N = (int)round(std::abs(end - start) / stepSize)+1;
+			Trajectory<double> ramp = uniformRamp(N);
+			for (int i = 0; i < ramp.size(); i++)
 			{
-				P p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
-				tr->addPoint(p);
+				tr.addPoint(interpolate(ramp[i], start, end));
 			}
 			return tr;
 		}
-		
-		static Trajectory<double>* linearTrajectoryWithAcc(double start,
-											double end, 
-											double speed, double Tacc, double dt)
-		{
-			Trajectory<double>* tr = new Trajectory<double>(dt);
-			if (end < start)
-				speed *= -1.0;
-				
-			double fullS = std::abs(end - start);
-			double accS = (speed / 2.0) * Tacc;
-			while (fullS < (2.0 * accS))
-			{
-				Tacc /= 2.0;
-				speed /= 2.0;
-				accS = (speed / 2) * Tacc;
-				ROS_WARN_STREAM(
-				"Trajectory too short, speed and acceleration time reduced.");
-			}
-				
-			double posStep = speed * dt;
-			double acc = speed / Tacc;
-			double speedStep = acc * dt;
-			int Nacc = (int)round(speed / speedStep);
-			
-			int N = (int)round((end - start-(2*accS)) / posStep);
-			
-			double prevp = start;
-			for (int i = 0; i <= Nacc; i++)
-			{
-				double p = prevp + (i * speedStep * dt);
-				tr->addPoint(p);
-				prevp = p;
-			}
-			
-			
-			for (int i = 0; i <= N; i++)
-			{
-				double p = prevp + posStep;
-				tr->addPoint(p);
-				prevp = p;
-			}
-			
-			for (int i = 0; i <= Nacc; i++)
-			{
-				double p = prevp + ((Nacc - i) * speedStep * dt);
-				tr->addPoint(p);
-				prevp = p;
-			}
-			return tr;
-		}
-		
-		static Trajectory<Pose>* linearTrajectoryWithAcc(Pose start,
-											Pose end, 
-											double speed, double Tacc, double dt)
-		{
-			Trajectory<Pose>* tr = new Trajectory<Pose>(dt);
-			
-			double fullS = (end.position - start.position).norm();
-			double accS = (speed / 2.0) * Tacc;
-			while (fullS < (2.0 * accS))
-			{
-				Tacc /= 2.0;
-				speed /= 2.0;
-				accS = (speed / 2) * Tacc;
-				ROS_WARN_STREAM(
-				"Trajectory too short, speed and acceleration time reduced.");
-			}
-			
-			
-			Eigen::Vector3d posStep = speed * dt 
-							* (end.position - start.position).normalized();
-			double acc = speed / Tacc;
-			Eigen::Vector3d speedStep = acc * dt 
-							* (end.position - start.position).normalized();
-			
-			
-			Eigen::Vector3d speedVec = speed 
-							* (end.position - start.position).normalized();
-						
-			Pose accEndPose = start.interpolate(accS/fullS, end);
-			Pose deccStartPose = start.interpolate(1.0 - (accS/fullS), end);
-			int Nacc = (int)round(speed / speedStep.norm());
-			int Macc = (Nacc*(Nacc+1))/2;
-			int N = (int)round((fullS-(2.0*accS))/ posStep.norm());
-			
-			for (int i = 0, j = 0; i <= Nacc; j+=(++i))
-			{
-				Pose p = start.interpolate(((double)j)/Macc
-														, accEndPose);
-				tr->addPoint(p);
-			}
-			
-			
-			for (int i = 0; i <= N; i++)
-			{
-				Pose p = accEndPose.interpolate(((double)i)/N
-														, deccStartPose);
-				tr->addPoint(p);
-			}
-			
-			for (int i = Nacc, j = 0; i >= 0; j+=(--i))
-			{
-				Pose p = deccStartPose.interpolate(((double)j)/Macc
-														, end);
-				tr->addPoint(p);
-			}
-			return tr;
-		}
-		
 		template <class P>
-		static Trajectory<P>* acceleratingTrajectory(P start, P stepStep,
-											P maxStep, double dt)
+		static Trajectory<P> linearTrajectoryWithSmoothAcceleration(
+						P start,
+						P end, 
+						double Tfull,
+						double Tacc, 
+						double dt)
 		{
-			Trajectory<P>* tr = new Trajectory<P>(dt);
-			P pos = start;
-			P step = 0.0;
-			while (step < maxStep)
+			Trajectory<P> tr(dt);
+			int Nfull = (int)round(Tfull / dt)+1;
+			int Nacc = (int)round(Tacc / dt)+1;
+				
+			Trajectory<double> ramp = smoothenedRamp(Nfull, Nacc);
+			for (int i = 0; i < ramp.size(); i++)
 			{
-				pos += step;
-				tr->addPoint(pos);
-				step += stepStep;
+				tr.addPoint(interpolate(ramp[i], start, end));
 			}
 			return tr;
 		}
 		
 		
-		
-		static Trajectory<Eigen::Vector3d>* circleTrajectoryHorizontal(
+		static Trajectory<Eigen::Vector3d> circleTrajectoryHorizontal(
 			Eigen::Vector3d start, 
 			double toAngle, Eigen::Vector3d center,
 			double T, double dt)
 		{
-			Trajectory<Eigen::Vector3d>* tr = new Trajectory<Eigen::Vector3d>(dt);
+			Trajectory<Eigen::Vector3d> tr(dt);
 			int N = (int)round(T / dt)+1;
 			
 			double ang = 0.0;
@@ -196,58 +164,12 @@ class TrajectoryFactory
 				Eigen::Vector3d p1(p.x()*cos(ang)-p.y()*sin(ang), 
 					p.y()*cos(ang)+p.x()*sin(ang), p.z());
 				Eigen::Vector3d p2 = p1+center;
-				tr->addPoint(p2);
+				tr.addPoint(p2);
 			}
 			return tr;
 		}
 
 };
-
-template <>
-Trajectory<Pose>* TrajectoryFactory::linearTrajectoryWithT<Pose>(
-			Pose start,Pose end, double T, double dt)
-{
-	Trajectory<Pose>* tr = new Trajectory<Pose>(dt);
-	int N = (int)round(T / dt);
-	for (int i = 0; i <= N; i++)
-	{
-		Pose p = start.interpolate(((double)i)/N, end);
-		tr->addPoint(p);
-	}
-	return tr;
-}
-
-template <>
-Trajectory<Pose>* TrajectoryFactory::linearTrajectoryWithSpeed<Pose>(
-			Pose start,Pose end, double speed, double dt)
-{
-	Trajectory<Pose>* tr = new Trajectory<Pose>(dt);
-	double stepSize = speed * dt;
-	int N = (int)round((end.position - start.position).norm() / stepSize);
-	for (int i = 0; i <= N; i++)
-	{
-		Pose p = start.interpolate(((double)i)/N, end);
-		tr->addPoint(p);
-	}
-	return tr;
-}
-
-template <>
-Trajectory<Eigen::Vector3d>* TrajectoryFactory::linearTrajectoryWithSpeed<Eigen::Vector3d>(
-			Eigen::Vector3d start,Eigen::Vector3d end, double speed, double dt)
-{
-	Trajectory<Eigen::Vector3d>* tr = new Trajectory<Eigen::Vector3d>(dt);
-	double stepSize = speed * dt;
-	int N = (int)round((end - start).norm() / stepSize);
-	for (int i = 0; i <= N; i++)
-	{
-		Eigen::Vector3d p = ((start*((N-i)/(double)N)) +(end*(i/(double)N)));
-		tr->addPoint(p);
-	}
-	tr->addPoint(end);
-	return tr;
-}
-
 
 }
 

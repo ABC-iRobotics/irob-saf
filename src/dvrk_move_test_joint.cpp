@@ -40,10 +40,10 @@ int main(int argc, char **argv)
 	ss2 >> speed;	
 		
 	double dt = 1.0/ rate_command;
-	dvrk::Trajectory<double>* to_enable_cartesian;
-	dvrk::Trajectory<double>* err_tr;
+	dvrk::Trajectory<double> to_enable_cartesian;
+	dvrk::Trajectory<double> err_tr;
 	int joint_idx = 6;
-	dvrk::Trajectory<dvrk::Pose>* circle_tr;
+	dvrk::Trajectory<dvrk::Pose> circle_tr;
 	
 	
 	// Initialize ros node
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
    				10.0/speed, dt);
    
 		psm.setRobotState(dvrk::Arm::STATE_POSITION_JOINT);
-		psm.playTrajectory(joint_idx, *err_tr);
+		psm.playTrajectory(joint_idx, err_tr);
    	
    		// Make circles
    		ROS_INFO_STREAM("Starting programmed movement...");
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 			3.0/speed, dt);   */
    	    
     	while(ros::ok()) {
-    		psm.playTrajectory(*circle_tr);
+    		psm.playTrajectory(circle_tr);
     	}	
     
     	//psm2.home();
@@ -121,10 +121,6 @@ int main(int argc, char **argv)
   		ROS_ERROR_STREAM(e.what());
   		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
   	}
-    
-    // Remove garbage
-    delete(circle_tr);
-    delete(to_enable_cartesian);
     
     // Exit
     ros::shutdown();

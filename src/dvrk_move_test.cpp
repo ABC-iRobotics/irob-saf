@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 	ss2 >> speed;	
 		
 	double dt = 1.0/ rate_command;
-	dvrk::Trajectory<double>* to_enable_cartesian;
-	dvrk::Trajectory<dvrk::Pose>* circle_tr;
+	dvrk::Trajectory<double> to_enable_cartesian;
+	dvrk::Trajectory<dvrk::Pose> circle_tr;
 	
 	
 	// Initialize ros node
@@ -64,11 +64,13 @@ int main(int argc, char **argv)
 			psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
 			to_enable_cartesian = 
-   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
-   				psm.getJointStateCurrent(init_joint_idx), 
-   				0.07, 0.02*speed, 1.0, dt);
+   				dvrk::TrajectoryFactory::
+   					linearTrajectoryWithSmoothAcceleration(
+   						psm.getJointStateCurrent(init_joint_idx), 
+   						0.07,
+   						1.0/speed, 0.3/speed, dt);
  			
-			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
+			psm.playTrajectory(init_joint_idx, to_enable_cartesian);
    	 		
    		}
   
@@ -87,16 +89,18 @@ int main(int argc, char **argv)
     	dvrk::Pose poseto(0.0271533,	0.028501,	-0.0355035,
     		-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
     
-    	dvrk::Trajectory<dvrk::Pose>* to_tr =
-    		dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
-    		psm.getPoseCurrent(), 
-			poseto,
-			0.01*speed,1.0, dt); 
+    	dvrk::Trajectory<dvrk::Pose> 
+    		to_tr(dvrk::TrajectoryFactory::
+    			linearTrajectoryWithSmoothAcceleration(
+    				psm.getPoseCurrent(), 
+					poseto,
+					0.5,2.0, dt)); 
 	
-		dvrk::Trajectory<dvrk::Pose>* back_tr =
-    		dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
-			poseto, psm.getPoseCurrent(),
-			0.01*speed,1.0, dt); 
+		dvrk::Trajectory<dvrk::Pose> 
+			back_tr(dvrk::
+				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
+					poseto, psm.getPoseCurrent(),
+					0.5,2.0, dt)); 
     	
     	
     	/*Trajectory<Eigen::Vector3d>* circle_tr =
@@ -107,9 +111,9 @@ int main(int argc, char **argv)
 			3.0/speed, dt);*/   
    	    
     	while(ros::ok()) {
-    		psm.playTrajectory(*to_tr);
+    		psm.playTrajectory(to_tr);
     		ros::Duration(1.0).sleep();
-    		psm.playTrajectory(*back_tr);
+    		psm.playTrajectory(back_tr);
     		ros::Duration(1.0).sleep();
     	}	
     
@@ -121,9 +125,6 @@ int main(int argc, char **argv)
   		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
   	}
     
-    // Remove garbage
-    delete(circle_tr);
-    delete(to_enable_cartesian);
     
     // Exit
     ros::shutdown();

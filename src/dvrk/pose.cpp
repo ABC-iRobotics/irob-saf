@@ -84,8 +84,8 @@ namespace dvrk {
    	{
    		Pose res;
    		res.orientation = orientation.slerp(a, other.orientation);
-   		res.position = ((1-a) * position) + ((a) * other.position);
-   		res.jaw = ((1-a) * jaw) + ((a) * other.jaw);
+   		res.position = ((1.0-a) * position) + ((a) * other.position);
+   		res.jaw = ((1.0-a) * jaw) + ((a) * other.jaw);
    		return res;
    	}
    	

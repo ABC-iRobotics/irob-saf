@@ -40,8 +40,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     
 	// Robot control
-	dvrk::Trajectory<double>* to_enable_cartesian;
-	dvrk::Trajectory<dvrk::Pose>* to_start;
+	
+	
   	try {
     	dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
     	 dvrk::Arm::ACTIVE);
@@ -60,11 +60,12 @@ int main(int argc, char **argv)
 			ROS_INFO("Going to init position...");
 			psm.setRobotState(dvrk::Arm::STATE_POSITION_JOINT);
 			int init_joint_idx = 2;
-			to_enable_cartesian = 
-   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
-   				psm.getJointStateCurrent(init_joint_idx), 
-   				0.07, 0.02, 1.0, tr.dt);
-			psm.playTrajectory(init_joint_idx, *to_enable_cartesian);
+			dvrk::Trajectory<double> to_enable_cartesian = 
+   			dvrk::TrajectoryFactory::
+   				linearTrajectoryWithSmoothAcceleration(
+   					psm.getJointStateCurrent(init_joint_idx), 
+   					0.07, 0.1, 1.0, tr.dt);
+			psm.playTrajectory(init_joint_idx, to_enable_cartesian);
    	 
    			
    		}
@@ -72,13 +73,14 @@ int main(int argc, char **argv)
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");
 		psm.setRobotState(dvrk::Arm::STATE_POSITION_CARTESIAN);
-		to_start = 
-   			dvrk::TrajectoryFactory::linearTrajectoryWithAcc(
-    		psm.getPoseCurrent(), 
-			tr[0],
-			0.01,0.2, tr.dt); 
+		dvrk::Trajectory<dvrk::Pose> to_start = 
+   			dvrk::TrajectoryFactory::
+   				linearTrajectoryWithSmoothAcceleration(
+    				psm.getPoseCurrent(), 
+					tr[0],
+					0.1,2.0, tr.dt); 
 		
-		psm.playTrajectory(*to_start);
+		psm.playTrajectory(to_start);
    		ros::Duration(0.5).sleep();
    			
 	
@@ -92,10 +94,6 @@ int main(int argc, char **argv)
   		ROS_ERROR_STREAM(e.what());
   		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
   	}
-  	
-  	// Exit
-  	delete(to_enable_cartesian);
-  	delete(to_start);
   	
     ros::shutdown();
 	return 0;
