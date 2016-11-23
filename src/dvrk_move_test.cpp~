@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     		TrajectoryFactory::linearTrajectoryWithAcc(
     		psm.getJointStateCurrent(joint_idx), 
 			p1,
-			joint_speed,0.2*speed, dt);
+			speed*joint_speed,0.2/speed, dt);
     
     	Trajectory<double>* to_tr =
     		TrajectoryFactory::linearTrajectoryWithAcc(
