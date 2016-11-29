@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 			//
 			elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
+	 		ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
 	 		if (elapsed >= testT)
 	 			break;		
    	    	ROS_INFO_STREAM("Going to position 1...");	
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
+	 		ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
 	 		if (elapsed >= testT)
 	 			break;	
     		
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
+	 		ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
 	 		if (elapsed >= testT)
 	 			break;	
     		ROS_INFO_STREAM("Going to position 2...");	
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
+	 		ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
 	 		if (elapsed >= testT)
 	 			break;	
     		

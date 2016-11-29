@@ -85,52 +85,65 @@ int main(int argc, char **argv)
 
     	ros::Duration(0.5).sleep();
 		
-		// rotation
-		int joint_idx = 3;
-    	double x1 = -0.9;
-    	double x2 = 2.5;
-    	double T = 5.0/speed;
-    	double Tacc = T*0.1;
-    	
+		   	
     	// translation
-    	/*int joint_idx = 2;
-    	double x1 = 0.145;
-    	double x2 = 0.179;
+    	/*int joint_idx = 2;	
+    	int r_joint_idx = 3;	
+    	double x1 = 0.1089;
+    	double x2 = 0.17;
+    	double r1 = 1.0; 
+    	double r2 = -1.0;
     	double T = 5.0/speed;
     	double Tacc = T*0.1;*/
     	
+    	// translation x
+    	int joint_idx = 0;
+    	
+    	double x1 = -0.868;
+    	double x2 = -0.328;
+    	
+    	double T = 5.0/speed;
+    	double Tacc = T*0.2;
+    	
+    	   	 
+    	// Move
+    	ROS_INFO_STREAM("Going to start position...");	
+    	
+    	psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
     	dvrk::Trajectory<double> 
     		init_tr(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				psm.getJointStateCurrent(joint_idx), 
 					x1,
 					T, Tacc, dt)); 
- 
-    
-    	dvrk::Trajectory<double> 
-    		to_tr(dvrk::TrajectoryFactory::
-    			linearTrajectoryWithSmoothAcceleration(
-    				x1, 
-					x2,
-					T, Tacc, dt)); 
+    	
+  
 	
 		dvrk::Trajectory<double> 
 			back_tr(dvrk::TrajectoryFactory::
 				linearTrajectoryWithSmoothAcceleration(
 					x2,
 					x1,
-					T, Tacc, dt)); 
+					T, Tacc, dt));
+					
+		dvrk::Trajectory<double> 
+    		to_tr(dvrk::TrajectoryFactory::
+    			linearTrajectoryWithSmoothAcceleration(
+    				x1,
+					x2,
+					T, Tacc, dt));
+	
+					
+    	//psm.playTrajectory(r_joint_idx, r_init_tr);	
+    	psm.playTrajectory(joint_idx, init_tr);
     	
-    	// Move
+    	ros::Duration(0.5).sleep();
     	
-    	ROS_INFO_STREAM("Going to start position...");	
+   
     		
     	auto start = std::chrono::high_resolution_clock::now();
     	std::chrono::duration<double> elapsed;
     	std::chrono::duration<double> testT(30.0);
-		    			
-    	psm.playTrajectory(joint_idx, init_tr);
-    	ros::Duration(0.5).sleep();
      
    	    while(ros::ok()) {
 			//
@@ -150,6 +163,7 @@ int main(int argc, char **argv)
 	 			break;	
     		
     		ros::Duration(0.5).sleep();
+    		
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
@@ -167,7 +181,20 @@ int main(int argc, char **argv)
 	 			break;	
     		
     		ros::Duration(0.5).sleep();
-    	}	
+    	}
+    	
+    	ROS_INFO_STREAM("Test done going to final position...");	
+    	
+			
+		dvrk::Trajectory<double> 
+			fin_tr(dvrk::TrajectoryFactory::
+				linearTrajectoryWithSmoothAcceleration(
+					psm.getJointStateCurrent(joint_idx), 
+					x1,
+					T, Tacc, dt));
+					
+					 	
+		psm.playTrajectory(joint_idx, fin_tr);	
     
     	//psm.home();
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");

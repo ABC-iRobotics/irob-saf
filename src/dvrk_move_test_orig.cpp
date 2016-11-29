@@ -14,12 +14,11 @@
 #include <stdexcept>
 #include <vector>
 #include <cmath>
-#include <numeric>
-#include <chrono>
 #include "dvrk/arm.hpp"
 #include "dvrk/psm.hpp"
 #include "dvrk/pose.hpp"
 #include "dvrk/trajectory_factory.hpp"
+
 
 
 int main(int argc, char **argv)
@@ -54,7 +53,7 @@ int main(int argc, char **argv)
     // Robot control
   	try {
     	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
-    		dvrk::PSM::ACTIVE);
+    	 dvrk::PSM::ACTIVE);
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary
@@ -81,92 +80,41 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
+   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
 
-    	ros::Duration(0.5).sleep();
-		
-		// rotation
-		int joint_idx = 3;
-    	double x1 = -0.9;
-    	double x2 = 2.5;
-    	double T = 5.0/speed;
-    	double Tacc = T*0.1;
+    	ros::Duration(1.0).sleep();
+
+    	double r = 0.02;
     	
-    	// translation
-    	/*int joint_idx = 2;
-    	double x1 = 0.145;
-    	double x2 = 0.179;
-    	double T = 5.0/speed;
-    	double Tacc = T*0.1;*/
-    	
-    	dvrk::Trajectory<double> 
-    		init_tr(dvrk::TrajectoryFactory::
-    			linearTrajectoryWithSmoothAcceleration(
-    				psm.getJointStateCurrent(joint_idx), 
-					x1,
-					T, Tacc, dt)); 
- 
+    	dvrk::Pose poseto(0.0271533,	0.028501,	-0.0355035,
+    		-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
     
-    	dvrk::Trajectory<double> 
+    	dvrk::Trajectory<dvrk::Pose> 
     		to_tr(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
-    				x1, 
-					x2,
-					T, Tacc, dt)); 
+    				psm.getPoseCurrent(), 
+					poseto,
+					0.5,2.0, dt)); 
 	
-		dvrk::Trajectory<double> 
-			back_tr(dvrk::TrajectoryFactory::
-				linearTrajectoryWithSmoothAcceleration(
-					x2,
-					x1,
-					T, Tacc, dt)); 
+		dvrk::Trajectory<dvrk::Pose> 
+			back_tr(dvrk::
+				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
+					poseto, psm.getPoseCurrent(),
+					0.5,2.0, dt)); 
     	
-    	// Move
     	
-    	ROS_INFO_STREAM("Going to start position...");	
-    		
-    	auto start = std::chrono::high_resolution_clock::now();
-    	std::chrono::duration<double> elapsed;
-    	std::chrono::duration<double> testT(30.0);
-		    			
-    	psm.playTrajectory(joint_idx, init_tr);
-    	ros::Duration(0.5).sleep();
-     
-   	    while(ros::ok()) {
-			//
-			elapsed =
-	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
-	 		if (elapsed >= testT)
-	 			break;		
-   	    	ROS_INFO_STREAM("Going to position 1...");	
-    		
-    		psm.playTrajectory(joint_idx, to_tr);
-    		//
-    		elapsed =
-	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
-	 		if (elapsed >= testT)
-	 			break;	
-    		
-    		ros::Duration(0.5).sleep();
-    		//
-    		elapsed =
-	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
-	 		if (elapsed >= testT)
-	 			break;	
-    		ROS_INFO_STREAM("Going to position 2...");	
-    		
-    		psm.playTrajectory(joint_idx, back_tr);
-    		//
-    		elapsed =
-	 			std::chrono::high_resolution_clock::now()-start;
-	 		ROS_INFO("Time elapsed: %f s", (elapsed));
-	 		if (elapsed >= testT)
-	 			break;	
-    		
-    		ros::Duration(0.5).sleep();
+    	/*Trajectory<Eigen::Vector3d>* circle_tr =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
+    		psm.getPositionCartesianCurrent(), 
+			2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, -r, 0.0),
+			3.0/speed, dt);*/   
+   	    
+    	while(ros::ok()) {
+    		psm.playTrajectory(to_tr);
+    		ros::Duration(1.0).sleep();
+    		psm.playTrajectory(back_tr);
+    		ros::Duration(1.0).sleep();
     	}	
     
     	//psm.home();

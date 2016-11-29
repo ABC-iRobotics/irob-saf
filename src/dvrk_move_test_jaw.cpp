@@ -22,6 +22,7 @@
 #include "dvrk/trajectory_factory.hpp"
 
 
+
 int main(int argc, char **argv)
 {
 
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
     // Robot control
   	try {
     	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
-    		dvrk::PSM::ACTIVE);
+    	 dvrk::PSM::ACTIVE);
     	ros::Duration(1.0).sleep();
     	//psm.home(); 
 		// Init position if necessary
@@ -81,40 +82,44 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
+   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
 
     	ros::Duration(0.5).sleep();
-		
-		// rotation
-		int joint_idx = 3;
-    	double x1 = -0.9;
-    	double x2 = 2.5;
-    	double T = 5.0/speed;
+
+		dvrk::Pose x0( -0.060613261405, -0.0249874298858, -0.035904408579, 0.435441616027,
+						 0.619332650481, -0.552308508475, -0.348959852342, 0.0);
+
+
+		dvrk::Pose x1(-0.0818242751516, -0.0554563262251, -0.133707038018,
+							 0.554879994256, 0.686219745164, -0.430938091796, 
+							 -0.188422435928, 0.0);
+
+    	dvrk::Pose x2 = x1;
+    	
+    	x1.jaw = 0.0;
+    	x2.jaw = 1.0;
+    	
+    	double mT = 10.0/speed;
+    	double mTacc = mT*0.1;
+    	double T = 2.0/speed;
     	double Tacc = T*0.1;
     	
-    	// translation
-    	/*int joint_idx = 2;
-    	double x1 = 0.145;
-    	double x2 = 0.179;
-    	double T = 5.0/speed;
-    	double Tacc = T*0.1;*/
-    	
-    	dvrk::Trajectory<double> 
+    	dvrk::Trajectory<dvrk::Pose> 
     		init_tr(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
-    				psm.getJointStateCurrent(joint_idx), 
+    				psm.getPoseCurrent(), 
 					x1,
-					T, Tacc, dt)); 
+					mT, mTacc, dt)); 
  
     
-    	dvrk::Trajectory<double> 
+    	dvrk::Trajectory<dvrk::Pose> 
     		to_tr(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				x1, 
 					x2,
 					T, Tacc, dt)); 
 	
-		dvrk::Trajectory<double> 
+		dvrk::Trajectory<dvrk::Pose> 
 			back_tr(dvrk::TrajectoryFactory::
 				linearTrajectoryWithSmoothAcceleration(
 					x2,
@@ -123,51 +128,62 @@ int main(int argc, char **argv)
     	
     	// Move
     	
-    	ROS_INFO_STREAM("Going to start position...");	
-    		
+    	psm.playTrajectory(init_tr);
+    	ros::Duration(0.5).sleep();
+    	
+    	ROS_INFO_STREAM("Going to start position...");
     	auto start = std::chrono::high_resolution_clock::now();
     	std::chrono::duration<double> elapsed;
-    	std::chrono::duration<double> testT(30.0);
-		    			
-    	psm.playTrajectory(joint_idx, init_tr);
-    	ros::Duration(0.5).sleep();
+    	std::chrono::duration<double> testT(30.0);	
+    		
+    	
      
    	    while(ros::ok()) {
-			//
-			elapsed =
+   	    	//
+    		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
 	 		ROS_INFO("Time elapsed: %f s", (elapsed));
 	 		if (elapsed >= testT)
-	 			break;		
+	 			break;
    	    	ROS_INFO_STREAM("Going to position 1...");	
+    		psm.playTrajectory(to_tr);
     		
-    		psm.playTrajectory(joint_idx, to_tr);
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
 	 		ROS_INFO("Time elapsed: %f s", (elapsed));
 	 		if (elapsed >= testT)
-	 			break;	
-    		
+	 			break;
     		ros::Duration(0.5).sleep();
+    		
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
 	 		ROS_INFO("Time elapsed: %f s", (elapsed));
 	 		if (elapsed >= testT)
-	 			break;	
+	 			break;
     		ROS_INFO_STREAM("Going to position 2...");	
+    		psm.playTrajectory(back_tr);
     		
-    		psm.playTrajectory(joint_idx, back_tr);
     		//
     		elapsed =
 	 			std::chrono::high_resolution_clock::now()-start;
 	 		ROS_INFO("Time elapsed: %f s", (elapsed));
 	 		if (elapsed >= testT)
-	 			break;	
-    		
+	 			break;
     		ros::Duration(0.5).sleep();
     	}	
+    	
+    	ROS_INFO_STREAM("Test done going to final position...");	
+    	
+    	dvrk::Trajectory<dvrk::Pose> 
+			fin_tr(dvrk::TrajectoryFactory::
+				linearTrajectoryWithSmoothAcceleration(
+					psm.getPoseCurrent(), 
+					x0,
+					mT, mTacc, dt)); 	
+					
+		psm.playTrajectory(fin_tr);
     
     	//psm.home();
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");

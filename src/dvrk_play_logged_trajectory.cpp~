@@ -95,6 +95,7 @@ int main(int argc, char **argv)
 		// Play loaded trajectory
 		ROS_INFO("Playing loaded trajectory...");
 
+   		ROS_INFO_STREAM("Loop rate:\t" <<1/dt << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
     	psm.playTrajectory(tr);
     	
