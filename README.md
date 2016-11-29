@@ -19,3 +19,5 @@ Workspaces:
     	- x: 	(-0.226, 0.2188)
     	- y: 	(0.161, -0.178)
    		- z: 	(-0.04, -0.2222)
+      
+![alt tag](PSM_coordinates.png)
