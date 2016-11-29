@@ -19,4 +19,4 @@ PSM workspace:
     - y: 	(0.161, -0.178)
    	- z: 	(-0.04, -0.2222)
       
-![alt tag](PSM_coordinates.png)
+![alt tag](docs/PSM_coordinates.png)
