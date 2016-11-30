@@ -15,19 +15,19 @@ namespace dvrk {
     
 // TODO set maxvels for MTM-s and ECM
 const ArmTypes ArmTypes::MTML = ArmTypes("MTML", 8, 
-	{0.01, 5.0, std::numeric_limits<double>::infinity()},
-	{0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01});
+	{1.0, 1000.0, std::numeric_limits<double>::infinity()},
+	{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 const ArmTypes ArmTypes::MTMR = ArmTypes("MTMR", 8, 
-	{0.01, 5.0, std::numeric_limits<double>::infinity()},
-	{0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01});
+	{1.0, 1000.0, std::numeric_limits<double>::infinity()},
+	{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 const ArmTypes ArmTypes::PSM1 = ArmTypes("PSM1", 7, 
-	{1.0, 250.0, 15.0},
+	{1.0, 2000.0, 300.0},
 	{8.0, 25.0, 0.6, 6.0, 6.0, 9.0, 15.0});
 const ArmTypes ArmTypes::PSM2 = ArmTypes("PSM2", 7, 
-	{1.0, 25000000.0, 50.0},
+	{1.0, 2000.0, 300.0},
 	{8.0, 25.0, 0.6, 6.0, 6.0, 9.0, 15.0});
 const ArmTypes ArmTypes::ECM = ArmTypes("ECM", 6, 
-	{0.01, 5.0, std::numeric_limits<double>::infinity()},
-	{0.01, 0.01, 0.01, 0.01, 0.01, 0.01});
+	{1.0, 1000.0, std::numeric_limits<double>::infinity()},
+	{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 
 }

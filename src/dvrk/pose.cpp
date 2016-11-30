@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <ros/ros.h>
 #include "dvrk/pose.hpp"
 
 namespace dvrk {
@@ -114,6 +115,10 @@ namespace dvrk {
    		Pose::Distance d;
    		d.cartesian = (position - other.position).norm();
    		double cosAlha1_2 = orientation.dot(other.orientation);
+   		if (cosAlha1_2 > 1.0)
+   			cosAlha1_2 = 1.0;
+   		else if (cosAlha1_2 < -1.0)
+   			cosAlha1_2 = -1.0;	
    		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
    		d.jaw = std::abs(jaw - other.jaw);
    		return d;
@@ -133,6 +138,10 @@ namespace dvrk {
    		Pose::Distance d;
    		d.cartesian = 0.0;
    		double cosAlha1_2 = orientation.dot(otherOrientation);
+   		if (cosAlha1_2 > 1.0)
+   			cosAlha1_2 = 1.0;
+   		else if (cosAlha1_2 < -1.0)
+   			cosAlha1_2 = -1.0;	
    		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
    		d.jaw = 0.0;
    		return d;

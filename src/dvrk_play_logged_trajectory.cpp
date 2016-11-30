@@ -85,7 +85,7 @@ int main(int argc, char **argv)
    				linearTrajectoryWithSmoothAcceleration(
     				psm.getPoseCurrent(), 
 					tr[0],
-					1.0, 0.2, tr.dt); 
+					2.0, 0.2, tr.dt); 
 					
 		tr.dt /= speed;
 		psm.playTrajectory(to_start);

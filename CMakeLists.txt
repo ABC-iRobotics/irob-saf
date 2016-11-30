@@ -135,9 +135,11 @@ set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 ## Declare a C++ executable
 add_executable(dvrk_move_test src/dvrk_move_test.cpp)
+add_executable(dvrk_move_test_orig src/dvrk_move_test_orig.cpp)
 add_executable(dvrk_move_test_jaw src/dvrk_move_test_jaw.cpp)
 add_executable(dvrk_move_test_translate src/dvrk_move_test_translate.cpp)
 add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
+add_executable(dvrk_rviz_plot_trajectory src/dvrk_rviz_plot_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -156,6 +158,11 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
     dvrk_lib
  )
  
+ target_link_libraries(dvrk_move_test_orig
+   ${catkin_LIBRARIES}
+    dvrk_lib
+ )
+ 
  target_link_libraries(dvrk_move_test_jaw
    ${catkin_LIBRARIES}
     dvrk_lib
@@ -170,7 +177,13 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
    ${catkin_LIBRARIES}
     dvrk_lib
  )
+ 
  target_link_libraries( dvrk_log_trajectory
+   ${catkin_LIBRARIES}
+    dvrk_lib
+ )
+ 
+ target_link_libraries( dvrk_rviz_plot_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )

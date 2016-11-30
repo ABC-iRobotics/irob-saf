@@ -18,5 +18,6 @@ PSM workspace:
     - x: 	(-0.226, 0.2188)
     - y: 	(0.161, -0.178)
    	- z: 	(-0.04, -0.2222)
+  - HW and simulator coordinate systems are compatible and matching
       
 ![alt tag](docs/PSM_coordinates.png)

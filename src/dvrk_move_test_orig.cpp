@@ -86,32 +86,38 @@ int main(int argc, char **argv)
 
     	double r = 0.02;
     	
-    	dvrk::Pose poseto(0.0271533,	0.028501,	-0.0355035,
-    		-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
+    	//dvrk::Pose poseto(0.0271533,	0.028501,	-0.0355035,
+    	//	-0.0590722,	0.65363,	0.540358,	0.526584,	0.689405); 
     
-    	dvrk::Trajectory<dvrk::Pose> 
+    	/*dvrk::Trajectory<dvrk::Pose> 
     		to_tr(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				psm.getPoseCurrent(), 
 					poseto,
-					0.5,2.0, dt)); 
+					0.5,2.0, dt)); */
 	
-		dvrk::Trajectory<dvrk::Pose> 
+		/*dvrk::Trajectory<dvrk::Pose> 
 			back_tr(dvrk::
 				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
 					poseto, psm.getPoseCurrent(),
-					0.5,2.0, dt)); 
+					0.5,2.0, dt)); */
     	
     	
-    	/*Trajectory<Eigen::Vector3d>* circle_tr =
-    		TrajectoryFactory::circleTrajectoryHorizontal(
+    	dvrk::Trajectory<Eigen::Vector3d> circle_tr =
+    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, -r, 0.0),
-			3.0/speed, dt);*/   
+			3.0/speed, dt); 
+		
+		dvrk::Trajectory<Eigen::Vector3d> 
+			back_tr(dvrk::
+				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
+					circle_tr[circle_tr.size()-1], circle_tr[0],
+					0.5,2.0, dt));  
    	    
     	while(ros::ok()) {
-    		psm.playTrajectory(to_tr);
+    		psm.playTrajectory(circle_tr);
     		ros::Duration(1.0).sleep();
     		psm.playTrajectory(back_tr);
     		ros::Duration(1.0).sleep();

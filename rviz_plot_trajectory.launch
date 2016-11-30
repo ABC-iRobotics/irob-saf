@@ -1,0 +1,12 @@
+<!-- Launch file to log a trajectory during teleoperation -->
+
+<launch>
+  <arg name="arm" default="PSM1"/>
+  <arg name="rate" default="30"/>
+  <arg name="frame_id" default="PSM1_psm_base_link"/>
+  
+  <node name="dvrk_rviz_plot_trajectory"
+  	pkg="irob-dvrk-automation" type="dvrk_rviz_plot_trajectory" output="screen" 
+  	args="$(arg arm) $(arg rate) $(arg frame_id)"/>
+  	
+</launch>

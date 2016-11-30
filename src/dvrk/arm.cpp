@@ -379,6 +379,7 @@ void Arm::checkVelCartesian(const Pose& pose,
     			<< "Current pose:\t" << currPose << std::endl
     			<< "Velocity:\t" << d << std::endl
     			<< "MaxVelocity:\t" << arm_typ.maxVelPose << std::endl;
+    	//ROS_ERROR_STREAM(errstring.str());
 		throw std::runtime_error(errstring.str());
 	}
 }
