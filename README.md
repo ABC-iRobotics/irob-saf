@@ -15,9 +15,9 @@ PSM workspace:
   	- #6 jaw (rad): 				(0.0, 1.3)
   - cartesian  (in meters):
     - origin: cannula center point
-    - x: 	(-0.226, 0.2188)
-    - y: 	(0.161, -0.178)
-   	- z: 	(-0.04, -0.2222)
+      - x: (-0.215, 0.215)
+      - y: (-0.175, 0.160)
+      - z: (-0.040, -0.222)
   - HW and simulator coordinate systems are compatible and matching
       
 ![alt tag](docs/PSM_coordinates.png)
