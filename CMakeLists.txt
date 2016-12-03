@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
                         std_msgs
                         sensor_msgs
                         dvrk_kinematics
+                        optoforcesensor
                         )
 
 
@@ -127,6 +128,29 @@ add_library( dvrk_lib STATIC
 
 set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
+file(GLOB optoforce_lib_src
+    "src/optoforce/*.cpp"
+)
+
+
+add_library( optoforce_lib STATIC
+       ${optoforce_lib_src}
+       )
+
+set_target_properties( optoforce_lib  PROPERTIES LINKER_LANGUAGE CXX)
+
+file(GLOB dvrk_automation_lib_src
+    "src/dvrk_automation/*.cpp"
+)
+
+
+add_library( dvrk_automation_lib STATIC
+       ${dvrk_automation_lib_src}
+       )
+
+set_target_properties( dvrk_automation_lib  PROPERTIES LINKER_LANGUAGE CXX)
+
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -142,6 +166,8 @@ add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
 add_executable(dvrk_rviz_plot_trajectory src/dvrk_rviz_plot_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
+add_executable(dvrk_auto_puncture_test src/dvrk_auto_puncture_test.cpp)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -151,6 +177,15 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
   target_link_libraries(dvrk_lib
  ${catkin_LIBRARIES}
+ )
+ 
+  target_link_libraries(optoforce_lib
+ ${catkin_LIBRARIES}
+ )
+ 
+  target_link_libraries(dvrk_automation_lib
+ ${catkin_LIBRARIES}
+ dvrk_lib
  )
  
  target_link_libraries(dvrk_move_test
@@ -186,6 +221,13 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
  target_link_libraries( dvrk_rviz_plot_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
+ )
+ 
+  target_link_libraries( dvrk_auto_puncture_test
+   ${catkin_LIBRARIES}
+    dvrk_lib
+    optoforce_lib
+    dvrk_automation_lib
  )
 
 
