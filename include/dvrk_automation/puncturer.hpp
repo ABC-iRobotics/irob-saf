@@ -39,14 +39,47 @@ private:
     // States
     dvrk::PSM psm;
     optoforce::OptoforceListener oforce;
+    
+    double dt;
+    
+    // Safety params
+    Eigen::Vector3d workspaceLowerBounds;
+    Eigen::Vector3d workspaceUpperBounds;
 
+	// Never ever change jaw pos
+	double constJawPos;
+	
+	// Constants
+	static const double forceSurface;
+	static const double forceMaxPermitted;
+	static const double travelHeight;
+	static const double workSpaceMarginBottom;
+	static const double workSpaceMarginGeneral;
+	static const double raiseSpeedAir;
+	static const double raiseSpeedTissue;
+	static const double lowerSpeedAir;
+	static const double travelSpeed;
     
 public:
 	Puncturer(ros::NodeHandle, dvrk::ArmTypes);
 	~Puncturer();
+	
+	void doPunctureSeries(Eigen::Vector2d, Eigen::Vector2i, int,
+					double, double, double, double);
+	
+	void puncture();
+	
+	void safetyCheck();
+	void checkTrajectory(dvrk::Trajectory<dvrk::Pose>);
+	void checkPose(dvrk::Pose);
 
+private:
+	void setWorkspaceFromCurrent(Eigen::Vector2d);
+	void raiseToTravelHeight();
+	void goToLocation(Eigen::Vector2d);
+	void findTissueSurface();
+	
 	/*
-	void checkErrors();
 	void checkVelCartesian(const Pose&, const Pose&, double);
 	void checkVelJoint(const sensor_msgs::JointState&, 
 						const std::vector<double>&, double);
