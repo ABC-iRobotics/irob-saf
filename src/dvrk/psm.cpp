@@ -1,8 +1,9 @@
 /*
- * psm.cpp
+ *  psm.cpp
  *
- *  Created on: 2016. nov. 17.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-11-17
+ *  
  */
 
 #include "dvrk/psm.hpp"

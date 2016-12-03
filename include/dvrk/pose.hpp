@@ -1,7 +1,9 @@
 /*
- * pose.cpp
- *  Created on: 2016. okt. 27.
- *      Author: tamas
+ *  pose.cpp
+ *
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-27
+ *  
  */
 
 #ifndef DVRK_POSE_HPP_

@@ -1,8 +1,8 @@
 /*
- * dvrk_move_test.cpp
+ *  dvrk_move_test.cpp
  *
- *  Created on: 2016. okt. 10.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
  */
 
 #include <ros/ros.h>

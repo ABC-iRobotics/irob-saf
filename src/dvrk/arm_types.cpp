@@ -1,8 +1,9 @@
 /*
- * dvrk_arm.cpp
+ *  arm_types.cpp
  *
- *  Created on: 2016. okt. 10.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
+ *
  */
 
 #include "dvrk/arm_types.hpp"

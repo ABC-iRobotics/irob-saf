@@ -1,8 +1,9 @@
 /*
- * dvrk_log_trajectory.cpp
+ *  dvrk_rviz_plot_trajectory.cpp
  *
- *  Created on: 2016. okt. 26.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-26
+ *  
  */
 
 #include <ros/ros.h>

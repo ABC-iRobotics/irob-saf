@@ -1,3 +1,11 @@
+/*
+ * 	arm_types.hpp
+ * 	
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
+ *
+ */
+ 
 #ifndef DVRK_ARM_PARAMS_
 #define DVRK_ARM_PARAMS_
 

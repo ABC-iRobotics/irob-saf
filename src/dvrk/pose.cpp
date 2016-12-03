@@ -1,8 +1,9 @@
 /*
- * pose.cpp
+ *  pose.cpp
  *
- *  Created on: 2016. okt. 27.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-27
+ *  
  */
 
 #include <iostream>

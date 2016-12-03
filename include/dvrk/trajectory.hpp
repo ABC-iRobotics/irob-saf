@@ -1,8 +1,9 @@
 /*
- * trajectory.hpp
+ *  trajectory.hpp
  *
- *  Created on: 2016. okt. 24.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-24
+ *  
  */
 
 #ifndef DVRK_TRAJECTORY_HPP_

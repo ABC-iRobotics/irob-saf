@@ -1,8 +1,9 @@
 /*
- * dvrk_topics.hpp
+ *  dvrk_topics.hpp
  *
- *  Created on: 2016. okt. 10.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
+ *
  */
 
 #ifndef DVRK_TOPICS_HPP_

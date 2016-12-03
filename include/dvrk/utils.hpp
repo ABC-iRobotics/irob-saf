@@ -1,8 +1,9 @@
 /*
- * utils.hpp
+ *  utils.hpp
  *
- *  Created on: 2016. nov. 8.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-11-08
+ *  
  */
 
 #ifndef DVRK_UTILS_HPP_

@@ -1,8 +1,9 @@
 /*
- * dvrk_move_test.cpp
+ *  dvrk_play_logged_trajectory.cpp
  *
- *  Created on: 2016. okt. 27.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-27
+ *  
  */
 
 #include <ros/ros.h>

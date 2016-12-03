@@ -1,8 +1,9 @@
 /*
- * arm.hpp
+ * 	arm.hpp
+ * 	
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
  *
- *  Created on: 2016. okt. 10.
- *      Author: tamas
  */
 
 #ifndef DVRK_ARM_HPP_
