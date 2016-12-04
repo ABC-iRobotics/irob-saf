@@ -113,7 +113,11 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen include/dvrk)
+include_directories(include ${catkin_INCLUDE_DIRS} 
+								include/Eigen 
+								include/dvrk 
+								include/optoforce
+								include/dvrk_automation)
 
 ## Declare a C++ library
 
@@ -185,7 +189,8 @@ add_executable(dvrk_auto_puncture_test src/dvrk_auto_puncture_test.cpp)
  
   target_link_libraries(dvrk_automation_lib
  ${catkin_LIBRARIES}
- dvrk_lib
+ 	dvrk_lib
+ 	optoforce_lib
  )
  
  target_link_libraries(dvrk_move_test

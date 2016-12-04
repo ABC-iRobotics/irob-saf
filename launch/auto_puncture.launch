@@ -1,0 +1,13 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+
+  <arg name="arm" default="PSM1"/>
+  <arg name="init_needed" default="no_init_pos"/>
+  <arg name="rate" default="10"/>
+  
+  <node name="dvrk_auto_puncture_test"
+  	pkg="irob-dvrk-automation" type="dvrk_auto_puncture_test" output="screen" 
+  	args="$(arg arm) $(arg init_needed) $(arg rate)"/>
+  	
+</launch>

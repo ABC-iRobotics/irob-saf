@@ -61,20 +61,24 @@ private:
 	static const double travelSpeed;
     
 public:
-	Puncturer(ros::NodeHandle, dvrk::ArmTypes);
+	Puncturer(ros::NodeHandle, dvrk::ArmTypes, double);
 	~Puncturer();
 	
 	void doPunctureSeries(Eigen::Vector2d, Eigen::Vector2i, int,
-					double, double, double, double);
+					double, double, double, std::string);
 	
-	void puncture();
+	void puncture(double, double, double,
+						std::string, std::string);
 	
+	void raiseToSurface(double );
 	void safetyCheck();
 	void checkTrajectory(dvrk::Trajectory<dvrk::Pose>);
 	void checkPose(dvrk::Pose);
+	void checkPoseCurrent();
+	void checkForcesCurrent();
 
 private:
-	void setWorkspaceFromCurrent(Eigen::Vector2d);
+	void setWorkspaceFromCurrent(Eigen::Vector2d, double);
 	void raiseToTravelHeight();
 	void goToLocation(Eigen::Vector2d);
 	void findTissueSurface();
