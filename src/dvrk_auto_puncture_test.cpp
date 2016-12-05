@@ -65,11 +65,11 @@ int main(int argc, char **argv)
    	
    		// Do preprogrammed movement
    	 	Eigen::Vector2d scanningArea(-50.0 / 1000.0, -50.0 / 1000.0);
-		Eigen::Vector2i nLocations(5,5);
+		Eigen::Vector2i nLocations(3,3);
 		int nTrials=2;
 		double depth=5.0 / 1000.0; 
 		double speed=1.0 / 1000.0; 
-		double T=10.0; 
+		double T=8.0; 
 		std::string fileNameBase = "test";
 					
    	 	punct.doPunctureSeries(scanningArea,

@@ -53,6 +53,7 @@ private:
 	static const double forceSurface;
 	static const double forceMaxPermitted;
 	static const double travelHeight;
+	static const double surfaceOffset;
 	static const double workSpaceMarginBottom;
 	static const double workSpaceMarginGeneral;
 	static const double raiseSpeedAir;
@@ -82,6 +83,7 @@ private:
 	void raiseToTravelHeight();
 	void goToLocation(Eigen::Vector2d);
 	void findTissueSurface();
+	void waitForTopicsInit();
 	
 	/*
 	void checkVelCartesian(const Pose&, const Pose&, double);

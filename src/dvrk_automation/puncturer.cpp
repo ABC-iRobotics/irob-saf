@@ -18,11 +18,12 @@ namespace dvrk_automation {
 const double Puncturer::forceSurface = 50.0;	//mN
 const double Puncturer::forceMaxPermitted = 5000.0;	//mN
 const double Puncturer::travelHeight = 20.0 / 1000.0;	//m
+const double Puncturer::surfaceOffset = 1.0 / 1000.0;	//m;
 const double Puncturer::workSpaceMarginBottom = 10.0 / 1000.0; //m
 const double Puncturer::workSpaceMarginGeneral = 40.0 / 1000.0;	//m
 const double Puncturer::raiseSpeedAir = 40.0 / 1000.0; // m/s
 const double Puncturer::raiseSpeedTissue = 5.0 / 1000.0; // m/s
-const double Puncturer::lowerSpeedAir = 1.0 / 1000.0; //10.0 / 1000.0; // m/s // 
+const double Puncturer::lowerSpeedAir = 5.0 / 1000.0; // m/s // 
 const double Puncturer::travelSpeed  = 20.0 / 1000.0; // m/s
 
 Puncturer::Puncturer(ros::NodeHandle nh, dvrk::ArmTypes arm_typ, double dt): 
@@ -54,17 +55,13 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
   		// Set jaw pos
 		constJawPos = psm.getPoseCurrent().jaw;
 		// Wait while optoforce and dvrk send messages
-		ros::Rate loop_rate(1.0/dt);
-		while (ros::ok() && psm.getPoseCurrent().position.norm() < 0.001
-			&& oforce.getForcesCurrent().norm() < 0.1)
-  		{
-  			loop_rate.sleep();
-  		}
+		waitForTopicsInit();
 	
 		// Go to init pos: raise to travel height, calculate safety params
 		setWorkspaceFromCurrent(scanningArea, depth);
 		raiseToTravelHeight();
 		ros::Duration(0.5).sleep();
+		oforce.calibrateOffsets();
 	
 		// Find surface, refine safety params
 		ROS_INFO_STREAM("Finding surface of tissue...");
@@ -84,15 +81,20 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
 			for (int i = 0; i < nLocations.x(); i++)
 			{
 				// Go to pos
+				raiseToTravelHeight();
+				ros::Duration(0.5).sleep();
+				
 				Eigen::Vector2d curr_loc_step(i*location_step.x(),
 												 j*location_step.y());
 				Eigen::Vector2d curr_location = start_location + curr_loc_step;
 				goToLocation(curr_location);
 				ROS_INFO_STREAM("Location " << i << ", " << j);
-				ROS_INFO_STREAM("Finding surface of tissue...");
 				ros::Duration(0.5).sleep();
+				// Calibrate optoforce
+				oforce.calibrateOffsets();
 				
 				// Find surface
+				ROS_INFO_STREAM("Finding surface of tissue...");
 				findTissueSurface();
 				double surface_z = psm.getPoseCurrent().position.z();
 				ROS_INFO_STREAM("Surface found, starting " <<
@@ -121,6 +123,16 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
   		ROS_ERROR_STREAM("Program stopped by an error ...");
   	}
 
+}
+
+void Puncturer::waitForTopicsInit()
+{
+	ros::Rate loop_rate(1.0/dt);
+	while (ros::ok() && psm.getPoseCurrent().position.norm() < 0.001
+			&& oforce.getForcesCurrent().norm() < 0.1)
+  	{
+  		loop_rate.sleep();
+  	}
 }
 
 void Puncturer::setWorkspaceFromCurrent(Eigen::Vector2d scanningArea, 
@@ -217,6 +229,20 @@ void Puncturer::findTissueSurface()
 		loop_rate.sleep();
 		safetyCheck();	
 	}
+	// Raise to offset
+	p0 = psm.getPoseCurrent();
+	p1 = p0;
+	Eigen::Vector3d translate_to_surface(0.0, 0.0, surfaceOffset);
+	p1.jaw = constJawPos;
+	p1.position += translate_to_surface;
+	// TODO set orientation
+	dvrk::Trajectory<dvrk::Pose> to_surface(dvrk::TrajectoryFactory::
+    			linearTrajectoryWithSmoothAcceleration(
+    				psm.getPoseCurrent(), 
+					p1,
+					(p0.dist(p1).cartesian / raiseSpeedTissue), 0.01, dt));
+	checkTrajectory(to_surface);
+	psm.playTrajectory(to_surface);
 }
 
 void Puncturer::puncture(double depth, double speed, double T,

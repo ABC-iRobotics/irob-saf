@@ -171,6 +171,7 @@ add_executable(dvrk_rviz_plot_trajectory src/dvrk_rviz_plot_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
 add_executable(dvrk_auto_puncture_test src/dvrk_auto_puncture_test.cpp)
+add_executable(optoforce_helper src/optoforce_helper.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -234,6 +235,13 @@ add_executable(dvrk_auto_puncture_test src/dvrk_auto_puncture_test.cpp)
     optoforce_lib
     dvrk_automation_lib
  )
+ 
+ target_link_libraries( optoforce_helper
+   ${catkin_LIBRARIES}
+    optoforce_lib
+ )
+ 
+ 
 
 
 #############

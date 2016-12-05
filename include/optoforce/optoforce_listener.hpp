@@ -34,6 +34,7 @@ private:
 
     // States
     Eigen::Vector3d forces;
+    Eigen::Vector3d offsets;
 
     // Subscribers
     ros::Subscriber forces_sub;
@@ -48,6 +49,7 @@ public:
     void forcesCB(const optoforcesensor::FT); 
     
     Eigen::Vector3d getForcesCurrent();
+    void calibrateOffsets();
 	
 };
 
