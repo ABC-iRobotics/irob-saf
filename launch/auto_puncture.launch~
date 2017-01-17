@@ -5,7 +5,7 @@
   <arg name="arm" default="PSM1"/>
   <arg name="rate" default="100"/>
   <arg name="filename_base"
-  	default="/home/dvrk_nat/catkin_ws/data/puncture/puncture_test"/>
+  	default="/home/tamas/catkin_ws/data/puncture/puncture_test"/>
   	
   <arg name="area_x" default="-50"/>
   <arg name="area_y" default="-50"/>
