@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <cmath> 
 #include <ros/ros.h>
 #include <ros/package.h>
 

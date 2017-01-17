@@ -61,6 +61,7 @@ void PSM::moveJawRelative(double movement, double dt)
     
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -79,6 +80,7 @@ void PSM::moveJawAbsolute(double jaw, double dt)
     
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -96,6 +98,7 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
     
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     

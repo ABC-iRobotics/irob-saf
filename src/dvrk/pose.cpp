@@ -7,7 +7,7 @@
  */
 
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <ros/ros.h>
 #include "dvrk/pose.hpp"
 
@@ -89,6 +89,14 @@ namespace dvrk {
    		res.position = ((1.0-a) * position) + ((a) * other.position);
    		res.jaw = ((1.0-a) * jaw) + ((a) * other.jaw);
    		return res;
+   	}
+   	
+   	bool Pose::isNaN() const
+   	{
+   		return (std::isnan(position.x()) || std::isnan(position.y())
+   				|| std::isnan(position.z()) || std::isnan(orientation.x())
+   				|| std::isnan(orientation.y()) || std::isnan(orientation.z())
+   				|| std::isnan(orientation.w()) || std::isnan(jaw));
    	}
    	
    	geometry_msgs::Pose Pose::toRosPose() const

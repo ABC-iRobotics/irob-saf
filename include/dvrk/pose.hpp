@@ -58,6 +58,8 @@ class Pose {
    	
    	Pose interpolate(double, const Pose&) const;
    	
+   	bool isNaN() const;
+   	
    	Distance dist(const Pose&) const;
    	Distance dist(const Eigen::Vector3d&) const;
    	Distance dist(const Eigen::Quaternion<double>&) const;

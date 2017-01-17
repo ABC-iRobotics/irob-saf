@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include "std_msgs/String.h"
@@ -109,8 +110,10 @@ public:
 	
 	void checkErrors();
 	void checkVelCartesian(const Pose&, const Pose&, double);
+	void checkNaNCartesian(const Pose&);
 	void checkVelJoint(const sensor_msgs::JointState&, 
 						const std::vector<double>&, double);
+	void checkNaNJoint(const sensor_msgs::JointState&);
 	
 };
 

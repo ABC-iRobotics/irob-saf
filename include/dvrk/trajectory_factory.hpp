@@ -36,6 +36,12 @@ class TrajectoryFactory
 								double x1=0.0, double x2=1.0)
 		{
 			Trajectory<double> v;
+			if (N <= 1)
+			{
+				// Generating NaN
+				v.addPoint(interpolate(0.5, x1, x2));
+				return v;
+			}
 			for (int i = 0; i < N; i++)
 			{
 				v.addPoint(interpolate(((double)i)/(N-1), x1, x2));
@@ -51,12 +57,11 @@ class TrajectoryFactory
 								double x1=0.0, double x2=1.0)
 		{
 			Trajectory<double> v, steps;
-			//double maxStep = (std::sqrt(1.0+(8*N))-1.0)/2.0;
 			double maxStep = (2.0*(x2-x1))/N;
 			steps = uniformRamp(N, 0.0, maxStep);
 			
 			double a = x1;
-			for (int i; i < N; i++)
+			for (int i = 0; i < N; i++)
 			{
 				a += steps[i];
 				v.addPoint(interpolate(a, x1, x2));
@@ -73,18 +78,17 @@ class TrajectoryFactory
 			Trajectory<double> v, steps;
 		
 			double accRatio = ((double)Nacc) / Nfull;
-			//double maxStep = std::sqrt((accRatio*accRatio)+2)-accRatio;
 			double maxStep = (x2-x1)/(Nfull-Nacc);
 			steps = uniformRamp(Nacc, 0.0, maxStep);
 			
 			double a = x1;
-			for (int i; i < Nacc; i++)
+			for (int i = 0; i < Nacc; i++)
 			{
 				a += steps[i];
 				v.addPoint(interpolate(a, x1, x2));
 			}
 			
-			for (int i; i < Nfull-(2*Nacc); i++)
+			for (int i = 0; i < Nfull-(2*Nacc); i++)
 			{
 				a += maxStep;
 				v.addPoint(interpolate(a, x1, x2));
@@ -92,7 +96,7 @@ class TrajectoryFactory
 			
 			steps.reverse();
 			
-			for (int i; i < Nacc; i++)
+			for (int i = 0; i < Nacc; i++)
 			{
 				a += steps[i];
 				v.addPoint(interpolate(a, x1, x2));

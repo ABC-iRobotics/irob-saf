@@ -255,6 +255,7 @@ void Arm::moveJointRelative(int joint_idx, double movement, double dt)
     
     // Safety
     checkErrors();
+    checkNaNJoint(new_position_joint);
     checkVelJoint(new_position_joint, currJoint, dt);
     // End safety
     
@@ -272,6 +273,7 @@ void Arm::moveJointAbsolute(int joint_idx, double pos, double dt)
     
    	// Safety
     checkErrors();
+    checkNaNJoint(new_position_joint);
     checkVelJoint(new_position_joint, currJoint, dt);
     // End safety
     
@@ -290,6 +292,7 @@ void Arm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
   	
   	// Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -310,6 +313,7 @@ void Arm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
     
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -330,6 +334,7 @@ void Arm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt
    	
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -346,6 +351,7 @@ void Arm::moveCartesianAbsolute(Pose pose, double dt)
     
     // Safety
     checkErrors();
+    checkNaNCartesian(pose);
     checkVelCartesian(pose, currPose, dt);
     // End safety
     
@@ -385,6 +391,18 @@ void Arm::checkVelCartesian(const Pose& pose,
 	}
 }
 
+void Arm::checkNaNCartesian(const Pose& pose)
+{
+    if (pose.isNaN())
+    {
+    	std::stringstream errstring;
+    	errstring << "Desired pose is NaN:\t"<< std::endl
+    			<< pose << std::endl;
+    	//ROS_ERROR_STREAM(errstring.str());
+		throw std::runtime_error(errstring.str());
+	}
+}
+
 void Arm::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
 						const std::vector<double>& currJoint, double dt)
 {
@@ -415,6 +433,23 @@ void Arm::checkVelJoint(const sensor_msgs::JointState& new_position_joint,
 			throw std::runtime_error(errstring.str());
 		}
 	}
+}
+
+void Arm::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)
+{
+	bool foundNaN = false;
+    for (int i = 0; i < arm_typ.dof; i++) {
+    	foundNaN = foundNaN || std::isnan(new_position_joint.position[i]);
+    }		
+    if (foundNaN)
+   	{
+    	std::stringstream errstring;
+    	errstring << "Desired joint vector is NaN:\t" 
+    					<< new_position_joint.position
+    					<< std::endl;
+    		//ROS_ERROR_STREAM(errstring.str());
+			throw std::runtime_error(errstring.str());
+		}
 }
 
 /*

@@ -241,7 +241,7 @@ void Puncturer::findTissueSurface()
     			linearTrajectoryWithSmoothAcceleration(
     				psm.getPoseCurrent(), 
 					p1,
-					(p0.dist(p1).cartesian / raiseSpeedTissue), 0.01, dt));
+					(p0.dist(p1).cartesian / raiseSpeedTissue), 0.001, dt));
 	checkTrajectory(to_surface);
 	psm.playTrajectory(to_surface);
 }
@@ -387,6 +387,20 @@ void Puncturer::checkPose(dvrk::Pose p)
     					<< std::endl
     					<< "Constant jaw angle:\t" 
     					<< constJawPos
+    					<< std::endl;
+    	//ROS_ERROR_STREAM(errstring.str());
+		throw std::runtime_error(errstring.str());
+	}
+	if (std::isnan(position.x()) || std::isnan(position.y()) 
+		|| std::isnan(position.z())
+		|| std::isnan(p.orientation.x()) ||  std::isnan(p.orientation.y())
+		||  std::isnan(p.orientation.z()) ||  std::isnan(p.orientation.w()))
+	{
+		std::stringstream errstring;
+    		errstring << 
+    		"NaN in pose: " 
+    					<< std::endl
+    					<< p
     					<< std::endl;
     	//ROS_ERROR_STREAM(errstring.str());
 		throw std::runtime_error(errstring.str());
