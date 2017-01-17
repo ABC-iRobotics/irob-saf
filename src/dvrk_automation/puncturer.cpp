@@ -92,6 +92,7 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
 				ros::Duration(0.5).sleep();
 				// Calibrate optoforce
 				oforce.calibrateOffsets();
+				ROS_INFO_STREAM("Sensor calibrated");
 				
 				// Find surface
 				ROS_INFO_STREAM("Finding surface of tissue...");
@@ -103,8 +104,8 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
 				
 				// For nTrials
 				std::stringstream filename;
-    			filename << fileNameBase << "_" << i <<	// TODO .dat
-    										"_" << j; 
+    			filename << fileNameBase << "_" << i <<
+    										"_" << j << ".dat"; 
 				for (int k = 0; k < nTrials; k++)
 				{
 					ROS_INFO_STREAM("Location " << i << ", " << j
@@ -255,24 +256,53 @@ void Puncturer::puncture(double depth, double speed, double T,
 	dvrk::Pose p1 = p0;
 	ros::Rate loop_rate(1.0/dt);
 	double t = 0.0;
+	std::vector<double> forces;
+	std::vector<double> depths;
 	while (ros::ok() && p1.position.z() > desired_z)
 	{
-		// TODO collect data
+		forces.push_back(oforce.getForcesCurrent().norm());
+		depths.push_back(psm.getPoseCurrent().position.z());
+		
 		p1 -= step;
 		checkPose(p1);
 		psm.moveCartesianAbsolute(p1);
 		safetyCheck();
-		loop_rate.sleep();	
+		
 		t += dt;
+		loop_rate.sleep();	
 	}
 	while (ros::ok() && t <= T)
 	{	
-		// TODO collect data
-		loop_rate.sleep();
+		forces.push_back(oforce.getForcesCurrent().norm());
+		depths.push_back(psm.getPoseCurrent().position.z());
+		
 		t += dt;
+		loop_rate.sleep();
 	}
 
-	// TODO Log results to file, one file for each location
+	//Log results to file, one file for each location
+	writeData(filename, comment, depths, forces);
+}
+
+void Puncturer::writeData(std::string filename, std::string comment,
+					std::vector<double>& depths, std::vector<double>& forces)
+{
+	std::ofstream logfile;
+    logfile.open (filename.c_str(), std::ofstream::out | std::ofstream::app);
+    
+    if (!logfile.is_open())
+		throw std::runtime_error("Cannot open file " + filename);
+	
+	// The first line is always the comment
+	logfile << comment << std::endl;
+	// The second line is always the dt
+	logfile << dt << std::endl;
+	for (int i = 0; i < depths.size(); i++)
+		logfile << depths[i] << "\t" << forces[i]<< std::endl;
+	
+	logfile.flush();
+	logfile.close();
+	ROS_INFO_STREAM("Measured data saved to " << filename);
 }
 
 void Puncturer::safetyCheck()

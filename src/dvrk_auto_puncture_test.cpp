@@ -28,22 +28,21 @@ int main(int argc, char **argv)
 {
 
 	// Check command line arguments
-	if (argc < 4) 
+	if (argc < 12) 
 	{
 		std::cout << 
-		"Use with params: PSM1/PSM2; init_pos/no_init_pos; rate" 
+		"Use with params (in s and mm): PSM1/PSM2; rate; filename_base; "
+		<< "area_x; area_y; nlocs_x; nlocs_y; ntrials; depth; speed; T" 
 		<< std::endl;
 		return 1;
 	}
 	
-	std::istringstream ss1(argv[3]);
+	std::istringstream ss1(argv[2]);
 	int rate_command;
 	ss1 >> rate_command;
 	
 	double dt = 1.0/ rate_command;
-	dvrk::Trajectory<double> to_enable_cartesian;
-	dvrk::Trajectory<dvrk::Pose> circle_tr;
-	
+
 	
 	// Initialize ros node
     ros::init(argc, argv, "irob_dvrk_auto_puncture_test");
@@ -55,29 +54,63 @@ int main(int argc, char **argv)
     			dvrk::ArmTypes::typeForString(argv[1]),
     			dt);
     	ros::Duration(1.0).sleep();
-    	//psm.home(); 
-		// Init position if necessary
-		if (std::string(argv[2]) == "init_pos")
-		{
-			// init   	 		
-   		}
-  
    	
-   		// Do preprogrammed movement
-   	 	Eigen::Vector2d scanningArea(-50.0 / 1000.0, -50.0 / 1000.0);
-		Eigen::Vector2i nLocations(3,3);
-		int nTrials=2;
-		double depth=5.0 / 1000.0; 
-		double speed=1.0 / 1000.0; 
-		double T=8.0; 
-		std::string fileNameBase = "test";
-					
+   		// Parse arguments
+   		std::string fileNameBase = argv[3];
+   		
+   		ss1.str(argv[4]);
+   		ss1.clear();
+   		double area_x;
+   		ss1 >> area_x;
+   		
+   		ss1.str(argv[5]);
+   		ss1.clear();
+   		double area_y;
+   		ss1 >> area_y;
+   		
+   		Eigen::Vector2d scanningArea(area_x / 1000.0, area_y / 1000.0);
+   		
+   		ss1.str(argv[6]);
+   		ss1.clear();
+   		int nlocs_x;
+   		ss1 >> nlocs_x;
+   		
+   		ss1.str(argv[7]);
+   		ss1.clear();
+   		int nlocs_y;
+   		ss1 >> nlocs_y;
+   		
+   		Eigen::Vector2i nLocations(nlocs_x, nlocs_y);
+   		
+   		ss1.str(argv[8]);
+   		ss1.clear();
+   		int ntrials;
+   		ss1 >> ntrials;
+   		
+   		ss1.str(argv[9]);
+   		ss1.clear();
+   		double depth;
+   		ss1 >> depth;
+   		depth /= 1000.0;
+   		
+   		ss1.str(argv[10]);
+   		ss1.clear();
+   		double speed;
+   		ss1 >> speed;
+   		speed /= 1000.0;
+   		
+   		ss1.str(argv[11]);
+   		ss1.clear();
+   		double T;
+   		ss1 >> T;
+   		
+   	 		
+		// Do puncture series			
    	 	punct.doPunctureSeries(scanningArea,
-					nLocations, nTrials,
+					nLocations, ntrials,
 					depth, speed, T, 
 					fileNameBase);
     
-    	//psm.home();
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     } catch (const std::exception& e) {

@@ -3,11 +3,21 @@
 <launch>
 
   <arg name="arm" default="PSM1"/>
-  <arg name="init_needed" default="no_init_pos"/>
   <arg name="rate" default="10"/>
+  <arg name="filename_base"
+  	default="/home/tamas/catkin_ws/data/puncture/puncture_test"/>
+  	
+  <arg name="area_x" default="-50"/>
+  <arg name="area_y" default="-50"/>
+  <arg name="nlocs_x" default="3"/>
+  <arg name="nlocs_y" default="3"/>
+  <arg name="ntrials" default="2"/>
+  <arg name="depth" default="5.0"/>
+  <arg name="speed" default="1.0"/>
+  <arg name="T" default="8.0"/>
   
   <node name="dvrk_auto_puncture_test"
   	pkg="irob-dvrk-automation" type="dvrk_auto_puncture_test" output="screen" 
-  	args="$(arg arm) $(arg init_needed) $(arg rate)"/>
+  	args="$(arg arm) $(arg rate) $(arg filename_base) $(arg area_x) $(arg area_y) $(arg nlocs_x) $(arg nlocs_y) $(arg ntrials) $(arg depth) $(arg speed) $(arg T)"/>
   	
 </launch>

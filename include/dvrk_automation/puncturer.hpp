@@ -12,6 +12,9 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <fstream>
+#include <string>
+#include <stdexcept>
 #include <ros/ros.h>
 #include <ros/package.h>
 
@@ -77,6 +80,9 @@ public:
 	void checkPose(dvrk::Pose);
 	void checkPoseCurrent();
 	void checkForcesCurrent();
+	
+	void writeData(std::string, std::string,
+					std::vector<double>&, std::vector<double>&);
 
 private:
 	void setWorkspaceFromCurrent(Eigen::Vector2d, double);
