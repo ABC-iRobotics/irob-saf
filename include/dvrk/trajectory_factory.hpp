@@ -161,13 +161,50 @@ class TrajectoryFactory
 		{
 			Trajectory<Eigen::Vector3d> tr(dt);
 			int N = (int)round(T / dt)+1;
-			
-			double ang = 0.0;
-			for (int i = 0; i < N; i++, ang+=toAngle/N)
+			Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
+			for (int i = 0; i < ramp.size(); i++)
 			{
 				Eigen::Vector3d p = start-center;
-				Eigen::Vector3d p1(p.x()*cos(ang)-p.y()*sin(ang), 
-					p.y()*cos(ang)+p.x()*sin(ang), p.z());
+				Eigen::Vector3d p1(p.x()*cos(ramp[i])-p.y()*sin(ramp[i]), 
+					p.y()*cos(ramp[i])+p.x()*sin(ramp[i]), p.z());
+				Eigen::Vector3d p2 = p1+center;
+				tr.addPoint(p2);
+			}
+			return tr;
+		}
+		
+		static Trajectory<Eigen::Vector3d> circleTrajectoryVerticalY(
+			Eigen::Vector3d start, 
+			double toAngle, Eigen::Vector3d center,
+			double T, double dt)
+		{
+			Trajectory<Eigen::Vector3d> tr(dt);
+			int N = (int)round(T / dt)+1;
+			Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
+			for (int i = 0; i < ramp.size(); i++)
+			{
+				Eigen::Vector3d p = start-center;
+				Eigen::Vector3d p1(p.x(), 
+					p.y()*cos(ramp[i])+p.z()*sin(ramp[i]), p.z()*cos(ramp[i])-p.y()*sin(ramp[i]));
+				Eigen::Vector3d p2 = p1+center;
+				tr.addPoint(p2);
+			}
+			return tr;
+		}
+		
+		static Trajectory<Eigen::Vector3d> circleTrajectoryVerticalX(
+			Eigen::Vector3d start, 
+			double toAngle, Eigen::Vector3d center,
+			double T, double dt)
+		{
+			Trajectory<Eigen::Vector3d> tr(dt);
+			int N = (int)round(T / dt)+1;
+			Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
+			for (int i = 0; i < ramp.size(); i++)
+			{
+				Eigen::Vector3d p = start-center;
+				Eigen::Vector3d p1(p.x()*cos(ramp[i])+p.z()*sin(ramp[i]), 
+					p.y(), p.z()*cos(ramp[i])-p.x()*sin(ramp[i]));
 				Eigen::Vector3d p2 = p1+center;
 				tr.addPoint(p2);
 			}

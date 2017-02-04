@@ -104,23 +104,83 @@ int main(int argc, char **argv)
 					0.5,2.0, dt)); */
     	
     	
-    	dvrk::Trajectory<Eigen::Vector3d> circle_tr =
+    	
+		
+		/*dvrk::Trajectory<Eigen::Vector3d> 
+			back_tr(dvrk::
+				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
+					circle_tr[circle_tr.size()-1], circle_tr[0],
+					0.5,2.0, dt));  */
+   	    
+    	while(ros::ok()) {
+    		dvrk::Trajectory<Eigen::Vector3d> circle_tr =
     		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, -r, 0.0),
 			3.0/speed, dt); 
-		
-		dvrk::Trajectory<Eigen::Vector3d> 
-			back_tr(dvrk::
-				TrajectoryFactory::linearTrajectoryWithSmoothAcceleration(
-					circle_tr[circle_tr.size()-1], circle_tr[0],
-					0.5,2.0, dt));  
-   	    
-    	while(ros::ok()) {
-    		psm.playTrajectory(circle_tr);
+			
+			psm.playTrajectory(circle_tr);
     		ros::Duration(1.0).sleep();
+    		
+			dvrk::Trajectory<Eigen::Vector3d> back_tr =
+    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+    		psm.getPositionCartesianCurrent(), 
+			-2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, r, 0.0),
+			3.0/speed, dt); 
+    		
     		psm.playTrajectory(back_tr);
+    		ros::Duration(1.0).sleep();
+    		
+    		dvrk::Trajectory<Eigen::Vector3d> circle_tr2 =
+    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+    		psm.getPositionCartesianCurrent(), 
+			2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(r, 0.0, 0.0),
+			3.0/speed, dt); 
+			
+			psm.playTrajectory(circle_tr2);
+    		ros::Duration(1.0).sleep();
+    		
+			dvrk::Trajectory<Eigen::Vector3d> back_tr2 =
+    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+    		psm.getPositionCartesianCurrent(), 
+			-2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(-r, 0.0, 0.0),
+			3.0/speed, dt); 
+    		
+    		psm.playTrajectory(back_tr2);
+    		ros::Duration(1.0).sleep();
+    		
+    		/*dvrk::Trajectory<Eigen::Vector3d> circle_tr3 =
+    		dvrk::TrajectoryFactory::circleTrajectoryVertical(
+    		psm.getPositionCartesianCurrent(), 
+			2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, 0.0, r),
+			3.0/speed, dt); 
+			
+			psm.playTrajectory(circle_tr3);
+    		ros::Duration(1.0).sleep();*/
+    		
+			dvrk::Trajectory<Eigen::Vector3d> back_tr3 =
+    		dvrk::TrajectoryFactory::circleTrajectoryVerticalY(
+    		psm.getPositionCartesianCurrent(), 
+			-2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, 0.0, -r),
+			3.0/speed, dt); 
+    		
+    		psm.playTrajectory(back_tr3);
+    		ros::Duration(1.0).sleep();
+    		
+    		dvrk::Trajectory<Eigen::Vector3d> back_tr4 =
+    		dvrk::TrajectoryFactory::circleTrajectoryVerticalX(
+    		psm.getPositionCartesianCurrent(), 
+			-2*M_PI, psm.getPositionCartesianCurrent() + 
+			Eigen::Vector3d(0.0, 0.0, -r),
+			3.0/speed, dt); 
+    		
+    		psm.playTrajectory(back_tr4);
     		ros::Duration(1.0).sleep();
     	}	
     
