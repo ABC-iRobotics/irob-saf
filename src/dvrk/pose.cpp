@@ -1,13 +1,17 @@
 /*
- * pose.cpp
+ *  pose.cpp
  *
- *  Created on: 2016. okt. 27.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-27
+ *  
  */
 
 #include <iostream>
-#include <math.h>
-#include "pose.hpp"
+#include <cmath>
+#include <ros/ros.h>
+#include "dvrk/pose.hpp"
+
+namespace dvrk {
 
  	Pose::Pose(): position(0.0, 0.0, 0.0), 
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}
@@ -82,9 +86,17 @@
    	{
    		Pose res;
    		res.orientation = orientation.slerp(a, other.orientation);
-   		res.position = ((1-a) * position) + ((a) * other.position);
-   		res.jaw = ((1-a) * jaw) + ((a) * other.jaw);
+   		res.position = ((1.0-a) * position) + ((a) * other.position);
+   		res.jaw = ((1.0-a) * jaw) + ((a) * other.jaw);
    		return res;
+   	}
+   	
+   	bool Pose::isNaN() const
+   	{
+   		return (std::isnan(position.x()) || std::isnan(position.y())
+   				|| std::isnan(position.z()) || std::isnan(orientation.x())
+   				|| std::isnan(orientation.y()) || std::isnan(orientation.z())
+   				|| std::isnan(orientation.w()) || std::isnan(jaw));
    	}
    	
    	geometry_msgs::Pose Pose::toRosPose() const
@@ -112,6 +124,10 @@
    		Pose::Distance d;
    		d.cartesian = (position - other.position).norm();
    		double cosAlha1_2 = orientation.dot(other.orientation);
+   		if (cosAlha1_2 > 1.0)
+   			cosAlha1_2 = 1.0;
+   		else if (cosAlha1_2 < -1.0)
+   			cosAlha1_2 = -1.0;	
    		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
    		d.jaw = std::abs(jaw - other.jaw);
    		return d;
@@ -131,6 +147,10 @@
    		Pose::Distance d;
    		d.cartesian = 0.0;
    		double cosAlha1_2 = orientation.dot(otherOrientation);
+   		if (cosAlha1_2 > 1.0)
+   			cosAlha1_2 = 1.0;
+   		else if (cosAlha1_2 < -1.0)
+   			cosAlha1_2 = -1.0;	
    		d.angle = std::abs((acos(cosAlha1_2) * 2.0*360.0)/(2.0*M_PI));
    		d.jaw = 0.0;
    		return d;
@@ -202,7 +222,7 @@
    	
    	
    	
-   	
+}
    	
    	
    	

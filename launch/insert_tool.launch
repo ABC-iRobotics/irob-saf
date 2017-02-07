@@ -1,0 +1,21 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+
+  	<arg name="arm" default="PSM1"/>
+  	<arg name="depth" default="70"/> <!-- mm -->
+  	<arg name="rate" default="100"/>
+  	<arg name="speed" default="1"/>
+
+  
+	<node name="insert_tool"
+  		pkg="irob-dvrk-automation" type="insert_tool" output="screen">
+  		
+  		<param name="arm" type="string" value="$(arg arm)" />
+  		<param name="depth" type="double" value="$(arg depth)" />
+  		<param name="rate" type="double" value="$(arg rate)" />
+  		<param name="speed" type="double" value="$(arg speed)" />
+
+	</node>
+  	
+</launch>

@@ -1,12 +1,13 @@
 /*
- * trajectory.hpp
+ *  trajectory.hpp
  *
- *  Created on: 2016. okt. 24.
- *      Author: tamas
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-24
+ *  
  */
 
-#ifndef TRAJECTORY_HPP_
-#define TRAJECTORY_HPP_
+#ifndef DVRK_TRAJECTORY_HPP_
+#define DVRK_TRAJECTORY_HPP_
 
 #include <iostream>
 #include <ros/ros.h>
@@ -14,7 +15,9 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 
+namespace dvrk { 
 
 template <class T>
 class Trajectory 
@@ -28,9 +31,11 @@ class Trajectory
    		Trajectory(double);
    		Trajectory(std::string);
    		Trajectory(const Trajectory<T>&);
+   		Trajectory(Trajectory<T>&&);
 		void clear();
 		void addPoint(T);
 		T operator[](const int) const;
+		void reverse();
 		int size() const;
 		double getLengthSec() const;
 		void writeToFile(std::string) const;
@@ -86,6 +91,10 @@ Trajectory<T>::Trajectory(const Trajectory<T>& other): dt(other.dt)
 	for (int i = 0; i < other.size(); i++)
 		points.push_back(other[i]);
 }
+
+template <class T>
+Trajectory<T>::Trajectory(Trajectory<T>&& other): dt(other.dt), 
+		points(std::move(other.points)) {}
 
 template <class T>
 void Trajectory<T>::swap(Trajectory<T>& other)
@@ -147,6 +156,12 @@ T Trajectory<T>::operator[](const int i) const
 {
 	return points[i];
 }
+
+template <class T>
+void Trajectory<T>::reverse()
+{
+	std::reverse(points.begin(), points.end());
+}
 		
 template <class T>
 int Trajectory<T>::size() const
@@ -182,6 +197,6 @@ void Trajectory<T>::writeToFile(std::string filename) const
 		<<" points succesfully logged to " << filename << std::endl;
 }
 
-
+}
 
 #endif

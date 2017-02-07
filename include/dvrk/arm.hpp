@@ -1,8 +1,9 @@
 /*
- * dvrk_arm.hpp
+ * 	arm.hpp
+ * 	
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-10
  *
- *  Created on: 2016. okt. 10.
- *      Author: tamas
  */
 
 #ifndef DVRK_ARM_HPP_
@@ -11,24 +12,26 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float32.h"
-#include "dvrk_arm_types.hpp"
-#include "dvrk_arm_topics.hpp"
-#include "pose.hpp"
-#include "trajectory.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include "dvrk_utils.hpp"
+#include "dvrk/arm_types.hpp"
+#include "dvrk/topics.hpp"
+#include "dvrk/pose.hpp"
+#include "dvrk/trajectory.hpp"
+#include "dvrk/utils.hpp"
 
 
+namespace dvrk {
 
-class DVRKArm {
+class Arm {
 
 public:
     // Constants
@@ -40,8 +43,8 @@ public:
     static const bool PASSIVE = false;
     
 
-private:
-    const DVRKArmTypes arm_typ;
+protected:
+    const ArmTypes arm_typ;
     ros::NodeHandle nh;
 
     // States
@@ -63,14 +66,13 @@ private:
     ros::Publisher robot_state_pub;
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
-    ros::Publisher position_jaw_pub;
     
-    bool subscribe(const DVRKArmTopics);
-    bool advertise(const DVRKArmTopics);
+    bool subscribe(const Topics);
+    bool advertise(const Topics);
 
 public:
-    DVRKArm(ros::NodeHandle, DVRKArmTypes, bool);
-	virtual ~DVRKArm();
+	Arm(ros::NodeHandle, ArmTypes, bool);
+	~Arm();
 
     // Callbacks
     void robotStateCB(const std_msgs::String);
@@ -85,7 +87,7 @@ public:
     std::vector<double> getJointStateCurrent();
     Eigen::Vector3d getPositionCartesianCurrent();
     Eigen::Quaternion<double> getOrientationCartesianCurrent();
-    Pose getPoseCurrent();
+    virtual Pose getPoseCurrent();
 
     //DVRK actions
     bool home();
@@ -95,10 +97,8 @@ public:
     void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
     void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
     void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
-    void moveCartesianAbsolute(Pose, double = 0.01);
+    virtual void moveCartesianAbsolute(Pose, double = 0.01);
     
-    void moveJawRelative(double, double = 0.01);
-    void moveJawAbsolute(double, double = 0.01);
 
 	void playTrajectory(Trajectory<Eigen::Vector3d>&);
 	void playTrajectory(Trajectory<Eigen::Quaternion<double>>&);
@@ -110,10 +110,14 @@ public:
 	
 	void checkErrors();
 	void checkVelCartesian(const Pose&, const Pose&, double);
+	void checkNaNCartesian(const Pose&);
 	void checkVelJoint(const sensor_msgs::JointState&, 
 						const std::vector<double>&, double);
+	void checkNaNJoint(const sensor_msgs::JointState&);
 	
 };
+
+}
 
 
 #endif /* DVRK_ARM_HPP_ */

@@ -112,10 +112,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} 
-								include/Eigen 
-								include/dvrk
-								include/dvrk_automation)
+include_directories(include ${catkin_INCLUDE_DIRS} include/Eigen include/dvrk)
 
 ## Declare a C++ library
 
@@ -131,32 +128,16 @@ add_library( dvrk_lib STATIC
 set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
-file(GLOB dvrk_automation_lib_src
-    "src/dvrk_automation/*.cpp"
-)
-
-
-add_library( dvrk_automation_lib STATIC
-       ${dvrk_automation_lib_src}
-       )
-
-set_target_properties( dvrk_automation_lib  PROPERTIES LINKER_LANGUAGE CXX)
-
-
-
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(move_test src/move_test.cpp)
-add_executable(move_circles src/move_circles.cpp)
-add_executable(log_trajectory src/log_trajectory.cpp)
-add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
-add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
-
-add_executable(insert_tool src/insert_tool.cpp)
+add_executable(dvrk_move_test src/dvrk_move_test.cpp)
+add_executable(dvrk_move_test_jaw src/dvrk_move_test_jaw.cpp)
+add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
+add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -169,42 +150,24 @@ add_executable(insert_tool src/insert_tool.cpp)
  ${catkin_LIBRARIES}
  )
  
-  target_link_libraries(dvrk_automation_lib
- ${catkin_LIBRARIES}
- 	dvrk_lib
- )
- 
- target_link_libraries(move_test
+ target_link_libraries(dvrk_move_test
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries(move_circles
+ target_link_libraries(dvrk_move_test_jaw
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries(insert_tool
+  target_link_libraries( dvrk_play_logged_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )
- 
-  target_link_libraries( play_logged_trajectory
+ target_link_libraries( dvrk_log_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )
- 
- target_link_libraries( log_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
- target_link_libraries( rviz_plot_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
- 
 
 
 #############

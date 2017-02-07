@@ -1,11 +1,13 @@
 /*
- * vector_3dpose
- *  Created on: 2016. okt. 27.
- *      Author: tamas
+ *  pose.cpp
+ *
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2016-10-27
+ *  
  */
 
-#ifndef POSE_HPP_
-#define POSE_HPP_
+#ifndef DVRK_POSE_HPP_
+#define DVRK_POSE_HPP_
 
 #include <iostream>
 #include "geometry_msgs/PoseStamped.h"
@@ -14,6 +16,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
+
+namespace dvrk {
 
 class Pose {
  
@@ -54,6 +58,8 @@ class Pose {
    	
    	Pose interpolate(double, const Pose&) const;
    	
+   	bool isNaN() const;
+   	
    	Distance dist(const Pose&) const;
    	Distance dist(const Eigen::Vector3d&) const;
    	Distance dist(const Eigen::Quaternion<double>&) const;
@@ -70,5 +76,5 @@ class Pose {
    	friend std::ostream& operator<<(std::ostream&, const Pose&);
 	friend std::istream& operator>>(std::istream&, Pose&);
 };
-
+}
 #endif
