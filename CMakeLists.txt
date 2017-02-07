@@ -14,7 +14,6 @@ find_package(catkin REQUIRED
                         std_msgs
                         sensor_msgs
                         dvrk_kinematics
-                        optoforcesensor
                         )
 
 
@@ -115,8 +114,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 								include/Eigen 
-								include/dvrk 
-								include/optoforce
+								include/dvrk
 								include/dvrk_automation)
 
 ## Declare a C++ library
@@ -132,16 +130,6 @@ add_library( dvrk_lib STATIC
 
 set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
-file(GLOB optoforce_lib_src
-    "src/optoforce/*.cpp"
-)
-
-
-add_library( optoforce_lib STATIC
-       ${optoforce_lib_src}
-       )
-
-set_target_properties( optoforce_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 file(GLOB dvrk_automation_lib_src
     "src/dvrk_automation/*.cpp"
@@ -170,8 +158,7 @@ add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
 add_executable(dvrk_rviz_plot_trajectory src/dvrk_rviz_plot_trajectory.cpp)
 add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
 
-add_executable(dvrk_auto_puncture_test src/dvrk_auto_puncture_test.cpp)
-add_executable(optoforce_helper src/optoforce_helper.cpp)
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -184,14 +171,9 @@ add_executable(optoforce_helper src/optoforce_helper.cpp)
  ${catkin_LIBRARIES}
  )
  
-  target_link_libraries(optoforce_lib
- ${catkin_LIBRARIES}
- )
- 
   target_link_libraries(dvrk_automation_lib
  ${catkin_LIBRARIES}
  	dvrk_lib
- 	optoforce_lib
  )
  
  target_link_libraries(dvrk_move_test
@@ -227,18 +209,6 @@ add_executable(optoforce_helper src/optoforce_helper.cpp)
  target_link_libraries( dvrk_rviz_plot_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
- )
- 
-  target_link_libraries( dvrk_auto_puncture_test
-   ${catkin_LIBRARIES}
-    dvrk_lib
-    optoforce_lib
-    dvrk_automation_lib
- )
- 
- target_link_libraries( optoforce_helper
-   ${catkin_LIBRARIES}
-    optoforce_lib
  )
  
  
