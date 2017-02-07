@@ -26,27 +26,25 @@
 
 int main(int argc, char **argv)
 {
-	// Check command line arguments
-	if (argc < 4) {
-		std::cout 
-			<< "Use with params: PSM1/PSM2; rate, frame_id" 
-			<< std::endl;
-		return 1;
-	}
-	
-	
-    std::istringstream ss1(argv[2]);
-	int rate_command;
-	ss1 >> rate_command;	
-		
-	double dt = 1.0/ rate_command;
-	
-	
-	// Initialize node
+	// Initialize ros node
     ros::init(argc, argv, "irob_dvrk_rviz_plot_trajectory");
     ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
+    
+    std::string arm;
+	priv_nh.getParam("arm", arm);
+	
+	double rate_command;
+	priv_nh.getParam("rate", rate_command);
+	
+	 std::string frame_id;
+	priv_nh.getParam("frame_id", frame_id);
 
-    dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(argv[1]), dvrk::Arm::PASSIVE);
+		
+	double dt = 1.0/ rate_command;
+
+
+    dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::Arm::PASSIVE);
     
 	ROS_INFO_STREAM("Start plotting trajectory...");
 	
@@ -64,7 +62,7 @@ int main(int argc, char **argv)
 			dvrk::Pose curr_pos = psm.getPoseCurrent();
 			
 			visualization_msgs::Marker marker;
-			marker.header.frame_id = argv[3];
+			marker.header.frame_id = frame_id;
 			marker.header.stamp = ros::Time();
 			marker.ns = "dvrk_viz";
 			marker.id = i++;

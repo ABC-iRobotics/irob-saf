@@ -24,57 +24,29 @@
 
 int main(int argc, char **argv)
 {
-
-	// Check command line arguments
-	if (argc < 5) 
-	{
-		std::cout << 
-		"Use with params: PSM1/PSM2; init_pos/no_init_pos; rate; speed" 
-		<< std::endl;
-		return 1;
-	}
+	// Initialize ros node
+    ros::init(argc, argv, "irob_dvrk_move_circles");
+    ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
+    
+    std::string arm;
+	priv_nh.getParam("arm", arm);
 	
-	std::istringstream ss1(argv[3]);
-	int rate_command;
-	ss1 >> rate_command;
+	double rate_command;
+	priv_nh.getParam("rate", rate_command);
 	
-	std::istringstream ss2(argv[4]);
 	double speed;
-	ss2 >> speed;	
+	priv_nh.getParam("speed", speed);
+
 		
 	double dt = 1.0/ rate_command;
 	dvrk::Trajectory<double> to_enable_cartesian;
 	dvrk::Trajectory<dvrk::Pose> circle_tr;
-	
-	
-	// Initialize ros node
-    ros::init(argc, argv, "irob_dvrk_move_test");
-    ros::NodeHandle nh;
     
     // Robot control
   	try {
-    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
-    	 dvrk::PSM::ACTIVE);
-    	ros::Duration(1.0).sleep();
-    	//psm.home(); 
-		// Init position if necessary
-		if (std::string(argv[2]) == "init_pos")
-		{
-			// init
-			ROS_INFO_STREAM("Going to init position...");
-			psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
-			int init_joint_idx = 2;
-			to_enable_cartesian = 
-   				dvrk::TrajectoryFactory::
-   					linearTrajectoryWithSmoothAcceleration(
-   						psm.getJointStateCurrent(init_joint_idx), 
-   						0.07,
-   						1.0/speed, 0.3/speed, dt);
- 			
-			psm.playTrajectory(init_joint_idx, to_enable_cartesian);
-   	 		
-   		}
-  
+    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::PSM::ACTIVE);
+    	ros::Duration(1.0).sleep();  
    	
    		// Do preprogrammed movement
    		ROS_INFO_STREAM("Starting programmed movement...");

@@ -119,7 +119,7 @@ bool Arm::subscribe(Topics topic)
         return false;
     }
 
-    ROS_INFO_STREAM("Subscribed to topic " 
+    ROS_DEBUG_STREAM("Subscribed to topic " 
     	<< topic.getFullName(arm_typ));
     return true;
 }
@@ -143,10 +143,10 @@ bool Arm::advertise(Topics topic)
     }
     else 
     {
-         ROS_INFO("Advertising invalid topic %s", topic.getFullName(arm_typ).c_str());
+         ROS_WARN_STREAM("Advertising invalid topic " << topic.getFullName(arm_typ));
          return false;
     }
-    ROS_INFO("Advertised topic %s", topic.getFullName(arm_typ).c_str());
+    ROS_DEBUG_STREAM("Advertised topic " << topic.getFullName(arm_typ));
     return true;
 }
 

@@ -1,5 +1,5 @@
 /*
- *  dvrk_play_logged_trajectory.cpp
+ *  play_logged_trajectory.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-27
@@ -28,55 +28,34 @@
 
 int main(int argc, char **argv)
 {
-	// Check command line arguments
-	if (argc < 5) 
-	{
-		std::cout 
-			<< "Use with params: PSM1/PSM2; init_pos/no_init_pos; filename; speed" 
-			<< std::endl;
-		return 1;
-	}
-	
-	std::istringstream ss2(argv[4]);
-	double speed;
-	ss2 >> speed;	
-		
-	
-	
 	// Initialize ros node
     ros::init(argc, argv, "irob_dvrk_play_logged_trajectory");
     ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
     
+    std::string arm;
+	priv_nh.getParam("arm", arm);
+	
+	std::string filename;
+	priv_nh.getParam("filename", filename);
+	
+	double speed;
+	priv_nh.getParam("speed", speed);
+
 	// Robot control
 	
-	
   	try {
-    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]),
+    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm),
     	 dvrk::PSM::ACTIVE);
     	//psm.home();
     
     	// Load trajectory from file
-		dvrk::Trajectory<dvrk::Pose> tr(argv[3]);
+		dvrk::Trajectory<dvrk::Pose> tr(filename);
     	ROS_INFO_STREAM(
     	"Trajectory of "<< tr.size() << " points with "
     					<< 1.0/tr.dt << " sample rate succesfully loaded from "
-    					<< argv[3]);
+    					<< filename);
     	
-    	// Init position if necessary
-    	if (std::string(argv[2]) == "init_pos")
-		{
-			ROS_INFO("Going to init position...");
-			psm.setRobotState(dvrk::Arm::STATE_POSITION_JOINT);
-			int init_joint_idx = 2;
-			dvrk::Trajectory<double> to_enable_cartesian = 
-   			dvrk::TrajectoryFactory::
-   				linearTrajectoryWithSmoothAcceleration(
-   					psm.getJointStateCurrent(init_joint_idx), 
-   					0.07, 1.0, 0.1, tr.dt);
-			psm.playTrajectory(init_joint_idx, to_enable_cartesian);
-   	 
-   			
-   		}
 
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");

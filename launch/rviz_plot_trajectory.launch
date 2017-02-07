@@ -5,8 +5,13 @@
   <arg name="rate" default="30"/>
   <arg name="frame_id" default="PSM1_psm_base_link"/>
   
-  <node name="dvrk_rviz_plot_trajectory"
-  	pkg="irob-dvrk-automation" type="dvrk_rviz_plot_trajectory" output="screen" 
-  	args="$(arg arm) $(arg rate) $(arg frame_id)"/>
+  <node name="rviz_plot_trajectory"
+  	pkg="irob-dvrk-automation" type="rviz_plot_trajectory" output="screen">
+  		
+  		<param name="arm" type="string" value="$(arg arm)" />
+  		<param name="rate" type="double" value="$(arg rate)" />
+  		<param name="frame_id" type="string" value="$(arg frame_id)" />
+
+  </node>
   	
 </launch>

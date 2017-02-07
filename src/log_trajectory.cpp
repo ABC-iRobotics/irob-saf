@@ -25,27 +25,23 @@
 
 int main(int argc, char **argv)
 {
-	// Check command line arguments
-	if (argc < 4) {
-		std::cout 
-			<< "Use with params: PSM1/PSM2; rate; filename" 
-			<< std::endl;
-		return 1;
-	}
-	
-	
-    std::istringstream ss1(argv[2]);
-	int rate_command;
-	ss1 >> rate_command;	
-		
-	double dt = 1.0/ rate_command;
-	
-	
-	// Initialize node
-    ros::init(argc, argv, "irob_dvrk_log_trajectory");
+	// Initialize ros node
+    ros::init(argc, argv, "irob_dvrk_move_test");
     ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
+    
+    std::string arm;
+	priv_nh.getParam("arm", arm);
+	
+	double rate_command;
+	priv_nh.getParam("rate", rate_command);
+	
+	std::string filename;
+	priv_nh.getParam("filename", filename);
 
-    dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(argv[1]), dvrk::PSM::PASSIVE);
+	double dt = 1.0/ rate_command;
+
+    dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::PSM::PASSIVE);
     
     // Record trajectory
 	dvrk::Trajectory<dvrk::Pose> tr_to_log(dt);
@@ -54,7 +50,7 @@ int main(int argc, char **argv)
 	std::cout << std::endl << "Record stopped" << std::endl;
 	
 	try	{
-		tr_to_log.writeToFile(argv[3]);
+		tr_to_log.writeToFile(filename);
 	} catch (const std::exception& e) {
   		std::cerr << e.what() << std::endl;
   	}

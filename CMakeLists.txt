@@ -150,15 +150,13 @@ set_target_properties( dvrk_automation_lib  PROPERTIES LINKER_LANGUAGE CXX)
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(dvrk_move_test src/dvrk_move_test.cpp)
-add_executable(dvrk_move_test_orig src/dvrk_move_test_orig.cpp)
-add_executable(dvrk_move_test_jaw src/dvrk_move_test_jaw.cpp)
-add_executable(dvrk_move_test_translate src/dvrk_move_test_translate.cpp)
-add_executable(dvrk_log_trajectory src/dvrk_log_trajectory.cpp)
-add_executable(dvrk_rviz_plot_trajectory src/dvrk_rviz_plot_trajectory.cpp)
-add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
+add_executable(move_test src/move_test.cpp)
+add_executable(move_circles src/move_circles.cpp)
+add_executable(log_trajectory src/log_trajectory.cpp)
+add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
+add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
-
+add_executable(insert_tool src/insert_tool.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -176,37 +174,32 @@ add_executable(dvrk_play_logged_trajectory src/dvrk_play_logged_trajectory.cpp)
  	dvrk_lib
  )
  
- target_link_libraries(dvrk_move_test
+ target_link_libraries(move_test
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries(dvrk_move_test_orig
+ target_link_libraries(move_circles
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries(dvrk_move_test_jaw
+ target_link_libraries(insert_tool
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries(dvrk_move_test_translate
+  target_link_libraries( play_logged_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
-  target_link_libraries( dvrk_play_logged_trajectory
+ target_link_libraries( log_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )
  
- target_link_libraries( dvrk_log_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
- target_link_libraries( dvrk_rviz_plot_trajectory
+ target_link_libraries( rviz_plot_trajectory
    ${catkin_LIBRARIES}
     dvrk_lib
  )

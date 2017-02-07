@@ -35,7 +35,7 @@ bool PSM::advertise(Topics topic)
     {
         position_jaw_pub = nh.advertise<std_msgs::Float32>(
                                    topic.getFullName(arm_typ), 1000);
-        ROS_INFO("Advertised topic %s", topic.getFullName(arm_typ).c_str());
+        ROS_DEBUG_STREAM("Advertised topic " << topic.getFullName(arm_typ));
         return true;
     }
     return Arm::advertise(topic);
