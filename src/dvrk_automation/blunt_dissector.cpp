@@ -17,8 +17,10 @@ namespace dvrk_automation {
 // Constants
 //const double BluntDissector::travelSpeed  = 20.0 / 1000.0; // m/s
 
-BluntDissector::BluntDissector(ros::NodeHandle nh, dvrk::ArmTypes arm_typ, double dt): 
-							nh(nh), psm(nh, arm_typ, dvrk::PSM::ACTIVE), dt(dt)
+BluntDissector::BluntDissector(
+	ros::NodeHandle nh, dvrk::ArmTypes arm_typ, double dt): 
+							nh(nh), psm(nh, arm_typ, dvrk::PSM::ACTIVE),
+							vision(nh), dt(dt)
 {
 		psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
 		waitForTopicsInit();
@@ -43,6 +45,7 @@ void BluntDissector::dissect()
 
 void BluntDissector::waitForTopicsInit()
 {
+	// TODO wait for vision init?
 	ros::Rate loop_rate(1.0/dt);
 	while (ros::ok() && psm.getPoseCurrent().position.norm() < 0.001
 			/*&& oforce.getForcesCurrent().norm() < 0.1*/)
@@ -51,14 +54,45 @@ void BluntDissector::waitForTopicsInit()
   	}
 }
 
-
-void BluntDissector::goToTarget()
+/**
+ * Push tool between tissues in the current direction.
+ *
+ * @param stepT time for planning subtrajectories in s
+ * @param speed base movement speed in mm/s
+ */
+void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 {
-	dvrk::Trajectory<dvrk::Pose> to_target;
-	//TODO 
-
-	checkTrajectory(to_target);
-	psm.playTrajectory(to_target);
+	bool reached_target = false;
+	double step_distance = std::abs(stepT * speed)/1000.0; // m
+	while (!reached_target)
+	{
+		dvrk::Pose pose_current = psm.getPoseCurrent();
+		dvrk::Pose end_target = vision.getTargetCurrent();
+		
+		double end_distance = (pose_current.dist(end_target)).cartesian;
+		
+		dvrk::Pose step_target;
+		
+		if (end_distance > step_distance)
+		{
+			step_target = dvrk::interpolate(step_distance/end_distance,
+											 pose_current, end_target);
+			reached_target = false;
+		}
+		else
+		{
+			step_target = end_target;
+			reached_target = true;
+		}
+		
+		dvrk::Trajectory<dvrk::Pose> to_target 	= dvrk::TrajectoryFactory::
+						linearTrajectoryForTime(pose_current,step_target, 
+												stepT, dt);
+		// TODO check err topics?
+		checkTrajectory(to_target);
+		psm.playTrajectory(to_target);
+	}
+	ROS_INFO_STREAM("Target reached.");
 }
 
 /**

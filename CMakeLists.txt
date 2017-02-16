@@ -115,7 +115,8 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} 
 								include/Eigen 
 								include/dvrk
-								include/dvrk_automation)
+								include/dvrk_automation
+								include/dvrk_vision)
 
 ## Declare a C++ library
 
@@ -142,6 +143,17 @@ add_library( dvrk_automation_lib STATIC
 
 set_target_properties( dvrk_automation_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
+
+file(GLOB dvrk_vision_lib_src
+    "src/dvrk_vision/*.cpp"
+)
+
+
+add_library( dvrk_vision_lib STATIC
+       ${dvrk_vision_lib_src}
+       )
+
+set_target_properties( dvrk_vision_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -173,6 +185,7 @@ add_executable(auto_dissection src/auto_dissection.cpp)
   target_link_libraries(dvrk_automation_lib
  ${catkin_LIBRARIES}
  	dvrk_lib
+ 	dvrk_vision_lib
  )
  
  target_link_libraries(move_test
@@ -208,6 +221,7 @@ add_executable(auto_dissection src/auto_dissection.cpp)
   target_link_libraries( auto_dissection
    ${catkin_LIBRARIES}
     dvrk_lib
+    dvrk_vision_lib
     dvrk_automation_lib
  )
  

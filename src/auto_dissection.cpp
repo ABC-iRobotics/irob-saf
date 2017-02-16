@@ -50,13 +50,30 @@ int main(int argc, char **argv)
   	try {
     	dvrk_automation::BluntDissector dissector(nh,
     			dvrk::ArmTypes::typeForString(arm), dt);
-    	ros::Duration(1.0).sleep();
+    	ros::Duration(3.0).sleep();
    	
    	 		
 		// Do magic	
-		dissector.toolRotate(90.0);
-   	 	ros::Duration(3.0).sleep();
-   	 	dissector.toolRotate(-90.0);		
+		
+		/*
+		pose: 
+  position: 
+    x: -0.0352589864065
+    y: -0.0622652795347
+    z: -0.0603390324918
+  orientation: 
+    x: 0.572063821814
+    y: 0.703609906823
+    z: -0.415625078075
+    w: 0.0702273256427
+
+		*/
+		
+		dissector.goToTarget(0.5, 10.0);
+		
+		//dissector.toolRotate(90.0);
+   	 	//ros::Duration(3.0).sleep();
+   	 	//dissector.toolRotate(-90.0);		
    	 	/*dissector.toolOpen(20.0);
    	 	ros::Duration(3.0).sleep();
    	 	dissector.toolClose(10.0, 5.0);
@@ -64,7 +81,7 @@ int main(int argc, char **argv)
    	 	dissector.toolOpen(20.0, 20.0);
    	 	ros::Duration(3.0).sleep();
    	 	dissector.toolClose();*/
-    
+    	//ros::Duration(120.0).sleep();
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     } catch (const std::exception& e) {

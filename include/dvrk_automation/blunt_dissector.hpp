@@ -30,6 +30,8 @@
 #include "dvrk/arm.hpp"
 #include "dvrk/psm.hpp"
 
+#include "dvrk_vision/vision_conn.hpp"
+
 
 namespace dvrk_automation {
 
@@ -41,8 +43,8 @@ private:
 
     // States
     dvrk::PSM psm;
+    dvrk_vision::VisionConn vision;
     
-    //optoforce::OptoforceListener oforce;
     
     double dt;
 	
@@ -55,7 +57,7 @@ public:
 	
 	void dissect();
 	
-	void goToTarget();
+	void goToTarget(double stepT, double speed = 4.0);
 	void toolPushIn(double depth, double speed  = 2.0);
 	void toolPullOut(double depth, double speed  = 2.0);
 	void toolOpen(double angle, double speed  = 10.0);

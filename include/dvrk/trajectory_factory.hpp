@@ -133,6 +133,8 @@ class TrajectoryFactory
 			}
 			return tr;
 		}
+		
+		
 		template <class P>
 		static Trajectory<P> linearTrajectoryWithSmoothAcceleration(
 						P start,
