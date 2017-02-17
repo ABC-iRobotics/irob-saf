@@ -30,12 +30,12 @@ VisionConn::VisionConn(
 			ros::NodeHandle nh): nh(nh)
 {
 	// Subscribe and advertise topics
-	subscribe("/" + TOPIC_NAMESPACE + "/" + TOPIC_NAME_MOVEMENT_TARGET);
-	subscribe("/" + TOPIC_NAMESPACE + "/" + TOPIC_NAME_TARGET_VALID);
-	subscribe("/" + TOPIC_NAMESPACE + "/" + TOPIC_NAME_TASK_DONE);
-	subscribe("/" + TOPIC_NAMESPACE + "/" + TOPIC_NAME_ERR);
+	subscribe(TOPIC_NAME_MOVEMENT_TARGET);
+	subscribe(TOPIC_NAME_TARGET_VALID);
+	subscribe(TOPIC_NAME_TASK_DONE);
+	subscribe(TOPIC_NAME_ERR);
 	
-	advertise("/" + TOPIC_NAMESPACE + "/" + TOPIC_NAME_SUBTASK_STATUS);
+	advertise(TOPIC_NAME_SUBTASK_STATUS);
       
 }
 
@@ -50,25 +50,25 @@ VisionConn::~VisionConn()
 void VisionConn::movementTargetCB(const geometry_msgs::PoseConstPtr& msg) 
 {
     movement_target  = dvrk::Pose(*msg, 0);
-    ROS_INFO_STREAM(movement_target);
+    //ROS_INFO_STREAM(movement_target);
 }
 
 void VisionConn::targetValidCB(const std_msgs::Bool msg) 
 {
     target_valid  = msg.data;
-    ROS_INFO_STREAM(task_done);
+    //ROS_INFO_STREAM(task_done);
 }
 
 void VisionConn::taskDoneCB(const std_msgs::Bool msg) 
 {
     task_done  = msg.data;
-    ROS_INFO_STREAM(task_done);
+    //ROS_INFO_STREAM(task_done);
 }
 
 void VisionConn::errorCB(const std_msgs::String msg) 
 {
     error  = msg;
-    ROS_INFO_STREAM(msg);
+    //ROS_INFO_STREAM(msg);
 }
 
 
@@ -128,22 +128,36 @@ bool VisionConn::advertise(std::string topic)
     return true;
 }
 
+void VisionConn::sendSubtaskStatus(std::string status)
+{
+        std_msgs::String msg;
+        std::stringstream ss;
+        ss << status;
+        msg.data = ss.str();
+        subtask_status_pub.publish(msg);
+        ros::spinOnce();
+        checkErrors();
+}
+
 
 dvrk::Pose VisionConn::getTargetCurrent()
 {
 	ros::spinOnce();
+	checkErrors();
  	return movement_target;
 }
 
 bool VisionConn::isTargetValid()
 {
 	ros::spinOnce();
+	checkErrors();
  	return target_valid;
 }
 
 bool VisionConn::isTaskDone()
 {
-	ros::spinOnce();	
+	ros::spinOnce();
+	checkErrors();	
  	return task_done;
 }
 

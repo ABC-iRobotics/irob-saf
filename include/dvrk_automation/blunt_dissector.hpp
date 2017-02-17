@@ -29,6 +29,7 @@
 #include "dvrk/utils.hpp"
 #include "dvrk/arm.hpp"
 #include "dvrk/psm.hpp"
+#include "dvrk_automation/subtask_status.hpp"
 
 #include "dvrk_vision/vision_conn.hpp"
 
@@ -57,7 +58,7 @@ public:
 	
 	void dissect();
 	
-	void goToTarget(double stepT, double speed = 4.0);
+	void goToTarget(double stepT, double speed = 10.0);
 	void toolPushIn(double depth, double speed  = 2.0);
 	void toolPullOut(double depth, double speed  = 2.0);
 	void toolOpen(double angle, double speed  = 10.0);

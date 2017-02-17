@@ -69,6 +69,8 @@ public:
     void taskDoneCB(const std_msgs::Bool); 
     void errorCB(const std_msgs::String); 
     
+    void sendSubtaskStatus(std::string);
+    
     dvrk::Pose getTargetCurrent();
     bool isTargetValid();
     bool isTaskDone();

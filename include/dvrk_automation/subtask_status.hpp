@@ -19,6 +19,7 @@ class SubtaskStatus {
     static const SubtaskStatus NEW_DISSECTION_TARGET_NEEDED;
     static const SubtaskStatus NEW_DISTANT_TARGET_NEEDED;
     static const SubtaskStatus GOING_TO_TARGET;
+    static const SubtaskStatus TARGET_REACHED;
     static const SubtaskStatus PERFORMING_DISSECTION;
     static const SubtaskStatus ABORT;
 
@@ -26,14 +27,15 @@ class SubtaskStatus {
     const std::string command;
 
   private:
-    Topics( std::string command): command(command){ }
+    SubtaskStatus( std::string command): command(command){ }
 
   public:
-    bool operator==(const SubtaskStatus& other) const{
+    bool operator==(const SubtaskStatus& other) const
+    {
         return other.command==this->command;
     }
 
-    std::string getCommand()
+    std::string getCommand() const
     {
     	return command;
     }

@@ -34,9 +34,49 @@ BluntDissector::~BluntDissector()
 void BluntDissector::dissect()
 {
 	try {	// TODO err handling
-		
+			
+			//toolClose();
+			ROS_INFO_STREAM("Tool closed, startning dissection.");
+			// Do this while the vision says it is done
+			while (!vision.isTaskDone())	
+			{
+				// Ask for new target
+				ROS_INFO_STREAM("Ask for new target");
+				vision.sendSubtaskStatus(SubtaskStatus::
+						NEW_DISSECTION_TARGET_NEEDED.getCommand());
 				
+				// Go to target and make dissection
+				ROS_INFO_STREAM("Go to target and make dissection.");
+				goToTarget(0.5);
+				ros::Duration(1.0).sleep();
+				vision.sendSubtaskStatus(SubtaskStatus::
+						PERFORMING_DISSECTION.getCommand());
+				toolPushIn(5.0);
+				ros::Duration(1.0).sleep();
+				toolRotate(90.0);
+				ros::Duration(1.0).sleep();
+				toolOpen(30.0);
+				ros::Duration(1.0).sleep();
+				toolPullOut(5.0);
+				ros::Duration(1.0).sleep();
+				toolClose();
+				ros::Duration(1.0).sleep();
+				
+				// Ask for new distant target
+				ROS_INFO_STREAM("Ask for new distant target.");
+				vision.sendSubtaskStatus(SubtaskStatus::
+						NEW_DISTANT_TARGET_NEEDED.getCommand());
+				
+				// Go to distant target
+				ROS_INFO_STREAM("Go to distant target.");
+				goToTarget(0.5);
+				ros::Duration(1.0).sleep();
+			}		
+		
 	} catch (const std::exception& e) {
+		// Abort task
+		vision.sendSubtaskStatus(SubtaskStatus::
+						ABORT.getCommand());
   		ROS_ERROR_STREAM(e.what());
   		ROS_ERROR_STREAM("Program stopped by an error ...");
   	}
@@ -64,11 +104,20 @@ void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 {
 	bool reached_target = false;
 	double step_distance = std::abs(stepT * speed)/1000.0; // m
+	// Wait for the target
+	while (!vision.isTargetValid()) 
+	{
+		ros::Duration(0.1).sleep();
+	}
+	
 	while (!reached_target)
 	{
 		dvrk::Pose pose_current = psm.getPoseCurrent();
 		dvrk::Pose end_target = vision.getTargetCurrent();
 		
+		vision.sendSubtaskStatus(SubtaskStatus::
+						GOING_TO_TARGET.getCommand());
+						
 		double end_distance = (pose_current.dist(end_target)).cartesian;
 		
 		dvrk::Pose step_target;
@@ -92,6 +141,8 @@ void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 		checkTrajectory(to_target);
 		psm.playTrajectory(to_target);
 	}
+	vision.sendSubtaskStatus(SubtaskStatus::
+						TARGET_REACHED.getCommand());
 	ROS_INFO_STREAM("Target reached.");
 }
 

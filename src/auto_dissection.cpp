@@ -66,10 +66,9 @@ int main(int argc, char **argv)
     y: 0.703609906823
     z: -0.415625078075
     w: 0.0702273256427
-
-		*/
+*/
 		
-		dissector.goToTarget(0.5, 10.0);
+		dissector.dissect();
 		
 		//dissector.toolRotate(90.0);
    	 	//ros::Duration(3.0).sleep();
