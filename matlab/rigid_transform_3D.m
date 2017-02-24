@@ -55,7 +55,7 @@ function [R,t] = rigid_transform_3D(A, B)
     R = V*U';
 
     if det(R) < 0
-        printf('Reflection detected\n');
+        disp('Reflection detected');
         V(:,3) = V(:,3)* (-1);
         R = V*U';
     end

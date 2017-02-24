@@ -54,6 +54,8 @@ void BluntDissector::dissect()
 						PERFORMING_DISSECTION.getCommand());
 				toolPushIn(5.0);
 				ros::Duration(1.0).sleep();
+				toolRotate(90.0);
+				ros::Duration(1.0).sleep();
 				toolOpen(30.0);
 				ros::Duration(1.0).sleep();
 				toolPullOut(5.0);
