@@ -27,8 +27,10 @@ const std::string VisionConn::TOPIC_NAME_ERR
                     = "error";
 
 VisionConn::VisionConn(
-			ros::NodeHandle nh): nh(nh)
+			ros::NodeHandle nh, std::string registration_file): nh(nh)
 {
+	loadRegistration(registration_file);
+	
 	// Subscribe and advertise topics
 	subscribe(TOPIC_NAME_MOVEMENT_TARGET);
 	subscribe(TOPIC_NAME_TARGET_VALID);
@@ -44,12 +46,41 @@ VisionConn::~VisionConn()
 	// TODO Auto-generated destructor stub
 }
 
+void VisionConn::loadRegistration(std::string registration_file)
+{
+	std::ifstream cfgfile(registration_file.c_str());
+    if (!cfgfile.is_open())
+    	throw std::runtime_error("Cannot open file " + registration_file);
+    if (cfgfile.eof())
+    	throw std::runtime_error("Cfgfile " + registration_file + " is empty.");
+   	
+   	double x, y, z;
+   	
+    cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
+    t << x, y, z;
+    
+    for (int i = 0; i < 3; i++)
+    {
+    	cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
+    	R(i,0) = x;
+    	R(i,1) = y;
+    	R(i,2) = z;
+    }
+    
+    cfgfile.close();
+    
+    ROS_INFO_STREAM("Registration read: "<< std::endl << t << std::endl << R);
+}
+
 /*
  * Callbacks
  */
 void VisionConn::movementTargetCB(const geometry_msgs::PoseConstPtr& msg) 
 {
-    movement_target  = dvrk::Pose(*msg, 0);
+    dvrk::Pose cam_target(*msg, 0);
+    cam_target = cam_target.rotate(R);
+    cam_target += t;
+ 	movement_target  = cam_target;
     //ROS_INFO_STREAM(movement_target);
 }
 

@@ -12,6 +12,9 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <fstream>
+#include <string>
+#include <stdexcept>
 #include <ros/ros.h>
 #include <ros/package.h>
 
@@ -46,6 +49,10 @@ private:
     bool target_valid;
     bool task_done;
     std_msgs::String error;
+    
+    // translation and rotation for registration
+    Eigen::Vector3d t;
+    Eigen::Matrix3d R;
 
     // Subscribers
     ros::Subscriber movement_target_sub;
@@ -60,9 +67,11 @@ private:
     bool advertise(const std::string);
 
 public:
-	VisionConn(ros::NodeHandle);
+	VisionConn(ros::NodeHandle, std::string);
 	~VisionConn();
-
+		
+	void loadRegistration(std::string);
+	
     // Callbacks
     void movementTargetCB(const geometry_msgs::PoseConstPtr&);
     void targetValidCB(const std_msgs::Bool);  

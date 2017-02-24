@@ -40,6 +40,9 @@ int main(int argc, char **argv)
 	
 	double speed;
 	priv_nh.getParam("speed", speed);
+	
+	std::string regfile;
+	priv_nh.getParam("regfile", regfile);
 
 		
 	double dt = 1.0/ rate_command;
@@ -49,7 +52,7 @@ int main(int argc, char **argv)
     // Robot control
   	try {
     	dvrk_automation::BluntDissector dissector(nh,
-    			dvrk::ArmTypes::typeForString(arm), dt);
+    			dvrk::ArmTypes::typeForString(arm), dt, regfile);
     	ros::Duration(3.0).sleep();
    	
    	 		
@@ -68,7 +71,7 @@ int main(int argc, char **argv)
     w: 0.0702273256427
 */
 		
-		dissector.dissect();
+		//dissector.dissect();
 		
 		//dissector.toolRotate(90.0);
    	 	//ros::Duration(3.0).sleep();

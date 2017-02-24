@@ -58,6 +58,8 @@ class Pose {
    	
    	Pose interpolate(double, const Pose&) const;
    	
+   	Pose rotate(const Eigen::Matrix3d&);
+   	
    	bool isNaN() const;
    	
    	Distance dist(const Pose&) const;

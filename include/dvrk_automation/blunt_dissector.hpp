@@ -53,7 +53,7 @@ private:
 	//static const double travelSpeed;
     
 public:
-	BluntDissector(ros::NodeHandle, dvrk::ArmTypes, double);
+	BluntDissector(ros::NodeHandle, dvrk::ArmTypes, double, std::string);
 	~BluntDissector();
 	
 	void dissect();

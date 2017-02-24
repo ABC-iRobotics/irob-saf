@@ -26,15 +26,22 @@ namespace dvrk {
    		orientation(other.orientation), jaw(other.jaw) {}
    		
    	Pose::Pose(const geometry_msgs::Pose& msg, double jaw): 
-		position(msg.position.x, msg.position.y, msg.position.z), 			orientation(msg.orientation.w, msg.orientation.x, msg.orientation.y,
-				 msg.orientation.z), 
+		position(msg.position.x, msg.position.y, msg.position.z),
+		orientation(msg.orientation.w, msg.orientation.x,
+		msg.orientation.y, msg.orientation.z), 
 		jaw(jaw){}	
    		
 	Pose::Pose(const geometry_msgs::PoseStamped& msg, double jaw): 
-		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
-				 msg.pose.orientation.z), 
+		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x,
+		msg.pose.orientation.y, msg.pose.orientation.z), 
 		jaw(jaw){}	
-
+		
+	Pose::Pose(const Eigen::Vector3d& position, 
+	 			const Eigen::Quaternion<double>& orientation, double jaw):	
+		position(position), 
+   		orientation(orientation), jaw(jaw){}
+   		
+   		
    	void Pose::swap(Pose& other) 
    	{
    		Pose tmp(*this);
@@ -89,6 +96,18 @@ namespace dvrk {
    		res.position = ((1.0-a) * position) + ((a) * other.position);
    		res.jaw = ((1.0-a) * jaw) + ((a) * other.jaw);
    		return res;
+   	}
+   	
+   	Pose Pose::rotate(const Eigen::Matrix3d& R) const
+   	{
+   		
+   		Eigen::Matrix3d ori_R = orientation.toRotationMatrix();
+		Eigen::Matrix3d rotated_ori_R = R * ori_R;
+		Eigen::Vector3d rotated_pos = R * position;
+		Eigen::Quaternion<double> rotated_ori(rotated_ori_R);
+		Pose ret(rotated_pos, rotated_ori, jaw);
+		
+		return ret;
    	}
    	
    	bool Pose::isNaN() const

@@ -18,9 +18,10 @@ namespace dvrk_automation {
 //const double BluntDissector::travelSpeed  = 20.0 / 1000.0; // m/s
 
 BluntDissector::BluntDissector(
-	ros::NodeHandle nh, dvrk::ArmTypes arm_typ, double dt): 
+	ros::NodeHandle nh, dvrk::ArmTypes arm_typ, double dt,
+								 std::string regfile_name): 
 							nh(nh), psm(nh, arm_typ, dvrk::PSM::ACTIVE),
-							vision(nh), dt(dt)
+							vision(nh, regfile_name), dt(dt)
 {
 		psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
 		waitForTopicsInit();
