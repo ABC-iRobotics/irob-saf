@@ -14,8 +14,8 @@ pause(2) % Wait to ensure publisher is registered
 
 imaqreset;
 webcamlist()
-cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
-cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
+cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
+cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
 calib = load('calibrationSessionFinal.mat');
 stereoParams = load('stereoParamsFinal.mat');
@@ -46,10 +46,21 @@ IR = I_r;
 % [ILrect, IRrect] = ...
 % rectifyStereoImages(IL, IR, stereoParams.stereoParamsFinal);
 
- [ILrect, IRrect] = ...
-rectifyStereoImages(IL, IR, stereoParams.stereoParamsFinal);
+ ILrect = undistortImage(IL,stereoParams.stereoParamsFinal.CameraParameters1);
+            IRrect = undistortImage(IR,stereoParams.stereoParamsFinal.CameraParameters2);
+ points3D = reconstructScene(disparityMap, stereoParams.stereoParamsFinal);
+  points3D = points3D ./ 1000;
+  ptCloud = pointCloud(points3D, 'Color', ILrect);
 
-            
+  cuttingXYZIdx = sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1));
+  X = points3D(:, :, 1);
+  Y = points3D(:, :, 2);
+  Z = points3D(:, :, 3);
+  cuttingXYZ = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)'];
+
+% Find the distances from the camera in meters.
+dists = sqrt(sum(cuttingXYZ .^ 2));
+             
 frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
 
@@ -88,18 +99,10 @@ figure;
   
   im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
   im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
-  points3D = reconstructScene(disparityMap, stereoParams.stereoParamsFinal);
-  points3D = points3D ./ 1000;
-  ptCloud = pointCloud(points3D, 'Color', ILrect);
-
-  cuttingXYZIdx = sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1));
-  X = points3D(:, :, 1);
-  Y = points3D(:, :, 2);
-  Z = points3D(:, :, 3);
-  cuttingXYZ = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)'];
-
-% Find the distances from the camera in meters.
-dists = sqrt(sum(cuttingXYZ .^ 2));
+  
+  cuttingXYZ = triangulate(im_coord_L, im_coord_R, stereoParams.stereoParamsFinal)
+  scatter3(cuttingXYZ(:,1), cuttingXYZ(:,2), cuttingXYZ(:,3), 'MarkerEdgeColor','b',...
+        'MarkerFaceColor','b');
     
     step = 1;
 % end of image processing

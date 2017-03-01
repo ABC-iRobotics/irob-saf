@@ -76,10 +76,10 @@ figure;
  for i = uint32(x(1)) : uint32(x(2))
  data = disparityMap(lowThresholdY: highThresholdY, i); 
  data = double(data);
- [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
+% [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
  MinimaArrayX = [MinimaArrayX, double(i)];
- MinimaArrayY = [MinimaArrayY, double(lowThresholdY + MinIdx)];
- MinimaValues = [MinimaValues, double(Minima)];
+ MinimaArrayY = [MinimaArrayY, double(y)];
+ MinimaValues = [MinimaValues, disparityMap()];
  end
  
    imshow(IRrect);

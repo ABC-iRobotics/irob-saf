@@ -66,8 +66,8 @@ figure;
  
  
  [x,y] = ginput(2);
- lowThresholdY = uint32(y(1) - 40);
- highThresholdY = uint32(y(1) + 40);
+ lowThresholdY = uint32(y(1) - 0);
+ highThresholdY = uint32(y(1) + 0);
  
  MinimaArrayX = double(zeros(0));
  MinimaArrayY = double(zeros(0));
@@ -76,15 +76,15 @@ figure;
  for i = uint32(x(1)) : uint32(x(2))
  data = disparityMap(lowThresholdY: highThresholdY, i); 
  data = double(data);
- [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
+% [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
  MinimaArrayX = [MinimaArrayX, double(i)];
- MinimaArrayY = [MinimaArrayY, double(lowThresholdY + MinIdx)];
- MinimaValues = [MinimaValues, double(Minima)];
+ MinimaArrayY = [MinimaArrayY, double(lowThresholdY)];
+ MinimaValues = [MinimaValues, double(data)];
  end
  
    imshow(IRrect);
    hold on
-   plot(MinimaArrayX+MinimaValues, MinimaArrayY, 'r.');
+   plot(MinimaArrayX-MinimaValues, MinimaArrayY, 'r.');
   
   im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
   im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
@@ -96,7 +96,7 @@ figure;
   X = points3D(:, :, 1);
   Y = points3D(:, :, 2);
   Z = points3D(:, :, 3);
-  cuttingXYZ = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)'];
+  cuttingXYZ = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
 
 % Find the distances from the camera in meters.
 dists = sqrt(sum(cuttingXYZ .^ 2));
@@ -125,9 +125,9 @@ for i = 1:3
         disp(status.Data);
         if strcmp(status.Data,'new_dissection_target_needed')
             targetmsg = rosmessage(targetpub);
-            targetmsg.Position.X = (cuttingXYZ(i*step,1))/1000.0;
-            targetmsg.Position.Y = (cuttingXYZ(i*step,2))/1000.0;
-            targetmsg.Position.Z = (cuttingXYZ(i*step,3))/1000.0;
+            targetmsg.Position.X = (cuttingXYZ(i*step,1));
+            targetmsg.Position.Y = (cuttingXYZ(i*step,2));
+            targetmsg.Position.Z = (cuttingXYZ(i*step,3));
             targetmsg.Orientation.X =  -0.0927;
             targetmsg.Orientation.Y =-0.0626;
             targetmsg.Orientation.Z =  0.9930;

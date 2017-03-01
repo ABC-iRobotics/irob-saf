@@ -11,8 +11,8 @@ statussub = rossubscriber('/dvrk_vision/subtask_status', 'std_msgs/String');
 
 calib = load('calibrationSessionFinal');
 stereoParams = load('stereoParamsFinal');
-cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
-cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
 pause(2) % Wait to ensure publisher is registered
 
