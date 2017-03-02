@@ -32,6 +32,7 @@
 #include "dvrk_automation/subtask_status.hpp"
 
 #include "dvrk_vision/vision_conn.hpp"
+#include "dvrk_vision/target_type.hpp"
 
 
 namespace dvrk_automation {

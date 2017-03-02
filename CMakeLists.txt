@@ -169,6 +169,7 @@ add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
 add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 add_executable(insert_tool src/insert_tool.cpp)
+add_executable(home src/home.cpp)
 add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -199,6 +200,11 @@ add_executable(auto_dissection src/auto_dissection.cpp)
  )
  
  target_link_libraries(insert_tool
+   ${catkin_LIBRARIES}
+    dvrk_lib
+ )
+ 
+  target_link_libraries(home
    ${catkin_LIBRARIES}
     dvrk_lib
  )

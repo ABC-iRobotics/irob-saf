@@ -17,14 +17,20 @@ namespace dvrk_automation {
 const SubtaskStatus SubtaskStatus::NEW_DISSECTION_TARGET_NEEDED
                     = SubtaskStatus("new_dissection_target_needed");
 
+const SubtaskStatus SubtaskStatus::WAITING_FOR_TARGET
+                    = SubtaskStatus("waiting_for_target");
+                    
 const SubtaskStatus SubtaskStatus::NEW_DISTANT_TARGET_NEEDED
                     = SubtaskStatus("new_distant_target_needed");
                     
 const SubtaskStatus SubtaskStatus::GOING_TO_TARGET
                     = SubtaskStatus("going_to_target");
                     
-const SubtaskStatus SubtaskStatus::TARGET_REACHED
-                    = SubtaskStatus("target_reached");
+const SubtaskStatus SubtaskStatus::GOAL_REACHED
+                    = SubtaskStatus("goal_reached");
+                    
+const SubtaskStatus SubtaskStatus::DP_REACHED
+                    = SubtaskStatus("dp_reached");
                     
 const SubtaskStatus SubtaskStatus::PERFORMING_DISSECTION
                     = SubtaskStatus("performing_dissection");

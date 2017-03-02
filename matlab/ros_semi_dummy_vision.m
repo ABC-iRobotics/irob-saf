@@ -76,7 +76,8 @@ for i = 1:3
             
             status = statussub.LatestMessage;
             
-            while not(strcmp(status.Data,'target_reached'))
+            while not(or(strcmp(status.Data,'target_reached'), ...
+                        strcmp(status.Data,'abort')))
                 send(targetpub,targetmsg);
                 pause(0.5);
                 status = statussub.LatestMessage;
@@ -118,7 +119,8 @@ for i = 1:3
             
             status = statussub.LatestMessage;
             
-            while not(strcmp(status.Data, 'target_reached'))
+            while not(or(strcmp(status.Data,'target_reached'), ...
+                        strcmp(status.Data,'abort')))
                 send(targetpub,targetmsg);
                 pause(0.5);
                 status = statussub.LatestMessage;

@@ -1,5 +1,5 @@
 /*
- *  dvrk_move_test.cpp
+ *  insert_tool.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-10
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     // Robot control
   	try {
     	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::PSM::ACTIVE);
-    	ros::Duration(0.5).sleep();
+    	//ros::Duration(0.5).sleep();
     	
 		ROS_INFO_STREAM("Inserting tool past cannula...");
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");

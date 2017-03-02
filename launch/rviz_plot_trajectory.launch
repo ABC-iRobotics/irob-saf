@@ -2,7 +2,7 @@
 
 <launch>
   <arg name="arm" default="PSM1"/>
-  <arg name="rate" default="30"/>
+  <arg name="rate" default="10"/>
   <arg name="frame_id" default="PSM1_psm_base_link"/>
   
   <node name="rviz_plot_trajectory"

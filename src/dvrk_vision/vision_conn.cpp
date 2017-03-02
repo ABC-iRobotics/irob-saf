@@ -19,8 +19,12 @@ const std::string VisionConn::TOPIC_NAME_MOVEMENT_TARGET
                     = "movement_target";
 const std::string VisionConn::TOPIC_NAME_TARGET_VALID
                     = "target_valid";
+const std::string VisionConn::TOPIC_NAME_TARGET_TYPE
+                    = "target_type";
 const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS
                     = "subtask_status";
+const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS_ACK
+                    = "subtask_status_ack";
 const std::string VisionConn::TOPIC_NAME_TASK_DONE
                     = "task_done";
 const std::string VisionConn::TOPIC_NAME_ERR
@@ -34,7 +38,9 @@ VisionConn::VisionConn(
 	// Subscribe and advertise topics
 	subscribe(TOPIC_NAME_MOVEMENT_TARGET);
 	subscribe(TOPIC_NAME_TARGET_VALID);
+	subscribe(TOPIC_NAME_TARGET_TYPE);
 	subscribe(TOPIC_NAME_TASK_DONE);
+	subscribe(TOPIC_NAME_SUBTASK_STATUS_ACK);
 	subscribe(TOPIC_NAME_ERR);
 	
 	advertise(TOPIC_NAME_SUBTASK_STATUS);
@@ -90,6 +96,18 @@ void VisionConn::targetValidCB(const std_msgs::Bool msg)
     //ROS_INFO_STREAM(task_done);
 }
 
+void VisionConn::targetTypeCB(const std_msgs::String msg) 
+{
+    target_type  = TargetType::fromString(msg.data);
+    //ROS_INFO_STREAM(msg);
+}
+
+void VisionConn::subtaskStatusAckCB(const std_msgs::String msg) 
+{
+    subtask_status_ack  = msg.data;
+    //ROS_INFO_STREAM(msg);
+}
+
 void VisionConn::taskDoneCB(const std_msgs::Bool msg) 
 {
     task_done  = msg.data;
@@ -119,6 +137,18 @@ bool VisionConn::subscribe(std::string topic)
                			topic_name_full, 1000,
                         &VisionConn::targetValidCB,this);
     }
+    else if(topic == TOPIC_NAME_TARGET_TYPE)
+	{
+    	target_type_sub = nh.subscribe<std_msgs::String>(
+               			topic_name_full, 1000,
+                        &VisionConn::targetTypeCB,this);
+    }
+    else if(topic == TOPIC_NAME_SUBTASK_STATUS_ACK)
+	{
+    	subtask_status_ack_sub = nh.subscribe<std_msgs::String>(
+               			topic_name_full, 1000,
+                        &VisionConn::subtaskStatusAckCB,this);
+    }
     else if(topic == TOPIC_NAME_TASK_DONE)
 	{
     	task_done_sub = nh.subscribe<std_msgs::Bool>(
@@ -133,7 +163,7 @@ bool VisionConn::subscribe(std::string topic)
     }
     else 
     {
-         ROS_WARN_STREAM("Advertising invalid topic " << topic_name_full);
+         ROS_WARN_STREAM("Subscribing to invalid topic " << topic_name_full);
          return false;
     }
     
@@ -170,12 +200,38 @@ void VisionConn::sendSubtaskStatus(std::string status)
         checkErrors();
 }
 
+void VisionConn::sendSubtaskStatusWithAck(std::string status, std::string ack)
+{
+        std_msgs::String msg;
+        std::stringstream ss;
+        ss << status;
+        msg.data = ss.str();
+        subtask_status_pub.publish(msg);
+        // Wait for ack
+        ros::spinOnce();
+        checkErrors();
+        while (subtask_status_ack != ack)
+        {
+        	ros::Duration(0.1).sleep();
+        	ros::spinOnce();
+        	checkErrors();
+        }
+        ROS_INFO_STREAM(subtask_status_ack << " received");
+}
+
 
 dvrk::Pose VisionConn::getTargetCurrent()
 {
 	ros::spinOnce();
 	checkErrors();
  	return movement_target;
+}
+
+TargetType VisionConn::getTargetType()
+{
+	ros::spinOnce();
+	checkErrors();
+ 	return target_type;
 }
 
 bool VisionConn::isTargetValid()

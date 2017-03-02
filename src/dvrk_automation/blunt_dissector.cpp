@@ -37,18 +37,21 @@ void BluntDissector::dissect()
 	try {	// TODO err handling
 			
 			//toolClose();
-			ROS_INFO_STREAM("Tool closed, startning dissection.");
+			ROS_INFO_STREAM("Tool closed, starting dissection.");
 			// Do this while the vision says it is done
 			while (!vision.isTaskDone())	
 			{
 				// Ask for new target
 				ROS_INFO_STREAM("Ask for new target");
-				vision.sendSubtaskStatus(SubtaskStatus::
-						NEW_DISSECTION_TARGET_NEEDED.getCommand());
+				vision.sendSubtaskStatusWithAck(
+						SubtaskStatus::
+						NEW_DISSECTION_TARGET_NEEDED.getCommand(),
+						SubtaskStatus::
+						NEW_DISSECTION_TARGET_NEEDED.getAck());
 				
 				// Go to target and make dissection
 				ROS_INFO_STREAM("Go to target and make dissection.");
-				goToTarget(0.5);
+				goToTarget(1.0);
 				ros::Duration(1.0).sleep();
 				vision.sendSubtaskStatus(SubtaskStatus::
 						PERFORMING_DISSECTION.getCommand());
@@ -58,17 +61,20 @@ void BluntDissector::dissect()
 				ros::Duration(1.0).sleep();
 				toolPullOut(5.0);
 				ros::Duration(1.0).sleep();
-				toolClose();
+				toolClose(0.0, 20.0);
 				ros::Duration(1.0).sleep();
 				
 				// Ask for new distant target
 				ROS_INFO_STREAM("Ask for new distant target.");
-				vision.sendSubtaskStatus(SubtaskStatus::
-						NEW_DISTANT_TARGET_NEEDED.getCommand());
+				vision.sendSubtaskStatusWithAck(
+						SubtaskStatus::
+						NEW_DISTANT_TARGET_NEEDED.getCommand(),
+						SubtaskStatus::
+						NEW_DISTANT_TARGET_NEEDED.getAck());
 				
 				// Go to distant target
 				ROS_INFO_STREAM("Go to distant target.");
-				goToTarget(0.5);
+				goToTarget(1.0);
 				ros::Duration(1.0).sleep();
 			}		
 		
@@ -77,7 +83,8 @@ void BluntDissector::dissect()
 		vision.sendSubtaskStatus(SubtaskStatus::
 						ABORT.getCommand());
   		ROS_ERROR_STREAM(e.what());
-  		ROS_ERROR_STREAM("Program stopped by an error ...");
+  		ROS_ERROR_STREAM(
+  		 "Program stopped by an error, send ABORT command to vision node ...");
   	}
 
 }
@@ -101,48 +108,82 @@ void BluntDissector::waitForTopicsInit()
  */
 void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 {
-	bool reached_target = false;
+	bool dp_reached = false;
+	bool goal_reached = false;
 	double step_distance = std::abs(stepT * speed)/1000.0; // m
-	// Wait for the target
-	while (!vision.isTargetValid()) 
-	{
-		ros::Duration(0.1).sleep();
-	}
 	
-	while (!reached_target)
+	while (!goal_reached)
 	{
-		dvrk::Pose pose_current = psm.getPoseCurrent();
-		dvrk::Pose end_target = vision.getTargetCurrent();
-		
-		vision.sendSubtaskStatus(SubtaskStatus::
-						GOING_TO_TARGET.getCommand());
-						
-		double end_distance = (pose_current.dist(end_target)).cartesian;
-		
-		dvrk::Pose step_target;
-		
-		if (end_distance > step_distance)
+		dp_reached = false;
+		goal_reached = false;
+		vision.sendSubtaskStatusWithAck(
+							SubtaskStatus::
+							WAITING_FOR_TARGET.getCommand(),
+							SubtaskStatus::
+							WAITING_FOR_TARGET.getAck());
+		while (!vision.isTargetValid()) 
 		{
-			step_target = dvrk::interpolate(step_distance/end_distance,
+			ros::Duration(0.1).sleep();
+		}
+		while (!dp_reached)
+		{
+			dvrk::Pose pose_current = psm.getPoseCurrent();
+			dvrk::Pose end_target = vision.getTargetCurrent();
+		
+								
+			double end_distance = (pose_current.dist(end_target)).cartesian;
+		
+			dvrk::Pose step_target;
+		
+			if (end_distance > step_distance)
+			{
+				step_target = dvrk::interpolate(step_distance/end_distance,
 											 pose_current, end_target);
-			reached_target = false;
+				dp_reached = false;
+				
+				vision.sendSubtaskStatus(SubtaskStatus::
+						GOING_TO_TARGET.getCommand());
+			}
+			else
+			{
+				step_target = end_target;
+				dp_reached = true;
+			}
+		
+			dvrk::Trajectory<dvrk::Pose> to_target 	= dvrk::TrajectoryFactory::
+						linearTrajectoryForTime(pose_current,step_target, 
+												stepT, dt);
+			checkTrajectory(to_target);
+			psm.playTrajectory(to_target);
+		}
+		
+		if (vision.getTargetType() == dvrk_vision::TargetType::DP)
+		{
+			vision.sendSubtaskStatusWithAck(
+							SubtaskStatus::
+							DP_REACHED.getCommand(),
+							SubtaskStatus::
+							DP_REACHED.getAck());
+			goal_reached = false;
+			dp_reached = true;
+			ROS_INFO_STREAM("DP reached.");
+		} 
+		else if (vision.getTargetType() == dvrk_vision::TargetType::GOAL)
+		{
+			vision.sendSubtaskStatusWithAck(
+							SubtaskStatus::
+							GOAL_REACHED.getCommand(),
+							SubtaskStatus::
+							GOAL_REACHED.getAck());
+			goal_reached = true;
+			dp_reached = true;
+			ROS_INFO_STREAM("Goal reached.");
 		}
 		else
 		{
-			step_target = end_target;
-			reached_target = true;
+			throw std::runtime_error("Wrong target type received... ");
 		}
-		
-		dvrk::Trajectory<dvrk::Pose> to_target 	= dvrk::TrajectoryFactory::
-						linearTrajectoryForTime(pose_current,step_target, 
-												stepT, dt);
-		// TODO check err topics?
-		checkTrajectory(to_target);
-		psm.playTrajectory(to_target);
 	}
-	vision.sendSubtaskStatus(SubtaskStatus::
-						TARGET_REACHED.getCommand());
-	ROS_INFO_STREAM("Target reached.");
 }
 
 /**
