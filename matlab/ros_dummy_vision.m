@@ -2,28 +2,8 @@ clear all;
 
 rosinit;
 
-targetpub = rospublisher('/dvrk_vision/movement_target', 'geometry_msgs/Pose');
-targetvalidpub = rospublisher('/dvrk_vision/target_valid', 'std_msgs/Bool');
-targettypepub = rospublisher('/dvrk_vision/target_type', 'std_msgs/String');
-statusackpub = rospublisher('/dvrk_vision/subtask_status_ack', 'std_msgs/String');
-donepub = rospublisher('/dvrk_vision/task_done', 'std_msgs/Bool');
-errpub = rospublisher('/dvrk_vision/error', 'std_msgs/String');
-
-statussub = rossubscriber('/dvrk_vision/subtask_status', 'std_msgs/String');
-pause(2) % Wait to ensure publisher is registered
-
-% Start
-
-donemsg = rosmessage(donepub);
-donemsg.Data = false;
-send(donepub,donemsg);
-
-validmsg = rosmessage(targetvalidpub);
-validmsg.Data = false;
-send(targetvalidpub,validmsg);
-
-status = receive(statussub);
-disp(status.Data);
+[targetpub, targetvalidpub, targettypepub, statusackpub, donepub, errpub, statussub] ...
+        = dvrkInit();
 
 tgt_pos = [0.1 0.0 0.4];
 tgt_ori = [0.0380 -0.0927 -0.0626 0.9930];
@@ -32,6 +12,8 @@ dp_rot = -15.0;
 
 dist_pos = [0.1 -0.05 0.35];
 dist_ori = [0.0380 -0.0927 -0.0626 0.9930];
+
+status = statussub.LatestMessage;
 
 for i = 1:3
     next_dissection = false;
@@ -75,10 +57,7 @@ for i = 1:3
     end
 end
 
-donemsg = rosmessage(donepub);
-donemsg.Data = true;
-send(donepub,donemsg);
-
+sendDone(donepub, true);
 
 rosshutdown;
 
