@@ -15,7 +15,7 @@
 namespace dvrk_automation {
 
 // Constants
-const double Puncturer::forceSurface = 50.0;	//mN
+const double Puncturer::forceSurface = 100.0;	//mN
 const double Puncturer::forceMaxPermitted = 5000.0;	//mN
 const double Puncturer::travelHeight = 20.0 / 1000.0;	//m
 const double Puncturer::surfaceOffset = 1.0 / 1000.0;	//m;
@@ -58,6 +58,7 @@ void Puncturer::doPunctureSeries(Eigen::Vector2d scanningArea,
 		waitForTopicsInit();
 	
 		// Go to init pos: raise to travel height, calculate safety params
+		constOrientation = psm.getPoseCurrent().orientation;
 		setWorkspaceFromCurrent(scanningArea, depth);
 		raiseToTravelHeight();
 		ros::Duration(0.5).sleep();
@@ -170,6 +171,7 @@ void Puncturer::raiseToTravelHeight()
 	dvrk::Pose p0 = psm.getPoseCurrent();
 	dvrk::Pose p1 = p0;
 	p1.jaw = constJawPos;
+	p1.orientation = constOrientation;
 	Eigen::Vector3d translate_to_travel_height(0.0, 0.0, travelHeight);
 	p1.position += translate_to_travel_height;
 	// TODO set orientation
@@ -187,6 +189,7 @@ void Puncturer::raiseToSurface(double surface_z)
 	dvrk::Pose p0 = psm.getPoseCurrent();
 	dvrk::Pose p1 = p0;
 	p1.jaw = constJawPos;
+	p1.orientation = constOrientation;
 	p1.position(2) = surface_z;
 	// TODO set orientation
 	dvrk::Trajectory<dvrk::Pose> to_surface(dvrk::TrajectoryFactory::
@@ -206,7 +209,8 @@ void Puncturer::goToLocation(Eigen::Vector2d location)
 	p1.position(0) = location.x();
 	p1.position(1) = location.y();
 	p1.jaw = constJawPos;
-	// TODO set orientation
+	p1.orientation = constOrientation;
+	
 	dvrk::Trajectory<dvrk::Pose> to_location(dvrk::TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				psm.getPoseCurrent(), 
@@ -221,6 +225,7 @@ void Puncturer::findTissueSurface()
 	Eigen::Vector3d step(0.0, 0.0, lowerSpeedAir * dt);
 	dvrk::Pose p0 = psm.getPoseCurrent();
 	dvrk::Pose p1 = p0;
+	p1.orientation = constOrientation;
 	ros::Rate loop_rate(1.0/dt);
 	while (ros::ok() && oforce.getForcesCurrent().norm() < forceSurface)
 	{
@@ -235,6 +240,7 @@ void Puncturer::findTissueSurface()
 	p1 = p0;
 	Eigen::Vector3d translate_to_surface(0.0, 0.0, surfaceOffset);
 	p1.jaw = constJawPos;
+	p1.orientation = constOrientation;
 	p1.position += translate_to_surface;
 	// TODO set orientation
 	dvrk::Trajectory<dvrk::Pose> to_surface(dvrk::TrajectoryFactory::
@@ -254,6 +260,7 @@ void Puncturer::puncture(double depth, double speed, double T,
 	dvrk::Pose p0 = psm.getPoseCurrent();
 	double desired_z = p0.position.z() - depth;
 	dvrk::Pose p1 = p0;
+	p1.orientation = constOrientation;
 	ros::Rate loop_rate(1.0/dt);
 	double t = 0.0;
 	std::vector<double> forces;

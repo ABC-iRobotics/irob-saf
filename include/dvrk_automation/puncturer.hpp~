@@ -52,7 +52,6 @@ private:
 
 	// Never ever change jaw pos
 	double constJawPos;
-	Eigen::Quaternion<double> constOrientation;
 	
 	// Constants
 	static const double forceSurface;
