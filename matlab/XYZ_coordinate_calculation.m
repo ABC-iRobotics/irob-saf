@@ -25,11 +25,19 @@ frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
 
 disparityMap = correlation_match(frameLeftGray, frameRightGray, maxDisp, dir);
+% disparityRange = [64,288];
+% disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
+%    15,'DisparityRange',disparityRange, 'ContrastThreshold', 0.5, 'UniquenessThreshold', 1,...
+%    'DistanceThreshold', 200);
+
+% se = strel('disk',4);
+% disparityMap = imclose(disparityMap, se);
 
 disparityRange = [0,maxDisp];
 
 figure;
-imshow(disparityMap, disparityRange); title('disparity map'); colormap jet
+subplot(1,2,1), imshow(ILrect, [])
+subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  
  
 [x,y] = ginput(2);
@@ -55,14 +63,25 @@ MinimaValues = double(zeros(0));
         MinimaArrayX = [MinimaArrayX, double(i)];
         MinimaArrayY = [MinimaArrayY, double(y(1))];
         MinimaValues = [MinimaValues, -disparityMap(uint32(y(1)),uint32(x(1)))];
+        %MinimaValues = [MinimaValues, 1.0];
     end
 
  end
 
- 
-imshow(ILrect);
+subplot(1,2,1), imshow(ILrect, [])
 hold on
 plot(MinimaArrayX, MinimaArrayY, 'r.');
+hold off
+
+subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
+ hold on
+plot(MinimaArrayX, MinimaArrayY, 'r.');
+hold off
+% 
+%  
+% imshow(ILrect);
+% hold on
+% plot(MinimaArrayX, MinimaArrayY, 'r.');
   
 im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
 im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
@@ -71,7 +90,7 @@ points3D = reconstructScene(disparityMap, stereoParams.stereoParamsFinal);
 points3D = points3D ./ 1000;
 ptCloud = pointCloud(points3D, 'Color', ILrect);
 
-cuttingXYZIdx = sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1));
+cuttingXYZIdx = uint32(round(sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1))));
 X = points3D(:, :, 1);
 Y = points3D(:, :, 2);
 Z = points3D(:, :, 3);

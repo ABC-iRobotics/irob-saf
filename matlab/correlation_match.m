@@ -40,7 +40,7 @@ img = zeros(m,n,1+maxdisp);
 diss  = zeros(m,n);
 
 %window size
-windowSize = 20;
+windowSize = 5;
 window = ones(1, windowSize);
 
 %kernel to sum across the window

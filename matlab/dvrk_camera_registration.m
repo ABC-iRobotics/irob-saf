@@ -34,7 +34,7 @@ while i < (n+1)
     
    
     
-    if and(boardSize(1) == 5,  boardSize(2) == 7)
+    if and(boardSize(1) == 6,  boardSize(2) == 7)
         im_coord_L =  mean(imagePoints(:,:,1,1), 1);
         im_coord_R =  mean(imagePoints(:,:,1,2), 1);
         

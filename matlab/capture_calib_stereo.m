@@ -2,13 +2,13 @@ clear all;
 imaqreset;
 webcamlist()
 %cam1 = webcam;
-cam_l = videoinput('linuxvideo', 1, 'BGR24_1920x1080');
-cam_r = videoinput('linuxvideo', 2, 'BGR24_1920x1080');
+cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
-folder = 'bacon_forTests2';
-subfolder = 'calib';
-filename = 'calib';
-num_img = 19;
+folder = 'new_test';
+subfolder = 'new_test';
+filename = 'new_test';
+num_img = 1;
 
 %mkdir(strcat(subfolder,'_l'));
 %mkdir(strcat(subfolder,'_r'));
