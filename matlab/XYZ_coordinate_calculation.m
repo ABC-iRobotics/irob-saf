@@ -18,7 +18,7 @@ function cuttingXYZ = XYZ_coordinate_calculation( IL, IR, calibrationSession, st
 stereoParams = load(stereoParams);
 
 %Rectify the images
-[IRrect, ILrect] = ...
+[ILrect, IRrect] = ...
 rectifyStereoImages(IL, IR, stereoParams.stereoParams);
 
 frameLeftGray  = rgb2gray(ILrect);

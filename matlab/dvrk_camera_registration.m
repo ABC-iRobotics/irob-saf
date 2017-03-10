@@ -5,8 +5,8 @@ rosinit;
 posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 pause(2) % Wait to ensure publisher is registered
 
-calib = load('calibrationSessionFinal');
-stereoParams = load('stereoParamsFinal');
+calib = load('calibrationSession');
+stereoParams = load('stereoParams');
 cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
 cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
 preview([cam_l, cam_r]);
@@ -21,12 +21,16 @@ while i < (n+1)
     w = waitforbuttonpress;
     IL = getsnapshot(cam_l);
     IR = getsnapshot(cam_r);
+    
+     IL = imrotate(IL, -90);
+    IR = imrotate(IR, 90);
+    
     robot_pose_msg = posesub.LatestMessage;
     
     disp(i);
     
-    IL = undistortImage(IL,stereoParams.stereoParamsFinal.CameraParameters1);
-    IR = undistortImage(IR,stereoParams.stereoParamsFinal.CameraParameters2);
+    IL = undistortImage(IL,stereoParams.stereoParams.CameraParameters1);
+    IR = undistortImage(IR,stereoParams.stereoParams.CameraParameters2);
     
     
     [imagePoints,boardSize] = detectCheckerboardPoints(IL, IR);
@@ -38,7 +42,7 @@ while i < (n+1)
         im_coord_L =  mean(imagePoints(:,:,1,1), 1);
         im_coord_R =  mean(imagePoints(:,:,1,2), 1);
         
-        new_marker = triangulate(im_coord_L, im_coord_R, stereoParams.stereoParamsFinal) + offset;
+        new_marker = triangulate(im_coord_L, im_coord_R, stereoParams.stereoParams) + offset;
         marker_3d = cat(1,marker_3d, (new_marker / 1000.0));
         disp(marker_3d);
         robot_3d = cat(1,robot_3d, [robot_pose_msg.Pose.Position.X, robot_pose_msg.Pose.Position.Y, robot_pose_msg.Pose.Position.Z]);

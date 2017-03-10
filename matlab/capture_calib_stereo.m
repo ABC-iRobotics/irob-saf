@@ -36,11 +36,11 @@ for i = 1:num_img
     I_l = imrotate(I_l, 90);
     I_r = imrotate(I_r, -90);
     
-    imwrite(I_l, strcat(filename, '_l_', num2str(i), '.jpg'));
+     imwrite(I_l, strcat(filename, '_l_', num2str(i), '.jpg'));
     imwrite(I_r, strcat(filename, '_r_', num2str(i), '.jpg'));
     
-%       imwrite(I_l, strcat(folder,'/', subfolder, '/', filename, '_l_', num2str(i), '.jpg'));
-%      imwrite(I_r, strcat(folder,'/',  subfolder, '/',filename, '_r_', num2str(i), '.jpg'));
+      % imwrite(I_l, strcat(folder,'/', subfolder, '/', filename, '_l_', num2str(i), '.jpg'));
+   %  imwrite(I_r, strcat(folder,'/',  subfolder, '/',filename, '_r_', num2str(i), '.jpg'));
 end
 
 
