@@ -9,8 +9,8 @@ function [ I_l, I_r ] = stereo_capture( num_img, resolution )
   
 imaqreset;
 webcamlist()
-cam_r = videoinput('linuxvideo', 1, resolution);
-cam_l = videoinput('linuxvideo', 2, resolution);
+cam_l = videoinput('linuxvideo', 1, resolution);
+cam_r = videoinput('linuxvideo', 2, resolution);
 
 
 preview([cam_l, cam_r]);

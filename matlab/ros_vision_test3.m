@@ -1,13 +1,16 @@
 %   @author: Renata Elek
 
 clear all;
+close all;
+%rosinit;
 
-rosinit;
 
 
-
-[ I_l, I_r ] = stereo_capture( 1, 'BGR24_640x480' );
-cuttingXYZ = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSessionFinal.mat', 'stereoParamsFinal.mat', 500, 0, 20, 20 );
+%[ I_l, I_r ] = stereo_capture( 1, 'BGR24_640x480' );
+I_l = imread('img_l_1.jpg');
+I_r = imread('img_r_1.jpg');
+cuttingXYZ = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...
+    400, 0, 8, 8 );
 
 tgt_pos = cuttingXYZ(1, :);
 tgt_ori = [0.0380 -0.0927 -0.0626 0.9930];

@@ -14,23 +14,31 @@ function cuttingXYZ = XYZ_coordinate_calculation( IL, IR, calibrationSession, st
 %   lowThresh, highThresh: thresholds in y coordinates to find peaks (20
 %   was the best)
 
-calib = load(calibrationSession);
+%calib = load(calibrationSession);
 stereoParams = load(stereoParams);
 
 %Rectify the images
-[ILrect, IRrect] = ...
-rectifyStereoImages(IL, IR, stereoParams.stereoParamsFinal);
+[IRrect, ILrect] = ...
+rectifyStereoImages(IL, IR, stereoParams.stereoParams);
 
 frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
 
-disparityMap = correlation_match(frameLeftGray, frameRightGray, maxDisp, dir);
-% disparityRange = [64,288];
-% disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
-%    15,'DisparityRange',disparityRange, 'ContrastThreshold', 0.5, 'UniquenessThreshold', 1,...
-%    'DistanceThreshold', 200);
+% frameLeftGray  = ILrect(:,:,2);
+%  frameRightGray = IRrect(:,:,2);
+% % 
+%    H = fspecial('gaussian',[3 3],0.5);
+%  frameLeftGray = imfilter(frameLeftGray,H);
+%    frameRightGray = imfilter(frameRightGray,H);
 
-% se = strel('disk',4);
+
+
+disparityRange = [0,384];
+disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
+   15,'DisparityRange',disparityRange, 'ContrastThreshold', 0.5, 'UniquenessThreshold', 1,...
+   'DistanceThreshold', 384);
+
+% se = strel('disk',3);
 % disparityMap = imclose(disparityMap, se);
 
 disparityRange = [0,maxDisp];
@@ -47,10 +55,11 @@ highThresholdY = uint32(y(1) + highThresh);
 MinimaArrayX = double(zeros(0));
 MinimaArrayY = double(zeros(0));
 MinimaValues = double(zeros(0));
+dataM = double(zeros(0));
  for i = uint32(x(1)) : uint32(x(2))
     data = disparityMap(lowThresholdY: highThresholdY, i); 
     data = double(data);
-
+    dataM = cat(2,dataM, data);
     [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
     if  isfinite(MinIdx)
         
@@ -77,6 +86,9 @@ subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  hold on
 plot(MinimaArrayX, MinimaArrayY, 'r.');
 hold off
+
+%surf(dataM);
+
 % 
 %  
 % imshow(ILrect);
@@ -86,7 +98,7 @@ hold off
 im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
 im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
   
-points3D = reconstructScene(disparityMap, stereoParams.stereoParamsFinal);
+points3D = reconstructScene(disparityMap, stereoParams.stereoParams);
 points3D = points3D ./ 1000;
 ptCloud = pointCloud(points3D, 'Color', ILrect);
 
