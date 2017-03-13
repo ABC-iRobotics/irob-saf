@@ -51,7 +51,7 @@ void BluntDissector::dissect()
 				
 				// Go to target and make dissection
 				ROS_INFO_STREAM("Go to target and make dissection.");
-				goToTarget(1.0);
+				goToTarget(100.0);
 				ros::Duration(1.0).sleep();
 				vision.sendSubtaskStatus(SubtaskStatus::
 						PERFORMING_DISSECTION.getCommand());
@@ -74,7 +74,7 @@ void BluntDissector::dissect()
 				
 				// Go to distant target
 				ROS_INFO_STREAM("Go to distant target.");
-				goToTarget(1.0);
+				goToTarget(100.0);
 				ros::Duration(1.0).sleep();
 			}		
 		
@@ -134,7 +134,9 @@ void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 			double end_distance = (pose_current.dist(end_target)).cartesian;
 		
 			dvrk::Pose step_target;
-		
+			
+			dvrk::Trajectory<dvrk::Pose> to_target;
+			
 			if (end_distance > step_distance)
 			{
 				step_target = dvrk::interpolate(step_distance/end_distance,
@@ -150,9 +152,9 @@ void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
 				dp_reached = true;
 			}
 		
-			dvrk::Trajectory<dvrk::Pose> to_target 	= dvrk::TrajectoryFactory::
-						linearTrajectoryForTime(pose_current,step_target, 
-												stepT, dt);
+			to_target 	= dvrk::TrajectoryFactory::
+						linearTrajectoryForSpeed(pose_current,step_target, 
+												speed/1000.0, dt);
 			checkTrajectory(to_target);
 			psm.playTrajectory(to_target);
 		}

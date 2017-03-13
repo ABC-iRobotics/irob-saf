@@ -32,6 +32,7 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
     return out;
 }
 
+// Interpolation
 template<typename T>
 inline T interpolate(double a, T const& x1, T const& x2) {
    return ((1.0-a) * x1) + ((a) * x2);
@@ -47,6 +48,25 @@ inline Eigen::Quaternion<double> interpolate(double a,
 									const Eigen::Quaternion<double>& x1,
 									const Eigen::Quaternion<double>& x2) {
    return x1.slerp(a, x2);
+}
+
+// Distance
+template<typename T>
+inline double distanceEuler(T const& x1, T const& x2) {
+   return std::abs(x2 - x1);
+}
+
+
+template <>
+inline double distanceEuler(const Pose& x1, const Pose& x2) {
+   Pose::Distance d = x1.dist(x2);
+   return std::abs(d.cartesian);
+}
+
+template <>
+inline double distanceEuler(const Eigen::Vector3d& x1,
+									const Eigen::Vector3d& x2) {
+   return std::abs((x2-x1).norm());
 }
 
 

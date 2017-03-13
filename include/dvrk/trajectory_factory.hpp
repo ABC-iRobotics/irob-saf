@@ -125,7 +125,7 @@ class TrajectoryFactory
 		{
 			Trajectory<P> tr(dt);
 			double stepSize = speed * dt;
-			int N = (int)round(std::abs(end - start) / stepSize)+1;
+			int N = (int)round(distanceEuler(start, end) / stepSize)+1;
 			Trajectory<double> ramp = uniformRamp(N);
 			for (int i = 0; i < ramp.size(); i++)
 			{

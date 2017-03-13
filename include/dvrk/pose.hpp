@@ -56,6 +56,7 @@ class Pose {
    	Pose operator+(const Eigen::Vector3d&) const;
    	Pose operator-(const Eigen::Vector3d&) const;
    	
+   	
    	Pose interpolate(double, const Pose&) const;
    	
    	Pose rotate(const Eigen::Matrix3d&) const;
