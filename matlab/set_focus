@@ -19,8 +19,8 @@ uvcdynctrl -v -d video1 --set='Focus (absolute)' 55
 uvcdynctrl -v -d video0 --set='Focus (absolute)' 85
 uvcdynctrl -v -d video1 --set='Focus (absolute)' 85
 
-uvcdynctrl -v -d video0 --set='Focus (absolute)' 60
-uvcdynctrl -v -d video1 --set='Focus (absolute)' 70
+uvcdynctrl -v -d video0 --set='Focus (absolute)' 70
+uvcdynctrl -v -d video1 --set='Focus (absolute)' 60
 
 echo video1 focus:
 uvcdynctrl -v -d video0 --get='Focus (absolute)'

@@ -1,4 +1,4 @@
-function cuttingXYZ = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh )
+function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder] = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh )
 %UNTITLED2 Summary of this function goes here
 %   @author: Renata Elek
 %   IL & IR: left and right images of your stereo cameras (what are you
@@ -33,9 +33,9 @@ frameRightGray = rgb2gray(IRrect);
 
 
 
-disparityRange = [0,384];
+disparityRange = [0,400];
 disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
-   15,'DisparityRange',disparityRange, 'ContrastThreshold', 0.5, 'UniquenessThreshold', 1,...
+   15,'DisparityRange',disparityRange, 'ContrastThreshold', 0.2, 'UniquenessThreshold', 1,...
    'DistanceThreshold', 384);
 
 % se = strel('disk',3);
@@ -51,10 +51,15 @@ subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
 [x,y] = ginput(2);
 lowThresholdY = uint32(y(1) - lowThresh);
 highThresholdY = uint32(y(1) + highThresh);
+
  
 MinimaArrayX = double(zeros(0));
 MinimaArrayY = double(zeros(0));
 MinimaValues = double(zeros(0));
+
+orientationOverY = double(zeros(0)); %folott
+orientationUnderY = double(zeros(0));
+figure
 dataM = double(zeros(0));
  for i = uint32(x(1)) : uint32(x(2))
     data = disparityMap(lowThresholdY: highThresholdY, i); 
@@ -74,18 +79,25 @@ dataM = double(zeros(0));
         MinimaValues = [MinimaValues, -disparityMap(uint32(y(1)),uint32(x(1)))];
         %MinimaValues = [MinimaValues, 1.0];
     end
+    plot(data)
+    hold on
 
  end
-
-subplot(1,2,1), imshow(ILrect, [])
-hold on
-plot(MinimaArrayX, MinimaArrayY, 'r.');
-hold off
-
-subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
- hold on
-plot(MinimaArrayX, MinimaArrayY, 'r.');
-hold off
+ 
+  for i = 1 : numel(MinimaArrayX)
+    orientationOverY = [orientationOverY, MinimaArrayY(i) + (2*highThresh)];
+    orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (2*lowThresh)];
+ end
+% 
+% subplot(1,2,1), imshow(ILrect, [])
+% hold on
+% plot(MinimaArrayX, MinimaArrayY, 'r.');
+% hold off
+% 
+% subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
+%  hold on
+% plot(MinimaArrayX, MinimaArrayY, 'r.');
+% hold off
 
 %surf(dataM);
 
@@ -97,6 +109,13 @@ hold off
   
 im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
 im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
+
+im_coord_L_over = transpose([MinimaArrayX; orientationOverY ]);
+%im_coord_R_over = transpose([MinimaArrayX + MinimaValues; orientationOverY ]);
+
+im_coord_L_under = transpose([MinimaArrayX; orientationUnderY ]);
+%im_coord_R_under = transpose([MinimaArrayX + MinimaValues; orientationUnderY ]);
+
   
 points3D = reconstructScene(disparityMap, stereoParams.stereoParams);
 points3D = points3D ./ 1000;
@@ -108,6 +127,23 @@ Y = points3D(:, :, 2);
 Z = points3D(:, :, 3);
 cuttingXYZ = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
 cuttingXYZ = cuttingXYZ(isfinite(cuttingXYZ(:,1)),:);
+
+%over
+cuttingXYZIdx = uint32(round(sub2ind(size(disparityMap), im_coord_L_over(:, 2), im_coord_L_over(:, 1))));
+X = points3D(:, :, 1);
+Y = points3D(:, :, 2);
+Z = points3D(:, :, 3);
+cuttingXYZOver = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
+cuttingXYZOver = cuttingXYZOver(isfinite(cuttingXYZOver(:,1)),:);
+
+%under
+cuttingXYZIdx = uint32(round(sub2ind(size(disparityMap), im_coord_L_under(:, 2), im_coord_L_under(:, 1))));
+X = points3D(:, :, 1);
+Y = points3D(:, :, 2);
+Z = points3D(:, :, 3);
+cuttingXYZUnder = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
+cuttingXYZUnder = cuttingXYZUnder(isfinite(cuttingXYZUnder(:,1)),:);
+
 % Find the distances from the camera in meters.
 dists = sqrt(sum(cuttingXYZ' .^ 2));
   

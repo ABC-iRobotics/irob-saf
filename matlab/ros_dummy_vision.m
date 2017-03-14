@@ -6,14 +6,13 @@ rosinit;
         = dvrkInit();
 
 tgt_pos = [0.1 0.0 0.4];
-tgt_ori = [0.0380 -0.0927 -0.0626 0.9930];
+tgt_ori = [ 0.9825   , 0.1830 ,   0.0179 ,  -0.0294];
 
 dp_dist = 0.04;
 dp_rot = -15.0;
 
 dist_pos = [0.1 -0.05 0.35];
-dist_ori = [0.0380 -0.0927 -0.0626 0.9930];
-
+dist_ori = [ 0.9825   , 0.1830 ,   0.0179 ,  -0.0294];
 status = statussub.LatestMessage;
 
 for i = 1:3

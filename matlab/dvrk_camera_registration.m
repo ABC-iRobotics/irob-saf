@@ -7,8 +7,8 @@ pause(2) % Wait to ensure publisher is registered
 
 calib = load('calibrationSession');
 stereoParams = load('stereoParams');
-cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
-cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
+cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
+cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
 preview([cam_l, cam_r]);
 
 marker_3d = double(zeros(0,3));
@@ -22,8 +22,8 @@ while i < (n+1)
     IL = getsnapshot(cam_l);
     IR = getsnapshot(cam_r);
     
-     IL = imrotate(IL, -90);
-    IR = imrotate(IR, 90);
+     IL = imrotate(IL, 90);
+    IR = imrotate(IR, -90);
     
     robot_pose_msg = posesub.LatestMessage;
     

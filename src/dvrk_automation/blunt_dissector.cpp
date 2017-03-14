@@ -51,18 +51,20 @@ void BluntDissector::dissect()
 				
 				// Go to target and make dissection
 				ROS_INFO_STREAM("Go to target and make dissection.");
-				goToTarget(100.0);
-				ros::Duration(1.0).sleep();
+				//goToTarget(100.0);
+				ros::Duration(10.0).sleep();
 				vision.sendSubtaskStatus(SubtaskStatus::
 						PERFORMING_DISSECTION.getCommand());
-				toolPushIn(5.0);
-				ros::Duration(1.0).sleep();
-				toolOpen(30.0);
-				ros::Duration(1.0).sleep();
-				toolPullOut(5.0);
-				ros::Duration(1.0).sleep();
+				ROS_INFO_STREAM("Tool push in.");
+				toolPushIn(3.0);
+				ros::Duration(10.0).sleep();
+				ROS_INFO_STREAM("Tool open.");
+				toolOpen(40.0);
+				ros::Duration(10.0).sleep();
+				toolPullOut(3.0);
+				ros::Duration(10.0).sleep();
 				toolClose(0.0, 20.0);
-				ros::Duration(1.0).sleep();
+				ros::Duration(10.0).sleep();
 				
 				// Ask for new distant target
 				ROS_INFO_STREAM("Ask for new distant target.");
@@ -74,7 +76,7 @@ void BluntDissector::dissect()
 				
 				// Go to distant target
 				ROS_INFO_STREAM("Go to distant target.");
-				goToTarget(100.0);
+				//goToTarget(100.0);
 				ros::Duration(1.0).sleep();
 			}		
 		
