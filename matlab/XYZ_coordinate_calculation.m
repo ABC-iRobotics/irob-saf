@@ -83,6 +83,10 @@ dataM = double(zeros(0));
     hold on
 
  end
+    title({'Plot of vertical';'disparity changes in the ROI'})
+    xlabel('Pixel indices in vertical direction')
+    ylabel('Disparity value [px]')
+    axis tight
  
   for i = 1 : numel(MinimaArrayX)
     orientationOverY = [orientationOverY, MinimaArrayY(i) + (2*highThresh)];

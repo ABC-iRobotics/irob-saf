@@ -216,7 +216,7 @@ void VisionConn::sendSubtaskStatusWithAck(std::string status, std::string ack)
         	ros::spinOnce();
         	checkErrors();
         }
-        ROS_INFO_STREAM(subtask_status_ack << " received");
+        //ROS_INFO_STREAM(subtask_status_ack << " received");
 }
 
 

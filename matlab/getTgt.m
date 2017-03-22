@@ -2,8 +2,8 @@ function [ tgt_pos, tgt_ori ] = getTgt(tgt_idx, cuttingXYZ, cuttingXYZOver, cutt
 
 tgt_pos = cuttingXYZ(tgt_idx, :);
 
-vec_over = cuttingXYZ(tgt_idx, :) - cuttingXYZOver(tgt_idx, :);
-vec_under = cuttingXYZ(tgt_idx, :) - cuttingXYZUnder(tgt_idx, :);
+vec_over = mean(cuttingXYZ, 1) - mean(cuttingXYZOver, 1);
+vec_under = mean(cuttingXYZ,1) - mean(cuttingXYZUnder,1);
 
 %vec_over(1) = 0.0;
 %vec_under(1) = 0.0;

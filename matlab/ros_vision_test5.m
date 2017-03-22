@@ -6,11 +6,11 @@ rosinit;
 
 
 
-[ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480' );
-%I_l = imread('img_l_1.jpg');
-%I_r = imread('img_r_1.jpg');
+%[ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480' );
+I_l = imread('saved_l.jpg');
+I_r = imread('saved_r.jpg');
 [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder] = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...
-    400, 0, 5, 5 );
+    400, 0, 20, 20 );
 
 tgt_pos = cuttingXYZ(1, :);
 tgt_ori = [ 0.9825   , 0.1830 ,   0.0179 ,  -0.0294];
@@ -33,7 +33,7 @@ for i = 1:n
     tgt_idx = stepPix*(i-1)+1;
     [tgt_pos, tgt_ori] = getTgt(tgt_idx, cuttingXYZ, cuttingXYZOver, cuttingXYZUnder );
     dist_ori = tgt_ori;
-    tgt_pos = tgt_pos + [0.02, 0.0, 0.0];
+    tgt_pos = tgt_pos + [0.02, 0.0, 0.0]
     
     next_dissection = false;
     while not(next_dissection);
