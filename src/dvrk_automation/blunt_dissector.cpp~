@@ -36,7 +36,7 @@ void BluntDissector::dissect()
 {
 	try {	// TODO err handling
 			
-			toolClose();
+			//toolClose();
 			ROS_INFO_STREAM("Tool closed, starting dissection.");
 			// Do this while the vision says it is done
 			while (!vision.isTaskDone())	
@@ -52,7 +52,7 @@ void BluntDissector::dissect()
 				// Go to target and make dissection
 				ROS_INFO_STREAM("Go to target and make dissection.");
 				goToTarget(100.0);
-				ros::Duration(1.0).sleep();
+				ros::Duration(10.0).sleep();
 				vision.sendSubtaskStatus(SubtaskStatus::
 						PERFORMING_DISSECTION.getCommand());
 				ROS_INFO_STREAM("Tool push in.");
@@ -61,12 +61,6 @@ void BluntDissector::dissect()
 				ROS_INFO_STREAM("Tool open.");
 				toolOpen(40.0);
 				ros::Duration(1.0).sleep();
-				toolClose(0.0, 20.0);
-				toolRotate(90.0);
-				toolOpen(40.0);
-				ros::Duration(1.0).sleep();
-				toolClose(0.0, 20.0);
-				toolRotate(-90.0);
 				toolPullOut(3.0);
 				ros::Duration(1.0).sleep();
 				toolClose(0.0, 20.0);

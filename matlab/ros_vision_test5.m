@@ -4,18 +4,13 @@ clear all;
 close all;
 rosinit;
 
+groupN = 30;
 
 
-%[ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480' );
-I_l = imread('saved_l.jpg');
-I_r = imread('saved_r.jpg');
-[cuttingXYZ, cuttingXYZOver, cuttingXYZUnder] = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...
-    400, 0, 20, 20 );
 
-tgt_pos = cuttingXYZ(1, :);
-tgt_ori = [ 0.9825   , 0.1830 ,   0.0179 ,  -0.0294];
+tgt_ori = [  0.9938    0.0705    0.0514    0.0685];
 dp_dist = 0.04;
-dp_rot = 330.0;
+dp_rot = 345.0;
 
 
 dist_pos = [0.0133340582644101,-0.0600216146603506,0.307688160427651];
@@ -27,13 +22,23 @@ dist_ori = [ 0.9825  ,  0.1830 ,   0.0179 ,  -0.0294];
 status = statussub.LatestMessage;
 gotodistant = false;
 stepPix = 10;
-s = size(cuttingXYZ, 1);
-n = (s / stepPix)+1;
+%s = size(cuttingXYZ, 1);
+n = (groupN / stepPix)+1;
+for j = 1:3
+ 
+[ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480' );
+%I_l = imread('saved_l.jpg');
+%I_r = imread('saved_r.jpg');
+[cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, groupMinIdx] = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...
+    400, 0, 20, 20, groupN);
+
+plot(cuttingXYZ(:,3));    
+    
 for i = 1:n
     tgt_idx = stepPix*(i-1)+1;
-    [tgt_pos, tgt_ori] = getTgt(tgt_idx, cuttingXYZ, cuttingXYZOver, cuttingXYZUnder );
+    [tgt_pos, tgt_ori_NOT_USED] = getTgt(tgt_idx,  groupMinIdx, groupN, cuttingXYZ, cuttingXYZOver, cuttingXYZUnder );
     dist_ori = tgt_ori;
-    tgt_pos = tgt_pos + [0.02, 0.0, 0.0]
+    tgt_pos = tgt_pos + [-0.015, 0.0, 0.0]
     
     next_dissection = false;
     while not(next_dissection);
@@ -41,7 +46,7 @@ for i = 1:n
         sendStatusAck( statusackpub, status.Data )
         gotodistant = false;
         if  i == n
-            gotodistant = false;
+            gotodistant = true;
         end
         if strcmp(status.Data,'new_dissection_target_needed')
             % dp
@@ -85,6 +90,7 @@ for i = 1:n
         
         status = statussub.LatestMessage;
     end
+end
 end
 
 sendDone(donepub, true);

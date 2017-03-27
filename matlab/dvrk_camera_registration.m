@@ -1,5 +1,5 @@
 clear all;
-
+close all;
 
 rosinit;
 posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
@@ -7,15 +7,21 @@ pause(2) % Wait to ensure publisher is registered
 
 calib = load('calibrationSession');
 stereoParams = load('stereoParams');
-cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
-cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+ cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
+ cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+
+
+%  cam_l = videoinput('linuxvideo', 1, 'RGB24_1280x960');
+%  cam_r = videoinput('linuxvideo', 2, 'RGB24_1280x960');
+
+
 preview([cam_l, cam_r]);
 
 marker_3d = double(zeros(0,3));
 robot_3d = double(zeros(0,3));
 offset = [0.0, 0.0, 3.0];
 i = 1;
-n = 5;
+n = 7;
 while i < (n+1)
 
     w = waitforbuttonpress;
@@ -50,6 +56,8 @@ while i < (n+1)
        
     else
         disp('FOS!!!!');
+        boardSize
+        
     end
 end
 

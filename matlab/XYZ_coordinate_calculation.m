@@ -1,4 +1,4 @@
-function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder] = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh )
+function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, minIdx] = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh, groupN )
 %UNTITLED2 Summary of this function goes here
 %   @author: Renata Elek
 %   IL & IR: left and right images of your stereo cameras (what are you
@@ -150,6 +150,19 @@ cuttingXYZUnder = cuttingXYZUnder(isfinite(cuttingXYZUnder(:,1)),:);
 
 % Find the distances from the camera in meters.
 dists = sqrt(sum(cuttingXYZ' .^ 2));
-  
+
+%groupN = 5;
+
+dataZ = double(zeros((idivide(uint32(size(cuttingXYZ,1)), groupN, 'floor')), groupN));
+ for i = 1:(groupN*idivide(size(cuttingXYZ,1), uint32(groupN), 'floor'))
+     dataZ((idivide(i-1, uint32(groupN), 'floor'))+1, mod(i-1,groupN)+1) = cuttingXYZ(i,3);
+     disp(i)
+     disp(dataZ)
+ end
+ 
+ avgDataZ = mean(dataZ, 2);
+ 
+ [minVal, minIdx] = min(avgDataZ);
+
 end
 
