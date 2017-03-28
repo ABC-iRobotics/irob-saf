@@ -1,4 +1,4 @@
-function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, minIdx] = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh, groupN )
+function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] = XYZ_coordinate_calculation( IL, IR, calibrationSession, stereoParams, maxDisp, dir, lowThresh, highThresh, firstTgt, userInputX, userInputY)
 %UNTITLED2 Summary of this function goes here
 %   @author: Renata Elek
 %   IL & IR: left and right images of your stereo cameras (what are you
@@ -47,8 +47,15 @@ figure;
 subplot(1,2,1), imshow(ILrect, [])
 subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  
- 
-[x,y] = ginput(2);
+if firstTgt 
+    [x,y] = ginput(2);
+    userInputX = x;
+    userInputY = y;
+else
+    x = userInputX;
+    y = userInputY;
+end
+    
 lowThresholdY = uint32(y(1) - lowThresh);
 highThresholdY = uint32(y(1) + highThresh);
 
@@ -79,29 +86,29 @@ dataM = double(zeros(0));
         MinimaValues = [MinimaValues, -disparityMap(uint32(y(1)),uint32(x(1)))];
         %MinimaValues = [MinimaValues, 1.0];
     end
-    plot(data)
-    hold on
+    %plot(data)
+    %hold on
 
  end
-    title({'Plot of vertical';'disparity changes in the ROI'})
-    xlabel('Pixel indices in vertical direction')
-    ylabel('Disparity value [px]')
-    axis tight
+%     title({'Plot of vertical';'disparity changes in the ROI'})
+%     xlabel('Pixel indices in vertical direction')
+%     ylabel('Disparity value [px]')
+%     axis tight
  
   for i = 1 : numel(MinimaArrayX)
     orientationOverY = [orientationOverY, MinimaArrayY(i) + (2*highThresh)];
     orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (2*lowThresh)];
  end
-% 
-% subplot(1,2,1), imshow(ILrect, [])
-% hold on
-% plot(MinimaArrayX, MinimaArrayY, 'r.');
-% hold off
-% 
-% subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
-%  hold on
-% plot(MinimaArrayX, MinimaArrayY, 'r.');
-% hold off
+
+subplot(1,2,1), imshow(ILrect, [])
+hold on
+plot(MinimaArrayX, MinimaArrayY, 'r.');
+hold off
+
+subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
+ hold on
+plot(MinimaArrayX, MinimaArrayY, 'r.');
+hold off
 
 %surf(dataM);
 
@@ -150,19 +157,6 @@ cuttingXYZUnder = cuttingXYZUnder(isfinite(cuttingXYZUnder(:,1)),:);
 
 % Find the distances from the camera in meters.
 dists = sqrt(sum(cuttingXYZ' .^ 2));
-
-%groupN = 5;
-
-dataZ = double(zeros((idivide(uint32(size(cuttingXYZ,1)), groupN, 'floor')), groupN));
- for i = 1:(groupN*idivide(size(cuttingXYZ,1), uint32(groupN), 'floor'))
-     dataZ((idivide(i-1, uint32(groupN), 'floor'))+1, mod(i-1,groupN)+1) = cuttingXYZ(i,3);
-     disp(i)
-     disp(dataZ)
- end
- 
- avgDataZ = mean(dataZ, 2);
- 
- [minVal, minIdx] = min(avgDataZ);
 
 end
 
