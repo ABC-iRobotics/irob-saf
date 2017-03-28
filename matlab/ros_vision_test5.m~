@@ -22,7 +22,7 @@ dist_ori = [ 0.9825  ,  0.1830 ,   0.0179 ,  -0.0294];
 status = statussub.LatestMessage;
 gotodistant = false;
 stepPix = 10;
-memN = 3;
+memN = 3
 lastIdxs = [];
 firstTgt = true;
 userInputX = [0, 0];
@@ -36,13 +36,13 @@ for j = 1:100
    % I_l = imread('saved_l.jpg');
    % I_r = imread('saved_r.jpg');
     [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...
-        400, 0, 25, 25, firstTgt, userInputX, userInputY);
+        400, 0, 20, 20, firstTgt, userInputX, userInputY);
     
     firstTgt = false;
     
     [groupMinIdx, lastIdxs] = chooseTgt(cuttingXYZ, groupN, lastIdxs, memN);
     
-    %plot(cuttingXYZ(:,3));
+    plot(cuttingXYZ(:,3));
     
     for i = 1:n
         tgt_idx = stepPix*(i-1)+1;

@@ -29,7 +29,7 @@ while not(or(strcmp(status.Data,'dp_reached'), ...
         or(strcmp(status.Data,'goal_reached'), strcmp(status.Data,'abort'))))
     % TODO err handling
     send(targetpub,targetmsg);
-    pause(0.5);
+    pause(0.1);
     status = statussub.LatestMessage;
 end
 validmsg = rosmessage(targetvalidpub);
@@ -39,7 +39,7 @@ sendStatusAck( statusackpub, status.Data);
 
 
 
-pause(0.5);
+pause(0.01);
 
 end
 

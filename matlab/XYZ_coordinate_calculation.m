@@ -43,7 +43,7 @@ disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
 
 disparityRange = [0,maxDisp];
 
-figure;
+figure('units','normalized','outerposition',[0 0 1 1])
 subplot(1,2,1), imshow(ILrect, [])
 subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  
@@ -66,7 +66,7 @@ MinimaValues = double(zeros(0));
 
 orientationOverY = double(zeros(0)); %folott
 orientationUnderY = double(zeros(0));
-figure
+%figure
 dataM = double(zeros(0));
  for i = uint32(x(1)) : uint32(x(2))
     data = disparityMap(lowThresholdY: highThresholdY, i); 

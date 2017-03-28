@@ -1,0 +1,31 @@
+M- cisst 1.0.8 (git: 1.0.8)
+M- CISST_ROOT: undefined
+M- cisst share: undefined
+M- cmn_m: 1, cmn_kg: 1, CISST_USE_SI_UNITS is set to 1
+-M Class cmnClassRegister: FindClassServices: couldn't find class info for "mtsIntuitiveResearchKit"
+W- Class cmnClassRegister: SetLogMask: class "mtsIntuitiveResearchKit" is not registered (yet?) 
+M- osaThread::CreateInternal: create thread named: Unnamed
+M- osaThread::CreateInternal: create thread named: Unnamed
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionComponentProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsStdStringVecProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsStdStringVecProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionComponentProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsStdStringVecProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsStdStringVecProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionComponentProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsComponentStatusControlProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsDescriptionConnectionProxy"
+D- Class mtsCommandQueuedWriteGeneric: Allocate: resizing argument queue to 64 with "mtsBool"
