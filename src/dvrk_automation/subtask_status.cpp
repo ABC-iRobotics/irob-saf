@@ -16,9 +16,6 @@ namespace dvrk_automation {
 
 const SubtaskStatus SubtaskStatus::NEW_DISSECTION_TARGET_NEEDED
                     = SubtaskStatus("new_dissection_target_needed");
-
-const SubtaskStatus SubtaskStatus::WAITING_FOR_TARGET
-                    = SubtaskStatus("waiting_for_target");
                     
 const SubtaskStatus SubtaskStatus::NEW_DISTANT_TARGET_NEEDED
                     = SubtaskStatus("new_distant_target_needed");

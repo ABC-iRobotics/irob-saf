@@ -18,7 +18,6 @@ class SubtaskStatus {
     // Enum value DECLARATIONS - they are defined later
     static const SubtaskStatus NEW_DISSECTION_TARGET_NEEDED;
     static const SubtaskStatus NEW_DISTANT_TARGET_NEEDED;
-    static const SubtaskStatus WAITING_FOR_TARGET;
     static const SubtaskStatus GOING_TO_TARGET;
     static const SubtaskStatus GOAL_REACHED;
     static const SubtaskStatus DP_REACHED;

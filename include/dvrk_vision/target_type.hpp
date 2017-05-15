@@ -10,21 +10,22 @@
 #define TARGET_TYPE_HPP_
 
 #include <iostream>
+#include "irob_dvrk_automation/TargetPose.h"
 
 namespace dvrk_vision {
 
 class TargetType {
   public:
     // Enum value DECLARATIONS - they are defined later
-    static const TargetType GOAL;
-    static const TargetType DP;
+    static const TargetType DISSECTION;
+    static const TargetType DISTANT;
 
 
   private:
-    std::string command;
+    int command;
 
   private:
-    TargetType( std::string command): command(command){ }
+    TargetType( int command): command(command){ }
 
   public:
   	TargetType(const TargetType& other): command(other.command){ }
@@ -39,16 +40,16 @@ class TargetType {
         return other.command==this->command;
     }
 
-    std::string getCommand() const
+    int getCommand() const
     {
     	return command;
     }
     
-    static TargetType fromString(std::string cmd)
+    static TargetType fromCmd(int cmd)
     {
-    	if (cmd == GOAL.command)
-    		return GOAL;
-    	return DP;
+    	if (cmd == DISSECTION.command)
+    		return DISSECTION;
+    	return DISTANT;
     }
 };
 

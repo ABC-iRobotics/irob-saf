@@ -43,18 +43,17 @@ void BluntDissector::dissect()
 			{
 				// Ask for new target
 				ROS_INFO_STREAM("Ask for new target");
-				vision.sendSubtaskStatusWithAck(
+				vision.sendSubtaskStatus(
 						SubtaskStatus::
-						NEW_DISSECTION_TARGET_NEEDED.getCommand(),
-						SubtaskStatus::
-						NEW_DISSECTION_TARGET_NEEDED.getAck());
+						NEW_DISSECTION_TARGET_NEEDED.getCommand());
 				
 				// Go to target and make dissection
 				ROS_INFO_STREAM("Go to target and make dissection.");
-				goToTarget(100.0, 20.0);
+				goToTarget(dvrk_vision::TargetType::DISSECTION, 20.0);
 				ros::Duration(0.01).sleep();
 				vision.sendSubtaskStatus(SubtaskStatus::
 						PERFORMING_DISSECTION.getCommand());
+						
 				ROS_INFO_STREAM("Tool push in.");
 				toolPushIn(3.0, 2.0);
 				ros::Duration(0.01).sleep();
@@ -68,15 +67,13 @@ void BluntDissector::dissect()
 				
 				// Ask for new distant target
 				ROS_INFO_STREAM("Ask for new distant target.");
-				vision.sendSubtaskStatusWithAck(
+				vision.sendSubtaskStatus(
 						SubtaskStatus::
-						NEW_DISTANT_TARGET_NEEDED.getCommand(),
-						SubtaskStatus::
-						NEW_DISTANT_TARGET_NEEDED.getAck());
+						NEW_DISTANT_TARGET_NEEDED.getCommand());
 				
 				// Go to distant target
 				ROS_INFO_STREAM("Go to distant target.");
-				goToTarget(100.0, 20.0);
+				goToTarget(dvrk_vision::TargetType::DISTANT, 20.0);
 				ros::Duration(0.1).sleep();
 			}		
 		
@@ -108,79 +105,43 @@ void BluntDissector::waitForTopicsInit()
  * @param stepT time for planning subtrajectories in s
  * @param speed base movement speed in mm/s
  */
-void BluntDissector::goToTarget(double stepT, double speed /* = 4.0 */)
+void BluntDissector::goToTarget(dvrk_vision::TargetType target_type, 
+								double speed /* = 10.0 */)
 {
-	bool dp_reached = false;
-	bool goal_reached = false;
-	double step_distance = std::abs(stepT * speed)/1000.0; // m
-	
-	while (!goal_reached)
+	dvrk_vision::PositionType position_type = dvrk_vision::PositionType::DP;
+		
+	while (position_type == dvrk_vision::PositionType::DP)
 	{
-		dp_reached = false;
-		goal_reached = false;
-		vision.sendSubtaskStatusWithAck(
-							SubtaskStatus::
-							WAITING_FOR_TARGET.getCommand(),
-							SubtaskStatus::
-							WAITING_FOR_TARGET.getAck());
-		while (!vision.isTargetValid()) 
-		{
-			ros::Duration(0.1).sleep();
-		}
-		while (!dp_reached)
-		{
-			dvrk::Pose pose_current = psm.getPoseCurrent();
-			dvrk::Pose end_target = vision.getTargetCurrent();
-		
-								
-			double end_distance = (pose_current.dist(end_target)).cartesian;
-		
-			dvrk::Pose step_target;
-			
-			dvrk::Trajectory<dvrk::Pose> to_target;
-			
-			if (end_distance > step_distance)
-			{
-				step_target = dvrk::interpolate(step_distance/end_distance,
-											 pose_current, end_target);
-				dp_reached = false;
-				
-				vision.sendSubtaskStatus(SubtaskStatus::
+		// Get positions
+		dvrk::Pose pose_current = psm.getPoseCurrent();
+		dvrk::Pose end_target;
+
+		vision.getTargetCurrent(target_type, end_target, position_type);
+
+		// Go to position
+		vision.sendSubtaskStatus(SubtaskStatus::
 						GOING_TO_TARGET.getCommand());
-			}
-			else
-			{
-				step_target = end_target;
-				dp_reached = true;
-			}
-		
-			to_target 	= dvrk::TrajectoryFactory::
-						linearTrajectoryForSpeed(pose_current,step_target, 
+							
+		dvrk::Trajectory<dvrk::Pose> to_target = dvrk::TrajectoryFactory::
+						linearTrajectoryForSpeed(pose_current,end_target, 
 												speed/1000.0, dt);
-			checkTrajectory(to_target);
-			psm.playTrajectory(to_target);
-		}
+		checkTrajectory(to_target);
+		psm.playTrajectory(to_target);
+
 		
-		if (vision.getTargetType() == dvrk_vision::TargetType::DP)
+		if (position_type == dvrk_vision::PositionType::DP)
 		{
-			vision.sendSubtaskStatusWithAck(
+			vision.sendSubtaskStatus(
 							SubtaskStatus::
-							DP_REACHED.getCommand(),
-							SubtaskStatus::
-							DP_REACHED.getAck());
-			goal_reached = false;
-			dp_reached = true;
+							DP_REACHED.getCommand());
+
 			ROS_INFO_STREAM("DP reached.");
 		} 
-		else if (vision.getTargetType() == dvrk_vision::TargetType::GOAL)
+		else if (position_type == dvrk_vision::PositionType::GOAL)
 		{
-			vision.sendSubtaskStatusWithAck(
+			vision.sendSubtaskStatus(
 							SubtaskStatus::
-							GOAL_REACHED.getCommand(),
-							SubtaskStatus::
-							GOAL_REACHED.getAck());
-			goal_reached = true;
-			dp_reached = true;
+							GOAL_REACHED.getCommand());
 			ROS_INFO_STREAM("Goal reached.");
 		}
 		else

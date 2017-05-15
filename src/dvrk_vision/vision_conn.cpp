@@ -15,20 +15,14 @@ namespace dvrk_vision {
 // TODO check topic name
 const std::string VisionConn::TOPIC_NAMESPACE
                     = "dvrk_vision";
-const std::string VisionConn::TOPIC_NAME_MOVEMENT_TARGET
+const std::string VisionConn::SERVICE_NAME_MOVEMENT_TARGET
                     = "movement_target";
-const std::string VisionConn::TOPIC_NAME_TARGET_VALID
-                    = "target_valid";
-const std::string VisionConn::TOPIC_NAME_TARGET_TYPE
-                    = "target_type";
-const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS
-                    = "subtask_status";
-const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS_ACK
-                    = "subtask_status_ack";
-const std::string VisionConn::TOPIC_NAME_TASK_DONE
+const std::string VisionConn::SERVICE_NAME_TASK_DONE
                     = "task_done";
 const std::string VisionConn::TOPIC_NAME_ERR
                     = "error";
+const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS
+                    = "subtask_status";
 
 VisionConn::VisionConn(
 			ros::NodeHandle nh, std::string registration_file): nh(nh)
@@ -36,15 +30,11 @@ VisionConn::VisionConn(
 	loadRegistration(registration_file);
 	
 	// Subscribe and advertise topics
-	subscribe(TOPIC_NAME_MOVEMENT_TARGET);
-	subscribe(TOPIC_NAME_TARGET_VALID);
-	subscribe(TOPIC_NAME_TARGET_TYPE);
-	subscribe(TOPIC_NAME_TASK_DONE);
-	subscribe(TOPIC_NAME_SUBTASK_STATUS_ACK);
+	subscribe(SERVICE_NAME_MOVEMENT_TARGET);
+	subscribe(SERVICE_NAME_TASK_DONE);
 	subscribe(TOPIC_NAME_ERR);
 	
 	advertise(TOPIC_NAME_SUBTASK_STATUS);
-      
 }
 
 VisionConn::~VisionConn()
@@ -81,39 +71,6 @@ void VisionConn::loadRegistration(std::string registration_file)
 /*
  * Callbacks
  */
-void VisionConn::movementTargetCB(const geometry_msgs::PoseConstPtr& msg) 
-{
-    dvrk::Pose cam_target(*msg, 0);
-    cam_target = cam_target.rotate(R);
-    cam_target += t;
- 	movement_target  = cam_target;
-    //ROS_INFO_STREAM(movement_target);
-}
-
-void VisionConn::targetValidCB(const std_msgs::Bool msg) 
-{
-    target_valid  = msg.data;
-    //ROS_INFO_STREAM(task_done);
-}
-
-void VisionConn::targetTypeCB(const std_msgs::String msg) 
-{
-    target_type  = TargetType::fromString(msg.data);
-    //ROS_INFO_STREAM(msg);
-}
-
-void VisionConn::subtaskStatusAckCB(const std_msgs::String msg) 
-{
-    subtask_status_ack  = msg.data;
-    //ROS_INFO_STREAM(msg);
-}
-
-void VisionConn::taskDoneCB(const std_msgs::Bool msg) 
-{
-    task_done  = msg.data;
-    //ROS_INFO_STREAM(task_done);
-}
-
 void VisionConn::errorCB(const std_msgs::String msg) 
 {
     error  = msg;
@@ -125,35 +82,15 @@ bool VisionConn::subscribe(std::string topic)
 {
 	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic;
 	
-	if(topic == TOPIC_NAME_MOVEMENT_TARGET)
+	if(topic == SERVICE_NAME_MOVEMENT_TARGET)
 	{
-    	movement_target_sub = nh.subscribe<geometry_msgs::Pose>(
-               			topic_name_full, 1000,
-                        &VisionConn::movementTargetCB,this);
+    	movement_target_cli = nh.serviceClient
+    	<irob_dvrk_automation::TargetPose>(topic_name_full, true);
     }
-    else if(topic == TOPIC_NAME_TARGET_VALID)
+    else if(topic == SERVICE_NAME_TASK_DONE)
 	{
-    	target_valid_sub = nh.subscribe<std_msgs::Bool>(
-               			topic_name_full, 1000,
-                        &VisionConn::targetValidCB,this);
-    }
-    else if(topic == TOPIC_NAME_TARGET_TYPE)
-	{
-    	target_type_sub = nh.subscribe<std_msgs::String>(
-               			topic_name_full, 1000,
-                        &VisionConn::targetTypeCB,this);
-    }
-    else if(topic == TOPIC_NAME_SUBTASK_STATUS_ACK)
-	{
-    	subtask_status_ack_sub = nh.subscribe<std_msgs::String>(
-               			topic_name_full, 1000,
-                        &VisionConn::subtaskStatusAckCB,this);
-    }
-    else if(topic == TOPIC_NAME_TASK_DONE)
-	{
-    	task_done_sub = nh.subscribe<std_msgs::Bool>(
-               			topic_name_full, 1000,
-                        &VisionConn::taskDoneCB,this);
+    	task_done_cli = nh.serviceClient<irob_dvrk_automation::BoolQuery>(
+               			topic_name_full, true);
     }
     else if(topic == TOPIC_NAME_ERR)
 	{
@@ -170,6 +107,7 @@ bool VisionConn::subscribe(std::string topic)
     ROS_INFO_STREAM("Subscribed to topic " << topic);
     return true;
 }
+
 
 bool VisionConn::advertise(std::string topic) 
 {
@@ -189,6 +127,29 @@ bool VisionConn::advertise(std::string topic)
     return true;
 }
 
+
+void VisionConn::getTargetCurrent(TargetType target_type,
+									dvrk::Pose& movement_target,
+								 	PositionType& position_type)
+{
+	// Call service
+	irob_dvrk_automation::TargetPose req;
+	req.request.target_type = target_type.getCommand();
+	movement_target_cli.call(req);
+	
+	// Transform coordinates
+	dvrk::Pose cam_target(req.response.pose, 0);
+    cam_target = cam_target.rotate(R);
+    cam_target += t;
+ 	movement_target  = cam_target;
+ 	
+ 	position_type = PositionType::fromCmd(req.response.position_type);
+    
+    ros::spinOnce();
+	checkErrors();
+}
+
+
 void VisionConn::sendSubtaskStatus(std::string status)
 {
         std_msgs::String msg;
@@ -200,52 +161,16 @@ void VisionConn::sendSubtaskStatus(std::string status)
         checkErrors();
 }
 
-void VisionConn::sendSubtaskStatusWithAck(std::string status, std::string ack)
-{
-        std_msgs::String msg;
-        std::stringstream ss;
-        ss << status;
-        msg.data = ss.str();
-        subtask_status_pub.publish(msg);
-        // Wait for ack
-        ros::spinOnce();
-        checkErrors();
-        while (subtask_status_ack != ack)
-        {
-        	ros::Duration(0.1).sleep();
-        	ros::spinOnce();
-        	checkErrors();
-        }
-        //ROS_INFO_STREAM(subtask_status_ack << " received");
-}
-
-
-dvrk::Pose VisionConn::getTargetCurrent()
-{
-	ros::spinOnce();
-	checkErrors();
- 	return movement_target;
-}
-
-TargetType VisionConn::getTargetType()
-{
-	ros::spinOnce();
-	checkErrors();
- 	return target_type;
-}
-
-bool VisionConn::isTargetValid()
-{
-	ros::spinOnce();
-	checkErrors();
- 	return target_valid;
-}
 
 bool VisionConn::isTaskDone()
 {
+	// Call service
+	irob_dvrk_automation::BoolQuery req;
+	task_done_cli.call(req);
+	
 	ros::spinOnce();
 	checkErrors();	
- 	return task_done;
+ 	return req.response.data;
 }
 
 void VisionConn::checkErrors()

@@ -33,6 +33,7 @@
 
 #include "dvrk_vision/vision_conn.hpp"
 #include "dvrk_vision/target_type.hpp"
+#include "dvrk_vision/position_type.hpp"
 
 
 namespace dvrk_automation {
@@ -59,7 +60,7 @@ public:
 	
 	void dissect();
 	
-	void goToTarget(double stepT, double speed = 10.0);
+	void goToTarget(dvrk_vision::TargetType target_type, double speed = 10.0);
 	void toolPushIn(double depth, double speed  = 2.0);
 	void toolPullOut(double depth, double speed  = 2.0);
 	void toolOpen(double angle, double speed  = 10.0);

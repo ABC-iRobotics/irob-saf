@@ -24,6 +24,7 @@
 
 #include "dvrk/pose.hpp"
 #include "dvrk_vision/target_type.hpp"
+#include "dvrk_vision/position_type.hpp"
 
 #include "geometry_msgs/Pose.h"
 #include "std_msgs/Bool.h"
@@ -40,37 +41,28 @@ class VisionConn {
 public:
     // Constants
     static const std::string TOPIC_NAMESPACE;
-    static const std::string TOPIC_NAME_MOVEMENT_TARGET;	// vision -> control
-    static const std::string TOPIC_NAME_TARGET_VALID;		// vision -> control
-    static const std::string TOPIC_NAME_TARGET_TYPE;		// vision -> control
-    static const std::string TOPIC_NAME_SUBTASK_STATUS;		// control -> vision
-    static const std::string TOPIC_NAME_SUBTASK_STATUS_ACK;	// vision -> control
-    static const std::string TOPIC_NAME_TASK_DONE;			// vision -> control
-    static const std::string TOPIC_NAME_ERR;			  // vision -> control    
+    static const std::string SERVICE_NAME_MOVEMENT_TARGET;	// vision -> control
+    static const std::string SERVICE_NAME_TASK_DONE;		// vision -> control
+    static const std::string TOPIC_NAME_ERR;			 // vision -> control   
+    static const std::string TOPIC_NAME_SUBTASK_STATUS;		// control -> vision 
 
 private:
     ros::NodeHandle nh;
 
     // States
-    dvrk::Pose movement_target;
-    bool target_valid;
-    TargetType target_type = TargetType::DP;
-    bool task_done;
-    std::string subtask_status_ack;
     std_msgs::String error;
     
     // translation and rotation for registration
     Eigen::Vector3d t;
     Eigen::Matrix3d R;
 
+   	// Clients
+    ros::ServiceClient movement_target_cli;
+    ros::ServiceClient task_done_cli;
+    
     // Subscribers
-    ros::Subscriber movement_target_sub;
-    ros::Subscriber target_valid_sub;
-    ros::Subscriber target_type_sub;
-    ros::Subscriber subtask_status_ack_sub;
-    ros::Subscriber task_done_sub;
     ros::Subscriber error_sub;
-
+   
     // Publishers
     ros::Publisher subtask_status_pub;
 
@@ -83,20 +75,12 @@ public:
 		
 	void loadRegistration(std::string);
 	
+	void sendSubtaskStatus(std::string);
+	
     // Callbacks
-    void movementTargetCB(const geometry_msgs::PoseConstPtr&);
-    void targetValidCB(const std_msgs::Bool);  
-    void targetTypeCB(const std_msgs::String);
-    void taskDoneCB(const std_msgs::Bool); 
-    void subtaskStatusAckCB(const std_msgs::String);
     void errorCB(const std_msgs::String); 
-    
-    void sendSubtaskStatus(std::string);
-    void sendSubtaskStatusWithAck(std::string, std::string);
-    
-    dvrk::Pose getTargetCurrent();
-    bool isTargetValid();
-    TargetType getTargetType();
+       
+    void getTargetCurrent(TargetType, dvrk::Pose&, PositionType&);
     bool isTaskDone();
     void checkErrors();	
 };
