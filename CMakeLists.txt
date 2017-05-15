@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob-dvrk-automation)
+project(irob_dvrk_automation)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -13,6 +13,7 @@ find_package(catkin REQUIRED
                         geometry_msgs
                         std_msgs
                         sensor_msgs
+                        message_generation
                         dvrk_kinematics
                         )
 
@@ -54,11 +55,11 @@ find_package(catkin REQUIRED
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+ add_service_files(
+   FILES
+   TargetPose.srv
+   BoolQuery.srv
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -68,7 +69,7 @@ find_package(catkin REQUIRED
 # )
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,6 +104,7 @@ catkin_package(
   		#INCLUDE_DIRS include "${CATKIN_DEVEL_PREFIX}/include"
   		#LIBRARIES 
         CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
+        	 message_runtime
         #DEPENDS system_lib
 )
 

@@ -28,6 +28,10 @@
 #include "geometry_msgs/Pose.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/String.h"
+#include "irob_dvrk_automation/BoolQuery.h"
+#include "irob_dvrk_automation/TargetPose.h"
+
+
 
 namespace dvrk_vision {
 

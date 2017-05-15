@@ -1,0 +1,12 @@
+#request constants
+int8 DISSECTION=1
+int8 DISTANT=2
+#request fields
+int8 target_type
+---
+#response constants
+int8 DP=3
+int8 GOAL=4
+#response fields
+int8 position_type
+geometry_msgs/Pose pose
