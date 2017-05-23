@@ -17,7 +17,7 @@ cam_l = videoinput('linuxvideo', 2, resolution);
 % if firstTgt
 %     waitforbuttonpress;
 % end
-for i = 1:num_img
+%for i = 1:num_img
 %     if firstTgt
 %         w = waitforbuttonpress;
 %     end
@@ -28,6 +28,6 @@ for i = 1:num_img
     I_l = imrotate(I_l, -90);
     I_r = imrotate(I_r, 90);
      disp('Image pair captured.');
-end
+%end
 end
 

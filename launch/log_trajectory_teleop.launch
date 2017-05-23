@@ -6,7 +6,7 @@
   <arg name="filename" default="/home/tamas/catkin_ws/data/dvrk_tr_log.dat"/>
   
   <node name="log_trajectory"
-  	pkg="irob-dvrk-automation" type="log_trajectory" output="screen">
+  	pkg="irob_dvrk_automation" type="log_trajectory" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
   		<param name="rate" type="double" value="$(arg rate)" />

@@ -1,4 +1,4 @@
-function [ tgt_pos, tgt_ori ] = getTgt(tgt_idx,  groupMinIdx, groupN, cuttingXYZ, cuttingXYZOver, cuttingXYZUnder )
+function [ tgt_pos, tgt_ori ] = getTgt(tgt_idx,  groupMinIdx, groupN, cuttingXYZ)
 
 tgt_pos = cuttingXYZ(((groupMinIdx-1) * groupN) + tgt_idx, :);
 

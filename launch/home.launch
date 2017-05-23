@@ -6,7 +6,7 @@
 
   
 	<node name="home_arm"
-  		pkg="irob-dvrk-automation" type="home" output="screen">
+  		pkg="irob_dvrk_automation" type="home" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
 

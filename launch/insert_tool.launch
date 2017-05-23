@@ -9,7 +9,7 @@
 
   
 	<node name="insert_tool"
-  		pkg="irob-dvrk-automation" type="insert_tool" output="screen">
+  		pkg="irob_dvrk_automation" type="insert_tool" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
   		<param name="depth" type="double" value="$(arg depth)" />

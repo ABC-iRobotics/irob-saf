@@ -8,7 +8,7 @@
   	<arg name="speed" default="1"/>
   
   	<node name="move_circles"
-  		pkg="irob-dvrk-automation" type="move_circles" output="screen">
+  		pkg="irob_dvrk_automation" type="move_circles" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
   		<param name="rate" type="double" value="$(arg rate)" />
@@ -17,7 +17,7 @@
 	</node>
   
   	<node name="log_trajectory"
-  	pkg="irob-dvrk-automation" type="log_trajectory" output="screen">
+  	pkg="irob_dvrk_automation" type="log_trajectory" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
   		<param name="rate" type="double" value="$(arg rate)" />

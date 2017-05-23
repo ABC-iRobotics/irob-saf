@@ -8,7 +8,7 @@
 
   
 	<node name="move_circles"
-  		pkg="irob-dvrk-automation" type="move_circles" output="screen">
+  		pkg="irob_dvrk_automation" type="move_circles" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
   		<param name="rate" type="double" value="$(arg rate)" />
