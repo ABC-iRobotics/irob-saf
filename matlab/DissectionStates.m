@@ -9,16 +9,16 @@ classdef DissectionStates
           
           switch obj
             case DissectionStates.done_dissection_group             
-                if reqmsg.target_type == reqmsg.DISSECTION
+                if reqmsg.TargetType == reqmsg.DISSECTION
                     next = DissectionStates.at_tgt_dp;
                 end
             case DissectionStates.at_tgt_dp
-                 if reqmsg.target_type == reqmsg.DISSECTION
+                 if reqmsg.TargetType == reqmsg.DISSECTION
                     next = DissectionStates.at_tgt_goal;
                  end
                  
             case DissectionStates.at_tgt_goal
-                 if reqmsg.target_type == reqmsg.DISTANT
+                 if reqmsg.TargetType == reqmsg.DISTANT
                      if group_done
                         next = DissectionStates.at_distant_goal;
                      else
@@ -26,12 +26,12 @@ classdef DissectionStates
                      end
                  end
             case DissectionStates.at_distant_dp
-                 if reqmsg.target_type == reqmsg.DISTANT
+                 if reqmsg.TargetType == reqmsg.DISTANT
                     next = DissectionStates.done_dissection_group;
                  end
                  
             case DissectionStates.at_distant_goal
-                 if reqmsg.target_type == reqmsg.DISSECTION
+                 if reqmsg.TargetType == reqmsg.DISSECTION
                     next = DissectionStates.at_tgt_dp;
                  end
                  

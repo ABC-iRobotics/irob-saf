@@ -42,15 +42,19 @@ disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
 % disparityMap = imclose(disparityMap, se);
 
 disparityRange = [0,maxDisp];
-
-figure('units','normalized','outerposition',[0 0 1 1])
-subplot(1,2,1), imshow(ILrect, [])
-subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
+% 
+% figure('units','normalized','outerposition',[0 0 1 1])
+% subplot(1,2,1), imshow(ILrect, [])
+% subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  
 if firstTgt 
-    [x,y] = ginput(2);
-    userInputX = x;
-    userInputY = y;
+%     [x,y] = ginput(2);
+%     userInputX = x;
+%     userInputY = y;
+    x = [39.529147982062796;2.363482810164425e+02]
+    y = [4.045209267563528e+02;3.963953662182362e+02]
+    userInputX =[39.529147982062796;2.363482810164425e+02]
+    userInputY = [4.045209267563528e+02;3.963953662182362e+02]
 else
     x = userInputX;
     y = userInputY;
@@ -70,6 +74,7 @@ orientationUnderY = double(zeros(0));
 dataM = double(zeros(0));
  for i = uint32(x(1)) : uint32(x(2))
     data = disparityMap(lowThresholdY: highThresholdY, i); 
+    
     data = double(data);
     dataM = cat(2,dataM, data);
     [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);

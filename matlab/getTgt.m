@@ -1,7 +1,7 @@
 function [ tgt_pos, tgt_ori ] = getTgt(tgt_idx,  groupMinIdx, groupN, cuttingXYZ)
 
 tgt_pos = cuttingXYZ(((groupMinIdx-1) * groupN) + tgt_idx, :);
-
+tgt_pos = [0.1 0.0 0.4];
 
 % 
 % vec_over = mean(cuttingXYZ, 1) - mean(cuttingXYZOver, 1);

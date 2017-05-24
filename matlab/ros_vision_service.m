@@ -32,7 +32,7 @@ userInputY = [0, 0];
 n = (groupN / stepPix)+1;
 for j = 1:100
     
-    [ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480', firstTgt);
+    %[ I_r, I_l ] = stereo_capture( 1, 'BGR24_640x480', firstTgt);
    % I_l = imread('saved_l.jpg');
    % I_r = imread('saved_r.jpg');
     [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] = XYZ_coordinate_calculation( I_l, I_r, 'calibrationSession.mat', 'stereoParams.mat', ...

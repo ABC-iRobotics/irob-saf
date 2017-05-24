@@ -1,4 +1,4 @@
-function [ I_l, I_r ] = stereo_capture( num_img, resolution, firstTgt)
+function [ I_l, I_r ] = stereo_capture( resolution)
 % This function takes images from stereo cameras. 
 %   @author: Renata Elek
 %   num_img: number of images (use 19 for calibration and 1 for general
@@ -6,7 +6,13 @@ function [ I_l, I_r ] = stereo_capture( num_img, resolution, firstTgt)
 %   resolution: 'BGR24_640x480' in general
 %   Call it like this:
 %   [I_l, I_r] = stereo_capture(1, 'BGR24_640x480');
-  
+    
+    dummy = true;
+
+if dummy
+ I_l = imread('saved_l.jpg');
+ I_r = imread('saved_r.jpg');
+else
 imaqreset;
 webcamlist()
 cam_r = videoinput('linuxvideo', 1, resolution);
@@ -24,9 +30,10 @@ cam_l = videoinput('linuxvideo', 2, resolution);
 
     I_l = getsnapshot(cam_l);
     I_r = getsnapshot(cam_r);
-    
+
     I_l = imrotate(I_l, -90);
     I_r = imrotate(I_r, 90);
+    end   
      disp('Image pair captured.');
 %end
 end

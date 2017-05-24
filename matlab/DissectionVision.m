@@ -3,7 +3,7 @@ classdef DissectionVision
     
     properties
         
-        state = DissectionStates.done_dissection_group
+        state = DissectionStates.done_dissection_group;
         
         dissection_group_n = 0;
         local_dissection_n = 0;
@@ -13,7 +13,7 @@ classdef DissectionVision
         
         groupN = 30;
         
-        tgt_ori = [  0.9938    0.0705    0.0514    0.0685];
+        tgt_ori = [  1.0    0.00    0.00    0.00];
         dp_dist = 0.04;
         dp_rot = 345.0;
         
@@ -44,6 +44,20 @@ classdef DissectionVision
     methods
         
         function obj = DissectionVision
+            obj.state = DissectionStates.done_dissection_group;
+            obj.stereoParams=load('stereoParams.mat');
+            obj.n = (obj.groupN / obj.stepPix)+1;
+            
+            [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+         
+            [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, obj.userInputX, obj.userInputY] = ...
+                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
+              obj.firstTgt = false;
+            
+              rosshutdown;
+              rosinit;
+              
             obj.targetsrv = rossvcserver('/dvrk_vision/movement_target','irob_dvrk_automation/TargetPose', @obj.getTargetCallback)
             obj.donesrv = rossvcserver('/dvrk_vision/task_done', 'irob_dvrk_automation/BoolQuery', @obj.isDoneCallback);
             obj.errpub = rospublisher('/dvrk_vision/error', 'std_msgs/String');
@@ -52,11 +66,9 @@ classdef DissectionVision
             pause(2) % Wait to ensure publisher is registered
             
             % Start
-            status = receive(statussub);
+            status = receive(obj.statussub);
             disp(status.Data);
             
-            obj.stereoParams= load('stereoParams.mat');
-            obj.n = (groupN / stepPix)+1;
         end
         
         
@@ -71,15 +83,14 @@ classdef DissectionVision
             switch obj.state
                 case DissectionStates.done_dissection_group
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    %[ I_r, I_l ] = stereo_capture('BGR24_640x480', obj.firstTgt);
-                     I_l = imread('saved_l.jpg');
-                     I_r = imread('saved_r.jpg');
+                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                    
                     
                      obj.firstTgt = false;
                     
                     [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
-                        400, 0, 25, 25, firstTgt, userInputX, userInputY);
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
                     
                     [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.cuttingXYZ, obj.groupN, obj.lastIdxs, obj.memN);
                     
@@ -88,21 +99,21 @@ classdef DissectionVision
                     
                     obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
                     [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
-                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ, obj.cuttingXYZOver, obj.cuttingXYZUnder );
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
                     obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
-                    response = obj.wrapPose(response, dp_pos, dp_ori)
-                    response.position_type = response.DP;
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
+                    response.PositionType = response.DP;
                     
                     
                 case DissectionStates.at_tgt_dp
                     % goto tgt as goal
-                    response = obj.wrapPose(response, obj.tgt_pos, obj.tgt_ori)
-                    response.position_type = response.GOAL;
+                    response = DissectionVision.wrapPose(response, obj.tgt_pos, obj.tgt_ori);
+                    response.PositionType = response.GOAL;
                     
                 case DissectionStates.at_tgt_goal
                     % goto distant dp as goal
@@ -112,37 +123,37 @@ classdef DissectionVision
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
-                    response = obj.wrapPose(response, dp_pos, dp_ori)
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     
                     if obj.local_dissection_n >= obj.n
                         if obj.dissection_group_n >= obj.groupN
                             obj.task_done = true;
                         end
                         group_done = true;
-                        response.position_type = response.DP;
+                        response.positionType = response.DP;
                     else
                         group_done = false;
-                        response.position_type = response.GOAL;
+                        response.PositionType = response.GOAL;
                     end
                     
                 case DissectionStates.at_distant_dp
                     %go to distant goal
-                    response = obj.wrapPose(response, obj.dist_pos, obj.dist_ori);
-                    response.position_type = response.GOAL;
+                    response = DissectionVision.wrapPose(response, obj.dist_pos, obj.dist_ori);
+                    response.PositionType = response.GOAL;
                     
                 case DissectionStates.at_distant_goal
                     % choose tgt; get dp; go to tgt dp
                     obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
                     [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
-                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ, obj.cuttingXYZOver, obj.cuttingXYZUnder );
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
                     obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
-                    response = obj.wrapPose(response, dp_pos, dp_ori)
-                    response.position_type = response.DP;
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
+                    response.PositionType = response.DP;
                     
                 otherwise
                     warning('Unexpected query, do nothing...')
@@ -165,18 +176,20 @@ classdef DissectionVision
             response = defaultrespmsg;
             % Build the response message here
             
-            response.data = obj.task_done;
+            response.Data = obj.task_done;
         end
-        
+    end
+    
+    
+    methods(Static)
         function response = wrapPose(response, pos, ori)
-            response.pose.position.x = pos(1);
-            response.pose.Position.X = pos(1);
-            response.pose.Position.Y = pos(2);
-            response.pose.Position.Z = pos(3);
-            response.pose.Orientation.X =  ori(2);
-            response.pose.Orientation.Y =  ori(3);
-            response.pose.Orientation.Z =  ori(4);
-            response.pose.Orientation.W =  ori(1) ;
+            response.Pose.Position.X = pos(1);
+            response.Pose.Position.Y = pos(2);
+            response.Pose.Position.Z = pos(3);
+            response.Pose.Orientation.X =  ori(2);
+            response.Pose.Orientation.Y =  ori(3);
+            response.Pose.Orientation.Z =  ori(4);
+            response.Pose.Orientation.W =  ori(1) ;
         end
     end
     
