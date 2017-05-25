@@ -2,11 +2,11 @@
 
 <launch>
 
-  	<arg name="arm" default="PSM1"/>
+  	<arg name="arm" default="PSM2"/>
   	<arg name="rate" default="100"/>
   	<arg name="speed" default="1"/>
   	<arg name="regfile" 
-  		default="/home/tamas/catkin_ws/src/irob_dvrk_automation/matlab/registration.cfg"/>
+  		default="/home/dvrk_nat/catkin_ws/src/irob_dvrk_automation/matlab/registration.cfg"/>
 
   
 	<node name="auto_dissection"

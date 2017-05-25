@@ -1,4 +1,4 @@
-classdef DissectionVision < handle
+classdef DissectionVision 
     
     
     properties
@@ -17,11 +17,11 @@ classdef DissectionVision < handle
         dp_dist = 0.04;
         dp_rot = 345.0;
         
-        dist_pos = [0.1,-0.05, 0.25];
+        dist_pos = [-0.03,-0.05,0.25];
         dist_ori = [   0.9982    0.0380    0.0332    0.0317];
         
         
-        stepPix = 20;
+        stepPix = 10;
         memN = 3;
         lastIdxs = [];
         groupMinIdx = 1;
@@ -102,7 +102,7 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
@@ -129,10 +129,10 @@ classdef DissectionVision < handle
                         if obj.dissection_group_n >= obj.groupN
                             obj.task_done = true;
                         end
-                        group_done = true
-                        response.PositionType = response.DP;
+                        group_done = true;
+                        response.positionType = response.DP;
                     else
-                        group_done = false
+                        group_done = false;
                         response.PositionType = response.GOAL;
                     end
                     
@@ -148,7 +148,7 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
@@ -162,7 +162,6 @@ classdef DissectionVision < handle
             % Step state
             disp('1');
             obj.state = obj.state.next(reqmsg, group_done);
-            disp(reqmsg);
             disp(obj.state);
             if obj.state == DissectionStates.abort
                 response = defaultrespmsg;

@@ -7,7 +7,7 @@ function [ I_l, I_r ] = stereo_capture( resolution)
 %   Call it like this:
 %   [I_l, I_r] = stereo_capture(1, 'BGR24_640x480');
     
-    dummy = true;
+    dummy = false;
 
 if dummy
  I_l = imread('saved_l.jpg');
@@ -31,8 +31,8 @@ cam_l = videoinput('linuxvideo', 2, resolution);
     I_l = getsnapshot(cam_l);
     I_r = getsnapshot(cam_r);
 
-    I_l = imrotate(I_l, -90);
-    I_r = imrotate(I_r, 90);
+    I_l = imrotate(I_l, 90);
+    I_r = imrotate(I_r, -90);
     end   
      disp('Image pair captured.');
 %end

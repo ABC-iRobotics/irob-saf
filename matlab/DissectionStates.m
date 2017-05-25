@@ -4,39 +4,49 @@ classdef DissectionStates
    end
    
    methods
-      function next = next(obj, reqmsg, group_done)
-          next = DissectionStates.abort;
+      function nv = next(obj, reqmsg, group_done)
+          nv = DissectionStates.abort;
           
           switch obj
-            case DissectionStates.done_dissection_group             
+            case DissectionStates.done_dissection_group 
+                 disp('done_dissection_group');
                 if reqmsg.TargetType == reqmsg.DISSECTION
-                    next = DissectionStates.at_tgt_dp;
+                    nv = DissectionStates.at_tgt_dp;
+                else
+                    disp(reqmsg.TargetType);
                 end
+                disp(nv)
             case DissectionStates.at_tgt_dp
+                 disp('at_tgt_dp');
                  if reqmsg.TargetType == reqmsg.DISSECTION
-                    next = DissectionStates.at_tgt_goal;
+                    nv = DissectionStates.at_tgt_goal;
+                    
                  end
                  
             case DissectionStates.at_tgt_goal
+                disp('at_tgt_goal');
                  if reqmsg.TargetType == reqmsg.DISTANT
                      if group_done
-                        next = DissectionStates.at_distant_goal;
+                        nv = DissectionStates.at_distant_dp;
                      else
-                        next = DissectionStates.at_distant_dp;
+                        nv = DissectionStates.at_distant_goal;
                      end
                  end
             case DissectionStates.at_distant_dp
+                 disp('at_distant_dp');
                  if reqmsg.TargetType == reqmsg.DISTANT
-                    next = DissectionStates.done_dissection_group;
+                    nv = DissectionStates.done_dissection_group;
                  end
                  
             case DissectionStates.at_distant_goal
+                 disp('at_distant_goal');
                  if reqmsg.TargetType == reqmsg.DISSECTION
-                    next = DissectionStates.at_tgt_dp;
+                    nv = DissectionStates.at_tgt_dp;
                  end
                  
-            otherwise
-                next = DissectionStates.abort;
+              otherwise
+                disp('other_state');
+                nv = DissectionStates.abort;
                 warning('Unexpected query, do nothing...')
             end
       end

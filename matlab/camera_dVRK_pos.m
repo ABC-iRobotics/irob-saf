@@ -17,7 +17,7 @@ quat = [robot_pose_msg.Pose.Orientation.W robot_pose_msg.Pose.Orientation.X robo
 
 robot_ori = quat2rotm(quat);
 
-R = [ -0.314386,	0.883408,	-0.347494;0.948909	,0.302893	,-0.088480;0.027090	,-0.357557	,-0.933498];
+R = [  -0.6352 ,   0.7508  ,  0.1810;   -0.0898 ,   0.1610 ,  -0.9829;   -0.7671 ,  -0.6406 ,  -0.0349];
 
 cam_ori = (R') * robot_ori;
 

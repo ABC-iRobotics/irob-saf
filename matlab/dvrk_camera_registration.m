@@ -7,8 +7,8 @@ pause(2) % Wait to ensure publisher is registered
 
 calib = load('calibrationSession');
 stereoParams = load('stereoParams');
- cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
- cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+ cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+ cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
 
 %  cam_l = videoinput('linuxvideo', 1, 'RGB24_1280x960');

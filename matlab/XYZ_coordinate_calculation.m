@@ -19,7 +19,7 @@ function [cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] =
 
 %Rectify the images
 [ILrect, IRrect] = ...
-rectifyStereoImages(IL, IR, stereoParams.stereoParams);
+rectifyStereoImages(IR, IL, stereoParams.stereoParams);
 
 frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
@@ -44,17 +44,16 @@ disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
 disparityRange = [0,maxDisp];
 % 
 % figure('units','normalized','outerposition',[0 0 1 1])
-% subplot(1,2,1), imshow(ILrect, [])
-% subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
+ subplot(1,2,1), imshow(ILrect, [])
+ subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
  
 if firstTgt 
-%     [x,y] = ginput(2);
-%     userInputX = x;
-%     userInputY = y;
-    x = [39.529147982062796;2.363482810164425e+02]
-    y = [4.045209267563528e+02;3.963953662182362e+02]
-    userInputX =[39.529147982062796;2.363482810164425e+02]
-    userInputY = [4.045209267563528e+02;3.963953662182362e+02]
+     [x,y] = ginput(2);
+    userInputX = x;     userInputY = y;
+%     x = [39.529147982062796;2.363482810164425e+02]
+%     y = [4.045209267563528e+02;3.963953662182362e+02]
+%     userInputX =[39.529147982062796;2.363482810164425e+02]
+%     userInputY = [4.045209267563528e+02;3.963953662182362e+02]
 else
     x = userInputX;
     y = userInputY;
