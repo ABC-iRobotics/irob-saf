@@ -2,20 +2,27 @@
 
 <launch>
 
-  	<arg name="arm" default="PSM1"/>
+  	<arg name="dissector_arm" default="PSM2"/>
+  	<arg name="retractor_arm" default="PSM1"/>
   	<arg name="rate" default="100"/>
   	<arg name="speed" default="1"/>
-  	<arg name="regfile" 
-  		default="/home/tamas/catkin_ws/src/irob_dvrk_automation/matlab/registration.cfg"/>
+  	<arg name="dissector_regfile" 
+  		default="/home/dvrk_nat/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm2.cfg"/>
+  	<arg name="retractor_regfile" 
+  		default="/home/dvrk_nat/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm1.cfg"/>
 
   
 	<node name="auto_dissection"
   		pkg="irob_dvrk_automation" type="auto_dissection" output="screen">
   		
-  		<param name="arm" type="string" value="$(arg arm)" />
+  		<param name="dissector_arm" type="string" value="$(arg dissector_arm)" />
+  		<param name="retractor_arm" type="string" value="$(arg retractor_arm)" />
   		<param name="rate" type="double" value="$(arg rate)" />
   		<param name="speed" type="double" value="$(arg speed)" />
-  		<param name="regfile" type="string" value="$(arg regfile)" />
+  		<param name="dissector_regfile" type="string" 
+  			value="$(arg dissector_regfile)" />
+  		<param name="retractor_regfile" type="string" 
+  			value="$(arg retractor_regfile)" />
 
 	</node>
   	

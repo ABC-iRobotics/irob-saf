@@ -45,8 +45,9 @@ disparityRange = [0,maxDisp];
 % 
 % figure('units','normalized','outerposition',[0 0 1 1])
  subplot(1,2,1), imshow(ILrect, [])
+
  subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
- 
+
 if firstTgt 
      [x,y] = ginput(2);
     userInputX = x;     userInputY = y;
@@ -58,8 +59,11 @@ else
     x = userInputX;
     y = userInputY;
 end
-  
 im_coord_L = transpose([mean(x); mean(y) ]);
+ subplot(1,2,1), imshow(ILrect, [])
+ hold on
+ plot(mean(x), mean(y), 'r.');
+ hold off
 
   
 points3D = reconstructScene(disparityMap, stereoParams.stereoParams);
@@ -72,7 +76,7 @@ Y = points3D(:, :, 2);
 Z = points3D(:, :, 3);
 retractor_pos = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
 
-
+disp('cucc');
 
 end
 

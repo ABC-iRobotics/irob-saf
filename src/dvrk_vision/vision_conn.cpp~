@@ -84,7 +84,7 @@ bool VisionConn::subscribe(std::string topic)
 	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic + 
 		"_" + topic_suffix;
 	
-	//ROS_INFO_STREAM(topic_name_full);
+	ROS_INFO_STREAM(topic_name_full);
 	
 	if(topic == SERVICE_NAME_MOVEMENT_TARGET)
 	{

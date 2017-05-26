@@ -181,9 +181,9 @@ void BluntDissector::goToTarget(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision
 		// Get positions
 		dvrk::Pose pose_current = arm.getPoseCurrent();
 		dvrk::Pose end_target;
-
+		ROS_INFO_STREAM("Before get target");
 		vision.getTargetCurrent(target_type, end_target, position_type);
-
+		ROS_INFO_STREAM("Before get target " << end_target);
 		// Go to position
 		vision.sendSubtaskStatus(SubtaskStatus::
 						GOING_TO_TARGET.getCommand());

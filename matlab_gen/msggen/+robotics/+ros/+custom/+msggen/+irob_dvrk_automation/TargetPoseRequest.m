@@ -12,7 +12,7 @@ classdef TargetPoseRequest < robotics.ros.Message
     end
     
     properties (Constant, Hidden)
-        MD5Checksum = '1099465a71e86f47f3232d25b7cd9f21' % The MD5 Checksum of the message definition
+        MD5Checksum = '97d02830903808fad0bbe1505ce28dab' % The MD5 Checksum of the message definition
     end
     
     properties (Access = protected)
@@ -22,6 +22,8 @@ classdef TargetPoseRequest < robotics.ros.Message
     properties (Constant)
         DISSECTION = int8(1)
         DISTANT = int8(2)
+        GRABBING = int8(3)
+        RETRACTION = int8(4)
     end
     
     properties (Dependent)
