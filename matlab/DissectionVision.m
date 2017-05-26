@@ -43,6 +43,9 @@ classdef DissectionVision < handle
         errpub;
         statussub;
         
+        cam_l;
+        cam_r;
+        
     end
     
     methods
@@ -61,6 +64,11 @@ classdef DissectionVision < handle
             
               rosshutdown;
               rosinit;
+              
+              imaqreset;
+                webcamlist()
+                obj.cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+                obj.cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
               
             obj.dissection_targetsrv = rossvcserver('/dvrk_vision/movement_target_dissection','irob_dvrk_automation/TargetPose', @obj.getTargetCallback)
             obj.dissection_dotasksrv = rossvcserver('/dvrk_vision/do_task_dissection', 'irob_dvrk_automation/BoolQuery', @obj.toDoDissectionCallback);
@@ -92,7 +100,7 @@ classdef DissectionVision < handle
             switch obj.state
                  case DissectionStates.init
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                    [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
                                         
                     
                     [obj.retractor_pos, obj.userInputX, obj.userInputY] = ...
@@ -118,7 +126,7 @@ classdef DissectionVision < handle
                     
                  case DissectionStates.done_dissection_group
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
                     
                     [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY, angle, starch] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
@@ -154,7 +162,7 @@ classdef DissectionVision < handle
                     
                  case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
    
                     
                     [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY, angle, starch] = ...
@@ -180,7 +188,7 @@ classdef DissectionVision < handle
                 
                 case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
                     
                     
                      obj.firstTgt = false;
