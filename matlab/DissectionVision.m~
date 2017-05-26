@@ -1,27 +1,31 @@
-classdef DissectionVision 
+classdef DissectionVision < handle
     
     
     properties
         
-        state = DissectionStates.done_dissection_group;
+        state = DissectionStates.done_retraction;
         
         dissection_group_n = 0;
         local_dissection_n = 0;
         
         
-        task_done = false;
-        
+        do_dissection = false;
+        do_retraction = true;
+         
         groupN = 30;
         
         tgt_ori = [  0.9982    0.0380    0.0332    0.0317];
         dp_dist = 0.04;
         dp_rot = 345.0;
         
-        dist_pos = [-0.03,-0.05,0.25];
+        dist_pos = [0.1,-0.05, 0.25];
         dist_ori = [   0.9982    0.0380    0.0332    0.0317];
         
+        retractor_pos;
+        retractor_dp_dist = 0.02;
+        retractor_dp_rot = 355.0;
         
-        stepPix = 10;
+        stepPix = 20;
         memN = 3;
         lastIdxs = [];
         groupMinIdx = 1;
@@ -44,25 +48,29 @@ classdef DissectionVision
     methods
         
         function obj = DissectionVision
-            obj.state = DissectionStates.done_dissection_group;
+            obj.state = DissectionStates.done_retraction;
             obj.stereoParams=load('stereoParams.mat');
             obj.n = (obj.groupN / obj.stepPix)+1;
-            
-            [ I_r, I_l ] = stereo_capture('BGR24_640x480');
-         
-            [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, obj.userInputX, obj.userInputY] = ...
-                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
-                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
-              obj.firstTgt = false;
+%             
+%             [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+%          
+%             [obj.cuttingXYZ, obj.userInputX, obj.userInputY] = ...
+%                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
+%                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
+%               obj.firstTgt = false;
             
               rosshutdown;
               rosinit;
               
-            obj.targetsrv = rossvcserver('/dvrk_vision/movement_target','irob_dvrk_automation/TargetPose', @obj.getTargetCallback)
-            obj.donesrv = rossvcserver('/dvrk_vision/task_done', 'irob_dvrk_automation/BoolQuery', @obj.isDoneCallback);
-            obj.errpub = rospublisher('/dvrk_vision/error', 'std_msgs/String');
+            obj.dissection_targetsrv = rossvcserver('/dvrk_vision/movement_target_dissection','irob_dvrk_automation/TargetPose', @obj.getTargetCallback)
+            obj.dissection_dotasksrv = rossvcserver('/dvrk_vision/do_task_dissection', 'irob_dvrk_automation/BoolQuery', @obj.toDoDissectionCallback);
+            obj.dissection_errpub = rospublisher('/dvrk_vision/error_dissection', 'std_msgs/String');
             
-            obj.statussub = rossubscriber('/dvrk_vision/subtask_status', 'std_msgs/String');
+            obj.retraction_targetsrv = rossvcserver('/dvrk_vision/movement_target_retraction','irob_dvrk_automation/TargetPose', @obj.getTargetCallback)
+            obj.retraction_dotasksrv = rossvcserver('/dvrk_vision/do_task_retraction', 'irob_dvrk_automation/BoolQuery', @obj.toDoRetractionCallback);
+            obj.retraction_errpub = rospublisher('/dvrk_vision/error_retraction', 'std_msgs/String');
+            
+            obj.statussub = rossubscriber('/dvrk_vision/subtask_status_dissection', 'std_msgs/String');
             pause(2) % Wait to ensure publisher is registered
             
             % Start
@@ -81,7 +89,59 @@ classdef DissectionVision
             group_done = false;
             
             switch obj.state
-                case DissectionStates.done_dissection_group
+                 case DissectionStates.init
+                    % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
+                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                                        
+                    
+                    [obj.retractor_pos, obj.userInputX, obj.userInputY] = ...
+                        XYZ_coordinate_calculation_grabbing( I_l, I_r, obj.stereoParams, ...
+                        400, 0, 25, 25, true, obj.userInputX, obj.userInputY);
+                    
+                    [dp_pos, dp_ori] = getDP(obj.retractor_dp_dist, obj.retractor_dp_rot, obj.retractor_pos, obj.tgt_ori );
+                    
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
+                    response.PositionType = response.DP;
+                  
+                 case DissectionStates.at_grab_dp
+                     
+                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
+                    response.PositionType = response.GOAL;
+                 
+                 case DissectionStates.tissue_grabbed
+                    
+                    obj.retractor_pos = obj.retractor_pos + [0.0, 0.03, 0.03];
+                     
+                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
+                    response.PositionType = response.GOAL;
+                    
+                 case DissectionStates.done_dissection_group
+                    % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
+                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                    
+                    [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY, angle, starch] = ...
+                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
+                    obj.first_tgt = false;
+                    
+                    [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.cuttingXYZ, obj.groupN, obj.lastIdxs, obj.memN);
+                    
+                    obj.dissection_group_n = obj.dissection_group_n + 1;
+                    obj.local_dissection_n = 0;
+                    
+                    obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
+                    [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
+                    
+                    obj.dist_ori = obj.tgt_ori;
+                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    
+                    [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
+                    
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
+                    response.PositionType = response.DP;
+                    
+                 case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
                     [ I_r, I_l ] = stereo_capture('BGR24_640x480');
                     
@@ -102,7 +162,35 @@ classdef DissectionVision
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    
+                    [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
+                    
+                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
+                    response.PositionType = response.DP;
+                
+                case DissectionStates.done_retraction
+                    % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
+                    [ I_r, I_l ] = stereo_capture('BGR24_640x480');
+                    
+                    
+                     obj.firstTgt = false;
+                    
+                    [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, userInputX, userInputY] = ...
+                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
+                    
+                    [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.cuttingXYZ, obj.groupN, obj.lastIdxs, obj.memN);
+                    
+                    obj.dissection_group_n = obj.dissection_group_n + 1;
+                    obj.local_dissection_n = 0;
+                    
+                    obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
+                    [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
+                    
+                    obj.dist_ori = obj.tgt_ori;
+                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
@@ -129,10 +217,10 @@ classdef DissectionVision
                         if obj.dissection_group_n >= obj.groupN
                             obj.task_done = true;
                         end
-                        group_done = true;
-                        response.positionType = response.DP;
+                        group_done = true
+                        response.PositionType = response.DP;
                     else
-                        group_done = false;
+                        group_done = false
                         response.PositionType = response.GOAL;
                     end
                     
@@ -148,7 +236,7 @@ classdef DissectionVision
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
@@ -162,6 +250,7 @@ classdef DissectionVision
             % Step state
             disp('1');
             obj.state = obj.state.next(reqmsg, group_done);
+            disp(reqmsg);
             disp(obj.state);
             if obj.state == DissectionStates.abort
                 response = defaultrespmsg;
@@ -173,11 +262,19 @@ classdef DissectionVision
         
         
         % Callback for task done
-        function response = isDoneCallback(obj,server,reqmsg,defaultrespmsg)
+        function response = toDoDissectionCallback(obj,server,reqmsg,defaultrespmsg)
             response = defaultrespmsg;
             % Build the response message here
             
-            response.Data = obj.task_done;
+            response.Data = obj.do_dissection;
+        end
+        
+         % Callback for task done
+        function response = toDoRetractionCallback(obj,server,reqmsg,defaultrespmsg)
+            response = defaultrespmsg;
+            % Build the response message here
+            
+            response.Data = obj.do_retraction;
         end
     end
     
