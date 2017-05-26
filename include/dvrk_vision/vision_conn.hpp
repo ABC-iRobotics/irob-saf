@@ -42,7 +42,7 @@ public:
     // Constants
     static const std::string TOPIC_NAMESPACE;
     static const std::string SERVICE_NAME_MOVEMENT_TARGET;	// vision -> control
-    static const std::string SERVICE_NAME_TASK_DONE;		// vision -> control
+    static const std::string SERVICE_NAME_DO_TASK;		// vision -> control
     static const std::string TOPIC_NAME_ERR;			 // vision -> control   
     static const std::string TOPIC_NAME_SUBTASK_STATUS;		// control -> vision 
 
@@ -55,6 +55,8 @@ private:
     // translation and rotation for registration
     Eigen::Vector3d t;
     Eigen::Matrix3d R;
+    
+    std::string topic_suffix;
 
    	// Clients
     ros::ServiceClient movement_target_cli;
@@ -70,7 +72,7 @@ private:
     bool advertise(const std::string);
 
 public:
-	VisionConn(ros::NodeHandle, std::string);
+	VisionConn(ros::NodeHandle, std::string, std::string);
 	~VisionConn();
 		
 	void loadRegistration(std::string);
@@ -81,7 +83,7 @@ public:
     void errorCB(const std_msgs::String); 
        
     void getTargetCurrent(TargetType, dvrk::Pose&, PositionType&);
-    bool isTaskDone();
+    bool needToDoTask();
     void checkErrors();	
 };
 

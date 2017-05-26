@@ -17,21 +17,22 @@ const std::string VisionConn::TOPIC_NAMESPACE
                     = "dvrk_vision";
 const std::string VisionConn::SERVICE_NAME_MOVEMENT_TARGET
                     = "movement_target";
-const std::string VisionConn::SERVICE_NAME_TASK_DONE
-                    = "task_done";
+const std::string VisionConn::SERVICE_NAME_DO_TASK
+                    = "do_task";
 const std::string VisionConn::TOPIC_NAME_ERR
                     = "error";
 const std::string VisionConn::TOPIC_NAME_SUBTASK_STATUS
                     = "subtask_status";
 
 VisionConn::VisionConn(
-			ros::NodeHandle nh, std::string registration_file): nh(nh)
+			ros::NodeHandle nh, std::string registration_file,
+			std::string topic_suffix): nh(nh), topic_suffix(topic_suffix)
 {
 	loadRegistration(registration_file);
 	
 	// Subscribe and advertise topics
 	subscribe(SERVICE_NAME_MOVEMENT_TARGET);
-	subscribe(SERVICE_NAME_TASK_DONE);
+	subscribe(SERVICE_NAME_DO_TASK);
 	subscribe(TOPIC_NAME_ERR);
 	
 	advertise(TOPIC_NAME_SUBTASK_STATUS);
@@ -80,14 +81,15 @@ void VisionConn::errorCB(const std_msgs::String msg)
 
 bool VisionConn::subscribe(std::string topic) 
 {
-	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic;
+	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic + 
+		"_" + topic_suffix;
 	
 	if(topic == SERVICE_NAME_MOVEMENT_TARGET)
 	{
     	movement_target_cli = nh.serviceClient
     	<irob_dvrk_automation::TargetPose>(topic_name_full, true);
     }
-    else if(topic == SERVICE_NAME_TASK_DONE)
+    else if(topic == SERVICE_NAME_DO_TASK)
 	{
     	task_done_cli = nh.serviceClient<irob_dvrk_automation::BoolQuery>(
                			topic_name_full, true);
@@ -111,7 +113,8 @@ bool VisionConn::subscribe(std::string topic)
 
 bool VisionConn::advertise(std::string topic) 
 {
-	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic;	
+	std::string topic_name_full =  "/" + TOPIC_NAMESPACE + "/" + topic
+		+ "_" + topic_suffix;	
 	
     if(topic == TOPIC_NAME_SUBTASK_STATUS)
     {
@@ -162,7 +165,7 @@ void VisionConn::sendSubtaskStatus(std::string status)
 }
 
 
-bool VisionConn::isTaskDone()
+bool VisionConn::needToDoTask()
 {
 	// Call service
 	irob_dvrk_automation::BoolQuery req;

@@ -19,6 +19,8 @@ class TargetType {
     // Enum value DECLARATIONS - they are defined later
     static const TargetType DISSECTION;
     static const TargetType DISTANT;
+    static const TargetType GRABBING;
+    static const TargetType RETRACTION;
 
 
   private:
@@ -49,6 +51,12 @@ class TargetType {
     {
     	if (cmd == DISSECTION.command)
     		return DISSECTION;
+    	if (cmd == DISTANT.command)
+    		return DISTANT;	
+    	if (cmd == GRABBING.command)
+    		return GRABBING;	
+    	if (cmd == RETRACTION.command)
+    		return RETRACTION;	
     	return DISTANT;
     }
 };

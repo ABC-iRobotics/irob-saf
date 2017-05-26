@@ -45,8 +45,12 @@ private:
     ros::NodeHandle nh;
 
     // States
-    dvrk::PSM psm;
-    dvrk_vision::VisionConn vision;
+    dvrk::PSM dissector_arm;
+    dvrk_vision::VisionConn dissector_vision;
+    
+    // States
+    dvrk::PSM retractor_arm;
+    dvrk_vision::VisionConn retractor_vision;
     
     
     double dt;
@@ -55,17 +59,24 @@ private:
 	//static const double travelSpeed;
     
 public:
-	BluntDissector(ros::NodeHandle, dvrk::ArmTypes, double, std::string);
+	BluntDissector(ros::NodeHandle, dvrk::ArmTypes, std::string,
+				 dvrk::ArmTypes, std::string, double);
 	~BluntDissector();
 	
 	void dissect();
 	
-	void goToTarget(dvrk_vision::TargetType target_type, double speed = 10.0);
-	void toolPushIn(double depth, double speed  = 2.0);
-	void toolPullOut(double depth, double speed  = 2.0);
-	void toolOpen(double angle, double speed  = 10.0);
-	void toolClose(double angle = 0.0, double speed  = 10.0);
-	void toolRotate(double angle, double speed = 10.0);
+	void goToTarget(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		dvrk_vision::TargetType target_type, double speed = 10.0);
+	void toolPushIn(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		double depth, double speed  = 2.0);
+	void toolPullOut(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		double depth, double speed  = 2.0);
+	void toolOpen(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		double angle, double speed  = 10.0);
+	void toolClose(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		double angle = 0.0, double speed  = 10.0);
+	void toolRotate(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision,
+		double angle, double speed = 10.0);
 	
 	void safetyCheck();
 	void checkTrajectory(dvrk::Trajectory<dvrk::Pose>);

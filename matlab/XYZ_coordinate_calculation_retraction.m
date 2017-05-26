@@ -1,4 +1,4 @@
-function [cuttingXYZ, userInputX, userInputY] = XYZ_coordinate_calculation( IL, IR, stereoParams, maxDisp, dir, lowThresh, highThresh, firstTgt, userInputX, userInputY)
+function [angle, starch, userInputX, userInputY] = XYZ_coordinate_calculation_retraction( IL, IR, stereoParams, maxDisp, dir, lowThresh, highThresh, firstTgt, userInputX, userInputY)
 %UNTITLED2 Summary of this function goes here
 %   @author: Renata Elek
 %   IL & IR: left and right images of your stereo cameras (what are you

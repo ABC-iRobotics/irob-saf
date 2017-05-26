@@ -3,7 +3,7 @@ classdef DissectionVision < handle
     
     properties
         
-        state = DissectionStates.done_dissection_group;
+        state = DissectionStates.done_retraction;
         
         dissection_group_n = 0;
         local_dissection_n = 0;
@@ -20,6 +20,9 @@ classdef DissectionVision < handle
         dist_pos = [0.1,-0.05, 0.25];
         dist_ori = [   0.9982    0.0380    0.0332    0.0317];
         
+        retractor_pos;
+        retractor_dp_dist = 0.02;
+        retractor_dp_rot = 355.0;
         
         stepPix = 20;
         memN = 3;
@@ -44,13 +47,13 @@ classdef DissectionVision < handle
     methods
         
         function obj = DissectionVision
-            obj.state = DissectionStates.done_dissection_group;
+            obj.state = DissectionStates.done_retraction;
             obj.stereoParams=load('stereoParams.mat');
             obj.n = (obj.groupN / obj.stepPix)+1;
             
             [ I_r, I_l ] = stereo_capture('BGR24_640x480');
          
-            [obj.cuttingXYZ, cuttingXYZOver, cuttingXYZUnder, obj.userInputX, obj.userInputY] = ...
+            [obj.cuttingXYZ, obj.userInputX, obj.userInputY] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
               obj.firstTgt = false;
@@ -81,7 +84,7 @@ classdef DissectionVision < handle
             group_done = false;
             
             switch obj.state
-                case DissectionStates.done_dissection_group
+                case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
                     [ I_r, I_l ] = stereo_capture('BGR24_640x480');
                     

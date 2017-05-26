@@ -31,8 +31,11 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
     
-    std::string arm;
-	priv_nh.getParam("arm", arm);
+    std::string dissector_arm;
+	priv_nh.getParam("dissector_arm", dissector_arm);
+	
+	std::string retractor_arm;
+	priv_nh.getParam("retractor_arm", retractor_arm);
 	
 	
 	double rate_command;
@@ -41,8 +44,11 @@ int main(int argc, char **argv)
 	double speed;
 	priv_nh.getParam("speed", speed);
 	
-	std::string regfile;
-	priv_nh.getParam("regfile", regfile);
+	std::string dissector_regfile;
+	priv_nh.getParam("dissector_regfile", dissector_regfile);
+	
+	std::string retractor_regfile;
+	priv_nh.getParam("retractor_regfile", retractor_regfile);
 
 		
 	double dt = 1.0/ rate_command;
@@ -52,7 +58,9 @@ int main(int argc, char **argv)
     // Robot control
   	try {
     	dvrk_automation::BluntDissector dissector(nh,
-    			dvrk::ArmTypes::typeForString(arm), dt, regfile);
+    			dvrk::ArmTypes::typeForString(dissector_arm), dissector_regfile, 
+    			dvrk::ArmTypes::typeForString(retractor_arm), retractor_regfile,
+    			dt);
     	ros::Duration(1.0).sleep();
    	
    	 		

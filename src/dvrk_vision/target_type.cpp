@@ -22,6 +22,14 @@ const TargetType TargetType::DISTANT
                     = TargetType(
                     irob_dvrk_automation::TargetPose::Request::DISTANT);
                     
+const TargetType TargetType::GRABBING
+                    = TargetType(
+                    irob_dvrk_automation::TargetPose::Request::GRABBING);
+                    
+const TargetType TargetType::RETRACTION
+                    = TargetType(
+                    irob_dvrk_automation::TargetPose::Request::RETRACTION);
+                    
                     
 }
 
