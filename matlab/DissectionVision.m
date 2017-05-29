@@ -61,7 +61,7 @@ classdef DissectionVision < handle
             obj.n = (obj.groupN / obj.stepPix)+1;
 %             
 %             [ I_r, I_l ] = stereo_capture('BGR24_640x480');
-%          
+%          clear
 %             [obj.cuttingXYZ, obj.userInputX, obj.userInputY] = ...
 %                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
 %                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
@@ -92,12 +92,15 @@ classdef DissectionVision < handle
             
            % figure('units','normalized','outerposition',[0 0 1 1])
             % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-             [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
-                                        
-                    
+             [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
+             
              [obj.retractor_pos, obj.userInputX, obj.userInputY] = ...
                         XYZ_coordinate_calculation_grabbing( I_l, I_r, obj.stereoParams, ...
-                        400, 0, 25, 25, true, obj.userInputX, obj.userInputY);
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
+                    
+             obj.retractor_pos = obj.retractor_pos + [0.0, 0.0, -0.008]     
+
+            disp(obj.retractor_pos);
             disp('Init done');
         end
         
@@ -115,11 +118,9 @@ classdef DissectionVision < handle
             
             switch obj.state
                  case DissectionStates.init
-   
-                   
-                    
+                       disp(obj.retractor_pos);
                     [dp_pos, dp_ori] = getDP(obj.retractor_dp_dist, obj.retractor_dp_rot, obj.retractor_pos, obj.tgt_ori );
-                    
+                    disp(dp_pos);
                     response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     response.PositionType = response.DP;
                   
@@ -130,35 +131,36 @@ classdef DissectionVision < handle
                  
                  case DissectionStates.tissue_grabbed
                     
-                    obj.retractor_pos = obj.retractor_pos + [0.0, 0.03, 0.03];
+                    obj.retractor_pos = obj.retractor_pos + [0.0, -0.025, 0.012];
                      
                     response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
                     response.PositionType = response.GOAL;
                     
                  case DissectionStates.done_dissection_group
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
+                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
                     
-                    [obj.cuttingXYZ, userInputX, userInputY, angle, starch] = ...
+                    [obj.cuttingXYZ, obj.userInputX, obj.userInputY, angle, starch] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
-                    obj.first_tgt = false;
-                    
+                    obj.firstTgt = false;
+                    disp ('angle');
+                    disp(angle);
+                    disp ('starch');
+                    disp(starch);
                     done = true;
+                    step = 0.002;
                     if (angle < 80.0)
-                        obj.retractor_pos = obj.retractor_pos + [0.0, 0.005, 0.005];
+                        obj.retractor_pos = obj.retractor_pos + [0.0, sin((angle * 180.00)/pi)*step*(-1), cos((angle * 180.00)/pi)*step];
                         done = false;
-                    end
-                    if (angle > 100.0)
-                        obj.retractor_pos = obj.retractor_pos - [0.0, 0.005, 0.005];
+                    elseif (angle > 100.0)
+                        obj.retractor_pos = obj.retractor_pos - [0.0, sin((angle * 180.00)/pi)*step*(-1), cos((angle * 180.00)/pi)*step];
                         done = false;
-                    end
-                    if (starch < 120.0)
-                        obj.retractor_pos = obj.retractor_pos + [0.0, 0.005, 0.0];
+                    elseif (starch < 160.0)
+                        obj.retractor_pos = obj.retractor_pos + [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
                         done = false;
-                    end
-                    if (starch > 170.0)
-                        obj.retractor_pos = obj.retractor_pos - [0.0, 0.005, 0.0];
+                    elseif (starch > 180.0)
+                        obj.retractor_pos = obj.retractor_pos - [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
                         done = false;
                     end                  
                      
@@ -173,10 +175,10 @@ classdef DissectionVision < handle
                     
                  case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
+                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
    
                     
-                    [obj.cuttingXYZ, userInputX, userInputY, angle, starch] = ...
+                    [obj.cuttingXYZ, obj.userInputX, obj.userInputY, angle, starch] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
                     
@@ -199,12 +201,12 @@ classdef DissectionVision < handle
                 
                 case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                     [ I_r, I_l ] = stereo_capture(obj.cam_l, obj.cam_r);
+                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
                     
                     
                      obj.firstTgt = false;
                     
-                    [obj.cuttingXYZ, userInputX, userInputY] = ...
+                    [obj.cuttingXYZ, obj.userInputX, obj.userInputY] = ...
                         XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
                     

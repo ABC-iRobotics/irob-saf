@@ -54,13 +54,13 @@ void BluntDissector::dissect()
 			goToTarget(retractor_arm,
 						 retractor_vision,
 						 dvrk_vision::TargetType::GRABBING,	// with DP
-						 20.0);
+						 10.0);
 			ros::Duration(0.01).sleep();
 			
 			
 			toolClose(retractor_arm,
-						 retractor_vision,5.0, 20.0);
-			ros::Duration(0.01).sleep();
+						 retractor_vision,0.0, 20.0);
+			ros::Duration(1.0).sleep();
 			ROS_INFO_STREAM("Tissue grabbed.");
 			
 			
@@ -69,8 +69,8 @@ void BluntDissector::dissect()
 			goToTarget(retractor_arm,
 						 retractor_vision,
 						 dvrk_vision::TargetType::RETRACTION,
-						 20.0);
-			ros::Duration(0.01).sleep();
+						 10.0);
+			ros::Duration(1.0).sleep();
 			
 		
 			// Do this while the vision says it is done
@@ -87,7 +87,7 @@ void BluntDissector::dissect()
 				goToTarget(retractor_arm,
 						 retractor_vision,
 						 dvrk_vision::TargetType::RETRACTION,
-						 20.0);
+						 5.0);
 				ros::Duration(0.01).sleep();
 				ROS_INFO_STREAM("Retraction done.");
 				
@@ -181,9 +181,11 @@ void BluntDissector::goToTarget(dvrk::PSM &arm,  dvrk_vision::VisionConn &vision
 		// Get positions
 		dvrk::Pose pose_current = arm.getPoseCurrent();
 		dvrk::Pose end_target;
-		ROS_INFO_STREAM("Before get target");
+
 		vision.getTargetCurrent(target_type, end_target, position_type);
-		ROS_INFO_STREAM("Before get target " << end_target);
+		
+		end_target.jaw = pose_current.jaw;
+		
 		// Go to position
 		vision.sendSubtaskStatus(SubtaskStatus::
 						GOING_TO_TARGET.getCommand());

@@ -19,7 +19,7 @@ function [cuttingXYZ, userInputX, userInputY, meanAnglesCenter, meanAnglesTop] =
 
 %Rectify the images
 [ILrect, IRrect] = ...
-rectifyStereoImages(IR, IL, stereoParams.stereoParams);
+rectifyStereoImages(IL, IR, stereoParams.stereoParams);
 
 frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
@@ -100,14 +100,14 @@ hold on
 %     xlabel('Pixel indices in vertical direction')
 %     ylabel('Disparity value [px]')
 %     axis tight
- highThresh = 20;
- lowThresh = 20;
+ highThresh = 8;
+ lowThresh = 8;
   for i = 1 : numel(MinimaArrayX)
     orientationOverYTop = [orientationOverYTop, MinimaArrayY(i) - (4*highThresh)];
     orientationUnderYTop = [orientationUnderYTop, MinimaArrayY(i) - (2*lowThresh)];
     
-    orientationOverY = [orientationOverY, MinimaArrayY(i) + (2*highThresh)];
-    orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (2*lowThresh)];
+    orientationOverY = [orientationOverY, MinimaArrayY(i) + (4*highThresh)];
+    orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (4*lowThresh)];
  end
 
 subplot(1,2,2), imshow(ILrect, [])
@@ -143,7 +143,7 @@ im_coord_L_underTop = transpose([MinimaArrayX; orientationUnderYTop ]);
   
 points3D = reconstructScene(disparityMap, stereoParams.stereoParams);
 points3D = points3D ./ 1000;
-ptCloud = pointCloud(points3D, 'Color', ILrect);
+%ptCloud = pointCloud(points3D, 'Color', ILrect);
 
 cuttingXYZIdx1 = uint32(round(sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1))));
 X = points3D(:, :, 1);
@@ -186,9 +186,10 @@ cuttingXYZUnderTop = cuttingXYZUnderTop(isfinite(cuttingXYZUnderTop(:,1)),:);
 
 % Find the distances from the camera in meters.
 dists = sqrt(sum(cuttingXYZ' .^ 2));
-
+disp('size');
+disp(size(cuttingXYZ(:,1)));
 anglesArray = double(zeros(0));
-for i = 1:size(cuttingXYZ(:,1))
+for i = 1:1:min([size(cuttingXYZ(:,1)),size(cuttingXYZUnder(:,1)),size(cuttingXYZOver(:,1))])
     c = cuttingXYZOver(i,:);
     a = cuttingXYZUnder(i,:);
     b = cuttingXYZ(i,:);
@@ -197,9 +198,9 @@ for i = 1:size(cuttingXYZ(:,1))
     v2 = [c(:,1) - b(:,1), c(:,2) - b(:,2), c(:,3) - b(:,3)];
     v3 = [a(:,1) - c(:,1), a(:,2) - c(:,2), a(:,3) - c(:,3)];
 
-    v1mag = sqrt(v1(1) * v1(1) + v1(2) * v1(2) + v1(3) * v1(3));
-    v2mag = sqrt(v2(1) * v2(1) + v2(2) * v2(2) + v2(3) * v2(3));
-    v3mag = sqrt(v3(1) * v3(1) + v3(2) * v3(2) + v3(3) * v3(3));
+    v1mag = sqrt(abs(v1(1) * v1(1) + v1(2) * v1(2) + v1(3) * v1(3)));
+    v2mag = sqrt(abs(v2(1) * v2(1) + v2(2) * v2(2) + v2(3) * v2(3)));
+    v3mag = sqrt(abs(v3(1) * v3(1) + v3(2) * v3(2) + v3(3) * v3(3)));
 
     angle = acos(((v2mag * v2mag) + (v1mag * v1mag) - (v3mag * v3mag))/ (2*v2mag*v1mag));
     angle = angle * (180/pi);
@@ -209,7 +210,8 @@ end
 meanAnglesCenter = mean(anglesArray);
 
 anglesArrayTop = double(zeros(0));
-for i = 1:size(cuttingXYZ(:,1))
+
+for i = 1:min([size(cuttingXYZ(:,1)),size(cuttingXYZOverTop(:,1)),size(cuttingXYZUnderTop(:,1))])
     c = cuttingXYZOverTop(i,:);
     b = cuttingXYZUnderTop(i,:);
     a = cuttingXYZ(i,:);
@@ -218,9 +220,9 @@ for i = 1:size(cuttingXYZ(:,1))
     v2 = [c(:,1) - b(:,1), c(:,2) - b(:,2), c(:,3) - b(:,3)];
     v3 = [a(:,1) - c(:,1), a(:,2) - c(:,2), a(:,3) - c(:,3)];
 
-    v1mag = sqrt(v1(1) * v1(1) + v1(2) * v1(2) + v1(3) * v1(3));
-    v2mag = sqrt(v2(1) * v2(1) + v2(2) * v2(2) + v2(3) * v2(3));
-    v3mag = sqrt(v3(1) * v3(1) + v3(2) * v3(2) + v3(3) * v3(3));
+    v1mag = sqrt(abs(v1(1) * v1(1) + v1(2) * v1(2) + v1(3) * v1(3)));
+    v2mag = sqrt(abs(v2(1) * v2(1) + v2(2) * v2(2) + v2(3) * v2(3)));
+    v3mag = sqrt(abs(v3(1) * v3(1) + v3(2) * v3(2) + v3(3) * v3(3)));
 
     angle = acos(((v2mag * v2mag) + (v1mag * v1mag) - (v3mag * v3mag))/ (2*v2mag*v1mag));
     angle = angle * (180/pi);

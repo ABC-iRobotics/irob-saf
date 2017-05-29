@@ -1,4 +1,4 @@
-function [retractor_pos, userInputX, userInputY] = XYZ_coordinate_calculation_grabbing( IL, IR, stereoParams, maxDisp, dir, lowThresh, highThresh, firstTgt, userInputX, userInputY)
+function [grab_pos, userInputX, userInputY] = XYZ_coordinate_calculation_grabbing( IL, IR, stereoParams, maxDisp, dir, lowThresh, highThresh, firstTgt, userInputX, userInputY)
 %UNTITLED2 Summary of this function goes here
 %   @author: Renata Elek
 %   IL & IR: left and right images of your stereo cameras (what are you
@@ -19,7 +19,7 @@ function [retractor_pos, userInputX, userInputY] = XYZ_coordinate_calculation_gr
 
 %Rectify the images
 [ILrect, IRrect] = ...
-rectifyStereoImages(IR, IL, stereoParams.stereoParams);
+rectifyStereoImages(IL, IR, stereoParams.stereoParams);
 
 frameLeftGray  = rgb2gray(ILrect);
 frameRightGray = rgb2gray(IRrect);
@@ -45,9 +45,8 @@ disparityRange = [0,maxDisp];
 % 
 % figure('units','normalized','outerposition',[0 0 1 1])
  subplot(1,2,1), imshow(ILrect, [])
-
  subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
-
+ 
 if firstTgt 
      [x,y] = ginput(2);
     userInputX = x;     userInputY = y;
@@ -59,24 +58,48 @@ else
     x = userInputX;
     y = userInputY;
 end
-im_coord_L = transpose([mean(x); mean(y) ]);
- subplot(1,2,1), imshow(ILrect, [])
+
+ 
+ MinimaArrayX = uint32(x(1)) : uint32(x(2));
+MinimaArrayY = (MinimaArrayX - MinimaArrayX) + uint32(round(mean(y)));
+
+
+subplot(1,2,2), imshow(ILrect, [])
+hold on
+plot(MinimaArrayX, MinimaArrayY, 'r.'); %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -7 :D
+hold off
+
+subplot(1,3,1), imshow(disparityMap,disparityRange);colormap jet
  hold on
- plot(mean(x), mean(y), 'r.');
- hold off
+
+plot(MinimaArrayX, MinimaArrayY,  'r.');
+hold off
+
+%surf(dataM);
+
+% 
+%  
+% imshow(ILrect);
+% hold on
+% plot(MinimaArrayX, MinimaArrayY, 'r.');
+  
+im_coord_L = transpose([MinimaArrayX; MinimaArrayY ]);
+%im_coord_R = transpose([MinimaArrayX + MinimaValues; MinimaArrayY ]);
+
 
   
 points3D = reconstructScene(disparityMap, stereoParams.stereoParams);
 points3D = points3D ./ 1000;
-ptCloud = pointCloud(points3D, 'Color', ILrect);
+%ptCloud = pointCloud(points3D, 'Color', ILrect);
 
-cuttingXYZIdx = uint32(round(sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1))));
+cuttingXYZIdx1 = uint32(round(sub2ind(size(disparityMap), im_coord_L(:, 2), im_coord_L(:, 1))));
 X = points3D(:, :, 1);
 Y = points3D(:, :, 2);
 Z = points3D(:, :, 3);
-retractor_pos = [X(cuttingXYZIdx)'; Y(cuttingXYZIdx)'; Z(cuttingXYZIdx)']';
+cuttingXYZ = [X(cuttingXYZIdx1)'; Y(cuttingXYZIdx1)'; Z(cuttingXYZIdx1)']'
+cuttingXYZ = cuttingXYZ(isfinite(cuttingXYZ(:,1)),:);
 
-disp('cucc');
+grab_pos = mean(cuttingXYZ)
+
 
 end
-
