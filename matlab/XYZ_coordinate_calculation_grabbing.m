@@ -100,6 +100,6 @@ cuttingXYZ = [X(cuttingXYZIdx1)'; Y(cuttingXYZIdx1)'; Z(cuttingXYZIdx1)']'
 cuttingXYZ = cuttingXYZ(isfinite(cuttingXYZ(:,1)),:);
 
 grab_pos = mean(cuttingXYZ)
-
+userInputY = userInputY - 15;
 
 end

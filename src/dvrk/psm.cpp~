@@ -58,25 +58,16 @@ void PSM::moveJawRelative(double movement, double dt)
     Pose pose = currPose;
     pose.jaw += movement;
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
-    try {
+    
     // Safety
     checkErrors();
-    checkVelCartesian(pose, currPose, dt);
     checkNaNCartesian(pose);
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
     position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
-     	} catch (std::runtime_error e)
-  	{
-  		std::string str_nan = "NaN";
-  		std::string str_err = e.what();
-  		if (str_err.find(str_nan) != std::string::npos)
-    		ROS_ERROR_STREAM(e.what());
-    	else
-    		throw e;
-  	}
 }
 
 void PSM::moveJawAbsolute(double jaw, double dt)
@@ -86,25 +77,16 @@ void PSM::moveJawAbsolute(double jaw, double dt)
     Pose pose = currPose;
     pose.jaw = jaw;
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
-    try {
+    
     // Safety
     checkErrors();
-    checkVelCartesian(pose, currPose, dt);
     checkNaNCartesian(pose);
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
     position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
-     	} catch (std::runtime_error e)
-  	{
-  		std::string str_nan = "NaN";
-  		std::string str_err = e.what();
-  		if (str_err.find(str_nan) != std::string::npos)
-    		ROS_ERROR_STREAM(e.what());
-    	else
-    		throw e;
-  	}
 }
 
 void PSM::moveCartesianAbsolute(Pose pose, double dt)
@@ -113,26 +95,17 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
     Pose currPose = getPoseCurrent();
     geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
     std_msgs::Float32 new_position_jaw = pose.toRosJaw();
-    try {
+    
     // Safety
     checkErrors();
-    checkVelCartesian(pose, currPose, dt);
     checkNaNCartesian(pose);
+    checkVelCartesian(pose, currPose, dt);
     // End safety
     
     // Publish movement
     position_cartesian_pub.publish(new_position_cartesian);
     position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
-     	} catch (std::runtime_error e)
-  	{
-  		std::string str_nan = "NaN";
-  		std::string str_err = e.what();
-  		if (str_err.find(str_nan) != std::string::npos)
-    		ROS_ERROR_STREAM(e.what());
-    	else
-    		throw e;
-  	}
 }
 
 

@@ -14,18 +14,19 @@ classdef DissectionVision < handle
          
         groupN = 30;
         
-        tgt_ori = [  0.9982    0.0380    0.0332    0.0317];
+        tgt_ori = [ 0.0042   -0.0268   -0.1073    0.9939];
         dp_dist = 0.04;
         dp_rot = 345.0;
         
-        dist_pos = [0.1,-0.05, 0.25];
-        dist_ori = [   0.9982    0.0380    0.0332    0.0317];
+        dist_pos = [0.12,0.03, 0.26];
+        dist_ori = [   0.8316    0.0197   -0.1899    0.5215];
+        retractor_ori = [  0.1266   -0.0723    0.0230    0.9890];
         
         retractor_pos;
-        retractor_dp_dist = 0.02;
+        retractor_dp_dist = 0.03;
         retractor_dp_rot = 355.0;
         
-        stepPix = 20;
+        stepPix = 6;
         memN = 3;
         lastIdxs = [];
         groupMinIdx = 1;
@@ -98,7 +99,7 @@ classdef DissectionVision < handle
                         XYZ_coordinate_calculation_grabbing( I_l, I_r, obj.stereoParams, ...
                         400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
                     
-             obj.retractor_pos = obj.retractor_pos + [0.0, 0.0, -0.008]     
+             obj.retractor_pos = obj.retractor_pos + [0.008, 0.0, -0.006]     
 
             disp(obj.retractor_pos);
             disp('Init done');
@@ -119,21 +120,25 @@ classdef DissectionVision < handle
             switch obj.state
                  case DissectionStates.init
                        disp(obj.retractor_pos);
-                    [dp_pos, dp_ori] = getDP(obj.retractor_dp_dist, obj.retractor_dp_rot, obj.retractor_pos, obj.tgt_ori );
+                    [dp_pos, dp_ori] = getDP(obj.retractor_dp_dist, obj.retractor_dp_rot, obj.retractor_pos, obj.retractor_ori );
                     disp(dp_pos);
                     response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     response.PositionType = response.DP;
                   
                  case DissectionStates.at_grab_dp
                      
-                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
+                    response = DissectionVision.wrapPose(response, obj.retractor_pos,obj.retractor_ori);
                     response.PositionType = response.GOAL;
                  
                  case DissectionStates.tissue_grabbed
                     
-                    obj.retractor_pos = obj.retractor_pos + [0.0, -0.025, 0.012];
-                     
-                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
+                    %obj.retractor_pos = obj.retractor_pos + [0.0, -0.045, 0.03];
+                    obj.retractor_pos = obj.retractor_pos + [0.0, -0.055, 0.02];
+                    [dp_pos, obj.retractor_ori] = getDP(obj.retractor_dp_dist, 325.0, obj.retractor_pos, obj.retractor_ori );
+                    
+                    %disp(obj.retractor_ori);
+    
+                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.retractor_ori);
                     response.PositionType = response.GOAL;
                     
                  case DissectionStates.done_dissection_group
@@ -149,22 +154,25 @@ classdef DissectionVision < handle
                     disp ('starch');
                     disp(starch);
                     done = true;
-                    step = 0.002;
-                    if (angle < 80.0)
-                        obj.retractor_pos = obj.retractor_pos + [0.0, sin((angle * 180.00)/pi)*step*(-1), cos((angle * 180.00)/pi)*step];
+                    step = 0.008;
+                    if (angle > 0.0)
+                        obj.retractor_pos = obj.retractor_pos + [0.0, -0.015, 0.05];
+                         [dp_pos, obj.retractor_ori] = getDP(obj.retractor_dp_dist, 330.0, obj.retractor_pos, obj.retractor_ori );
                         done = false;
-                    elseif (angle > 100.0)
+                    elseif (angle > 120.0)
                         obj.retractor_pos = obj.retractor_pos - [0.0, sin((angle * 180.00)/pi)*step*(-1), cos((angle * 180.00)/pi)*step];
                         done = false;
-                    elseif (starch < 160.0)
+                    elseif (starch < 250.0)
                         obj.retractor_pos = obj.retractor_pos + [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
                         done = false;
-                    elseif (starch > 180.0)
+                    elseif (starch > 0.0)
                         obj.retractor_pos = obj.retractor_pos - [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
                         done = false;
-                    end                  
+                    end  
+                    
+                    done = true;
                      
-                    response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.tgt_ori);
+                    response = DissectionVision.wrapPose(response, obj.retractor_pos,obj.retractor_ori);
                     if (done)
                         response.PositionType = response.GOAL;
                         obj.do_dissection = true;
@@ -192,41 +200,13 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    obj.tgt_pos = obj.tgt_pos + [0.008, -0.002, -0.002];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
                     response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     response.PositionType = response.DP;
                 
-                case DissectionStates.done_retraction
-                    % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
-                    
-                    
-                     obj.firstTgt = false;
-                    
-                    [obj.cuttingXYZ, obj.userInputX, obj.userInputY] = ...
-                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
-                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
-                    
-                    [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.cuttingXYZ, obj.groupN, obj.lastIdxs, obj.memN);
-                    
-                    obj.dissection_group_n = obj.dissection_group_n + 1;
-                    obj.local_dissection_n = 0;
-                    
-                    obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
-                    [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
-                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
-                    
-                    obj.dist_ori = obj.tgt_ori;
-                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
-                    
-                    [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
-                    
-                    response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
-                    response.PositionType = response.DP;
-                    
                     
                 case DissectionStates.at_tgt_dp
                     % goto tgt as goal
@@ -267,7 +247,7 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    %obj.tgt_pos = obj.tgt_pos + [-0.015, 0.0, 0.0];
+                    obj.tgt_pos = obj.tgt_pos + [0.008, -0.002, -0.002];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     

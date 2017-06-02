@@ -54,13 +54,13 @@ void BluntDissector::dissect()
 			goToTarget(retractor_arm,
 						 retractor_vision,
 						 dvrk_vision::TargetType::GRABBING,	// with DP
-						 10.0);
+						 20.0);
 			ros::Duration(0.01).sleep();
 			
 			
 			toolClose(retractor_arm,
 						 retractor_vision,0.0, 20.0);
-			ros::Duration(1.0).sleep();
+			ros::Duration(0.01).sleep();
 			ROS_INFO_STREAM("Tissue grabbed.");
 			
 			
@@ -70,11 +70,16 @@ void BluntDissector::dissect()
 						 retractor_vision,
 						 dvrk_vision::TargetType::RETRACTION,
 						 10.0);
-			ros::Duration(1.0).sleep();
+			ros::Duration(0.1).sleep();
 			
 		
 			// Do this while the vision says it is done
 			ROS_INFO_STREAM("Starting dissection.");
+		
+			toolClose(dissector_arm,
+						 dissector_vision,0.0, 20.0);
+				ros::Duration(0.01).sleep();	
+			
 			bool doneSomething = true;
 			while (doneSomething)	
 			{
@@ -117,14 +122,12 @@ void BluntDissector::dissect()
 				ros::Duration(0.01).sleep();
 				ROS_INFO_STREAM("Tool open.");
 				toolOpen(dissector_arm,
-						 dissector_vision,40.0, 20.0);
+						 dissector_vision,50.0, 20.0);
 				ros::Duration(0.01).sleep();
 				toolPullOut(dissector_arm,
 						 dissector_vision,6.0, 5.0);
 				ros::Duration(0.01).sleep();
-				toolClose(dissector_arm,
-						 dissector_vision,0.0, 20.0);
-				ros::Duration(0.01).sleep();
+				
 				
 				// Ask for new distant target
 				ROS_INFO_STREAM("Ask for new distant target.");
@@ -138,6 +141,10 @@ void BluntDissector::dissect()
 						 dissector_vision,
 						 dvrk_vision::TargetType::DISTANT,
 						 20.0);
+				toolClose(dissector_arm,
+						 dissector_vision,0.0, 20.0);
+				
+				
 				ros::Duration(0.1).sleep();
 				}
 			}		

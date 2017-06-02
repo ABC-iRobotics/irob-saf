@@ -100,14 +100,14 @@ hold on
 %     xlabel('Pixel indices in vertical direction')
 %     ylabel('Disparity value [px]')
 %     axis tight
- highThresh = 8;
- lowThresh = 8;
+ highThresh = 4;
+ lowThresh = 4;
   for i = 1 : numel(MinimaArrayX)
     orientationOverYTop = [orientationOverYTop, MinimaArrayY(i) - (4*highThresh)];
     orientationUnderYTop = [orientationUnderYTop, MinimaArrayY(i) - (2*lowThresh)];
     
-    orientationOverY = [orientationOverY, MinimaArrayY(i) + (4*highThresh)];
-    orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (4*lowThresh)];
+    orientationOverY = [orientationOverY, MinimaArrayY(i) + (2*highThresh)];
+    orientationUnderY = [orientationUnderY, MinimaArrayY(i) - (2*lowThresh)];
  end
 
 subplot(1,2,2), imshow(ILrect, [])
@@ -118,7 +118,8 @@ hold off
 subplot(1,3,1), imshow(disparityMap,disparityRange);colormap jet
  hold on
 
-plot(MinimaArrayX, MinimaArrayY,MinimaArrayX, orientationOverY, MinimaArrayX, orientationUnderY,  'r.');
+%plot(MinimaArrayX, MinimaArrayY,MinimaArrayX, orientationOverY, MinimaArrayX, orientationUnderY,  'r.');
+plot(MinimaArrayX, MinimaArrayY, 'r.');
 hold off
 
 %surf(dataM);

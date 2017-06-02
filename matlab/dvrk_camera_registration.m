@@ -1,14 +1,14 @@
 clear all;
 close all;
-
+rosshutdown;
 rosinit;
 posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 pause(2) % Wait to ensure publisher is registered
 
 calib = load('calibrationSession');
 stereoParams = load('stereoParams');
- cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
- cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
+ cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
+ cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
 
 %  cam_l = videoinput('linuxvideo', 1, 'RGB24_1280x960');
@@ -56,7 +56,7 @@ while i < (n+1)
        
     else
         disp('FOS!!!!');
-        boardSize
+        %boardSize
         
     end
 end
@@ -101,7 +101,7 @@ scatter3(marker_3d(:,1), marker_3d(:,2), marker_3d(:,3), 'MarkerEdgeColor','b',.
  
  
  
-fileID = fopen('registration.cfg','w');
+fileID = fopen('registration_psm2.cfg','w');
 
 fprintf(fileID,'%f\t%f\t%f\n', t(1), t(2), t(3));
 for i = 1:3
