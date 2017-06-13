@@ -73,8 +73,8 @@ classdef DissectionVision < handle
               
               imaqreset;
                 webcamlist()
-                obj.cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
-                obj.cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+                obj.cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+                obj.cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
               
             obj.dissection_targetsrv = rossvcserver('/dvrk_vision/movement_target_dissector','irob_dvrk_automation/TargetPose', @obj.getTargetCallback);
             obj.dissection_dotasksrv = rossvcserver('/dvrk_vision/do_task_dissector', 'irob_dvrk_automation/BoolQuery', @obj.toDoDissectionCallback);
