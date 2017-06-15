@@ -30,6 +30,7 @@ classdef DissectionVision < handle
         memN = 3;
         lastIdxs = [];
         groupMinIdx = 1;
+        firstTgt = true;
         userInputX = [0, 0];
         userInputY = [0, 0];
         n;
@@ -82,9 +83,9 @@ classdef DissectionVision < handle
 
             [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
              
-            [obj.retractor_pos, obj.im_coord_L ] = getGrabLocation( I_l, I_r, obj.stereoParams);
+            [obj.retractor_pos, obj.im_coord_L ] = getGrabLocation( I_l, I_r, obj.stereoParams)
                                           
-            obj.retractor_pos = obj.retractor_pos + [0.008, 0.0, -0.006];     
+            obj.retractor_pos = obj.retractor_pos + [0.008, 0.0, -0.006]     
 
             disp(obj.retractor_pos);
             disp('Init done');
@@ -96,7 +97,7 @@ classdef DissectionVision < handle
             response = defaultrespmsg;
             % Build the response message here           
             done = false;
-   
+            obj.firstTgt = false;
             
             switch obj.state
                  case DissectionStates.init
@@ -132,11 +133,10 @@ classdef DissectionVision < handle
                     disp(angle);
                     disp ('tension');
                     disp(tension);
-                    disp ('visible size');
-                    disp(visible_size);
-                    %done = true;
+                    disp ('visib');
+                    disp(tension);
+                    done = true;
                     step = 0.008;
-                    
                     if (angle > 0.0)
                         obj.retractor_pos = obj.retractor_pos + [0.0, -0.015, 0.05];
                          [dp_pos, obj.retractor_ori] = getDP(obj.retractor_dp_dist, 330.0, obj.retractor_pos, obj.retractor_ori );
@@ -165,18 +165,21 @@ classdef DissectionVision < handle
                     
                  case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                    [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
+                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
+   
                     
-                    [ obj.dissection_profile, obj.im_coord_L ] = getDissectionProfile(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
+                    [obj.cuttingXYZ, obj.userInputX, obj.userInputY, angle, tension] = ...
+                        XYZ_coordinate_calculation( I_l, I_r, obj.stereoParams, ...
+                        400, 0, 25, 25, obj.firstTgt, obj.userInputX, obj.userInputY);
                     
-                    [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.dissection_profile, obj.groupN, obj.lastIdxs, obj.memN);
+                    [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.cuttingXYZ, obj.groupN, obj.lastIdxs, obj.memN);
                     
                     obj.dissection_group_n = obj.dissection_group_n + 1;
                     obj.local_dissection_n = 0;
                     
                     obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
                     [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
-                        obj.groupMinIdx, obj.groupN, obj.dissection_profile);
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
                     obj.tgt_pos = obj.tgt_pos + [0.008, -0.002, -0.002];
@@ -223,7 +226,7 @@ classdef DissectionVision < handle
                     % choose tgt; get dp; go to tgt dp
                     obj.tgt_idx = obj.stepPix*obj.local_dissection_n +1;
                     [obj.tgt_pos, tgt_ori_NOT_USED] = getTgt(obj.tgt_idx, ...
-                        obj.groupMinIdx, obj.groupN, obj.dissection_profile);
+                        obj.groupMinIdx, obj.groupN, obj.cuttingXYZ);
                     
                     obj.dist_ori = obj.tgt_ori;
                     obj.tgt_pos = obj.tgt_pos + [0.008, -0.002, -0.002];

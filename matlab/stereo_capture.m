@@ -28,8 +28,8 @@ else
     I_l = getsnapshot(cam_l);
     I_r = getsnapshot(cam_r);
 
-    %I_l = imrotate(I_l, 90);
-    %I_r = imrotate(I_r, -90);
+    I_l = imrotate(I_l, 90);
+    I_r = imrotate(I_r, -90);
     end   
      disp('Image pair captured.');
 %end
