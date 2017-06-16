@@ -40,7 +40,8 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
         else 
             disp('The value was inf.');
             minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
-            minimaArrayY = [minimaArrayY, double(prev_im_coord_L(i,2))];
+            minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin))];
+            %minimaArrayY = [minimaArrayY, double(prev_im_coord_L(i,2))];
             minimaValues = [minimaValues, -disparityMap(prev_im_coord_L(i,2), prev_im_coord_L(i,1))];
         end
     end
@@ -49,7 +50,7 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
     %     ylabel('Disparity value [px]')
     %     axis tight
 
-
+    minimaArrayY = hampel(minimaArrayY);
 
 end
 

@@ -25,7 +25,7 @@ function [ grab_location, im_coord_L ] = getGrabLocation( IL, IR, stereoParams )
     grab_profile = getReconstructedPositions( disparityMap, stereoParams, points3D, im_coord_L);
     grab_location = mean(grab_profile)
     
-    im_coord_L(:,2) = im_coord_L(:,2) - 15;
+    im_coord_L(:,2) = im_coord_L(:,2) - 30;
  
 end
 

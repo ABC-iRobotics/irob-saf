@@ -16,6 +16,26 @@ disparityMap = disparity(frameLeftGray,frameRightGray,'BlockSize',...
    'DistanceThreshold', 384);
 
 
+row = numel(disparityMap(:,1));
+column = numel(disparityMap(1,:));
+interpolateVector = reshape(disparityMap,1, row*column);
+
+if interpolateVector(1) < 1
+    interpolateVector(1) = 70;
+end
+
+A =size(interpolateVector);
+A = A(1,2);
+for i=2:A
+   if or(interpolateVector(i) < 20, interpolateVector(i) > 200)
+       interpolateVector(i) = interpolateVector(i-1);
+   end
+    
+end
+
+disparityMapInterpolated = reshape(interpolateVector,row,column);
+disparityMap = disparityMapInterpolated;
+
 
  subplot(1,2,1), imshow(ILrect, [])
  subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet

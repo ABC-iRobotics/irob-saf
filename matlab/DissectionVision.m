@@ -11,7 +11,7 @@ classdef DissectionVision < handle
         
         do_dissection = false;
         do_retraction = true;
-         
+        
         groupN = 30;
         
         tgt_ori = [ 0.0042   -0.0268   -0.1073    0.9939];
@@ -63,12 +63,18 @@ classdef DissectionVision < handle
             
             rosshutdown;
             rosinit;
-              
+            
             imaqreset;
             webcamlist()
             obj.cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
             obj.cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
-              
+            
+           % preview([obj.cam_l, obj.cam_r]);
+            triggerconfig(obj.cam_r, 'manual');
+            triggerconfig(obj.cam_l, 'manual');
+            start(obj.cam_r);
+            start(obj.cam_l);
+            
             obj.dissection_targetsrv = rossvcserver('/dvrk_vision/movement_target_dissector','irob_dvrk_automation/TargetPose', @obj.getTargetCallback);
             obj.dissection_dotasksrv = rossvcserver('/dvrk_vision/do_task_dissector', 'irob_dvrk_automation/BoolQuery', @obj.toDoDissectionCallback);
             obj.dissection_errpub = rospublisher('/dvrk_vision/error_dissector', 'std_msgs/String');
@@ -79,82 +85,78 @@ classdef DissectionVision < handle
             
             obj.statussub = rossubscriber('/dvrk_vision/subtask_status_dissector', 'std_msgs/String');
             pause(2) % Wait to ensure publisher is registered
-
+            %disp('capture');
+            %tic
             [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
-             
+            %toc
+            
             [obj.retractor_pos, obj.im_coord_L ] = getGrabLocation( I_l, I_r, obj.stereoParams);
-                                          
-            obj.retractor_pos = obj.retractor_pos + [0.008, 0.0, -0.006];     
-
+            %!!!!!!!!!!!!
+            % [ obj.dissection_profile, obj.tgt_ori, obj.im_coord_L ] = getDissectionProfileAndOri(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
+            
+            obj.retractor_pos = obj.retractor_pos + [0.008, 0.0, -0.006];
+            
             disp(obj.retractor_pos);
             disp('Init done');
+           
         end
         
         
         % Callback for pos query
         function response = getTargetCallback(obj,server,reqmsg,defaultrespmsg)
             response = defaultrespmsg;
-            % Build the response message here           
+            % Build the response message here
             done = false;
-   
+            
             
             switch obj.state
-                 case DissectionStates.init
+                case DissectionStates.init
                     disp(obj.retractor_pos);
                     [dp_pos, dp_ori] = getDP(obj.retractor_dp_dist, obj.retractor_dp_rot, obj.retractor_pos, obj.retractor_ori );
                     disp(dp_pos);
                     response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     response.PositionType = response.DP;
-                  
-                 case DissectionStates.at_grab_dp
-                     
+                    
+                case DissectionStates.at_grab_dp
+                    
                     response = DissectionVision.wrapPose(response, obj.retractor_pos,obj.retractor_ori);
                     response.PositionType = response.GOAL;
-                 
-                 case DissectionStates.tissue_grabbed
+                    
+                case DissectionStates.tissue_grabbed
                     
                     %obj.retractor_pos = obj.retractor_pos + [0.0, -0.045, 0.03];
                     obj.retractor_pos = obj.retractor_pos + [0.0, -0.055, 0.02];
                     [dp_pos, obj.retractor_ori] = getDP(obj.retractor_dp_dist, 325.0, obj.retractor_pos, obj.retractor_ori );
                     
                     %disp(obj.retractor_ori);
-    
+                    
                     response = DissectionVision.wrapPose(response, obj.retractor_pos, obj.retractor_ori);
                     response.PositionType = response.GOAL;
                     
-                 case DissectionStates.done_dissection_group
+                case DissectionStates.done_dissection_group
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
-                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
+                    
+                    [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
+
                     
                     [ angle, tension, visible_size, obj.im_coord_L ] = getRetractionAngles( I_l, I_r, obj.stereoParams, obj.im_coord_L );
-          
+                    
                     disp ('angle');
                     disp(angle);
                     disp ('tension');
                     disp(tension);
                     disp ('visible size');
                     disp(visible_size);
-                    %done = true;
-                    step = 0.008;
                     
-                    if (angle > 0.0)
-                        obj.retractor_pos = obj.retractor_pos + [0.0, -0.015, 0.05];
-                         [dp_pos, obj.retractor_ori] = getDP(obj.retractor_dp_dist, 330.0, obj.retractor_pos, obj.retractor_ori );
-                        done = false;
-                    elseif (angle > 120.0)
-                        obj.retractor_pos = obj.retractor_pos - [0.0, sin((angle * 180.00)/pi)*step*(-1), cos((angle * 180.00)/pi)*step];
-                        done = false;
-                    elseif (tension < 250.0)
-                        obj.retractor_pos = obj.retractor_pos + [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
-                        done = false;
-                    elseif (tension > 0.0)
-                        obj.retractor_pos = obj.retractor_pos - [0.0, cos((angle * 180.00)/pi)*step*(-1), sin((angle * 180.00)/pi)*step*(-1)];
-                        done = false;
-                    end  
+                   % [ y, z, done ] = fineRetractonCtrl( angle, tension, visible_size )
+                    [ y, z, done ] = fineRetractonCtrlFuzzy( angle, tension, visible_size )
+                    obj.retractor_pos = obj.retractor_pos + [0.0, y, z];
                     
-                    done = true;
-                     
+                    
                     response = DissectionVision.wrapPose(response, obj.retractor_pos,obj.retractor_ori);
+                    %
+                    done = true;
+                    
                     if (done)
                         response.PositionType = response.GOAL;
                         obj.do_dissection = true;
@@ -163,11 +165,11 @@ classdef DissectionVision < handle
                         response.PositionType = response.DP;
                     end
                     
-                 case DissectionStates.done_retraction
+                case DissectionStates.done_retraction
                     % capture img; choose group loc; choose tgt; get dp; goto tgt dp;
                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
                     
-                    [ obj.dissection_profile, obj.im_coord_L ] = getDissectionProfile(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
+                    [ obj.dissection_profile, obj.tgt_ori, obj.im_coord_L ] = getDissectionProfileAndOri(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
                     
                     [obj.groupMinIdx, obj.lastIdxs] = chooseTgt(obj.dissection_profile, obj.groupN, obj.lastIdxs, obj.memN);
                     
@@ -185,7 +187,7 @@ classdef DissectionVision < handle
                     
                     response = DissectionVision.wrapPose(response, dp_pos, dp_ori);
                     response.PositionType = response.DP;
-                
+                    
                     
                 case DissectionStates.at_tgt_dp
                     % goto tgt as goal
@@ -204,8 +206,8 @@ classdef DissectionVision < handle
                     
                     if obj.local_dissection_n >= obj.n
                         if obj.dissection_group_n >= obj.groupN
-                             obj.do_dissection = false;
-                             obj.do_retraction = true;
+                            obj.do_dissection = false;
+                            obj.do_retraction = true;
                         end
                         done = true;
                         response.PositionType = response.DP;
@@ -244,6 +246,8 @@ classdef DissectionVision < handle
             disp(obj.state);
             if obj.state == DissectionStates.abort
                 response = defaultrespmsg;
+                stop(obj.cam_r);
+                stop(obj.cam_l);
                 % Do err handling
             end
             
@@ -259,7 +263,7 @@ classdef DissectionVision < handle
             response.Data = obj.do_dissection;
         end
         
-         % Callback for task done
+        % Callback for task done
         function response = toDoRetractionCallback(obj,server,reqmsg,defaultrespmsg)
             response = defaultrespmsg;
             % Build the response message here
