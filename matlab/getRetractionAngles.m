@@ -39,9 +39,9 @@ function [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( IL,
     
   %  disp('angles');
    % tic
-    angle  = getAngle( points3D, disparityMap, stereoParams,  im_coord_L, -(abs(y_top - y_mean) * 0.5), 0, -(abs(y_bottom - y_mean) * 0.5) );
+    angle  = getAngle( points3D, disparityMap, stereoParams,  im_coord_L, -(double(abs(y_top - y_mean)) * 0.5), 0, -(double(abs(y_bottom - y_mean)) * 0.5) );
     
-    tension = getAngle( points3D, disparityMap, stereoParams, im_coord_L, -(abs(y_top - y_mean) * 0.8), -(abs(y_top - y_mean) * 0.4), 0 );
+    tension = getAngle( points3D, disparityMap, stereoParams, im_coord_L, -(double(abs(y_top - y_mean)) * 0.8), -(double(abs(y_top - y_mean)) * 0.4), 0 );
    % toc
 end
 

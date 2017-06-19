@@ -1,0 +1,29 @@
+<!-- Launch file to play a logged trajectory -->
+
+<launch>
+  <arg name="arm1" default="PSM1"/>
+  <arg name="arm2" default="PSM2"/>
+  <arg name="filename" default="/home/tamas/catkin_ws/data/dvrk_tr_log"/>
+  <arg name="speed" default="1.0"/>
+  
+  <node name="play_logged_trajectory_1"
+  	pkg="irob_dvrk_automation" type="play_logged_trajectory" output="screen">
+  		
+  		<param name="arm" type="string" value="$(arg arm1)" />
+  		<param name="filename" type="string" value="$(arg filename)_$(arg arm1).dat" />
+  		<param name="speed" type="double" value="$(arg speed)" />
+
+  </node>
+  
+  <node name="play_logged_trajectory_2"
+  	pkg="irob_dvrk_automation" type="play_logged_trajectory" output="screen">
+  		
+  		<param name="arm" type="string" value="$(arg arm2)" />
+  		<param name="filename" type="string" value="$(arg filename)_$(arg arm2).dat" />
+  		<param name="speed" type="double" value="$(arg speed)" />
+
+  </node>
+  
+  
+  	
+</launch>

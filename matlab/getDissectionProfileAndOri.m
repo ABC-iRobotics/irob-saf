@@ -31,7 +31,7 @@ function [ dissectionProfile, orientation, im_coord_L ] = getDissectionProfileAn
     
     dissectionProfile = getReconstructedPositions( disparityMap, stereoParams, points3D, im_coord_L);
  
-    orientation = getOri(points3D, disparityMap, stereoParams,  im_coord_L, -(abs(y_top - y_mean) * 0.5), 0, -(abs(y_bottom - y_mean) * 0.5));
+    orientation = getOri(points3D, disparityMap, stereoParams,  im_coord_L, -(double(abs(y_top - y_mean)) * 0.5), 0, (double(abs(y_bottom - y_mean)) * 0.5));
     
 end
 

@@ -30,16 +30,15 @@ v1 = [a(:,1) - b(:,1), a(:,2) - b(:,2), a(:,3) - b(:,3)];
 v2 = [c(:,1) - b(:,1), c(:,2) - b(:,2), c(:,3) - b(:,3)];
 v3 = [a(:,1) - c(:,1), a(:,2) - c(:,2), a(:,3) - c(:,3)];
 
-v1mag = sqrt(abs(v1(1) * v1(1) + v1(2) * v1(2) + v1(3) * v1(3)));
-v2mag = sqrt(abs(v2(1) * v2(1) + v2(2) * v2(2) + v2(3) * v2(3)));
-v3mag = sqrt(abs(v3(1) * v3(1) + v3(2) * v3(2) + v3(3) * v3(3)));
+v1mag = sqrt(abs(v1(:,1) .* v1(:,1) + v1(:,2) .* v1(:,2) + v1(:,3) .* v1(:,3)));
+v2mag = sqrt(abs(v2(:,1) .* v2(:,1) + v2(:,2) .* v2(:,2) + v2(:,3) .* v2(:,3)));
+v3mag = sqrt(abs(v3(:,1) .* v3(:,1) + v3(:,2) .* v3(:,2) + v3(:,3) .* v3(:,3)));
 
-angle = acos(((v2mag * v2mag) + (v1mag * v1mag) - (v3mag * v3mag))/ (2*v2mag*v1mag));
-angle = angle * (180/pi);
-anglesArray = [anglesArray, angle];
+angle = acos(((v2mag .* v2mag) + (v1mag .* v1mag) - (v3mag .* v3mag))./ (2*(v2mag.*v1mag)));
+angle = angle * (180.0/pi);
 
 
-mean_angle = mean(anglesArray);
+mean_angle = mean(angle);
 
 end
 

@@ -3,13 +3,13 @@
 <launch>
 
   	<arg name="dissector_arm" default="PSM1"/>
-  	<arg name="retractor_arm" default="PSM1"/>
+  	<arg name="retractor_arm" default="PSM2"/>
   	<arg name="rate" default="100"/>
   	<arg name="speed" default="1"/>
   	<arg name="dissector_regfile" 
-  		default="/home/tamas/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm1.cfg"/>
+  		default="/home/dvrk_nat/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm1.cfg"/>
   	<arg name="retractor_regfile" 
-  		default="/home/tamas/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm1.cfg"/>
+  		default="/home/dvrk_nat/catkin_ws/src/irob_dvrk_automation/matlab/registration_psm2.cfg"/>
 
   
 	<node name="auto_dissection"

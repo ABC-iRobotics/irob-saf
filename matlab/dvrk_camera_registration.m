@@ -2,13 +2,16 @@ clear all;
 close all;
 rosshutdown;
 rosinit;
+ 
+cfgfilename = 'registration_psm2.cfg';
+
 posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 pause(2) % Wait to ensure publisher is registered
 
 calib = load('calibrationSession');
 stereoParams = load('stereoParams');
- cam_l = videoinput('linuxvideo', 1, 'BGR24_640x480');
- cam_r = videoinput('linuxvideo', 2, 'BGR24_640x480');
+ cam_r = videoinput('linuxvideo', 1, 'BGR24_640x480');
+ cam_l = videoinput('linuxvideo', 2, 'BGR24_640x480');
 
 
 %  cam_l = videoinput('linuxvideo', 1, 'RGB24_1280x960');
@@ -22,6 +25,7 @@ robot_3d = double(zeros(0,3));
 offset = [0.0, 0.0, 3.0];
 i = 1;
 n = 7;
+set_focus;
 while i < (n+1)
 
     w = waitforbuttonpress;
@@ -59,6 +63,7 @@ while i < (n+1)
         %boardSize
         
     end
+    set_focus;
 end
 
 rosshutdown;
@@ -99,9 +104,8 @@ scatter3(marker_3d(:,1), marker_3d(:,2), marker_3d(:,3), 'MarkerEdgeColor','b',.
         'MarkerFaceColor','r')
  hold off
  
- 
- 
-fileID = fopen('registration_psm2.cfg','w');
+
+fileID = fopen(cfgfilename,'w');
 
 fprintf(fileID,'%f\t%f\t%f\n', t(1), t(2), t(3));
 for i = 1:3
