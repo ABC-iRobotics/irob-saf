@@ -41,15 +41,15 @@ y_bottom = mode(segmentedColumnsIndexesDown)
 if (y_bottom - prev_mean_y) > (prev_mean_y - y_top) 
     y_bottom = prev_mean_y + (prev_mean_y - y_top)
 end
-
-if (y_bottom - prev_mean_y) > 30
-    y_bottom = prev_mean_y + 30
-end
-
-
-if (prev_mean_y - y_top) > 30
-    y_top = prev_mean_y - 30
-end
+% 
+% if (y_bottom - prev_mean_y) > 30
+%     y_bottom = prev_mean_y + 30
+% end
+% 
+% 
+% if (prev_mean_y - y_top) > 30
+%     y_top = prev_mean_y - 30
+% end
 
 %subplot(1,2,2), plot(prev_im_coord_L(i, 1),segmentedColumnsIndexesUp);
 %segmentedColumnsIndexesUp

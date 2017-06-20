@@ -38,6 +38,7 @@ classdef DissectionVision < handle
         tgt_pos;
         dissection_profile;
         im_coord_L;
+        fine_retr_count = 0;
         
         dissection_targetsrv;
         dissection_dotasksrv;
@@ -92,7 +93,7 @@ classdef DissectionVision < handle
             
             [obj.retractor_pos, obj.im_coord_L ] = getGrabLocation( I_l, I_r, obj.stereoParams);
             %!!!!!!!!!!!!
-            % [ obj.dissection_profile, obj.tgt_ori, obj.im_coord_L ] = getDissectionProfileAndOri(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
+            %[ obj.dissection_profile, obj.tgt_ori, obj.im_coord_L ] = getDissectionProfileAndOri(  I_l, I_r, obj.stereoParams, obj.im_coord_L );
             
             obj.retractor_pos = obj.retractor_pos + [0.00, -0.005, -0.01];
             
@@ -140,7 +141,7 @@ classdef DissectionVision < handle
                     [ I_l, I_r ] = stereo_capture(obj.cam_l, obj.cam_r);
 
                     
-                    [ angle, tension, visible_size, obj.im_coord_L ] = getRetractionAngles( I_l, I_r, obj.stereoParams, obj.im_coord_L );
+                    [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( I_l, I_r, obj.stereoParams, obj.im_coord_L );
                     
                     disp ('angle');
                     disp(angle);
@@ -152,16 +153,21 @@ classdef DissectionVision < handle
                     [ y, z, done ] = fineRetractonCtrl( angle, tension, visible_size )
                     %[ y, z, done ] = fineRetractonCtrlFuzzy( angle, tension, visible_size )
                     obj.retractor_pos = obj.retractor_pos + [0.0, y, z];
+                    obj.fine_retr_count = obj.fine_retr_count + 1;
                     
+                    if obj.fine_retr_count > 2
+                        done = true;
+                    end
                     
                     response = DissectionVision.wrapPose(response, obj.retractor_pos,obj.retractor_ori);
                     %
-                    done = true;
+                    %done = true;
                     
                     if (done)
                         response.PositionType = response.GOAL;
                         obj.do_dissection = true;
                         obj.do_retraction = false;
+                        obj.fine_retr_count = 0;
                     else
                         response.PositionType = response.DP;
                     end
@@ -184,7 +190,7 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.dissection_profile);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    obj.tgt_pos = obj.tgt_pos + [0.0, 0.0, 0.0];
+                    obj.tgt_pos = obj.tgt_pos + [0.0, 0.0, 0.005];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     
@@ -231,7 +237,7 @@ classdef DissectionVision < handle
                         obj.groupMinIdx, obj.groupN, obj.dissection_profile);
                     
                     obj.dist_ori = obj.tgt_ori;
-                    obj.tgt_pos = obj.tgt_pos + [0.008, -0.002, -0.002];
+                    obj.tgt_pos = obj.tgt_pos + [0.00, 0.00, 0.005];
                     
                     [dp_pos, dp_ori] = getDP(obj.dp_dist, obj.dp_rot, obj.tgt_pos, obj.tgt_ori );
                     

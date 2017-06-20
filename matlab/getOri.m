@@ -29,9 +29,9 @@ end
 
 
 
-a_mean = mean(a,1)
-b_mean = mean(b,1)
-c_mean = mean(c,1)
+a_mean = double(mean(a,1))
+b_mean = double(mean(b,1))
+c_mean = double(mean(c,1))
 
 aw = 1.0;
 cw = 1.0;
@@ -42,8 +42,8 @@ d = b_mean - ac_weighted;
 d(1) = 0.0;
 
 %projection
-disp('ori');
-disp(d);
+%disp('ori');
+%disp(d);
 v = [0.0 0.0 1.0];
 
 R = d' / v';

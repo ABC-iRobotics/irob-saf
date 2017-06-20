@@ -5,7 +5,8 @@ function [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( IL,
     %toc
     %in pixs
     [ y_top, y_bottom ] = phantomSegmentation( IL, IR, disparityMap,prev_im_coord_L );
-    
+    y_top = double(y_top);
+     y_bottom = double(y_bottom);
     visible_size = abs(y_bottom - y_top);
     
     prev_y_mean = mean(prev_im_coord_L(2,:));

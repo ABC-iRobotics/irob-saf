@@ -3,6 +3,9 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
     minimaArrayX = double(zeros(0));
     minimaArrayY = double(zeros(0));
     minimaValues = double(zeros(0));
+    
+    top_margin = 20;
+    bottom_margin = 20;
 
     dataM = double(zeros(0));
     
@@ -35,14 +38,14 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
         
             minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
             minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin) + MinIdx)];
-            minimaValues = [minimaValues, double(Minima)];
+            %minimaValues = [minimaValues, double(Minima)];
     
         else 
             disp('The value was inf.');
             minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
             minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin))];
             %minimaArrayY = [minimaArrayY, double(prev_im_coord_L(i,2))];
-            minimaValues = [minimaValues, -disparityMap(prev_im_coord_L(i,2), prev_im_coord_L(i,1))];
+           % minimaValues = [minimaValues, -disparityMap(prev_im_coord_L(i,2), prev_im_coord_L(i,1))];
         end
     end
     %     title({'Plot of vertical';'disparity changes in the ROI'})

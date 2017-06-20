@@ -23,6 +23,7 @@ num_img = 19;
 
 mkdir(folder, subfolder);
 mkdir(folder, subfolder);
+set_focus;
 
 preview([cam_l, cam_r]);
 waitforbuttonpress;
@@ -33,12 +34,12 @@ for i = 1:num_img
     I_l = getsnapshot(cam_l);
     I_r = getsnapshot(cam_r);
     
-    %I_l = imrotate(I_l, -90);
-    %I_r = imrotate(I_r, 90);
+    I_l = imrotate(I_l, -90);
+    I_r = imrotate(I_r, 90);
     
     % imwrite(I_l, strcat(filename, '_l_', num2str(i), '.jpg'));
     %imwrite(I_r, strcat(filename, '_r_', num2str(i), '.jpg'));
-    
+    set_focus;
        imwrite(I_l, strcat(folder,'/', subfolder, '/', filename, '_l_', num2str(i), '.jpg'));
      imwrite(I_r, strcat(folder,'/',  subfolder, '/',filename, '_r_', num2str(i), '.jpg'));
 end

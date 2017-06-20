@@ -6,8 +6,8 @@ function [ dissectionProfile, orientation, im_coord_L ] = getDissectionProfileAn
     [ y_top, y_bottom ] = phantomSegmentation( IL, IR, disparityMap, prev_im_coord_L);
     
     prev_y_mean = mean(prev_im_coord_L(:,2));
-    top_margin = abs(y_top - prev_y_mean) * 0.5; 
-    bottom_margin = abs(y_bottom - prev_y_mean) * 0.5;
+    top_margin = abs(double(y_top) - double(prev_y_mean)) * 0.5; 
+    bottom_margin = abs(double(y_bottom) - double(prev_y_mean)) * 0.5;
     
     [ minimaArrayX, minimaArrayY, minimaValues ] = ...
         findDisparityMinimas(disparityMap, prev_im_coord_L, top_margin, bottom_margin );
@@ -31,7 +31,7 @@ function [ dissectionProfile, orientation, im_coord_L ] = getDissectionProfileAn
     
     dissectionProfile = getReconstructedPositions( disparityMap, stereoParams, points3D, im_coord_L);
  
-    orientation = getOri(points3D, disparityMap, stereoParams,  im_coord_L, -(double(abs(y_top - y_mean)) * 0.5), 0, (double(abs(y_bottom - y_mean)) * 0.5));
+    orientation = getOri(points3D, disparityMap, stereoParams,  im_coord_L, -(double(abs(double(y_top) - double(y_mean))) * 0.5), 0, (double(abs(double(y_bottom) - double(y_mean))) * 0.5));
     
 end
 
