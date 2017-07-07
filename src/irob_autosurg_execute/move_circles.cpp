@@ -15,12 +15,12 @@
 #include <stdexcept>
 #include <vector>
 #include <cmath>
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/pose.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
-
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -40,12 +40,12 @@ int main(int argc, char **argv)
 
 		
 	double dt = 1.0/ rate_command;
-	dvrk::Trajectory<double> to_enable_cartesian;
-	dvrk::Trajectory<dvrk::Pose> circle_tr;
+	Trajectory<double> to_enable_cartesian;
+	Trajectory<Pose> circle_tr;
     
     // Robot control
   	try {
-    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::PSM::ACTIVE);
+    	PSM psm(nh, ArmTypes::typeForString(arm), PSM::ACTIVE);
     	ros::Duration(1.0).sleep();  
    	
    		// Do preprogrammed movement
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_CARTESIAN);
+   	 	psm.setRobotState(PSM::STATE_POSITION_CARTESIAN);
 
     	ros::Duration(1.0).sleep();
 
@@ -85,8 +85,8 @@ int main(int argc, char **argv)
 					0.5,2.0, dt));  */
    	    
     	while(ros::ok()) {
-    		dvrk::Trajectory<Eigen::Vector3d> circle_tr =
-    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+    		Trajectory<Eigen::Vector3d> circle_tr =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, -r, 0.0),
@@ -95,8 +95,8 @@ int main(int argc, char **argv)
 			psm.playTrajectory(circle_tr);
     		ros::Duration(1.0).sleep();
     		
-			dvrk::Trajectory<Eigen::Vector3d> back_tr =
-    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+			Trajectory<Eigen::Vector3d> back_tr =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			-2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, r, 0.0),
@@ -105,8 +105,8 @@ int main(int argc, char **argv)
     		psm.playTrajectory(back_tr);
     		ros::Duration(1.0).sleep();
     		
-    		dvrk::Trajectory<Eigen::Vector3d> circle_tr2 =
-    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+    		Trajectory<Eigen::Vector3d> circle_tr2 =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(r, 0.0, 0.0),
@@ -115,8 +115,8 @@ int main(int argc, char **argv)
 			psm.playTrajectory(circle_tr2);
     		ros::Duration(1.0).sleep();
     		
-			dvrk::Trajectory<Eigen::Vector3d> back_tr2 =
-    		dvrk::TrajectoryFactory::circleTrajectoryHorizontal(
+			Trajectory<Eigen::Vector3d> back_tr2 =
+    		TrajectoryFactory::circleTrajectoryHorizontal(
     		psm.getPositionCartesianCurrent(), 
 			-2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(-r, 0.0, 0.0),
@@ -135,8 +135,8 @@ int main(int argc, char **argv)
 			psm.playTrajectory(circle_tr3);
     		ros::Duration(1.0).sleep();*/
     		
-			dvrk::Trajectory<Eigen::Vector3d> back_tr3 =
-    		dvrk::TrajectoryFactory::circleTrajectoryVerticalY(
+			Trajectory<Eigen::Vector3d> back_tr3 =
+    		TrajectoryFactory::circleTrajectoryVerticalY(
     		psm.getPositionCartesianCurrent(), 
 			-2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, 0.0, -r),
@@ -145,8 +145,8 @@ int main(int argc, char **argv)
     		psm.playTrajectory(back_tr3);
     		ros::Duration(1.0).sleep();
     		
-    		dvrk::Trajectory<Eigen::Vector3d> back_tr4 =
-    		dvrk::TrajectoryFactory::circleTrajectoryVerticalX(
+    		Trajectory<Eigen::Vector3d> back_tr4 =
+    		TrajectoryFactory::circleTrajectoryVerticalX(
     		psm.getPositionCartesianCurrent(), 
 			-2*M_PI, psm.getPositionCartesianCurrent() + 
 			Eigen::Vector3d(0.0, 0.0, -r),

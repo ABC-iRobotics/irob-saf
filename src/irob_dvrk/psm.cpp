@@ -6,11 +6,11 @@
  *  
  */
 
-#include "dvrk/psm.hpp"
+#include "irob_dvrk/psm.hpp"
 #include <numeric>
 #include <chrono>
 
-namespace dvrk {
+namespace irob_autosurg {
 
 PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, isActive)
 {

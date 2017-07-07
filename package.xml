@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>irob_dvrk_automation</name>
+  <name>irob_autosurg</name>
   <version>0.0.1</version>
-  <description>The irob_dvrk_automation package</description>
+  <description>IROB Automatic Surgeon System</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 

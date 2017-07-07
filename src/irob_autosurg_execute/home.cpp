@@ -15,12 +15,12 @@
 #include <stdexcept>
 #include <vector>
 #include <cmath>
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/pose.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
-
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	dvrk::Arm arm(nh, dvrk::ArmTypes::typeForString(arm_name),
-    									 dvrk::Arm::ACTIVE);
+    	Arm arm(nh, ArmTypes::typeForString(arm_name),
+    									 Arm::ACTIVE);
     	//ros::Duration(0.5).sleep();
     	
 		ROS_INFO_STREAM("Going to home position...");

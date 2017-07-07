@@ -6,9 +6,9 @@
  *
  */
 
-#include "dvrk/topics.hpp"
+#include "irob_dvrk/topics.hpp"
 
-namespace dvrk {
+namespace irob_autosurg {
 
 // Enum value DEFINITIONS
 // The initialization occurs in the scope of the class,

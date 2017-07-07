@@ -15,9 +15,9 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include "dvrk/pose.hpp"
+#include "irob_math/pose.hpp"
 
-namespace dvrk {
+namespace irob_autosurg {
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {

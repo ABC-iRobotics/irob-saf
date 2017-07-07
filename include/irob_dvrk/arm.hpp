@@ -22,14 +22,14 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include "dvrk/arm_types.hpp"
-#include "dvrk/topics.hpp"
-#include "dvrk/pose.hpp"
-#include "dvrk/trajectory.hpp"
-#include "dvrk/utils.hpp"
+#include "irob_dvrk/arm_types.hpp"
+#include "irob_dvrk/topics.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory.hpp"
+#include "irob_math/utils.hpp"
 
 
-namespace dvrk {
+namespace irob_autosurg {
 
 class Arm {
 

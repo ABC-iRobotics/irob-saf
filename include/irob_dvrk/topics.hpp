@@ -10,9 +10,9 @@
 #define DVRK_TOPICS_HPP_
 
 #include <iostream>
-#include "dvrk/arm_types.hpp"
+#include "irob_dvrk/arm_types.hpp"
 
-namespace dvrk {
+namespace irob_autosurg {
 
 class Topics {
   public:

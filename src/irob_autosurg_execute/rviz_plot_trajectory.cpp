@@ -18,11 +18,12 @@
 #include <stdexcept>
 #include <vector>
 #include <cmath>
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
-
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 	double dt = 1.0/ rate_command;
 
 
-    dvrk::Arm psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::Arm::PASSIVE);
+    Arm psm(nh, ArmTypes::typeForString(arm), Arm::PASSIVE);
     
 	ROS_INFO_STREAM("Start plotting trajectory...");
 	
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
 		int i = 0;
 		while (ros::ok())
 		{
-			dvrk::Pose curr_pos = psm.getPoseCurrent();
+			Pose curr_pos = psm.getPoseCurrent();
 			
 			visualization_msgs::Marker marker;
 			marker.header.frame_id = frame_id;

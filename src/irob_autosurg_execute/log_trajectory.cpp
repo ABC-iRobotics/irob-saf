@@ -17,11 +17,12 @@
 #include <stdexcept>
 #include <vector>
 #include <cmath>
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
-
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -41,10 +42,10 @@ int main(int argc, char **argv)
 
 	double dt = 1.0/ rate_command;
 
-    dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm), dvrk::PSM::PASSIVE);
+    PSM psm(nh, ArmTypes::typeForString(arm), PSM::PASSIVE);
     
     // Record trajectory
-	dvrk::Trajectory<dvrk::Pose> tr_to_log(dt);
+	Trajectory<Pose> tr_to_log(dt);
 	ROS_INFO_STREAM("Start recording trajectory...");
 	psm.recordTrajectory(tr_to_log);
 	std::cout << std::endl << "Record stopped" << std::endl;

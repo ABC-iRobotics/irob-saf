@@ -6,11 +6,11 @@
  *  
  */
 
-#include "dvrk/arm.hpp"
+#include "irob_dvrk/arm.hpp"
 #include <numeric>
 #include <chrono>
 
-namespace dvrk {
+namespace irob_autosurg {
 
 const std::string Arm::HOME_CMD
                     = "Home";

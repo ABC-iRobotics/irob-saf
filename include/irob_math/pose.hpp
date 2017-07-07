@@ -17,7 +17,7 @@
 #include <Eigen/Geometry> 
 #include <cmath>
 
-namespace dvrk {
+namespace irob_autosurg {
 
 class Pose {
  

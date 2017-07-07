@@ -15,10 +15,10 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include "dvrk/trajectory.hpp"
-#include "dvrk/pose.hpp"
+#include "irob_math/trajectory.hpp"
+#include "irob_math/pose.hpp"
 
-namespace dvrk {
+namespace irob_autosurg {
 
 class TrajectoryFactory
 {

@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-namespace dvrk { 
+namespace irob_autosurg { 
 
 template <class T>
 class Trajectory 

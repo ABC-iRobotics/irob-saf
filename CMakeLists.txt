@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_dvrk_automation)
+project(irob_autosurg)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -117,45 +117,35 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} 
 								include/Eigen 
 								include/dvrk
-								include/dvrk_automation
-								include/dvrk_vision)
+								#include/dvrk_automation
+								#include/dvrk_vision
+								)
 
 ## Declare a C++ library
 
-file(GLOB dvrk_lib_src
-    "src/dvrk/*.cpp"
+
+file(GLOB irob_math_lib_src
+    "src/irob_math/*.cpp"
 )
 
 
-add_library( dvrk_lib STATIC
-       ${dvrk_lib_src}
+add_library( irob_math_lib STATIC
+       ${irob_math_lib_src}
        )
 
-set_target_properties( dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_math_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
-file(GLOB dvrk_automation_lib_src
-    "src/dvrk_automation/*.cpp"
+file(GLOB irob_dvrk_lib_src
+    "src/irob_dvrk/*.cpp"
 )
 
 
-add_library( dvrk_automation_lib STATIC
-       ${dvrk_automation_lib_src}
+add_library( irob_dvrk_lib STATIC
+       ${irob_dvrk_lib_src}
        )
 
-set_target_properties( dvrk_automation_lib  PROPERTIES LINKER_LANGUAGE CXX)
-
-
-file(GLOB dvrk_vision_lib_src
-    "src/dvrk_vision/*.cpp"
-)
-
-
-add_library( dvrk_vision_lib STATIC
-       ${dvrk_vision_lib_src}
-       )
-
-set_target_properties( dvrk_vision_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -164,15 +154,15 @@ set_target_properties( dvrk_vision_lib  PROPERTIES LINKER_LANGUAGE CXX)
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(move_test src/move_test.cpp)
-add_executable(move_circles src/move_circles.cpp)
-add_executable(log_trajectory src/log_trajectory.cpp)
-add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
-add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
+#add_executable(move_test src/move_test.cpp)
+add_executable(move_circles src/irob_autosurg_execute/move_circles.cpp)
+#add_executable(log_trajectory src/log_trajectory.cpp)
+#add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
+#add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
-add_executable(insert_tool src/insert_tool.cpp)
-add_executable(home src/home.cpp)
-add_executable(auto_dissection src/auto_dissection.cpp)
+add_executable(insert_tool src/irob_autosurg_execute/insert_tool.cpp)
+add_executable(home src/irob_autosurg_execute/home.cpp)
+#add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -181,58 +171,30 @@ add_executable(auto_dissection src/auto_dissection.cpp)
 ## Specify libraries to link a library or executable target against
 
 
-  target_link_libraries(dvrk_lib
- ${catkin_LIBRARIES}
+ target_link_libraries(irob_math_lib
+ 	${catkin_LIBRARIES}
  )
- 
-  target_link_libraries(dvrk_automation_lib
- ${catkin_LIBRARIES}
- 	dvrk_lib
- 	dvrk_vision_lib
- )
- 
- target_link_libraries(move_test
-   ${catkin_LIBRARIES}
-    dvrk_lib
+
+  target_link_libraries(irob_dvrk_lib
+ 	${catkin_LIBRARIES}
+ 	irob_math_lib
  )
  
  target_link_libraries(move_circles
    ${catkin_LIBRARIES}
-    dvrk_lib
+    irob_dvrk_lib
  )
  
  target_link_libraries(insert_tool
    ${catkin_LIBRARIES}
-    dvrk_lib
+    irob_dvrk_lib
  )
  
   target_link_libraries(home
    ${catkin_LIBRARIES}
-    dvrk_lib
+    irob_dvrk_lib
  )
- 
-  target_link_libraries( play_logged_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
- target_link_libraries( log_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
- target_link_libraries( rviz_plot_trajectory
-   ${catkin_LIBRARIES}
-    dvrk_lib
- )
- 
-  target_link_libraries( auto_dissection
-   ${catkin_LIBRARIES}
-    dvrk_lib
-    dvrk_vision_lib
-    dvrk_automation_lib
- )
- 
+
  
 
 

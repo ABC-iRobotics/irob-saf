@@ -9,9 +9,9 @@
 #include <iostream>
 #include <cmath>
 #include <ros/ros.h>
-#include "dvrk/pose.hpp"
+#include "irob_math/pose.hpp"
 
-namespace dvrk {
+namespace irob_autosurg {
 
  	Pose::Pose(): position(0.0, 0.0, 0.0), 
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}

@@ -19,12 +19,13 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
 
-
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -45,12 +46,12 @@ int main(int argc, char **argv)
 	// Robot control
 	
   	try {
-    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm),
-    	 dvrk::PSM::ACTIVE);
+    	PSM psm(nh, ArmTypes::typeForString(arm),
+    	 PSM::ACTIVE);
     	//psm.home();
     
     	// Load trajectory from file
-		dvrk::Trajectory<dvrk::Pose> tr(filename);
+		Trajectory<Pose> tr(filename);
     	ROS_INFO_STREAM(
     	"Trajectory of "<< tr.size() << " points with "
     					<< 1.0/tr.dt << " sample rate succesfully loaded from "
@@ -59,9 +60,9 @@ int main(int argc, char **argv)
 
 		// Go to the start point of loaded trajectory
 		ROS_INFO("Going to start point of loaded trajectory...");
-		psm.setRobotState(dvrk::Arm::STATE_POSITION_CARTESIAN);
-		dvrk::Trajectory<dvrk::Pose> to_start = 
-   			dvrk::TrajectoryFactory::
+		psm.setRobotState(Arm::STATE_POSITION_CARTESIAN);
+		Trajectory<Pose> to_start = 
+   			TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
     				psm.getPoseCurrent(), 
 					tr[0],

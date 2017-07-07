@@ -17,11 +17,12 @@
 #include <cmath>
 #include <numeric>
 #include <chrono>
-#include "dvrk/arm.hpp"
-#include "dvrk/psm.hpp"
-#include "dvrk/pose.hpp"
-#include "dvrk/trajectory_factory.hpp"
+#include "irob_dvrk/arm.hpp"
+#include "irob_dvrk/psm.hpp"
+#include "irob_math/pose.hpp"
+#include "irob_math/trajectory_factory.hpp"
 
+using namespace irob_autosurg;
 
 int main(int argc, char **argv)
 {
@@ -44,8 +45,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	dvrk::PSM psm(nh, dvrk::ArmTypes::typeForString(arm),
-    		dvrk::PSM::ACTIVE);
+    	PSM psm(nh, ArmTypes::typeForString(arm),
+    		PSM::ACTIVE);
     	ros::Duration(1.0).sleep();
     	   	
    		// Do preprogrammed movement
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Loop rate:\t" << rate_command << " Hz");
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    	
-   	 	psm.setRobotState(dvrk::PSM::STATE_POSITION_JOINT);
+   	 	psm.setRobotState(PSM::STATE_POSITION_JOINT);
 
     	ros::Duration(0.5).sleep();
 		
@@ -71,23 +72,23 @@ int main(int argc, char **argv)
     	double T = 5.0/speed;
     	double Tacc = T*0.1;*/
     	
-    	dvrk::Trajectory<double> 
-    		init_tr(dvrk::TrajectoryFactory::
+    	Trajectory<double> 
+    		init_tr(TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				psm.getJointStateCurrent(joint_idx), 
 					x1,
 					T, Tacc, dt)); 
  
     
-    	dvrk::Trajectory<double> 
-    		to_tr(dvrk::TrajectoryFactory::
+    	Trajectory<double> 
+    		to_tr(TrajectoryFactory::
     			linearTrajectoryWithSmoothAcceleration(
     				x1, 
 					x2,
 					T, Tacc, dt)); 
 	
-		dvrk::Trajectory<double> 
-			back_tr(dvrk::TrajectoryFactory::
+		Trajectory<double> 
+			back_tr(TrajectoryFactory::
 				linearTrajectoryWithSmoothAcceleration(
 					x2,
 					x1,
