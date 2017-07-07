@@ -14,6 +14,8 @@ find_package(catkin REQUIRED
                         std_msgs
                         sensor_msgs
                         message_generation
+                        actionlib_msgs
+                        actionlib
                         dvrk_kinematics
                         )
 
@@ -48,11 +50,11 @@ find_package(catkin REQUIRED
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
+ add_message_files(
+   FILES
 #   Message1.msg
 #   Message2.msg
-# )
+ )
 
 ## Generate services in the 'srv' folder
  add_service_files(
@@ -62,14 +64,15 @@ find_package(catkin REQUIRED
  )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+ add_action_files(
+ 	DIRECTORY
+ 	action
+   	FILES
+   	Home.action
+ )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES actionlib_msgs std_msgs geometry_msgs)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +107,7 @@ catkin_package(
   		#INCLUDE_DIRS include "${CATKIN_DEVEL_PREFIX}/include"
   		#LIBRARIES 
         CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-        	 message_runtime
+        	 message_runtime actionlib_msgs
         #DEPENDS system_lib
 )
 
@@ -124,16 +127,16 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 ## Declare a C++ library
 
 
-file(GLOB irob_math_lib_src
-    "src/irob_math/*.cpp"
+file(GLOB irob_utils_lib_src
+    "src/irob_utils/*.cpp"
 )
 
 
-add_library( irob_math_lib STATIC
-       ${irob_math_lib_src}
+add_library( irob_utils_lib STATIC
+       ${irob_utils_lib_src}
        )
 
-set_target_properties( irob_math_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_utils_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 file(GLOB irob_dvrk_lib_src
@@ -171,13 +174,13 @@ add_executable(home src/irob_autosurg_execute/home.cpp)
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_math_lib
+ target_link_libraries(irob_utils_lib
  	${catkin_LIBRARIES}
  )
 
   target_link_libraries(irob_dvrk_lib
  	${catkin_LIBRARIES}
- 	irob_math_lib
+ 	irob_utils_lib
  )
  
  target_link_libraries(move_circles

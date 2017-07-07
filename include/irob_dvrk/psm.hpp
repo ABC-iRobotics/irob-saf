@@ -21,14 +21,16 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include "irob_math/utils.hpp"
+#include "irob_utils/utils.hpp"
 #include "irob_dvrk/arm.hpp"
 #include "irob_dvrk/arm_types.hpp"
 #include "irob_dvrk/topics.hpp"
-#include "irob_math/pose.hpp"
-#include "irob_math/trajectory.hpp"
+#include "irob_utils/pose.hpp"
+#include "irob_utils/trajectory.hpp"
 
-namespace irob_autosurg {
+using namespace irob_autosurg;
+
+namespace irob_dvrk {
 
 class PSM: public Arm {
 

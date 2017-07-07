@@ -12,7 +12,7 @@
 #include <iostream>
 #include "irob_dvrk/arm_types.hpp"
 
-namespace irob_autosurg {
+namespace irob_dvrk {
 
 class Topics {
   public:

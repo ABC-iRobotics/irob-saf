@@ -24,12 +24,15 @@
 #include <cmath>
 #include "irob_dvrk/arm_types.hpp"
 #include "irob_dvrk/topics.hpp"
-#include "irob_math/pose.hpp"
-#include "irob_math/trajectory.hpp"
-#include "irob_math/utils.hpp"
+#include "irob_utils/pose.hpp"
+#include "irob_utils/trajectory.hpp"
+#include "irob_utils/utils.hpp"
+#include <actionlib/server/simple_action_server.h>
+#include <irob_autosurg/HomeAction.h>
 
+using namespace irob_autosurg;
 
-namespace irob_autosurg {
+namespace irob_dvrk {
 
 class Arm {
 
@@ -46,6 +49,10 @@ public:
 protected:
     const ArmTypes arm_typ;
     ros::NodeHandle nh;
+    actionlib::SimpleActionServer<irob_autosurg::HomeAction> as;
+    
+    irob_autosurg::HomeFeedback feedback;
+    irob_autosurg::HomeResult result;
 
     // States
     std_msgs::String robot_state;
@@ -75,6 +82,7 @@ public:
 	~Arm();
 
     // Callbacks
+    void homeActionCB(const irob_autosurg::HomeGoalConstPtr &);
     void robotStateCB(const std_msgs::String);
     void errorCB(const std_msgs::String);
     void warningCB(const std_msgs::String);

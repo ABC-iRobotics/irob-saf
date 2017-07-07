@@ -17,8 +17,8 @@
 #include <cmath>
 #include "irob_dvrk/arm.hpp"
 #include "irob_dvrk/psm.hpp"
-#include "irob_math/pose.hpp"
-#include "irob_math/trajectory_factory.hpp"
+#include "irob_utils/pose.hpp"
+#include "irob_utils/trajectory_factory.hpp"
 
 using namespace irob_autosurg;
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	PSM psm(nh, ArmTypes::typeForString(arm), PSM::ACTIVE);
+    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm), irob_dvrk::PSM::ACTIVE);
     	//ros::Duration(0.5).sleep();
     	
 		ROS_INFO_STREAM("Inserting tool past cannula...");
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
    		ROS_INFO_STREAM("Speed:\t"<< speed);
    		ROS_INFO_STREAM("Insertion depth:\t"<< depth << " mm");
    	
-		psm.setRobotState(PSM::STATE_POSITION_JOINT);
+		psm.setRobotState(irob_dvrk::PSM::STATE_POSITION_JOINT);
 		int init_joint_idx = 2;
 		to_enable_cartesian = 
    			TrajectoryFactory::

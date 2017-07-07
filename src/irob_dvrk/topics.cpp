@@ -8,7 +8,7 @@
 
 #include "irob_dvrk/topics.hpp"
 
-namespace irob_autosurg {
+namespace irob_dvrk {
 
 // Enum value DEFINITIONS
 // The initialization occurs in the scope of the class,

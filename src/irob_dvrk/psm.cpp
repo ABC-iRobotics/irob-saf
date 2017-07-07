@@ -10,7 +10,9 @@
 #include <numeric>
 #include <chrono>
 
-namespace irob_autosurg {
+using namespace irob_autosurg;
+
+namespace irob_dvrk {
 
 PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, isActive)
 {

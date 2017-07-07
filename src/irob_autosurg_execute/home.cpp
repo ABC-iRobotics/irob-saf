@@ -17,8 +17,9 @@
 #include <cmath>
 #include "irob_dvrk/arm.hpp"
 #include "irob_dvrk/psm.hpp"
-#include "irob_math/pose.hpp"
-#include "irob_math/trajectory_factory.hpp"
+#include "irob_utils/pose.hpp"
+#include "irob_utils/trajectory_factory.hpp"
+#include <irob_autosurg/HomeAction.h>
 
 using namespace irob_autosurg;
 
@@ -36,8 +37,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	Arm arm(nh, ArmTypes::typeForString(arm_name),
-    									 Arm::ACTIVE);
+    	irob_dvrk::Arm arm(nh, irob_dvrk::ArmTypes::typeForString(arm_name),
+    									 irob_dvrk::Arm::ACTIVE);
     	//ros::Duration(0.5).sleep();
     	
 		ROS_INFO_STREAM("Going to home position...");

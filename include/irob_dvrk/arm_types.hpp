@@ -12,9 +12,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "irob_math/pose.hpp"
+#include "irob_utils/pose.hpp"
 
-namespace irob_autosurg {
+using namespace irob_autosurg;
+
+namespace irob_dvrk {
 
 class ArmTypes {
   public:

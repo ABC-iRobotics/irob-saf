@@ -10,7 +10,9 @@
 #include <numeric>
 #include <chrono>
 
-namespace irob_autosurg {
+using namespace irob_autosurg;
+
+namespace irob_dvrk {
 
 const std::string Arm::HOME_CMD
                     = "Home";
@@ -25,7 +27,7 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 
 
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
-							nh(nh), arm_typ(arm_typ)
+							nh(nh), as(nh, "home", boost::bind(&Arm::homeActionCB, this, _1), false), arm_typ(arm_typ)
 {
 
 	// Subscribe and advertise topics
@@ -52,6 +54,43 @@ Arm::~Arm()
 /*
  * Callbacks
  */
+ void Arm::homeActionCB(const irob_autosurg::HomeGoalConstPtr &goal)
+  {
+    // helper variables
+    ros::Rate r(1);
+    bool success = true;
+
+	ROS_INFO_STREAM("Starting Home action.");
+  
+    // start executing the action
+    for(int i=1; i<=10; i++)
+    {
+      // check that preempt has not been requested by the client
+      if (as.isPreemptRequested() || !ros::ok())
+      {
+        ROS_INFO_STREAM("Home: Preempted");
+        // set the action state to preempted
+        as.setPreempted();
+        success = false;
+        break;
+      }
+     feedback.status = "Doing Home ...";
+      as.publishFeedback(feedback);
+      // this sleep is not necessary, the sequence is computed at 1 Hz for demonstration purposes
+      r.sleep();
+    }
+
+    if(success)
+    {
+      result.status = "Home done";
+      ROS_INFO_STREAM("Home: Succeeded");
+      // set the action state to succeeded
+      as.setSucceeded(result);
+    }
+  }
+
+
+ 
 void Arm::robotStateCB(const std_msgs::String msg)
 {
     robot_state = msg;

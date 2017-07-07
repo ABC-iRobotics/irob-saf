@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <ros/ros.h>
-#include "irob_math/pose.hpp"
+#include "irob_utils/pose.hpp"
 
 namespace irob_autosurg {
 

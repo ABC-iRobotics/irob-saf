@@ -15,7 +15,7 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include "irob_math/pose.hpp"
+#include "irob_utils/pose.hpp"
 
 namespace irob_autosurg {
 
