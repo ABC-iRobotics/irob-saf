@@ -52,8 +52,9 @@ find_package(catkin REQUIRED
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-#   Message1.msg
-#   Message2.msg
+   ToolPose.msg
+   ToolPoseStamped.msg
+   TrajectoryToolPose.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -69,6 +70,7 @@ find_package(catkin REQUIRED
  	action
    	FILES
    	Home.action
+   	FollowTrajectory.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -165,6 +167,8 @@ add_executable(move_circles src/irob_autosurg_execute/move_circles.cpp)
 
 add_executable(insert_tool src/irob_autosurg_execute/insert_tool.cpp)
 add_executable(home src/irob_autosurg_execute/home.cpp)
+add_executable(dvrk_action_server src/irob_autosurg_execute/dvrk_action_server.cpp)
+add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles_action_client.cpp)
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -197,6 +201,17 @@ add_executable(home src/irob_autosurg_execute/home.cpp)
    ${catkin_LIBRARIES}
     irob_dvrk_lib
  )
+ 
+  target_link_libraries(dvrk_action_server
+   ${catkin_LIBRARIES}
+    irob_dvrk_lib
+ )
+ 
+  target_link_libraries(move_circles_action_client
+   ${catkin_LIBRARIES}
+    irob_dvrk_lib
+ )
+ 
 
  
 

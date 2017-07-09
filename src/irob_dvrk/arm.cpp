@@ -27,7 +27,13 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 
 
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
-							nh(nh), as(nh, "home", boost::bind(&Arm::homeActionCB, this, _1), false), arm_typ(arm_typ)
+							nh(nh), 
+							as(nh, "home", boost::bind(
+									&Arm::homeActionCB, this, _1), false),
+							follow_tr_as(nh,"follow_trajectory",boost::bind(
+									&Arm::followTrajectoryActionCB, 
+									this, _1), false),		
+							arm_typ(arm_typ)
 {
 
 	// Subscribe and advertise topics
@@ -43,6 +49,11 @@ Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive):
     	advertise(Topics::SET_POSITION_JOINT);
     	advertise(Topics::SET_POSITION_CARTESIAN);
     }
+    
+    setRobotState(irob_dvrk::Arm::STATE_POSITION_CARTESIAN);
+    
+    as.start();
+    follow_tr_as.start();
     
 }
 
@@ -86,6 +97,50 @@ Arm::~Arm()
       ROS_INFO_STREAM("Home: Succeeded");
       // set the action state to succeeded
       as.setSucceeded(result);
+    }
+  }
+  
+  
+void Arm::followTrajectoryActionCB(
+		const irob_autosurg::FollowTrajectoryGoalConstPtr &goal)
+  {
+    // helper variables
+    bool success = true;
+    irob_autosurg::FollowTrajectoryFeedback feedback;
+    irob_autosurg::FollowTrajectoryResult result;
+
+	ROS_INFO_STREAM("Starting trajectory follow action.");
+	
+	Trajectory<Pose> tr(goal->trajectory);
+	// TODO hande-eye calibration
+	
+	ros::Rate loop_rate(1.0/tr.dt);
+	// start executing the action
+	for (int i = 0; i < tr.size(); i++)
+	{
+		// check that preempt has not been requested by the client
+      	if (follow_tr_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("Follow trajectory: Preempted");
+       	 	// set the action state to preempted
+        	follow_tr_as.setPreempted();
+        	success = false;
+        	break;
+      	}
+		moveCartesianAbsolute(tr[i],tr.dt);
+		
+		feedback.pose = tr[i].toRosToolPose();
+      	follow_tr_as.publishFeedback(feedback);
+		
+		loop_rate.sleep();
+	}
+	
+    if(success)
+    {
+      result.pose = getPoseCurrent().toRosToolPose();
+      ROS_INFO_STREAM("Follow trajectory: Succeeded");
+      // set the action state to succeeded
+      follow_tr_as.setSucceeded(result);
     }
   }
 

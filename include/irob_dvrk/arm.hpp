@@ -15,10 +15,10 @@
 #include <cmath>
 #include <ros/ros.h>
 #include <ros/package.h>
-#include "std_msgs/String.h"
-#include "sensor_msgs/JointState.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "std_msgs/Float32.h"
+#include <std_msgs/String.h>
+#include <sensor_msgs/JointState.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
@@ -29,6 +29,7 @@
 #include "irob_utils/utils.hpp"
 #include <actionlib/server/simple_action_server.h>
 #include <irob_autosurg/HomeAction.h>
+#include <irob_autosurg/FollowTrajectoryAction.h>
 
 using namespace irob_autosurg;
 
@@ -50,6 +51,8 @@ protected:
     const ArmTypes arm_typ;
     ros::NodeHandle nh;
     actionlib::SimpleActionServer<irob_autosurg::HomeAction> as;
+    actionlib::SimpleActionServer<irob_autosurg::FollowTrajectoryAction>
+    	 follow_tr_as;
     
     irob_autosurg::HomeFeedback feedback;
     irob_autosurg::HomeResult result;
@@ -83,6 +86,9 @@ public:
 
     // Callbacks
     void homeActionCB(const irob_autosurg::HomeGoalConstPtr &);
+    void followTrajectoryActionCB(
+    		const irob_autosurg::FollowTrajectoryGoalConstPtr &);
+    
     void robotStateCB(const std_msgs::String);
     void errorCB(const std_msgs::String);
     void warningCB(const std_msgs::String);

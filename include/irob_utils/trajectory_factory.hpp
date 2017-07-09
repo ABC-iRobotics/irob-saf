@@ -175,6 +175,26 @@ class TrajectoryFactory
 			return tr;
 		}
 		
+		static Trajectory<Pose> circleTrajectoryHorizontal(
+			Pose start, 
+			double toAngle, Eigen::Vector3d center,
+			double T, double dt)
+		{
+			Trajectory<Pose> tr(dt);
+			int N = (int)round(T / dt)+1;
+			Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
+			for (int i = 0; i < ramp.size(); i++)
+			{
+				Eigen::Vector3d p = start.position-center;
+				Eigen::Vector3d p1(p.x()*cos(ramp[i])-p.y()*sin(ramp[i]), 
+					p.y()*cos(ramp[i])+p.x()*sin(ramp[i]), p.z());
+				Eigen::Vector3d p2 = p1+center;
+				Pose po2(p2, start.orientation, start.jaw);
+				tr.addPoint(po2);
+			}
+			return tr;
+		}
+		
 		static Trajectory<Eigen::Vector3d> circleTrajectoryVerticalY(
 			Eigen::Vector3d start, 
 			double toAngle, Eigen::Vector3d center,

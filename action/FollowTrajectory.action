@@ -1,0 +1,9 @@
+# Define the goal
+TrajectoryToolPose trajectory
+
+---
+# Define the result
+ToolPose pose
+---
+# Define a feedback message
+ToolPose pose

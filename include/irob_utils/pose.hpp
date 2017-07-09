@@ -1,21 +1,24 @@
 /*
- *  pose.cpp
+ *  pose.hpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-27
  *  
  */
 
-#ifndef DVRK_POSE_HPP_
-#define DVRK_POSE_HPP_
+#ifndef IROB_POSE_HPP_
+#define IROB_POSE_HPP_
 
 #include <iostream>
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/Pose.h"
-#include "std_msgs/Float32.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
+#include <irob_autosurg/ToolPose.h>
+#include <irob_autosurg/ToolPoseStamped.h>
+
 
 namespace irob_autosurg {
 
@@ -43,6 +46,8 @@ class Pose {
    	Pose();
    	Pose(double, double, double, double, double, double, double, double);
    	Pose(const Pose&);
+   	Pose(const irob_autosurg::ToolPose&);
+   	Pose(const irob_autosurg::ToolPoseStamped&);
 	Pose(const geometry_msgs::Pose&, double jaw);
 	Pose(const geometry_msgs::PoseStamped&, double jaw);
    	Pose(const Eigen::Vector3d&, const Eigen::Quaternion<double>&, double);
@@ -68,6 +73,7 @@ class Pose {
    	Distance dist(const Eigen::Quaternion<double>&) const;
    	Distance dist(double) const;
    	
+    irob_autosurg::ToolPose toRosToolPose() const;
    	geometry_msgs::Pose toRosPose() const;
     std_msgs::Float32 toRosJaw() const;
    	

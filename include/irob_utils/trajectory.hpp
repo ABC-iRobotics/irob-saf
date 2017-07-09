@@ -16,6 +16,8 @@
 #include <string>
 #include <stdexcept>
 #include <algorithm>
+#include "irob_utils/pose.hpp"
+#include <irob_autosurg/TrajectoryToolPose.h>
 
 namespace irob_autosurg { 
 
@@ -32,6 +34,7 @@ class Trajectory
    		Trajectory(std::string);
    		Trajectory(const Trajectory<T>&);
    		Trajectory(Trajectory<T>&&);
+   		Trajectory(const irob_autosurg::TrajectoryToolPose&);
 		void clear();
 		void addPoint(T);
 		T operator[](const int) const;

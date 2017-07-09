@@ -25,6 +25,17 @@ namespace irob_autosurg {
    	Pose::Pose(const Pose& other): position(other.position), 
    		orientation(other.orientation), jaw(other.jaw) {}
    		
+    Pose::Pose(const irob_autosurg::ToolPose& msg):
+   		position(msg.position.x, msg.position.y, msg.position.z),
+		orientation(msg.orientation.w, msg.orientation.x,
+		msg.orientation.y, msg.orientation.z), 
+		jaw(msg.jaw) {}
+		
+   	Pose::Pose(const irob_autosurg::ToolPoseStamped& msg): 
+		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x,
+		msg.pose.orientation.y, msg.pose.orientation.z), 
+		jaw(msg.pose.jaw) {}
+   		
    	Pose::Pose(const geometry_msgs::Pose& msg, double jaw): 
 		position(msg.position.x, msg.position.y, msg.position.z),
 		orientation(msg.orientation.w, msg.orientation.x,
@@ -116,6 +127,20 @@ namespace irob_autosurg {
    				|| std::isnan(position.z()) || std::isnan(orientation.x())
    				|| std::isnan(orientation.y()) || std::isnan(orientation.z())
    				|| std::isnan(orientation.w()) || std::isnan(jaw));
+   	}
+   	
+   	irob_autosurg::ToolPose Pose::toRosToolPose() const
+   	{
+   		irob_autosurg::ToolPose ret;
+   		ret.position.x = position.x();
+   		ret.position.y = position.y();
+   		ret.position.z = position.z();
+   		ret.orientation.w = orientation.w();
+   		ret.orientation.x = orientation.x();
+   		ret.orientation.y = orientation.y();
+   		ret.orientation.z = orientation.z();
+   		ret.jaw = jaw;
+   		return ret;
    	}
    	
    	geometry_msgs::Pose Pose::toRosPose() const
