@@ -25,11 +25,7 @@ const std::string Arm::STATE_POSITION_CARTESIAN
                     ="DVRK_POSITION_CARTESIAN";
                    // ="DVRK_POSITION_GOAL_CARTESIAN";
                    
-const std::string Arm::ERROR_NOT_READY
-                    ="is not ready";
-                   
-const std::string Arm::ERROR_INSIDE_CANNULA
-                    ="make sure the tool is inserted past the cannula";
+
 
 
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
@@ -64,27 +60,20 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
 {
     // helper variables
     ros::Rate loop_rate(2);
-    bool success = true;
-    typedef enum init_action_type 
-    	{CARTESIAN, HOME, INSERT, STOP} 
-    	init_action_type_t;
-    	
-    init_action_type_t to_do = CARTESIAN;
-    
+    bool success = false;
+
     irob_autosurg::InitArmFeedback feedback;
     irob_autosurg::InitArmResult result;
 
-
-	ROS_INFO_STREAM("Starting InitArm action.");
+	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
   
     // Set robot state to cartasian
-    bool set_state_cartasian_done = false;
-    while(!set_state_cartasian_done)
+    while(!success)
     {
     	// Check that preempt has not been requested by the client
       	if (init_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM("InitArm: Preempted");
+        	ROS_INFO_STREAM(arm_typ.name << " initilaization: Preempted");
         	// Set the action state to preempted
         	init_as.setPreempted();
         	success = false;
@@ -92,108 +81,57 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
       	}
 		
 		try {
-			switch (to_do)
-			{
-      			case CARTESIAN:
-      				set_state_cartasian_done 
-      						= setRobotState(STATE_POSITION_CARTESIAN);
-      				break;
-      			case HOME:
-      				if (home())
-      					to_do = CARTESIAN;
-      				break;
-      			case INSERT: 
-      				break;
-      			case STOP: 
-      				break;
-      		}
-        } catch (std::runtime_error e) {
-        	
-        	// If arm is not homed, then home
-        	std::size_t not_ready_found 
-        			= std::string(e.what()).find(ERROR_NOT_READY);
-        	std::size_t inside_cannula_found 
-        			= std::string(e.what()).find(ERROR_INSIDE_CANNULA);
-  			if (not_ready_found!=std::string::npos)
-  			{
-  				to_do = HOME;
-  				ROS_INFO_STREAM(e.what() << ", attempting to home arm");
-  			}
-        	// If tool is inside cannula and movement is allowed, 
-        	// then push tool in
-        	else if (inside_cannula_found!=std::string::npos) 
-        	{
-        		if (goal->move_allowed)
-        		{
-        			to_do = INSERT;
-        			ROS_INFO_STREAM(e.what() 
-        				<< ", attempting to move tool past the cannula");
-        		}
-        		else
-        		{
-        			to_do = STOP;
-        			ROS_ERROR_STREAM(e.what() 
-        				<< ", tool movement is not allowed");
-        		}
-        	} 
-        	// Unknown error occured, throw it
-        	else
-        	{
-        		throw e;
-        	}
+      		success	= setRobotState(STATE_POSITION_CARTESIAN);
+        } catch (std::runtime_error e) { 
+        	// Unknown error occured, stop action and throw it
+        	throw e;
         } 
-
-
-      
-     feedback.status = "Doing Home ...";
-      init_as.publishFeedback(feedback);
-      // this sleep is not necessary, the sequence is computed at 1 Hz for demonstration purposes
-      loop_rate.sleep();
+  		
+  		// Send some feedback
+  		feedback.status = "setting_cartesian";
+      	init_as.publishFeedback(feedback);
+      	// this sleep is not necessary
+      	loop_rate.sleep();
     }
 
     if(success)
     {
-      result.descript = "Home done";
-      ROS_INFO_STREAM("Home: Succeeded");
+      result.descript = robot_state.data;
+      ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
       // set the action state to succeeded
       init_as.setSucceeded(result);
     }
-  }
+}
   
 void Arm::resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
 {
     // helper variables
-    ros::Rate r(1);
-    bool success = true;
+    bool success = false;
     
     irob_autosurg::ResetPoseFeedback feedback;
     irob_autosurg::ResetPoseResult result;
 
-
-	ROS_INFO_STREAM("Starting Home action.");
+	ROS_INFO_STREAM("Starting " << arm_typ.name << " pose reset");
   
-    // start executing the action
-    for(int i=1; i<=10; i++)
+    	// Check that preempt has not been requested by the client
+    if (reset_pose_as.isPreemptRequested() || !ros::ok())
     {
-      // check that preempt has not been requested by the client
-      if (reset_pose_as.isPreemptRequested() || !ros::ok())
-      {
-        ROS_INFO_STREAM("Home: Preempted");
-        // set the action state to preempted
+        ROS_INFO_STREAM(arm_typ.name << " pose reset: Preempted");
+        // Set the action state to preempted
         reset_pose_as.setPreempted();
         success = false;
-        break;
-      }
-     feedback.status = "Doing Home ...";
-      reset_pose_as.publishFeedback(feedback);
-      // this sleep is not necessary, the sequence is computed at 1 Hz for demonstration purposes
-      r.sleep();
     }
+  	
+  	ROS_INFO_STREAM(arm_typ.name << " pose reset not implemented");
+  	success = true;	
+  	// Send some feedback
+  	feedback.status = "done";
+    reset_pose_as.publishFeedback(feedback);
 
     if(success)
     {
-      result.descript = "Home done";
-      ROS_INFO_STREAM("Home: Succeeded");
+      result.descript = "done";
+      ROS_INFO_STREAM(arm_typ.name << " pose reset succeded");
       // set the action state to succeeded
       reset_pose_as.setSucceeded(result);
     }
@@ -611,7 +549,11 @@ void Arm::checkErrors()
     }
     
     if (!error.data.empty())
-   		throw std::runtime_error(error.data);
+    {
+    	std::string err_data = error.data;
+    	error.data.clear();
+   		throw std::runtime_error(err_data);
+   	}
 }
 
 void Arm::checkVelCartesian(const Pose& pose, 

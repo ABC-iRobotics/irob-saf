@@ -39,8 +39,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	irob_dvrk::Arm psm(nh, irob_dvrk::ArmTypes::typeForString(arm_name),
-    	 irob_dvrk::Arm::ACTIVE);
+    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm_name),
+    	 irob_dvrk::PSM::ACTIVE);
     	 
     	/* Trajectory<Pose> circle_tr =
     	 	TrajectoryFactory::circleTrajectoryHorizontal(

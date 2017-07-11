@@ -47,10 +47,7 @@ public:
     
     static const bool ACTIVE = true;
     static const bool PASSIVE = false;
-        
-    static const std::string ERROR_NOT_READY;
-    static const std::string ERROR_INSIDE_CANNULA;
-    
+   
 
 protected:
     const ArmTypes arm_typ;
@@ -95,8 +92,8 @@ public:
 	~Arm();
 
     // Callbacks
-    void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);
-    void resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &);
+    virtual void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);
+    virtual void resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &);
     void followTrajectoryActionCB(
     		const irob_autosurg::FollowTrajectoryGoalConstPtr &);
     

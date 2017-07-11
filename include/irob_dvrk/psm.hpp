@@ -35,7 +35,13 @@ namespace irob_dvrk {
 class PSM: public Arm {
 
 
-private:
+private:       
+    static const std::string ERROR_INSIDE_CANNULA;
+    static const double INSERTION_DEPTH;
+    static const double INSERTION_T;
+    static const double INSERTION_DT;
+    static const int INSERTION_JOINT_IDX;
+    
 
     // Publishers
     ros::Publisher position_jaw_pub;
@@ -44,6 +50,9 @@ private:
 public:
     PSM(ros::NodeHandle, ArmTypes, bool);
 	~PSM();
+	
+	void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);
+    void resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &);
     
     Pose getPoseCurrent();
     

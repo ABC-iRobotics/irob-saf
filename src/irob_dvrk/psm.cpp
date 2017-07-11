@@ -9,10 +9,21 @@
 #include "irob_dvrk/psm.hpp"
 #include <numeric>
 #include <chrono>
+#include "irob_utils/trajectory_factory.hpp"
 
 using namespace irob_autosurg;
 
 namespace irob_dvrk {
+
+                   
+const std::string PSM::ERROR_INSIDE_CANNULA
+                    ="make sure the tool is inserted past the cannula";
+                    
+const double PSM::INSERTION_DEPTH = 0.055;
+const double PSM::INSERTION_T = 1.0;
+const double PSM::INSERTION_DT = 0.01;
+const int PSM::INSERTION_JOINT_IDX = 2;
+
 
 PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, isActive)
 {
@@ -22,6 +33,164 @@ PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, 
   		"Tried to create PSM object for ECM or MTM arm type.");
   			
    	advertiseTopics();
+}
+
+void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
+{	
+	typedef enum init_action_type 
+    	{CARTESIAN, JOINT, INSERT} 
+    	init_action_type_t;
+    	
+    // helper variables
+    ros::Rate loop_rate(2);
+    ros::Rate insert_rate(1.0/INSERTION_DT);
+    bool success = false;
+    bool in_joint_state = false;
+    	
+    init_action_type_t to_do = CARTESIAN;
+    int i = 0;
+    irob_autosurg::Trajectory<double> insert_tr;
+    
+    irob_autosurg::InitArmFeedback feedback;
+    irob_autosurg::InitArmResult result;
+
+
+	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
+  
+    // Set robot state to cartasian
+    bool set_state_cartasian_done = false;
+    while(!success)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (init_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("InitArm: Preempted");
+        	// Set the action state to preempted
+        	init_as.setPreempted();
+        	success = false;
+        	break;
+      	}
+		
+		try {
+			switch (to_do)
+			{
+      			case CARTESIAN:
+      				feedback.status = "setting_cartesian";
+      				success = setRobotState(STATE_POSITION_CARTESIAN);
+      				break;
+      				
+      			case JOINT:
+      				feedback.status = "setting_joint";
+      				in_joint_state = setRobotState(STATE_POSITION_JOINT);
+      				if (!in_joint_state) {
+      					to_do = JOINT;
+      				} else {
+        				insert_tr = irob_autosurg::TrajectoryFactory::
+        					linearTrajectoryWithSmoothAcceleration(
+								getJointStateCurrent(INSERTION_JOINT_IDX),
+								INSERTION_DEPTH, 
+								INSERTION_T,
+								INSERTION_T * 0.2, 
+								INSERTION_DT);
+						i = 0;
+						to_do = INSERT;
+      				}
+      				break;
+ 
+      			case INSERT:
+      				feedback.status = "inserting_tool";
+      				moveJointAbsolute(INSERTION_JOINT_IDX, 
+      								insert_tr[i], insert_tr.dt); 
+      				i++;
+      				if (i < insert_tr.size())
+      					to_do = INSERT;
+      				else
+      					to_do = CARTESIAN;
+      				
+      				break;
+
+      		}
+        } catch (std::runtime_error e) {
+        	std::size_t found 
+        			= std::string(e.what()).find(ERROR_INSIDE_CANNULA);
+        			
+        	// If tool is inside cannula and movement is allowed, 
+        	// then push tool in
+        	if (found!=std::string::npos) 
+        	{
+        		if (goal->move_allowed)
+        		{
+        			
+        			to_do = JOINT;
+        			ROS_INFO_STREAM(e.what());
+        			ROS_INFO_STREAM("Attempting to move tool past the cannula");
+        		}
+        		else
+        		{
+        			ROS_ERROR_STREAM(e.what());
+        			ROS_ERROR_STREAM("Cannot move tool past the cannula," 
+        							<<" tool movement is not allowed");
+        			success = false;
+        			break;
+        		}
+        	} 
+        	// Unknown error occured, throw it
+        	// TODO reconsider to return with failiure
+        	else
+        	{
+        		//throw e;
+        	}
+		}
+		
+		init_as.publishFeedback(feedback);
+		if (to_do != INSERT)
+      		loop_rate.sleep();
+      	else
+      		insert_rate.sleep();
+    }
+
+    if(success)
+    {
+      result.descript = robot_state.data;
+      ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
+      // set the action state to succeeded
+      init_as.setSucceeded(result);
+    }
+}
+
+
+void PSM::resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
+{
+    // helper variables
+    bool success = false;
+    
+    irob_autosurg::ResetPoseFeedback feedback;
+    irob_autosurg::ResetPoseResult result;
+
+	ROS_INFO_STREAM("Starting " << arm_typ.name << " pose reset");
+  
+    	// Check that preempt has not been requested by the client
+    if (reset_pose_as.isPreemptRequested() || !ros::ok())
+    {
+        ROS_INFO_STREAM(arm_typ.name << " pose reset: Preempted");
+        // Set the action state to preempted
+        reset_pose_as.setPreempted();
+        success = false;
+    }
+  	
+  	ROS_INFO_STREAM(arm_typ.name << " pose reset not implemented");
+  	success = true;	
+  	// Send some feedback
+  	feedback.status = "done";
+    reset_pose_as.publishFeedback(feedback);
+
+    if(success)
+    {
+      result.descript = "done";
+      ROS_INFO_STREAM(arm_typ.name << " pose reset succeded");
+      // set the action state to succeeded
+      reset_pose_as.setSucceeded(result);
+    }
 }
 
 PSM::~PSM()
