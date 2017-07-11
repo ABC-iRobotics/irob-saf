@@ -23,12 +23,13 @@
 #include <Eigen/Geometry> 
 #include <cmath>
 #include "irob_dvrk/arm_types.hpp"
-#include "irob_dvrk/topics.hpp"
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory.hpp"
 #include "irob_utils/utils.hpp"
+#include "irob_utils/topic_name_loader.hpp"
 #include <actionlib/server/simple_action_server.h>
-#include <irob_autosurg/HomeAction.h>
+#include <irob_autosurg/InitArmAction.h>
+#include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
 
 using namespace irob_autosurg;
@@ -43,19 +44,27 @@ public:
     static const std::string HOME_DONE;
     static const std::string STATE_POSITION_JOINT;
     static const std::string STATE_POSITION_CARTESIAN;
+    
     static const bool ACTIVE = true;
     static const bool PASSIVE = false;
+        
+    static const std::string ERROR_NOT_READY;
+    static const std::string ERROR_INSIDE_CANNULA;
     
 
 protected:
     const ArmTypes arm_typ;
     ros::NodeHandle nh;
-    actionlib::SimpleActionServer<irob_autosurg::HomeAction> as;
+    
+    // Action servers
+    actionlib::SimpleActionServer<irob_autosurg::InitArmAction>
+    	 init_as;
+   	actionlib::SimpleActionServer<irob_autosurg::ResetPoseAction>
+    	 reset_pose_as;
     actionlib::SimpleActionServer<irob_autosurg::FollowTrajectoryAction>
     	 follow_tr_as;
-    
-    irob_autosurg::HomeFeedback feedback;
-    irob_autosurg::HomeResult result;
+   	
+   
 
     // States
     std_msgs::String robot_state;
@@ -77,15 +86,17 @@ protected:
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
     
-    bool subscribe(const Topics);
-    bool advertise(const Topics);
+    void subscribeTopics();
+    void advertiseTopics();
+    void startActionServers();
 
 public:
 	Arm(ros::NodeHandle, ArmTypes, bool);
 	~Arm();
 
     // Callbacks
-    void homeActionCB(const irob_autosurg::HomeGoalConstPtr &);
+    void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);
+    void resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &);
     void followTrajectoryActionCB(
     		const irob_autosurg::FollowTrajectoryGoalConstPtr &);
     

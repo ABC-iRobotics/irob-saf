@@ -1,12 +1,12 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
-
-  	<arg name="arm" default="PSM1"/>
-
-  
-	<node name="dvrk_action_server"
-  		pkg="irob_autosurg" type="dvrk_action_server" output="screen">
+	<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" />
+	
+  	<arg name="arm" default="PSM1"/>  	
+  	
+	<node name="dvrk_action_server" pkg="irob_autosurg" 
+			type="dvrk_action_server" output="screen">
   		
   		<param name="arm" type="string" value="$(arg arm)" />
 

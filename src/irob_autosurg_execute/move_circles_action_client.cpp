@@ -18,7 +18,8 @@
 #include "irob_dvrk/psm.hpp"
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory_factory.hpp"
-#include <irob_autosurg/HomeAction.h>
+#include <irob_autosurg/InitArmAction.h>
+#include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -64,8 +65,25 @@ int main(int argc, char **argv)
 			Eigen::Vector3d(0.0, -r, 0.0),
 			3.0/speed, dt);
 			
+			actionlib::SimpleActionClient<irob_autosurg::InitArmAction> init_arm_ac("init_arm", true);
 			actionlib::SimpleActionClient<irob_autosurg::FollowTrajectoryAction> ac("follow_trajectory", true);
 
+
+	ROS_INFO("Waiting for action server to start.");
+  // wait for the action server to start
+  init_arm_ac.waitForServer(); //will wait for infinite time
+
+  ROS_INFO("Action server started, sending goal.");
+  // send a goal to the action
+  irob_autosurg::InitArmGoal init_goal;
+ 
+  init_goal.move_allowed = true;
+  init_arm_ac.sendGoal(init_goal);
+  
+  /*
+
+  //wait for the action to return
+  bool finished_before_timeout = init_arm_ac.waitForResult(ros::Duration(30.0));
     	
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
@@ -81,7 +99,7 @@ int main(int argc, char **argv)
   ac.sendGoal(goal);
 
   //wait for the action to return
-  bool finished_before_timeout = ac.waitForResult(ros::Duration(30.0));
+  finished_before_timeout = ac.waitForResult(ros::Duration(30.0));
 
   if (finished_before_timeout)
   {
@@ -90,7 +108,7 @@ int main(int argc, char **argv)
   }
   else
     ROS_INFO("Action did not finish before the time out.");
-    	
+   */ 	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     } catch (const std::exception& e) {

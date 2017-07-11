@@ -24,7 +24,7 @@
 #include "irob_utils/utils.hpp"
 #include "irob_dvrk/arm.hpp"
 #include "irob_dvrk/arm_types.hpp"
-#include "irob_dvrk/topics.hpp"
+#include "irob_utils/topic_name_loader.hpp"
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory.hpp"
 
@@ -39,7 +39,7 @@ private:
 
     // Publishers
     ros::Publisher position_jaw_pub;
-    bool advertise(const Topics);
+    void advertiseTopics();
 
 public:
     PSM(ros::NodeHandle, ArmTypes, bool);

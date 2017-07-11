@@ -18,9 +18,7 @@
 #include "irob_dvrk/psm.hpp"
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory_factory.hpp"
-#include <actionlib/server/simple_action_server.h>
-#include <irob_autosurg/HomeAction.h>
-#include <irob_autosurg/FollowTrajectoryAction.h>
+
 
 using namespace irob_autosurg;
 

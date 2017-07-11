@@ -24,36 +24,31 @@ const std::string Arm::STATE_POSITION_JOINT
 const std::string Arm::STATE_POSITION_CARTESIAN
                     ="DVRK_POSITION_CARTESIAN";
                    // ="DVRK_POSITION_GOAL_CARTESIAN";
+                   
+const std::string Arm::ERROR_NOT_READY
+                    ="is not ready";
+                   
+const std::string Arm::ERROR_INSIDE_CANNULA
+                    ="make sure the tool is inserted past the cannula";
 
 
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
-							nh(nh), 
-							as(nh, "home", boost::bind(
-									&Arm::homeActionCB, this, _1), false),
-							follow_tr_as(nh,"follow_trajectory",boost::bind(
-									&Arm::followTrajectoryActionCB, 
-									this, _1), false),		
-							arm_typ(arm_typ)
+			nh(nh), arm_typ(arm_typ),
+			init_as(nh, "init_arm", boost::bind(
+				&Arm::initArmActionCB, this, _1), false),
+			reset_pose_as(nh, "reset_pose", boost::bind(
+				&Arm::resetPoseActionCB, this, _1), false),
+			follow_tr_as(nh,"follow_trajectory",boost::bind(
+				&Arm::followTrajectoryActionCB, this, _1), false)
 {
 
 	// Subscribe and advertise topics
-	subscribe(Topics::GET_ROBOT_STATE);
-    subscribe(Topics::GET_STATE_JOINT_CURRENT);
-    subscribe(Topics::GET_POSITION_CARTESIAN_CURRENT);
-    subscribe(Topics::GET_ERROR);
-    subscribe(Topics::GET_WARNING);
-    
+	
+	subscribeTopics();
     if (isActive == ACTIVE)
-    {
-    	advertise(Topics::SET_ROBOT_STATE);
-    	advertise(Topics::SET_POSITION_JOINT);
-    	advertise(Topics::SET_POSITION_CARTESIAN);
-    }
-    
-    setRobotState(irob_dvrk::Arm::STATE_POSITION_CARTESIAN);
-    
-    as.start();
-    follow_tr_as.start();
+    	advertiseTopics();
+    startActionServers();
+   
     
 }
 
@@ -65,11 +60,115 @@ Arm::~Arm()
 /*
  * Callbacks
  */
- void Arm::homeActionCB(const irob_autosurg::HomeGoalConstPtr &goal)
-  {
+void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
+{
+    // helper variables
+    ros::Rate loop_rate(2);
+    bool success = true;
+    typedef enum init_action_type 
+    	{CARTESIAN, HOME, INSERT, STOP} 
+    	init_action_type_t;
+    	
+    init_action_type_t to_do = CARTESIAN;
+    
+    irob_autosurg::InitArmFeedback feedback;
+    irob_autosurg::InitArmResult result;
+
+
+	ROS_INFO_STREAM("Starting InitArm action.");
+  
+    // Set robot state to cartasian
+    bool set_state_cartasian_done = false;
+    while(!set_state_cartasian_done)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (init_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("InitArm: Preempted");
+        	// Set the action state to preempted
+        	init_as.setPreempted();
+        	success = false;
+        	break;
+      	}
+		
+		try {
+			switch (to_do)
+			{
+      			case CARTESIAN:
+      				set_state_cartasian_done 
+      						= setRobotState(STATE_POSITION_CARTESIAN);
+      				break;
+      			case HOME:
+      				if (home())
+      					to_do = CARTESIAN;
+      				break;
+      			case INSERT: 
+      				break;
+      			case STOP: 
+      				break;
+      		}
+        } catch (std::runtime_error e) {
+        	
+        	// If arm is not homed, then home
+        	std::size_t not_ready_found 
+        			= std::string(e.what()).find(ERROR_NOT_READY);
+        	std::size_t inside_cannula_found 
+        			= std::string(e.what()).find(ERROR_INSIDE_CANNULA);
+  			if (not_ready_found!=std::string::npos)
+  			{
+  				to_do = HOME;
+  				ROS_INFO_STREAM(e.what() << ", attempting to home arm");
+  			}
+        	// If tool is inside cannula and movement is allowed, 
+        	// then push tool in
+        	else if (inside_cannula_found!=std::string::npos) 
+        	{
+        		if (goal->move_allowed)
+        		{
+        			to_do = INSERT;
+        			ROS_INFO_STREAM(e.what() 
+        				<< ", attempting to move tool past the cannula");
+        		}
+        		else
+        		{
+        			to_do = STOP;
+        			ROS_ERROR_STREAM(e.what() 
+        				<< ", tool movement is not allowed");
+        		}
+        	} 
+        	// Unknown error occured, throw it
+        	else
+        	{
+        		throw e;
+        	}
+        } 
+
+
+      
+     feedback.status = "Doing Home ...";
+      init_as.publishFeedback(feedback);
+      // this sleep is not necessary, the sequence is computed at 1 Hz for demonstration purposes
+      loop_rate.sleep();
+    }
+
+    if(success)
+    {
+      result.descript = "Home done";
+      ROS_INFO_STREAM("Home: Succeeded");
+      // set the action state to succeeded
+      init_as.setSucceeded(result);
+    }
+  }
+  
+void Arm::resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
+{
     // helper variables
     ros::Rate r(1);
     bool success = true;
+    
+    irob_autosurg::ResetPoseFeedback feedback;
+    irob_autosurg::ResetPoseResult result;
+
 
 	ROS_INFO_STREAM("Starting Home action.");
   
@@ -77,28 +176,28 @@ Arm::~Arm()
     for(int i=1; i<=10; i++)
     {
       // check that preempt has not been requested by the client
-      if (as.isPreemptRequested() || !ros::ok())
+      if (reset_pose_as.isPreemptRequested() || !ros::ok())
       {
         ROS_INFO_STREAM("Home: Preempted");
         // set the action state to preempted
-        as.setPreempted();
+        reset_pose_as.setPreempted();
         success = false;
         break;
       }
      feedback.status = "Doing Home ...";
-      as.publishFeedback(feedback);
+      reset_pose_as.publishFeedback(feedback);
       // this sleep is not necessary, the sequence is computed at 1 Hz for demonstration purposes
       r.sleep();
     }
 
     if(success)
     {
-      result.status = "Home done";
+      result.descript = "Home done";
       ROS_INFO_STREAM("Home: Succeeded");
       // set the action state to succeeded
-      as.setSucceeded(result);
+      reset_pose_as.setSucceeded(result);
     }
-  }
+}
   
   
 void Arm::followTrajectoryActionCB(
@@ -172,76 +271,73 @@ void Arm::warningCB(const std_msgs::String msg)
      warning = msg;
 }
 
-bool Arm::subscribe(Topics topic) 
+void Arm::subscribeTopics() 
 {
-    if(topic == Topics::GET_ROBOT_STATE)
-    {
-        robot_state_sub = nh.subscribe<std_msgs::String>(
-                        topic.getFullName(arm_typ), 1000,
-                        &Arm::robotStateCB,this);
-    }
-    else if( topic == Topics::GET_STATE_JOINT_CURRENT)
-    {
-        state_joint_current_sub 
-        				= nh.subscribe<sensor_msgs::JointState>(
-                        topic.getFullName(arm_typ), 1000,
-                        &Arm::stateJointCurrentCB,this);
-    }
-    else if( topic == Topics::GET_POSITION_CARTESIAN_CURRENT)
-    {
-        position_cartesian_current_sub 
-        				= nh.subscribe<geometry_msgs::PoseStamped>(
-                        topic.getFullName(arm_typ), 1000,
-                        &Arm::positionCartesianCurrentCB,this);
-    }
-    else if( topic == Topics::GET_ERROR)
-    {
-       	error_sub 	= nh.subscribe<std_msgs::String>(
-                        topic.getFullName(arm_typ), 1000,
-                        &Arm::errorCB,this);
-    }
-    else if( topic == Topics::GET_WARNING)
-    {
-       	warning_sub 	= nh.subscribe<std_msgs::String>(
-                        topic.getFullName(arm_typ), 1000,
-                        &Arm::warningCB,this);
-    }
-    else
-    {
-        ROS_WARN_STREAM("Subscribing to invalid topic " 
-        	<<  topic.getFullName(arm_typ));
-        return false;
-    }
+	robot_state_sub = nh.subscribe<std_msgs::String>(
+                        TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/robot_state"),
+                       	1000, &Arm::robotStateCB,this);
+  
+  	state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
+                        TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/state_joint_current"),
+                       	1000, &Arm::stateJointCurrentCB,this);  
+                       	            	
+   	position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
+                        TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/position_cartesian_current"),
+                       	1000, &Arm::positionCartesianCurrentCB,this);
+                       	
+	error_sub = nh.subscribe<std_msgs::String>(
+                        TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/error"),
+                       	1000, &Arm::errorCB,this);
+                       	
+    warning_sub = nh.subscribe<std_msgs::String>(
+                        TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/warning"),
+                       	1000, &Arm::warningCB,this);
 
-    ROS_DEBUG_STREAM("Subscribed to topic " 
-    	<< topic.getFullName(arm_typ));
-    return true;
 }
 
-bool Arm::advertise(Topics topic) 
+void Arm::advertiseTopics() 
 {
-    if(topic == Topics::SET_ROBOT_STATE)
-    {
-        robot_state_pub = nh.advertise<std_msgs::String>(
-                                    topic.getFullName(arm_typ), 1000);
-    }
-    else if(topic == Topics::SET_POSITION_JOINT)
-    {
-        position_joint_pub = nh.advertise<sensor_msgs::JointState>(
-                                   topic.getFullName(arm_typ), 1000);
-    }
-    else if(topic == Topics::SET_POSITION_CARTESIAN)
-    {
-        position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
-                                   topic.getFullName(arm_typ), 1000);
-    }
-    else 
-    {
-         ROS_WARN_STREAM("Advertising invalid topic " << topic.getFullName(arm_typ));
-         return false;
-    }
-    ROS_DEBUG_STREAM("Advertised topic " << topic.getFullName(arm_typ));
-    return true;
+	robot_state_pub = nh.advertise<std_msgs::String>(
+                    	TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/set_robot_state"),
+                        1000);
+    position_joint_pub = nh.advertise<sensor_msgs::JointState>(
+                    	TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/set_position_joint"),
+                        1000);
+   	position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
+                    	TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/set_position_cartesian"),
+                        1000);    
+}
+
+void Arm::startActionServers() 
+{
+
+	init_as.start();
+	reset_pose_as.start();
+    follow_tr_as.start();
 }
 
 /*
@@ -297,46 +393,39 @@ Pose Arm::getPoseCurrent()
 
 bool Arm::home()
 {
-    while (true) {
-        std_msgs::String msg;
-        std::stringstream ss;
-        ss << HOME_CMD;
-        msg.data = ss.str();
-        robot_state_pub.publish(msg);
-        ros::Duration(0.5).sleep();
-
-        if (robot_state.data == HOME_DONE) {
-            ROS_INFO_STREAM("State set to Home");
-            return true;
-        } else {
-            //ROS_INFO("State set to %s\n", robot_state.data.c_str());
-        }
-
-        ros::spinOnce();
-    }
+	std_msgs::String msg;
+	std::stringstream ss;
+    ss << HOME_CMD;
+    msg.data = ss.str();
+    robot_state_pub.publish(msg);
+    ros::Duration(0.5).sleep();
+	ros::spinOnce();
+    if (robot_state.data == HOME_DONE) {
+    	ROS_INFO_STREAM("State set to Home");
+        return true;
+   	}
+   	
+    ros::spinOnce();
     return false;
 }
 
 bool Arm::setRobotState(std::string state)
 {
-    while (true) {
-        std_msgs::String msg;
-        std::stringstream ss;
-        ss << state;
-        msg.data = ss.str();
-        robot_state_pub.publish(msg);
-        ros::Duration(0.5).sleep();
-		ros::spinOnce();
-		checkErrors();
-        if (robot_state.data == state) {
-            ROS_INFO_STREAM("State set to " << state);
-            return true;
-        } else {
-            ROS_INFO_STREAM("State set to " << robot_state.data);
-        }
-
-        ros::spinOnce();
+	std_msgs::String msg;
+    std::stringstream ss;
+    ss << state;
+    msg.data = ss.str();
+    robot_state_pub.publish(msg);
+    ros::Duration(0.5).sleep();
+	ros::spinOnce();
+	checkErrors();
+    if (robot_state.data == state) {
+    	ROS_INFO_STREAM("State set to " << state);
+        return true;
     }
+    
+  	ROS_INFO_STREAM("State set to " << robot_state.data);
+    ros::spinOnce();
     return false;
 }
 

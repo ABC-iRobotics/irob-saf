@@ -21,8 +21,7 @@ PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, 
   		throw std::runtime_error(
   		"Tried to create PSM object for ECM or MTM arm type.");
   			
-   	advertise(Topics::SET_POSITION_JAW);
-    
+   	advertiseTopics();
 }
 
 PSM::~PSM()
@@ -31,16 +30,14 @@ PSM::~PSM()
 }
 
 
-bool PSM::advertise(Topics topic) 
+void PSM::advertiseTopics() 
 {
-	if(topic == Topics::SET_POSITION_JAW)
-    {
-        position_jaw_pub = nh.advertise<std_msgs::Float32>(
-                                   topic.getFullName(arm_typ), 1000);
-        ROS_DEBUG_STREAM("Advertised topic " << topic.getFullName(arm_typ));
-        return true;
-    }
-    return Arm::advertise(topic);
+	position_jaw_pub = nh.advertise<std_msgs::Float32>(
+                    	TopicNameLoader::load(nh,
+                        	"dvrk_topics/namespace",
+                        	arm_typ.name,
+                        	"dvrk_topics/set_jaw_position"),
+                        1000);
 }
 
 Pose PSM::getPoseCurrent()

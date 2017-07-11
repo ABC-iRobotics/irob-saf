@@ -69,8 +69,9 @@ find_package(catkin REQUIRED
  	DIRECTORY
  	action
    	FILES
-   	Home.action
    	FollowTrajectory.action
+   	InitArm.action
+   	ResetPose.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -157,6 +158,8 @@ set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(irob_dvrk_lib irob_autosurg_generate_messages_cpp)
+add_dependencies(irob_utils_lib irob_autosurg_generate_messages_cpp)
 
 ## Declare a C++ executable
 #add_executable(move_test src/move_test.cpp)
@@ -165,8 +168,7 @@ add_executable(move_circles src/irob_autosurg_execute/move_circles.cpp)
 #add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
-add_executable(insert_tool src/irob_autosurg_execute/insert_tool.cpp)
-add_executable(home src/irob_autosurg_execute/home.cpp)
+
 add_executable(dvrk_action_server src/irob_autosurg_execute/dvrk_action_server.cpp)
 add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles_action_client.cpp)
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -174,6 +176,9 @@ add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+#add_dependencies(irob_dvrk_lib irob_automation_generate_messages_cpp)
+#add_dependencies(irob_utils_lib irob_automation_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
@@ -192,15 +197,6 @@ add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles
     irob_dvrk_lib
  )
  
- target_link_libraries(insert_tool
-   ${catkin_LIBRARIES}
-    irob_dvrk_lib
- )
- 
-  target_link_libraries(home
-   ${catkin_LIBRARIES}
-    irob_dvrk_lib
- )
  
   target_link_libraries(dvrk_action_server
    ${catkin_LIBRARIES}

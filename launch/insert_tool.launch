@@ -1,7 +1,8 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
-
+	<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" />
+	
   	<arg name="arm" default="PSM1"/>
   	<arg name="depth" default="70"/> <!-- mm -->
   	<arg name="rate" default="100"/>

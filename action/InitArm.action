@@ -1,8 +1,8 @@
 # Define the goal
-string test
+bool move_allowed
 ---
 # Define the result
-string status
+string descript
 ---
 # Define a feedback message
 string status
