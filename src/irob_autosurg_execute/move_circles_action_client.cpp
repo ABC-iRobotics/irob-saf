@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     ros::NodeHandle priv_nh("~");
     
     std::string arm_name;
-	priv_nh.getParam("arm", arm_name);
+	priv_nh.getParam("arm_name", arm_name);
 	
 	double rate_command;
 	priv_nh.getParam("rate", rate_command);
@@ -52,10 +52,8 @@ int main(int argc, char **argv)
   	try {
 
     	 
-    	 Pose curr(2.33248524057e-07, 2.66674690499e-07, -0.063499999999,
-    	 	 -2.59734823723e-06, 0.707106781172, 0.707106781191, 
-    	 	 2.59734823723e-06,
-    	 	 0.0);
+    	 Pose curr(1.7815e-07,	2.11577e-07,	-0.0485,	-2.59735e-06,
+			0.707107,	0.707107,	2.59735e-06,	0);
     	 double r = 0.02;
     	 
     	 Trajectory<Pose> circle_tr =
@@ -80,7 +78,7 @@ int main(int argc, char **argv)
   init_goal.move_allowed = true;
   init_arm_ac.sendGoal(init_goal);
   
-  /*
+  
 
   //wait for the action to return
   bool finished_before_timeout = init_arm_ac.waitForResult(ros::Duration(30.0));
@@ -108,7 +106,7 @@ int main(int argc, char **argv)
   }
   else
     ROS_INFO("Action did not finish before the time out.");
-   */ 	
+   	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     } catch (const std::exception& e) {

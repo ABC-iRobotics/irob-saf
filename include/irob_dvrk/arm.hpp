@@ -28,6 +28,7 @@
 #include "irob_utils/utils.hpp"
 #include "irob_utils/topic_name_loader.hpp"
 #include <actionlib/server/simple_action_server.h>
+#include <irob_autosurg/ToolPoseStamped.h>
 #include <irob_autosurg/InitArmAction.h>
 #include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
@@ -51,6 +52,7 @@ public:
 
 protected:
     const ArmTypes arm_typ;
+	const std::string arm_name;
     ros::NodeHandle nh;
     
     // Action servers
@@ -82,13 +84,15 @@ protected:
     ros::Publisher robot_state_pub;
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
+
+	ros::Publisher position_cartesian_current_pub;
     
     void subscribeTopics();
     void advertiseTopics();
     void startActionServers();
 
 public:
-	Arm(ros::NodeHandle, ArmTypes, bool);
+	Arm(ros::NodeHandle, ArmTypes, std::string, bool);
 	~Arm();
 
     // Callbacks
@@ -101,7 +105,7 @@ public:
     void errorCB(const std_msgs::String);
     void warningCB(const std_msgs::String);
     void stateJointCurrentCB(const sensor_msgs::JointStateConstPtr&);
-    void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
+    virtual void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
 
    
     

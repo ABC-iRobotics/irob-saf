@@ -25,7 +25,8 @@ const double PSM::INSERTION_DT = 0.01;
 const int PSM::INSERTION_JOINT_IDX = 2;
 
 
-PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): Arm(nh, arm_typ, isActive)
+PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
+	 bool isActive): Arm(nh, arm_typ, arm_name, isActive)
 {
 	if (!(arm_typ == ArmTypes::PSM1 || 
   							arm_typ == ArmTypes::PSM2))
@@ -76,11 +77,15 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
 			{
       			case CARTESIAN:
       				feedback.status = "setting_cartesian";
+					feedback.info = arm_typ.name 
+						+ " attempting to start cartesian mode";
       				success = setRobotState(STATE_POSITION_CARTESIAN);
       				break;
       				
       			case JOINT:
       				feedback.status = "setting_joint";
+					feedback.info = arm_typ.name 
+						+ " attempting to start joint mode";
       				in_joint_state = setRobotState(STATE_POSITION_JOINT);
       				if (!in_joint_state) {
       					to_do = JOINT;
@@ -99,6 +104,8 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
  
       			case INSERT:
       				feedback.status = "inserting_tool";
+					feedback.info = arm_typ.name 
+						+ " moving tool past the cannula";
       				moveJointAbsolute(INSERTION_JOINT_IDX, 
       								insert_tr[i], insert_tr.dt); 
       				i++;
@@ -151,10 +158,11 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
 
     if(success)
     {
-      result.descript = robot_state.data;
-      ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-      // set the action state to succeeded
-      init_as.setSucceeded(result);
+      	result.descript = robot_state.data;
+      	ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
+		result.info = arm_typ.name + " initilaization succeeded";
+      	// set the action state to succeeded
+      	init_as.setSucceeded(result);
     }
 }
 
@@ -207,6 +215,23 @@ void PSM::advertiseTopics()
                         	arm_typ.name,
                         	"dvrk_topics/set_jaw_position"),
                         1000);
+}
+
+
+void PSM::positionCartesianCurrentCB(
+				const geometry_msgs::PoseStampedConstPtr& msg) 
+{
+  	position_cartesian_current = *msg;
+	irob_autosurg::ToolPoseStamped fwd;
+	fwd.header = position_cartesian_current.header;
+
+
+ 	Pose tmp(position_cartesian_current, position_joint.position[6]);
+
+	// TODO hand-eye calibration
+	
+	fwd.pose = tmp.toRosToolPose();
+    position_cartesian_current_pub.publish(fwd);
 }
 
 Pose PSM::getPoseCurrent()

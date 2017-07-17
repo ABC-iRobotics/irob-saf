@@ -30,8 +30,11 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
     
-    std::string arm_name;
-	priv_nh.getParam("arm", arm_name);
+    std::string arm_typ;
+	priv_nh.getParam("arm_typ", arm_typ);
+
+	std::string arm_name;
+	priv_nh.getParam("arm_name", arm_name);
 	
 
 
@@ -39,19 +42,10 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm_name),
-    	 irob_dvrk::PSM::ACTIVE);
-    	 
-    	/* Trajectory<Pose> circle_tr =
-    	 	TrajectoryFactory::circleTrajectoryHorizontal(
-    		psm.getPositionCartesianCurrent(), 
-			2*M_PI, psm.getPositionCartesianCurrent() + 
-			Eigen::Vector3d(0.0, -r, 0.0),
-			3.0/speed, dt);*/
-
+    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm_typ),
+    	 arm_name, irob_dvrk::PSM::ACTIVE);
     	
-  	   	ros::spin();
-		  	    	
+  	   	ros::spin();	    	
     	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	

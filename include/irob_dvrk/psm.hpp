@@ -48,12 +48,15 @@ private:
     void advertiseTopics();
 
 public:
-    PSM(ros::NodeHandle, ArmTypes, bool);
-	~PSM();
-	
+    PSM(ros::NodeHandle, ArmTypes, std::string, bool);
+	~PSM();	
+
 	void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);
     void resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &);
-    
+
+	void positionCartesianCurrentCB(
+				const geometry_msgs::PoseStampedConstPtr&) ;    
+
     Pose getPoseCurrent();
     
     void moveCartesianAbsolute(Pose, double = 0.01);

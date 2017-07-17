@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm), irob_dvrk::PSM::ACTIVE);
+    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm),"arm_x", irob_dvrk::PSM::ACTIVE);
     	ros::Duration(1.0).sleep();  
    	
    		// Do preprogrammed movement

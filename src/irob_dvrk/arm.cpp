@@ -28,8 +28,9 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 
 
 
-Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, bool isActive): 
-			nh(nh), arm_typ(arm_typ),
+Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
+	bool isActive): 
+			nh(nh), arm_typ(arm_typ), arm_name(arm_name),
 			init_as(nh, "init_arm", boost::bind(
 				&Arm::initArmActionCB, this, _1), false),
 			reset_pose_as(nh, "reset_pose", boost::bind(
@@ -65,8 +66,12 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
     irob_autosurg::InitArmFeedback feedback;
     irob_autosurg::InitArmResult result;
 
+
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
   
+    Eigen::Matrix3d p = Eigen::Matrix3d::Random(3,3);
+    p = p.transpose();
+
     // Set robot state to cartasian
     while(!success)
     {
@@ -89,6 +94,7 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
   		
   		// Send some feedback
   		feedback.status = "setting_cartesian";
+		feedback.info = arm_typ.name + " attempting to start cartesian mode";
       	init_as.publishFeedback(feedback);
       	// this sleep is not necessary
       	loop_rate.sleep();
@@ -96,10 +102,11 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
 
     if(success)
     {
-      result.descript = robot_state.data;
-      ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-      // set the action state to succeeded
-      init_as.setSucceeded(result);
+      	result.descript = robot_state.data;
+      	ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
+		result.info = arm_typ.name + " initilaization succeeded";
+      	// set the action state to succeeded
+      	init_as.setSucceeded(result);
     }
 }
   
@@ -196,7 +203,16 @@ void Arm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg)
 void Arm::positionCartesianCurrentCB(
 				const geometry_msgs::PoseStampedConstPtr& msg) 
 {
-     position_cartesian_current = *msg;
+    position_cartesian_current = *msg;
+	irob_autosurg::ToolPoseStamped fwd;
+	fwd.header = position_cartesian_current.header;
+
+ 	Pose tmp(position_cartesian_current, 0.0);
+
+	// TODO hand-eye calibration
+	
+	fwd.pose = tmp.toRosToolPose();
+    position_cartesian_current_pub.publish(fwd);
 }
 
 void Arm::errorCB(const std_msgs::String msg) 
@@ -250,6 +266,7 @@ void Arm::subscribeTopics()
 
 void Arm::advertiseTopics() 
 {
+	// dVRK
 	robot_state_pub = nh.advertise<std_msgs::String>(
                     	TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
@@ -267,7 +284,13 @@ void Arm::advertiseTopics()
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/set_position_cartesian"),
-                        1000);    
+                        1000);  
+
+	// robot interface
+	position_cartesian_current_pub 
+				= nh.advertise<irob_autosurg::ToolPoseStamped>(
+                    	"position_cartesian_current",
+                        1000);   
 }
 
 void Arm::startActionServers() 

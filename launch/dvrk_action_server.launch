@@ -1,15 +1,22 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
+	<group ns="irob_autosurg">
 	<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" />
 	
-  	<arg name="arm" default="PSM1"/>  	
+	
+  	<arg name="arm_typ" default="PSM1"/>
+	<arg name="arm_name" default="arm_1"/>    	
   	
-	<node name="dvrk_action_server" pkg="irob_autosurg" 
+	<node name="dvrk_action_server_$(arg arm_name)" pkg="irob_autosurg" 
 			type="dvrk_action_server" output="screen">
   		
-  		<param name="arm" type="string" value="$(arg arm)" />
-
+  		<param name="arm_typ" type="string" value="$(arg arm_typ)" />
+		<param name="arm_name" type="string" value="$(arg arm_name)" />
+		
+		<remap from="position_cartesian_current" 
+			to="robot_interface/($arg arm_name)/position_cartesian_current"/>
+		
 	</node>
-  	
+  	</group>
 </launch>
