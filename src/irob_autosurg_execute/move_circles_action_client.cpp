@@ -24,7 +24,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
-using namespace irob_autosurg;
+using namespace ias;
 
 int main(int argc, char **argv)
 {

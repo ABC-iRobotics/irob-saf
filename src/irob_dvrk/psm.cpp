@@ -11,9 +11,7 @@
 #include <chrono>
 #include "irob_utils/trajectory_factory.hpp"
 
-using namespace irob_autosurg;
-
-namespace irob_dvrk {
+using namespace ias;
 
                    
 const std::string PSM::ERROR_INSIDE_CANNULA
@@ -50,7 +48,7 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
     	
     init_action_type_t to_do = CARTESIAN;
     int i = 0;
-    irob_autosurg::Trajectory<double> insert_tr;
+    Trajectory<double> insert_tr;
     
     irob_autosurg::InitArmFeedback feedback;
     irob_autosurg::InitArmResult result;
@@ -90,7 +88,7 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
       				if (!in_joint_state) {
       					to_do = JOINT;
       				} else {
-        				insert_tr = irob_autosurg::TrajectoryFactory::
+        				insert_tr = TrajectoryFactory::
         					linearTrajectoryWithSmoothAcceleration(
 								getJointStateCurrent(INSERTION_JOINT_IDX),
 								INSERTION_DEPTH, 
@@ -329,6 +327,5 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
 }
 
 
-}
 
 

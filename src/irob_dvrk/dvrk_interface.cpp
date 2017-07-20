@@ -20,7 +20,7 @@
 #include "irob_utils/trajectory_factory.hpp"
 
 
-using namespace irob_autosurg;
+using namespace ias;
 
 int main(int argc, char **argv)
 {
@@ -42,8 +42,8 @@ int main(int argc, char **argv)
     
     // Robot control
   	try {
-    	irob_dvrk::PSM psm(nh, irob_dvrk::ArmTypes::typeForString(arm_typ),
-    	 arm_name, irob_dvrk::PSM::ACTIVE);
+    	PSM psm(nh, ArmTypes::typeForString(arm_typ),
+    	 arm_name,PSM::ACTIVE);
     	
   	   	ros::spin();	    	
     	

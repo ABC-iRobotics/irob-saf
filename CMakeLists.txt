@@ -69,9 +69,18 @@ find_package(catkin REQUIRED
  	DIRECTORY
  	action
    	FILES
+   	
    	FollowTrajectory.action
    	InitArm.action
    	ResetPose.action
+   	
+   	CloseTool.action
+   	OpenTool.action
+   	Penetrate.action
+   	GoTo.action
+   	
+   	Grasp.action
+   	Dissect.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -153,6 +162,17 @@ add_library( irob_dvrk_lib STATIC
 
 set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
+file(GLOB irob_motion_lib_src
+    "src/irob_motion/*.cpp"
+)
+
+
+add_library( irob_motion_lib STATIC
+       ${irob_motion_lib_src}
+       )
+
+set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -160,16 +180,17 @@ set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 # add_dependencies(irob_dvrk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(irob_dvrk_lib irob_autosurg_generate_messages_cpp)
 add_dependencies(irob_utils_lib irob_autosurg_generate_messages_cpp)
+add_dependencies(irob_motion_lib irob_autosurg_generate_messages_cpp)
 
 ## Declare a C++ executable
 #add_executable(move_test src/move_test.cpp)
-add_executable(move_circles src/irob_autosurg_execute/move_circles.cpp)
+#add_executable(move_circles src/irob_autosurg_execute/move_circles.cpp)
 #add_executable(log_trajectory src/log_trajectory.cpp)
 #add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(dvrk_action_server src/irob_autosurg_execute/dvrk_action_server.cpp)
+add_executable(dvrk_interface src/irob_dvrk/dvrk_interface.cpp)
 add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles_action_client.cpp)
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -187,23 +208,21 @@ add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles
  	${catkin_LIBRARIES}
  )
 
-  target_link_libraries(irob_dvrk_lib
+ target_link_libraries(irob_dvrk_lib
  	${catkin_LIBRARIES}
  	irob_utils_lib
  )
  
- target_link_libraries(move_circles
+ target_link_libraries(irob_motion_lib
+ 	${catkin_LIBRARIES}
+ )
+ 
+ target_link_libraries(dvrk_interface
    ${catkin_LIBRARIES}
     irob_dvrk_lib
  )
  
- 
-  target_link_libraries(dvrk_action_server
-   ${catkin_LIBRARIES}
-    irob_dvrk_lib
- )
- 
-  target_link_libraries(move_circles_action_client
+ target_link_libraries(move_circles_action_client
    ${catkin_LIBRARIES}
     irob_dvrk_lib
  )

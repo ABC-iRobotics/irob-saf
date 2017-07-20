@@ -33,9 +33,7 @@
 #include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
 
-using namespace irob_autosurg;
-
-namespace irob_dvrk {
+using namespace ias;
 
 class Arm {
 
@@ -142,8 +140,6 @@ public:
 	void checkNaNJoint(const sensor_msgs::JointState&);
 	
 };
-
-}
 
 
 #endif /* DVRK_ARM_HPP_ */

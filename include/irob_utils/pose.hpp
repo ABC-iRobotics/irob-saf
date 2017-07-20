@@ -20,7 +20,7 @@
 #include <irob_autosurg/ToolPoseStamped.h>
 
 
-namespace irob_autosurg {
+namespace ias {
 
 class Pose {
  

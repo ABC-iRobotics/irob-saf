@@ -14,9 +14,7 @@
 #include <vector>
 #include "irob_utils/pose.hpp"
 
-using namespace irob_autosurg;
-
-namespace irob_dvrk {
+using namespace ias;
 
 class ArmTypes {
   public:
@@ -61,6 +59,5 @@ class ArmTypes {
     	return name == other.name;
     }
 };
-}
 
 #endif

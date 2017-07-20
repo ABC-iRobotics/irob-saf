@@ -1,0 +1,12 @@
+# Define the goal
+float64 angle
+
+---
+# Define the result
+float64 angle
+string info
+---
+# Define a feedback message
+float64 angle
+string info
+

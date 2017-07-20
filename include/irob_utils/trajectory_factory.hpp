@@ -18,7 +18,7 @@
 #include "irob_utils/trajectory.hpp"
 #include "irob_utils/pose.hpp"
 
-namespace irob_autosurg {
+namespace ias {
 
 class TrajectoryFactory
 {

@@ -14,7 +14,7 @@
 #include <string>
 
 
-namespace irob_autosurg {
+namespace ias {
 
 class TopicNameLoader
 {

@@ -19,7 +19,7 @@
 #include "irob_utils/pose.hpp"
 #include <irob_autosurg/TrajectoryToolPose.h>
 
-namespace irob_autosurg { 
+namespace ias { 
 
 template <class T>
 class Trajectory 
@@ -48,7 +48,9 @@ class Trajectory
 		
 		Trajectory<T> operator+=(const Trajectory<T>&);
    		Trajectory<T> operator+(const Trajectory<T>&);
-	
+		
+		void copyToRosTrajectory(irob_autosurg::ToolPoseTrajectory&);
+		
 		friend std::ostream& operator<<(std::ostream& os
 			, const Trajectory<T>& tr)
 		{		

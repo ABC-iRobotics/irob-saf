@@ -10,9 +10,8 @@
 #include <numeric>
 #include <chrono>
 
-using namespace irob_autosurg;
+using namespace ias;
 
-namespace irob_dvrk {
 
 const std::string Arm::HOME_CMD
                     = "Home";
@@ -744,7 +743,6 @@ void Arm::recordTrajectory(Trajectory<Pose>& tr)
 		tr.addPoint(getPoseCurrent());
 		loop_rate.sleep();
 	}
-}
 
 
 }

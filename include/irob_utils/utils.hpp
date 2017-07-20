@@ -17,7 +17,10 @@
 #include <Eigen/Geometry> 
 #include "irob_utils/pose.hpp"
 
-namespace irob_autosurg {
+namespace ias {
+
+typedef enum InterpolationMethod 
+    	{LINEAR, BEZIER} InterpolationMethod;  
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
