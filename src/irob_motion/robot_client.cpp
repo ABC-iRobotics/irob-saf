@@ -12,7 +12,10 @@ using namespace ias;
 
 
 RobotClient::RobotClient(ros::NodeHandle nh, std::string arm_name, double dt): 
-			nh(nh), arm_name(arm_name), dt(dt)
+			nh(nh), arm_name(arm_name), dt(dt),
+			init_arm_ac("init_arm", true),
+			reset_pose_ac("reset_pose", true),
+			follow_tr_ac("follow_trajectory", true)
 {
 
 	// Subscribe and advertise topics
@@ -33,18 +36,26 @@ RobotClient::~RobotClient()
 
 // Read pos and forward
 void RobotClient::positionCartesianCurrentCB(
-				const geometry_msgs::PoseStampedConstPtr& msg) 
+				const irob_autosurg::ToolPoseStampedConstPtr& msg) 
 {
     position_cartesian_current = *msg;
     position_cartesian_current_pub.publish(msg);
 }
 
+void RobotClient::followTrajectoryDoneCB(
+			const actionlib::SimpleClientGoalState& state,
+            const irob_autosurg::FollowTrajectoryResultConstPtr& result)
+{
+	follow_tr_done = true;
+}
+
 // TODO remap
 void RobotClient::subscribeTopics() 
 {                 	            	
-   	position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
+   	position_cartesian_current_sub = 
+   			nh.subscribe<irob_autosurg::ToolPoseStamped>(
                         "position_cartesian_current_in",
-                       	1000, &Arm::positionCartesianCurrentCB,this);
+                       	1000, &RobotClient::positionCartesianCurrentCB,this);
 }
 
 // TODO remap
@@ -56,7 +67,7 @@ void RobotClient::advertiseTopics()
                         1000);   
 }
 
-void RobotClient::startActionServers() 
+void RobotClient::waitForActionServers() 
 {
 	ROS_INFO_STREAM("Wating for action servers...");
 	init_arm_ac.waitForServer();
@@ -69,7 +80,7 @@ void RobotClient::startActionServers()
 Pose RobotClient::getPoseCurrent()
 {
  	ros::spinOnce();
- 	Pose ret(position_cartesian_current, 0.0);
+ 	Pose ret(position_cartesian_current);
  	return ret;
 
 }
@@ -91,7 +102,7 @@ void RobotClient::initArm(bool move_allowed, bool reset_pose)
   	init_arm_ac.sendGoal(goal);
   
   	// Throw exception if no result is received 
-  	if(!init_arm_ac.waitForResult(ros::Duration(30.0))))
+  	if(!init_arm_ac.waitForResult(ros::Duration(30.0)))
   		throw std::runtime_error("Arm initialization has timed out");
   	
   	// Pose reset
@@ -108,7 +119,7 @@ void RobotClient::resetPose(bool move_allowed)
   	reset_pose_ac.sendGoal(goal);
   
   	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0))))
+  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0)))
   		throw std::runtime_error("Arm pose reset has timed out");
 }
 
@@ -128,10 +139,10 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
 	double T = std::abs((angle_rad-p1.jaw) / speed_rad);
 	
 		
-	dvrk::Pose p2 = p1;
+	Pose p2 = p1;
 	p2.jaw = angle_rad;
 	
-	dvrk::Trajectory<dvrk::Pose> tr = dvrk::TrajectoryFactory::
+	Trajectory<Pose> tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						p2,
@@ -139,41 +150,43 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
    						
    	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
-  	follow_tr_ac.sendGoal(goal);
-  	
-  	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T))))
-  		throw std::runtime_error("Follow trajectory action has timed out");
    	
+   	follow_tr_done = false;
+   	
+  	follow_tr_ac.sendGoal(goal, boost::bind(				
+  						&RobotClient::followTrajectoryDoneCB, this, _1, _2));
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in followTrajectoryDoneCB
 }
 
 void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
-			vector<Pose> waypoints /* = empty vector */, 
-			InterpolatonMethod interp_method /* = InterpolationMethod.LINEAR */)
+			std::vector<Pose> waypoints /* = empty vector */, 
+			InterpolationMethod interp_method /* = LINEAR */)
 {
 	Pose p1 = getPoseCurrent();
 	double T;
-	dvrk::Trajectory<dvrk::Pose> tr;
+	Trajectory<Pose> tr;
 	
 	if (waypoints.empty()) {
 	// Go straight to target
-	T = std::abs((p1.dist(target)).cartesian / speed_rad);
-	tr = dvrk::TrajectoryFactory::
+	T = std::abs((p1.dist(target)).cartesian / speed);
+	tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
-   						p2,
+   						target,
    						T, T*0.1, dt);
 	
-	} else if (interp_method == InterpolationMethod.LINEAR) {
+	} else if (interp_method == LINEAR) {
 	// Linear trajectory through waypoints
 	// TODO
 		throw std::runtime_error(
-			"Trajectory through waypoints is not implemented jet");		
+			"Trajectory through waypoints is not implemented yet");		
 	} else {
 	// Go on Bezier curve through waypoints
 	// TODO
 		throw std::runtime_error(
-			"Trajectory through waypoints is not implemented jet");	
+			"Trajectory through waypoints is not implemented yet");	
 	}
 	
 	irob_autosurg::FollowTrajectoryGoal goal;
@@ -181,7 +194,7 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
   	follow_tr_ac.sendGoal(goal);
   	
   	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T))))
+  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T)))
   		throw std::runtime_error("Follow trajectory action has timed out");
 
 }
@@ -190,7 +203,7 @@ void RobotClient::moveRelative(Pose p, double speed, CoordFrame cf)
 {
 	// TODO
 	throw std::runtime_error(
-			"Tool rotation is not implemented jet");	
+			"Tool rotation is not implemented yet");	
 }
 
 void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
@@ -199,21 +212,21 @@ void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 	Eigen::Vector3d v_rot;
 	
 	switch (cf) {
-		case CoordFrame.WCS:
+		case WCS:
 			v_rot = v;
 			break;
 			
-		case CoordFrameTCPF:
+		case TCPF:
 			Eigen::Matrix3d R = p1.orientation.toRotationMatrix();
 			v_rot = R*v;
 			
 			break;
 	}
 	
-	dvrk::Pose p2 = p1 + v_rot;
+	Pose p2 = p1 + v_rot;
 	
 	double T = std::abs(v_rot.norm() / speed);
-	dvrk::Trajectory<dvrk::Pose> tr = dvrk::TrajectoryFactory::
+	Trajectory<Pose> tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						p2,
@@ -224,7 +237,7 @@ void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
   	follow_tr_ac.sendGoal(goal);
   	
   	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T))))
+  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T)))
   		throw std::runtime_error("Follow trajectory action has timed out");
 	
 }
@@ -234,7 +247,13 @@ void RobotClient::moveRelative(Eigen::Quaternion<double> q,
 {
 	// TODO
 	throw std::runtime_error(
-			"Tool rotation is not implemented jet");	
+			"Tool rotation is not implemented yet");	
+}
+
+bool RobotClient::isFollowTrajectoryDone()
+{
+	ros::spinOnce();
+	return follow_tr_done;
 }
 
 

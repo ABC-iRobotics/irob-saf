@@ -19,7 +19,7 @@ GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name,
 			open_tool_as(nh, "open_tool", boost::bind(
 				&GestureServer::openToolActionCB, this, _1), false),
 			penetrate_as(nh,"penetrate",boost::bind(
-				&GestureServer::penetrateActionCB, this, _1), false)
+				&GestureServer::penetrateActionCB, this, _1), false),
 			go_to_as(nh,"go_to",boost::bind(
 				&GestureServer::goToActionCB, this, _1), false)
 {
@@ -43,11 +43,12 @@ void GestureServer::closeToolActionCB(
 {
     // Helper variables
     bool success = false;
+    ros::Rate loop_rate(0.2);
 
     irob_autosurg::CloseToolFeedback feedback;
     irob_autosurg::CloseToolResult result;
 
-	ROS_INFO_STREAM(arm_typ.name << " closing tool");
+	ROS_INFO_STREAM(arm.getName() << " closing tool");
   	
   	arm.moveGripper(goal->angle, goal->speed);
   	
@@ -56,122 +57,110 @@ void GestureServer::closeToolActionCB(
     	// Check that preempt has not been requested by the client
       	if (close_tool_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM(arm_typ.name << " close tool: Preempted");
+        	ROS_INFO_STREAM(arm.getName()  << " close tool: Preempted");
         	// Set the action state to preempted
         	close_tool_as.setPreempted();
         	success = false;
         	break;
       	}
 		
-		success = close_tool_as.waitForResult(ros::Duration(0.5));
-  		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+		
+		success = arm.isFollowTrajectoryDone();
+  		loop_rate.sleep();
   		// TODO send feedback
     }
 
     if(success)
     {
-      	result.descript = robot_state.data;
-      	ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-		result.info = arm_typ.name + " initilaization succeeded";
+      	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
+      	ROS_INFO_STREAM(arm.getName()  << " close arm succeeded");
+		result.info = arm.getName()  + " close arm succeeded";
       	// set the action state to succeeded
-      	init_as.setSucceeded(result);
+      	close_tool_as.setSucceeded(result);
     }
 }
   
-void GestureServer::releaseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
+void GestureServer::openToolActionCB(
+				const irob_autosurg::OpenToolGoalConstPtr &goal)
 {
-    // helper variables
+     // Helper variables
     bool success = false;
-    
-    irob_autosurg::ResetPoseFeedback feedback;
-    irob_autosurg::ResetPoseResult result;
+    ros::Rate loop_rate(0.2);
 
-	ROS_INFO_STREAM("Starting " << arm_typ.name << " pose reset");
-  
-    	// Check that preempt has not been requested by the client
-    if (reset_pose_as.isPreemptRequested() || !ros::ok())
-    {
-        ROS_INFO_STREAM(arm_typ.name << " pose reset: Preempted");
-        // Set the action state to preempted
-        reset_pose_as.setPreempted();
-        success = false;
-    }
+    irob_autosurg::OpenToolFeedback feedback;
+    irob_autosurg::OpenToolResult result;
+
+	ROS_INFO_STREAM(arm.getName()  << " closing tool");
   	
-  	ROS_INFO_STREAM(arm_typ.name << " pose reset not implemented");
-  	success = true;	
-  	// Send some feedback
-  	feedback.status = "done";
-    reset_pose_as.publishFeedback(feedback);
-
-    if(success)
+  	arm.moveGripper(goal->angle, goal->speed);
+  	
+    while(!success)
     {
-      result.descript = "done";
-      ROS_INFO_STREAM(arm_typ.name << " pose reset succeded");
-      // set the action state to succeeded
-      reset_pose_as.setSucceeded(result);
-    }
-}
-  
-  
-void GestureServer::followTrajectoryActionCB(
-		const irob_autosurg::FollowTrajectoryGoalConstPtr &goal)
-  {
-    // helper variables
-    bool success = true;
-    irob_autosurg::FollowTrajectoryFeedback feedback;
-    irob_autosurg::FollowTrajectoryResult result;
-
-	ROS_INFO_STREAM("Starting trajectory follow action.");
-	
-	Trajectory<Pose> tr(goal->trajectory);
-	// TODO hande-eye calibration
-	
-	ros::Rate loop_rate(1.0/tr.dt);
-	// start executing the action
-	for (int i = 0; i < tr.size(); i++)
-	{
-		// check that preempt has not been requested by the client
-      	if (follow_tr_as.isPreemptRequested() || !ros::ok())
+    	// Check that preempt has not been requested by the client
+      	if (open_tool_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM("Follow trajectory: Preempted");
-       	 	// set the action state to preempted
-        	follow_tr_as.setPreempted();
+        	ROS_INFO_STREAM(arm.getName()  << " open tool: Preempted");
+        	// Set the action state to preempted
+        	open_tool_as.setPreempted();
         	success = false;
         	break;
       	}
-		moveCartesianAbsolute(tr[i],tr.dt);
 		
-		feedback.pose = tr[i].toRosToolPose();
-      	follow_tr_as.publishFeedback(feedback);
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
 		
-		loop_rate.sleep();
-	}
-	
+		success = arm.isFollowTrajectoryDone();
+  		loop_rate.sleep();
+  		// TODO send feedback
+    }
+
     if(success)
     {
-      result.pose = getPoseCurrent().toRosToolPose();
-      ROS_INFO_STREAM("Follow trajectory: Succeeded");
-      // set the action state to succeeded
-      follow_tr_as.setSucceeded(result);
+      	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
+      	ROS_INFO_STREAM(arm.getName()  << " open arm succeeded");
+		result.info = arm.getName()  + " open arm succeeded";
+      	// set the action state to succeeded
+      	open_tool_as.setSucceeded(result);
     }
-  }
-
-
-void GestureServer::positionCartesianCurrentCB(
-				const geometry_msgs::PoseStampedConstPtr& msg) 
-{
-    position_cartesian_current = *msg;
-	irob_autosurg::ToolPoseStamped fwd;
-	fwd.header = position_cartesian_current.header;
-
- 	Pose tmp(position_cartesian_current, 0.0);
-
-	// TODO hand-eye calibration
-	
-	fwd.pose = tmp.toRosToolPose();
-    position_cartesian_current_pub.publish(fwd);
 }
 
+void GestureServer::penetrateActionCB(
+				const irob_autosurg::PenetrateGoalConstPtr &goal)
+{
+     // Helper variables
+    bool success = false;
+    ros::Rate loop_rate(0.2);
+
+    irob_autosurg::PenetrateResult result;
+
+	// TODO
+  	ROS_INFO_STREAM("Penetration not implemented yet");
+  	//arm.moveGripper(goal->angle, goal->speed);
+
+    // set the action state to succeeded
+    penetrate_as.setSucceeded(result);
+
+}
+  
+  
+void GestureServer::goToActionCB(
+				const irob_autosurg::GoToGoalConstPtr &goal)
+{
+       // Helper variables
+    bool success = false;
+    ros::Rate loop_rate(0.2);
+
+    irob_autosurg::GoToResult result;
+
+	// TODO
+  	ROS_INFO_STREAM("Go to not implemented yet");
+  	//arm.moveGripper(goal->angle, goal->speed);
+
+    // set the action state to succeeded
+    go_to_as.setSucceeded(result);
+}
 
 
 void GestureServer::startActionServers() 

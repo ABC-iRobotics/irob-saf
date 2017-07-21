@@ -49,7 +49,7 @@ class Trajectory
 		Trajectory<T> operator+=(const Trajectory<T>&);
    		Trajectory<T> operator+(const Trajectory<T>&);
 		
-		void copyToRosTrajectory(irob_autosurg::ToolPoseTrajectory&);
+		void copyToRosTrajectory(irob_autosurg::TrajectoryToolPose&);
 		
 		friend std::ostream& operator<<(std::ostream& os
 			, const Trajectory<T>& tr)

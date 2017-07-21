@@ -18,8 +18,8 @@ Trajectory<Pose>::Trajectory(const irob_autosurg::TrajectoryToolPose& other): dt
 
 // TODO This method is called frequently, is it effective enough?
 template<>
-void Trajectory<Pose>copyToRosTrajectory(
-			irob_autosurg::ToolPoseTrajectory& ros_tr);
+void Trajectory<Pose>::copyToRosTrajectory(
+			irob_autosurg::TrajectoryToolPose& ros_tr)
 {
   	for (int i = 0; i < size(); i++)
   		ros_tr.poses.push_back(points[i].toRosToolPose());

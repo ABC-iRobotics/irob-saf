@@ -17,6 +17,7 @@
 #include <Eigen/Geometry> 
 #include "irob_utils/trajectory.hpp"
 #include "irob_utils/pose.hpp"
+#include "irob_utils/utils.hpp"
 
 namespace ias {
 

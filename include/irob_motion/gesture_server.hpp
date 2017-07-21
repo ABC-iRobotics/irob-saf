@@ -68,10 +68,10 @@ public:
     // Callbacks
 
     void closeToolActionCB(
-    		const irob_autosurg::GraspGoalConstPtr &);
+    		const irob_autosurg::CloseToolGoalConstPtr &);
     		
    	void openToolActionCB(
-    		const irob_autosurg::ReleseGoalConstPtr &);
+    		const irob_autosurg::OpenToolGoalConstPtr &);
     		
    	void penetrateActionCB(
     		const irob_autosurg::PenetrateGoalConstPtr &);

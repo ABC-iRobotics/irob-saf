@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <cmath>
 #include <ros/ros.h>
@@ -26,6 +27,7 @@
 #include <Eigen/Geometry> 
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory.hpp"
+#include "irob_utils/trajectory_factory.hpp"
 #include "irob_utils/utils.hpp"
 
 #include <actionlib/client/simple_action_client.h>
@@ -51,14 +53,15 @@ private:
     ros::NodeHandle nh;
     
     double dt;
+    bool follow_tr_done = false;
     
     // Action clients
     actionlib::SimpleActionClient<irob_autosurg::InitArmAction> 
-    									init_arm_ac("init_arm", true);
-    actionlib::SimpleActionClient<irob_autosurg::InitArmAction>
-    									reset_pose_ac("reset_pose", true);
+    									init_arm_ac;
+    actionlib::SimpleActionClient<irob_autosurg::ResetPoseAction>
+    									reset_pose_ac;
    	actionlib::SimpleActionClient<irob_autosurg::FollowTrajectoryAction> 
-   										follow_tr_ac("follow_trajectory", true);
+   										follow_tr_ac;
    
 
     // States
@@ -74,6 +77,7 @@ private:
    	
     void subscribeTopics();
     void advertiseTopics();
+    void startActionClients();
     void waitForActionServers();
     
 
@@ -83,7 +87,10 @@ public:
 
     // Callbacks    
 
-    void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
+    void positionCartesianCurrentCB(
+    		const irob_autosurg::ToolPoseStampedConstPtr&);
+    void followTrajectoryDoneCB(const actionlib::SimpleClientGoalState& state,
+            const irob_autosurg::FollowTrajectoryResultConstPtr& result);
 
    	Pose getPoseCurrent();
    	std::string getName();
@@ -92,11 +99,14 @@ public:
    	void initArm(bool, bool);	
    	void resetPose(bool);
 	void moveGripper(double, double = 10.0);
-	void goTo(Pose, double = 10.0, vector<Pose> = vector<Pose>(), 
-			InterpolatonMethod = InterpolationMethod.LINEAR);
+	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
+			InterpolationMethod = LINEAR);
 	void moveRelative(Pose, double, CoordFrame);
 	void moveRelative(Eigen::Vector3d, double, CoordFrame);
 	void moveRelative(Eigen::Quaternion<double>, double, CoordFrame);
+	
+	
+	bool isFollowTrajectoryDone();
 	
 };
 

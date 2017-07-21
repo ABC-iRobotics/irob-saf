@@ -131,9 +131,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 								include/Eigen 
-								include/dvrk
-								#include/dvrk_automation
-								#include/dvrk_vision
+								include/irob_dvrk
+								include/irob_utils
+								include/irob_motion
 								)
 
 ## Declare a C++ library
@@ -192,14 +192,17 @@ add_dependencies(irob_motion_lib irob_autosurg_generate_messages_cpp)
 
 add_executable(dvrk_interface src/irob_dvrk/dvrk_interface.cpp)
 add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles_action_client.cpp)
+add_executable(gesture_main src/irob_motion/gesture_main.cpp)
+add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
+
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-#add_dependencies(irob_dvrk_lib irob_automation_generate_messages_cpp)
-#add_dependencies(irob_utils_lib irob_automation_generate_messages_cpp)
+add_dependencies(test_gesture_client irob_autosurg_generate_messages_cpp)
+add_dependencies(gesture_main irob_autosurg_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
@@ -215,6 +218,7 @@ add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles
  
  target_link_libraries(irob_motion_lib
  	${catkin_LIBRARIES}
+ 	irob_utils_lib
  )
  
  target_link_libraries(dvrk_interface
@@ -225,6 +229,18 @@ add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles
  target_link_libraries(move_circles_action_client
    ${catkin_LIBRARIES}
     irob_dvrk_lib
+ )
+ 
+ target_link_libraries(gesture_main
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
+ )
+ 
+ target_link_libraries(test_gesture_client
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
  )
  
 
