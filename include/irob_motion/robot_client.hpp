@@ -86,6 +86,7 @@ public:
     void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
 
    	Pose getPoseCurrent();
+   	std::string getName();
    	
    	// Robot motions
    	void initArm(bool, bool);	
@@ -93,9 +94,9 @@ public:
 	void moveGripper(double, double = 10.0);
 	void goTo(Pose, double = 10.0, vector<Pose> = vector<Pose>(), 
 			InterpolatonMethod = InterpolationMethod.LINEAR);
-	void moveRelative(Pose, CoordFrame);
-	void moveRelative(Eigen::Vector3d, CoordFrame);
-	void moveRelative(Eigen::Quaternion<double>, CoordFrame);
+	void moveRelative(Pose, double, CoordFrame);
+	void moveRelative(Eigen::Vector3d, double, CoordFrame);
+	void moveRelative(Eigen::Quaternion<double>, double, CoordFrame);
 	
 };
 

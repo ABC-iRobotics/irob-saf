@@ -67,10 +67,10 @@ public:
 
     // Callbacks
 
-    void graspActionCB(
+    void closeToolActionCB(
     		const irob_autosurg::GraspGoalConstPtr &);
     		
-   	void releaseActionCB(
+   	void openToolActionCB(
     		const irob_autosurg::ReleseGoalConstPtr &);
     		
    	void penetrateActionCB(
@@ -81,6 +81,7 @@ public:
     
 
    	Pose getPoseCurrent();
+   	std::string getArmName();
 	
 };
 

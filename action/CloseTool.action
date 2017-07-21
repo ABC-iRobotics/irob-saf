@@ -1,5 +1,6 @@
 # Define the goal
 float64 angle
+float64 speed
 
 ---
 # Define the result

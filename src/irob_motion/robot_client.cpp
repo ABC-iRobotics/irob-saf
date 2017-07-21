@@ -74,6 +74,12 @@ Pose RobotClient::getPoseCurrent()
 
 }
 
+std::string RobotClient::getName()
+{
+	return arm_name;
+}
+   	
+
 // Robot motions
 
 void RobotClient::initArm(bool move_allowed, bool reset_pose)
@@ -160,27 +166,75 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 	
 	} else if (interp_method == InterpolationMethod.LINEAR) {
 	// Linear trajectory through waypoints
-	
+	// TODO
+		throw std::runtime_error(
+			"Trajectory through waypoints is not implemented jet");		
 	} else {
 	// Go on Bezier curve through waypoints
-	
+	// TODO
+		throw std::runtime_error(
+			"Trajectory through waypoints is not implemented jet");	
 	}
+	
+	irob_autosurg::FollowTrajectoryGoal goal;
+   	tr.copyToRosTrajectory(goal.trajectory);
+  	follow_tr_ac.sendGoal(goal);
+  	
+  	// Throw exception if no result is received 
+  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T))))
+  		throw std::runtime_error("Follow trajectory action has timed out");
 
 }
 
-void RobotClient::moveRelative(Pose, CoordFrame)
+void RobotClient::moveRelative(Pose p, double speed, CoordFrame cf)
 {
-
+	// TODO
+	throw std::runtime_error(
+			"Tool rotation is not implemented jet");	
 }
 
-void RobotClient::moveRelative(Eigen::Vector3d, CoordFrame)
+void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 {
-
+	Pose p1 = getPoseCurrent();
+	Eigen::Vector3d v_rot;
+	
+	switch (cf) {
+		case CoordFrame.WCS:
+			v_rot = v;
+			break;
+			
+		case CoordFrameTCPF:
+			Eigen::Matrix3d R = p1.orientation.toRotationMatrix();
+			v_rot = R*v;
+			
+			break;
+	}
+	
+	dvrk::Pose p2 = p1 + v_rot;
+	
+	double T = std::abs(v_rot.norm() / speed);
+	dvrk::Trajectory<dvrk::Pose> tr = dvrk::TrajectoryFactory::
+   				linearTrajectoryWithSmoothAcceleration(
+   						p1, 
+   						p2,
+   						T, T*0.1, dt);
+	
+	irob_autosurg::FollowTrajectoryGoal goal;
+   	tr.copyToRosTrajectory(goal.trajectory);
+  	follow_tr_ac.sendGoal(goal);
+  	
+  	// Throw exception if no result is received 
+  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T))))
+  		throw std::runtime_error("Follow trajectory action has timed out");
+	
 }
 
-void RobotClient::moveRelative(Eigen::Quaternion<double>, CoordFrame)
+void RobotClient::moveRelative(Eigen::Quaternion<double> q,
+									double speed, CoordFrame cf)
 {
-
+	// TODO
+	throw std::runtime_error(
+			"Tool rotation is not implemented jet");	
 }
 
 

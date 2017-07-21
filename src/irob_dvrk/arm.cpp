@@ -67,9 +67,6 @@ void Arm::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
 
 
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
-  
-    Eigen::Matrix3d p = Eigen::Matrix3d::Random(3,3);
-    p = p.transpose();
 
     // Set robot state to cartasian
     while(!success)

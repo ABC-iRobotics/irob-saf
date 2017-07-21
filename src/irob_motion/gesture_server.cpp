@@ -11,37 +11,23 @@
 using namespace ias;
 
 
-const std::string Arm::HOME_CMD
-                    = "Home";
-const std::string Arm::HOME_DONE
-                    = "DVRK_READY";
-const std::string Arm::STATE_POSITION_JOINT
-                    = "DVRK_POSITION_JOINT";
-                   // = "DVRK_POSITION_GOAL_JOINT";
-const std::string Arm::STATE_POSITION_CARTESIAN
-                    ="DVRK_POSITION_CARTESIAN";
-                   // ="DVRK_POSITION_GOAL_CARTESIAN";
-                   
-
-
-
-GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name): 
-			nh(nh), arm_name(arm_name),
-			init_as(nh, "init_arm", boost::bind(
-				&Arm::initArmActionCB, this, _1), false),
-			reset_pose_as(nh, "reset_pose", boost::bind(
-				&Arm::resetPoseActionCB, this, _1), false),
-			follow_tr_as(nh,"follow_trajectory",boost::bind(
-				&Arm::followTrajectoryActionCB, this, _1), false)
+GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name, 
+													double dt): 
+			nh(nh), arm(nh, arm_name, dt),
+			close_tool_as(nh, "close_tool", boost::bind(
+				&GestureServer::closeToolActionCB, this, _1), false),
+			open_tool_as(nh, "open_tool", boost::bind(
+				&GestureServer::openToolActionCB, this, _1), false),
+			penetrate_as(nh,"penetrate",boost::bind(
+				&GestureServer::penetrateActionCB, this, _1), false)
+			go_to_as(nh,"go_to",boost::bind(
+				&GestureServer::goToActionCB, this, _1), false)
 {
 
 	// Subscribe and advertise topics
-	
-	subscribeTopics();
-    advertiseTopics();
+
     startActionServers();
-   
-    
+    arm.initArm(true, false);    
 }
 
 GestureServer::~GestureServer()
@@ -52,47 +38,34 @@ GestureServer::~GestureServer()
 /*
  * Callbacks
  */
-void GestureServer::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
+void GestureServer::closeToolActionCB(
+				const irob_autosurg::CloseToolGoalConstPtr &goal)
 {
-    // helper variables
-    ros::Rate loop_rate(2);
+    // Helper variables
     bool success = false;
 
-    irob_autosurg::InitArmFeedback feedback;
-    irob_autosurg::InitArmResult result;
+    irob_autosurg::CloseToolFeedback feedback;
+    irob_autosurg::CloseToolResult result;
 
-
-	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
-  
-    Eigen::Matrix3d p = Eigen::Matrix3d::Random(3,3);
-    p = p.transpose();
-
-    // Set robot state to cartasian
+	ROS_INFO_STREAM(arm_typ.name << " closing tool");
+  	
+  	arm.moveGripper(goal->angle, goal->speed);
+  	
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (init_as.isPreemptRequested() || !ros::ok())
+      	if (close_tool_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM(arm_typ.name << " initilaization: Preempted");
+        	ROS_INFO_STREAM(arm_typ.name << " close tool: Preempted");
         	// Set the action state to preempted
-        	init_as.setPreempted();
+        	close_tool_as.setPreempted();
         	success = false;
         	break;
       	}
 		
-		try {
-      		success	= setRobotState(STATE_POSITION_CARTESIAN);
-        } catch (std::runtime_error e) { 
-        	// Unknown error occured, stop action and throw it
-        	throw e;
-        } 
+		success = close_tool_as.waitForResult(ros::Duration(0.5));
   		
-  		// Send some feedback
-  		feedback.status = "setting_cartesian";
-		feedback.info = arm_typ.name + " attempting to start cartesian mode";
-      	init_as.publishFeedback(feedback);
-      	// this sleep is not necessary
-      	loop_rate.sleep();
+  		// TODO send feedback
     }
 
     if(success)
@@ -105,7 +78,7 @@ void GestureServer::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &go
     }
 }
   
-void GestureServer::resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
+void GestureServer::releaseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
 {
     // helper variables
     bool success = false;
@@ -200,90 +173,26 @@ void GestureServer::positionCartesianCurrentCB(
 }
 
 
-void GestureServer::subscribeTopics() 
-{
-	robot_state_sub = nh.subscribe<std_msgs::String>(
-                        TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/robot_state"),
-                       	1000, &Arm::robotStateCB,this);
-  
-  	state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
-                        TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/state_joint_current"),
-                       	1000, &Arm::stateJointCurrentCB,this);  
-                       	            	
-   	position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
-                        TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/position_cartesian_current"),
-                       	1000, &Arm::positionCartesianCurrentCB,this);
-                       	
-	error_sub = nh.subscribe<std_msgs::String>(
-                        TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/error"),
-                       	1000, &Arm::errorCB,this);
-                       	
-    warning_sub = nh.subscribe<std_msgs::String>(
-                        TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/warning"),
-                       	1000, &Arm::warningCB,this);
-
-}
-
-void GestureServer::advertiseTopics() 
-{
-	// dVRK
-	robot_state_pub = nh.advertise<std_msgs::String>(
-                    	TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/set_robot_state"),
-                        1000);
-    position_joint_pub = nh.advertise<sensor_msgs::JointState>(
-                    	TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/set_position_joint"),
-                        1000);
-   	position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
-                    	TopicNameLoader::load(nh,
-                        	"dvrk_topics/namespace",
-                        	arm_typ.name,
-                        	"dvrk_topics/set_position_cartesian"),
-                        1000);  
-
-	// robot interface
-	position_cartesian_current_pub 
-				= nh.advertise<irob_autosurg::ToolPoseStamped>(
-                    	"position_cartesian_current",
-                        1000);   
-}
 
 void GestureServer::startActionServers() 
 {
 
-	init_as.start();
-	reset_pose_as.start();
-    follow_tr_as.start();
+	close_tool_as.start();
+	open_tool_as.start();
+    penetrate_as.start();
+    go_to_as.start();
 }
 
 
-
+// Simple relay
 Pose GestureServer::getPoseCurrent()
 {
- 	ros::spinOnce();
- 	Pose ret(position_cartesian_current, 0.0);
- 	return ret;
+ 	return arm.getPoseCurrent();
+}
 
+std::string GestureServer::getArmName()
+{
+	return arm.getName();
 }
 
 
