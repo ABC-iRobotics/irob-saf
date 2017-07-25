@@ -42,13 +42,6 @@ void RobotClient::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(msg);
 }
 
-void RobotClient::followTrajectoryDoneCB(
-			const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::FollowTrajectoryResultConstPtr& result)
-{
-	follow_tr_done = true;
-}
-
 // TODO remap
 void RobotClient::subscribeTopics() 
 {                 	            	
@@ -151,10 +144,7 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
    	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
    	
-   	follow_tr_done = false;
-   	
-  	follow_tr_ac.sendGoal(goal, boost::bind(				
-  						&RobotClient::followTrajectoryDoneCB, this, _1, _2));
+  	follow_tr_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in followTrajectoryDoneCB
@@ -252,8 +242,7 @@ void RobotClient::moveRelative(Eigen::Quaternion<double> q,
 
 bool RobotClient::isFollowTrajectoryDone()
 {
-	ros::spinOnce();
-	return follow_tr_done;
+	return follow_tr_ac.isDone();
 }
 
 

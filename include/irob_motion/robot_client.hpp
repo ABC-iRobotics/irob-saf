@@ -29,6 +29,7 @@
 #include "irob_utils/trajectory.hpp"
 #include "irob_utils/trajectory_factory.hpp"
 #include "irob_utils/utils.hpp"
+#include "irob_utils/irob_action_client.hpp"
 
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -53,14 +54,13 @@ private:
     ros::NodeHandle nh;
     
     double dt;
-    bool follow_tr_done = false;
     
     // Action clients
     actionlib::SimpleActionClient<irob_autosurg::InitArmAction> 
     									init_arm_ac;
     actionlib::SimpleActionClient<irob_autosurg::ResetPoseAction>
     									reset_pose_ac;
-   	actionlib::SimpleActionClient<irob_autosurg::FollowTrajectoryAction> 
+   	IrobActionClient<irob_autosurg::FollowTrajectoryAction> 
    										follow_tr_ac;
    
 
@@ -89,8 +89,6 @@ public:
 
     void positionCartesianCurrentCB(
     		const irob_autosurg::ToolPoseStampedConstPtr&);
-    void followTrajectoryDoneCB(const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::FollowTrajectoryResultConstPtr& result);
 
    	Pose getPoseCurrent();
    	std::string getName();
