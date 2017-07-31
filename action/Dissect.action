@@ -1,9 +1,10 @@
 # Define the goal
 string arm_name
+geometry_msgs/Pose pose
 float64 depth
 float64 closed_angle
 float64 open_angle
-geometry_msgs/Pose pose
+
 
 ---
 # Define the result

@@ -32,6 +32,9 @@ class IrobActionClient: public actionlib::SimpleActionClient<ActionSpec> {
 		bool done = false;
 		bool active = false;
 		
+		ResultConstPtr result;
+		FeedbackConstPtr feedback;
+		
 		
 	
 	public:
@@ -54,9 +57,14 @@ class IrobActionClient: public actionlib::SimpleActionClient<ActionSpec> {
    	
    	void doneCB(const actionlib::SimpleClientGoalState&,
             const ResultConstPtr&);
+    void activeCB();
+    void feedbackCB(const FeedbackConstPtr&);
             
-    bool isDone(bool = true);
-   	
+    bool isDone(bool = true); 
+	bool isActive(bool = true);
+	Feedback getFeedback(bool = true);
+	Result getResult(bool = true );
+
 };
 
 // Implementation
@@ -87,8 +95,8 @@ void IrobActionClient<ActionSpec>::sendGoal(const Goal& goal,
 	actionlib::SimpleActionClient<ActionSpec>::sendGoal(
 	 	goal,
 	 	boost::bind(&IrobActionClient<ActionSpec>::doneCB, this, _1, _2),
-	 	active_cb,
-	 	feedback_cb);
+	 	boost::bind(&IrobActionClient<ActionSpec>::activeCB, this),
+	 	boost::bind(&IrobActionClient<ActionSpec>::feedbackCB, this, _1));
 }
 
 template <class ActionSpec>
@@ -97,6 +105,20 @@ void IrobActionClient<ActionSpec>::doneCB(
         const ResultConstPtr& result)
 {
 	done = true;
+	this -> result = result;
+}
+
+template <class ActionSpec>
+void IrobActionClient<ActionSpec>::activeCB()
+{
+	active = true;
+}
+
+template <class ActionSpec>
+void IrobActionClient<ActionSpec>::feedbackCB(
+        const FeedbackConstPtr& feedback)
+{
+	this -> feedback = feedback;
 }
 
 template <class ActionSpec>
@@ -105,6 +127,32 @@ bool IrobActionClient<ActionSpec>::isDone(bool ros_spin /* = true */)
 	if (ros_spin)
 		ros::spinOnce();
 	return done;
+}
+
+template <class ActionSpec>
+bool IrobActionClient<ActionSpec>::isActive(bool ros_spin /* = true */)
+{
+	if (ros_spin)
+		ros::spinOnce();
+	return active;
+}
+
+template <class ActionSpec>
+typename IrobActionClient<ActionSpec>::Feedback
+IrobActionClient<ActionSpec>::getFeedback(bool ros_spin /* = true */)
+{
+	if (ros_spin)
+		ros::spinOnce();
+	return feedback;
+}
+
+template <class ActionSpec>
+typename IrobActionClient<ActionSpec>::Result
+IrobActionClient<ActionSpec>::getResult(bool ros_spin/*= true */)
+{
+	if (ros_spin)
+		ros::spinOnce();
+	return *result;
 }
 
 }

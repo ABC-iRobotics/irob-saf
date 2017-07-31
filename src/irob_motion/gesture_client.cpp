@@ -44,35 +44,6 @@ void GestureClient::positionCartesianCurrentCB(
     // TODO need forwarding??
 }
 
-void GestureClient::closeToolDoneCB(
-			const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::CloseToolResultConstPtr& result)
-{
-	close_tool_done = true;
-}
-
-void GestureClient::openToolDoneCB(
-			const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::OpenToolResultConstPtr& result)
-{
-	open_tool_done = true;
-}
-
-
-void GestureClient::penetrateDoneCB(
-			const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::PenetrateResultConstPtr& result)
-{
-	penetrate_done = true;
-}
-
-
-void GestureClient::goToDoneCB(
-			const actionlib::SimpleClientGoalState& state,
-            const irob_autosurg::GoToResultConstPtr& result)
-{
-	go_to_done = true;
-}
 
 // TODO remap
 void GestureClient::subscribeTopics() 
@@ -129,10 +100,7 @@ void GestureClient::closeTool(double angle, double speed /* = 10.0 */)
   	goal.angle = angle;
   	goal.speed = speed;
   	
-  	close_tool_done = false;
-  	
-  	close_tool_ac.sendGoal(goal, boost::bind(				
-  						&GestureClient::closeToolDoneCB, this, _1, _2));
+  	close_tool_ac.sendGoal(goal);
 }
 
 void GestureClient::openTool(double angle, double speed /* = 10.0 */)
@@ -143,10 +111,7 @@ void GestureClient::openTool(double angle, double speed /* = 10.0 */)
   	goal.angle = angle;
   	goal.speed = speed;
   	
-  	open_tool_done = false;
-  	
-  	open_tool_ac.sendGoal(goal, boost::bind(				
-  						&GestureClient::openToolDoneCB, this, _1, _2));
+  	open_tool_ac.sendGoal(goal);
 }
 
 
@@ -157,10 +122,7 @@ void GestureClient::penetrate(double depth, double speed /*=10.0*/)
   	goal.depth = depth;
   	goal.speed = speed;
    	
-   	penetrate_done = false;
-   	
-  	penetrate_ac.sendGoal(goal, boost::bind(				
-  						&GestureClient::penetrateDoneCB, this, _1, _2));
+  	penetrate_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in followTrajectoryDoneCB
@@ -176,10 +138,7 @@ void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
  	// TODO not implemented yet
 
    	
-   	go_to_done = false;
-   	
-  	go_to_ac.sendGoal(goal, boost::bind(				
-  						&GestureClient::goToDoneCB, this, _1, _2));
+  	go_to_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in goToDoneCB
@@ -188,26 +147,22 @@ void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
 
 bool GestureClient::isCloseToolDone()
 {
-	ros::spinOnce();
-	return close_tool_done;
+	return close_tool_ac.isDone();
 }
 
 bool GestureClient::isOpenToolDone()
 {
-	ros::spinOnce();
-	return open_tool_done;
+	return open_tool_ac.isDone();
 }
 
 bool GestureClient::isPenetrateDone()
 {
-	ros::spinOnce();
-	return penetrate_done;
+	return penetrate_ac.isDone();
 }
 
 bool GestureClient::isGoToDone()
 {
-	ros::spinOnce();
-	return go_to_done;
+	return go_to_ac.isDone();
 }
 
 

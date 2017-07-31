@@ -26,6 +26,7 @@
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory.hpp"
 #include "irob_utils/utils.hpp"
+#include "irob_utils/irob_action_client.hpp"
 
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
@@ -42,22 +43,18 @@ using namespace ias;
 
 class GestureClient {
 
-public:
-
-   
-
 protected:
 	const std::string arm_name;
     ros::NodeHandle nh;
     
     // Action clients
-    actionlib::SimpleActionClient<irob_autosurg::CloseToolAction> 
+    IrobActionClient<irob_autosurg::CloseToolAction> 
     									 close_tool_ac;
-    actionlib::SimpleActionClient<irob_autosurg::OpenToolAction>
+    IrobActionClient<irob_autosurg::OpenToolAction>
     									 open_tool_ac;
-   	actionlib::SimpleActionClient<irob_autosurg::PenetrateAction> 
+   	IrobActionClient<irob_autosurg::PenetrateAction> 
    										penetrate_ac;
-   	actionlib::SimpleActionClient<irob_autosurg::GoToAction> 
+   	IrobActionClient<irob_autosurg::GoToAction> 
     									go_to_ac;
    	
    
@@ -65,11 +62,6 @@ protected:
     // States
     irob_autosurg::ToolPoseStamped position_cartesian_current;
     
-    bool open_tool_done = false;
-    bool close_tool_done = false;
-    bool penetrate_done = false;
-    bool go_to_done = false;
-
     // Subscribers
     ros::Subscriber position_cartesian_current_sub;
 
@@ -81,7 +73,7 @@ protected:
    	
     void subscribeTopics();
     void advertiseTopics();
-    void startActionClients(); // TODO ?????
+    void startActionClients(); 
     void waitForActionServers();
 
 public:
@@ -92,23 +84,6 @@ public:
 
     void positionCartesianCurrentCB(
     		const irob_autosurg::ToolPoseStampedConstPtr&);
-	
-	void closeToolDoneCB(
-			const actionlib::SimpleClientGoalState& ,
-            const irob_autosurg::CloseToolResultConstPtr& );
-
-	void openToolDoneCB(
-			const actionlib::SimpleClientGoalState& ,
-            const irob_autosurg::OpenToolResultConstPtr& );
-
-	void penetrateDoneCB(
-			const actionlib::SimpleClientGoalState& ,
-            const irob_autosurg::PenetrateResultConstPtr& );
-
-
-	void goToDoneCB(
-			const actionlib::SimpleClientGoalState& ,
-            const irob_autosurg::GoToResultConstPtr& );
 
 
 	

@@ -245,6 +245,16 @@ bool RobotClient::isFollowTrajectoryDone()
 	return follow_tr_ac.isDone();
 }
 
+bool RobotClient::isInitArmDone()
+{
+	return init_arm_ac.isDone();
+}
+
+bool RobotClient::isResetPoseDone()
+{
+	return reset_pose_ac.isDone();
+}
+
 
 
 

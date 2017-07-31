@@ -56,9 +56,9 @@ private:
     double dt;
     
     // Action clients
-    actionlib::SimpleActionClient<irob_autosurg::InitArmAction> 
+    IrobActionClient<irob_autosurg::InitArmAction> 
     									init_arm_ac;
-    actionlib::SimpleActionClient<irob_autosurg::ResetPoseAction>
+    IrobActionClient<irob_autosurg::ResetPoseAction>
     									reset_pose_ac;
    	IrobActionClient<irob_autosurg::FollowTrajectoryAction> 
    										follow_tr_ac;
@@ -105,6 +105,8 @@ public:
 	
 	
 	bool isFollowTrajectoryDone();
+	bool isInitArmDone();
+	bool isResetPoseDone();
 	
 };
 

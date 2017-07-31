@@ -118,7 +118,7 @@ void GestureServer::openToolActionCB(
 
     if(success)
     {
-      	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
+    	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
       	ROS_INFO_STREAM(arm.getName()  << " open arm succeeded");
 		result.info = arm.getName()  + " open arm succeeded";
       	// set the action state to succeeded
@@ -141,7 +141,6 @@ void GestureServer::penetrateActionCB(
 
     // set the action state to succeeded
     penetrate_as.setSucceeded(result);
-
 }
   
   
@@ -165,7 +164,6 @@ void GestureServer::goToActionCB(
 
 void GestureServer::startActionServers() 
 {
-
 	close_tool_as.start();
 	open_tool_as.start();
     penetrate_as.start();
