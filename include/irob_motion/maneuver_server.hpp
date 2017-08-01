@@ -49,7 +49,7 @@ public:
 private:
 	
     ros::NodeHandle nh;
-    std::vector<GestureClient> arms;
+    std::vector<GestureClient*> arms;
     
     // Action servers
     actionlib::SimpleActionServer<irob_autosurg::DissectAction>

@@ -21,8 +21,7 @@ ManeuverServer::ManeuverServer(ros::NodeHandle nh,
 {
 	
 	for(std::vector<std::string>::size_type i = 0; i != arm_names.size(); i++) {
-		GestureClient gesture_client(nh, arm_names[i]);
-   		arms.push_back(gesture_client);
+   		arms.push_back(new GestureClient(nh, arm_names[i]));
 	}
 	
 	// Subscribe and advertise topics
@@ -34,7 +33,9 @@ ManeuverServer::ManeuverServer(ros::NodeHandle nh,
 
 ManeuverServer::~ManeuverServer()
 {
-	// TODO Auto-generated destructor stub
+	for(std::vector<GestureClient*>::size_type i = 0; i != arms.size(); i++) {
+   		delete(arms[i]);
+	}
 }
 
 /*
@@ -57,8 +58,8 @@ void ManeuverServer::dissectActionCB(
 			"Arm with the given name not found");
     
     // Close tool
-    arms[arm_idx].closeTool(goal->closed_angle);
-    while(!arms[arm_idx].isCloseToolDone() && !preempted)
+    arms[arm_idx]->closeTool(goal->closed_angle);
+    while(!arms[arm_idx]->isCloseToolDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -79,8 +80,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // Go to pos
-    arms[arm_idx].goTo(Pose(goal->pose, goal->closed_angle));
-    while(!arms[arm_idx].isGoToDone() && !preempted)
+    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle));
+    while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -100,8 +101,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // penetrate
-    arms[arm_idx].penetrate(goal->depth);
-    while(!arms[arm_idx].isPenetrateDone()&& !preempted)
+    arms[arm_idx]->penetrate(goal->depth);
+    while(!arms[arm_idx]->isPenetrateDone()&& !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -121,8 +122,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // Open tool
-    arms[arm_idx].openTool(goal->open_angle);
-    while(!arms[arm_idx].isOpenToolDone()&& !preempted)
+    arms[arm_idx]->openTool(goal->open_angle);
+    while(!arms[arm_idx]->isOpenToolDone()&& !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -142,8 +143,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // penetrate TODO pull action
-    arms[arm_idx].penetrate(-(goal->depth));
-    while(!arms[arm_idx].isPenetrateDone()&& !preempted)
+    arms[arm_idx]->penetrate(-(goal->depth));
+    while(!arms[arm_idx]->isPenetrateDone()&& !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -212,8 +213,8 @@ void ManeuverServer::startActionServers()
 int ManeuverServer::findArmIdx(std::string arm_name)
 {
 	int idx = -1;
-	for(std::vector<GestureClient>::size_type i = 0; i != arms.size(); i++) {
-		if (arm_name.compare(arms[i].getName()) == 0) {
+	for(std::vector<GestureClient*>::size_type i = 0; i != arms.size(); i++) {
+		if (arm_name.compare(arms[i]->getName()) == 0) {
 			idx = i;
 			break;
 		}
