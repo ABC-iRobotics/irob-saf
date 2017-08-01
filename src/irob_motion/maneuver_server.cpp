@@ -14,9 +14,9 @@ using namespace ias;
 ManeuverServer::ManeuverServer(ros::NodeHandle nh, 
 	std::vector<std::string> arm_names): 
 			nh(nh),
-			dissect_as(nh, "dissect", boost::bind(
+			dissect_as(nh, "maneuver/dissect", boost::bind(
 				&ManeuverServer::dissectActionCB, this, _1), false),
-			grasp_as(nh, "grasp", boost::bind(
+			grasp_as(nh, "maneuver/grasp", boost::bind(
 				&ManeuverServer::graspActionCB, this, _1), false)
 {
 	
@@ -45,9 +45,9 @@ void ManeuverServer::dissectActionCB(
 		const irob_autosurg::DissectGoalConstPtr &goal)
 {
 	// TODO open-close stuff
-    bool success = false;
+    bool success = true;
     bool preempted = false;
-    ros::Rate loop_rate(0.2);
+    ros::Rate loop_rate(50.0);
 
     irob_autosurg::DissectFeedback feedback;
     irob_autosurg::DissectResult result;
@@ -181,7 +181,7 @@ void ManeuverServer::graspActionCB(
     
     bool success = false;
     bool preempted = false;
-    ros::Rate loop_rate(0.2);
+    ros::Rate loop_rate(50.0);
 
     irob_autosurg::GraspFeedback feedback;
     irob_autosurg::GraspResult result;
@@ -220,6 +220,42 @@ int ManeuverServer::findArmIdx(std::string arm_name)
 		}
 	}
 	return idx;
+}
+
+
+/**
+ * Maneuver server main 
+ */
+int main(int argc, char **argv)
+{
+	
+	// Initialize ros node
+    ros::init(argc, argv, "maneuver_server");
+    ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
+
+	std::vector<std::string> arm_names;
+	priv_nh.getParam("arm_names", arm_names);
+	
+	
+    
+    // StartGesture server
+  	try {
+    	ManeuverServer ms(nh, arm_names);
+    	
+  	   	ros::spin();	    	
+    	
+    	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
+    	
+    } catch (const std::exception& e) {
+  		ROS_ERROR_STREAM(e.what());
+  		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
+  	}
+    
+    
+    // Exit
+    ros::shutdown();
+	return 0;
 }
 
 

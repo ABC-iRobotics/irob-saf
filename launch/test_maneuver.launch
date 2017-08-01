@@ -1,0 +1,15 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+	<group ns="ias">
+
+  	
+			<node name="maneuver_server" pkg="irob_autosurg" 
+			type="maneuver_server" output="screen">
+  		
+				<rosparam param="arm_names">["arm_1"]</rosparam>
+					
+		
+	</node>
+  	</group>
+</launch>

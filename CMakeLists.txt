@@ -70,17 +70,17 @@ find_package(catkin REQUIRED
  	action
    	FILES
    	
-   	FollowTrajectory.action
-   	InitArm.action
-   	ResetPose.action
+   	robot/FollowTrajectory.action
+   	robot/InitArm.action
+   	robot/ResetPose.action
    	
-   	CloseTool.action
-   	OpenTool.action
-   	Penetrate.action
-   	GoTo.action
+   	gesture/CloseTool.action
+   	gesture/OpenTool.action
+   	gesture/Penetrate.action
+   	gesture/GoTo.action
    	
-   	Grasp.action
-   	Dissect.action
+   	maneuver/Grasp.action
+   	maneuver/Dissect.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -190,10 +190,16 @@ add_dependencies(irob_motion_lib irob_autosurg_generate_messages_cpp)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(dvrk_interface src/irob_dvrk/dvrk_interface.cpp)
+add_executable(dvrk_interface src/irob_dvrk/psm.cpp)
+
 add_executable(move_circles_action_client src/irob_autosurg_execute/move_circles_action_client.cpp)
-add_executable(gesture_main src/irob_motion/gesture_main.cpp)
+add_executable(gesture_server src/irob_motion/gesture_server.cpp)
+add_executable(maneuver_server src/irob_motion/maneuver_server.cpp)
+
+
 add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
+
+add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -202,7 +208,9 @@ add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
 # add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(test_gesture_client irob_autosurg_generate_messages_cpp)
-add_dependencies(gesture_main irob_autosurg_generate_messages_cpp)
+add_dependencies(dvrk_interface irob_autosurg_generate_messages_cpp)
+add_dependencies(gesture_server irob_autosurg_generate_messages_cpp)
+add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
@@ -226,18 +234,31 @@ add_dependencies(gesture_main irob_autosurg_generate_messages_cpp)
     irob_dvrk_lib
  )
  
+ 
  target_link_libraries(move_circles_action_client
    ${catkin_LIBRARIES}
     irob_dvrk_lib
  )
  
- target_link_libraries(gesture_main
+ target_link_libraries(gesture_server
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
+ )
+ 
+ target_link_libraries(maneuver_server
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_motion_lib
  )
  
  target_link_libraries(test_gesture_client
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
+ )
+ 
+ target_link_libraries(test_maneuver
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_motion_lib

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <cmath>
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -43,7 +44,7 @@ public:
    
 
 protected:
-	const std::string arm_name;
+	std::vector<std::string> arm_names;
     ros::NodeHandle nh;
     
     // Action clients
@@ -52,18 +53,27 @@ protected:
     IrobActionClient<irob_autosurg::GraspAction>
     									 grasp_ac;
    	
-   	
+   	// States
+    std::map<std::string, irob_autosurg::ToolPoseStamped>
+    											position_cartesian_current;
+    
+    // Subscribers
+    std::map<std::string, ros::Subscriber> position_cartesian_current_subs;
+
+
+
    	
     void subscribeTopics();
-    void advertiseTopics();
     void startActionClients(); 
     void waitForActionServers();
 
 public:
-	ManeuverClient(ros::NodeHandle);
+	ManeuverClient(ros::NodeHandle, std::vector<std::string>);
 	~ManeuverClient();
 
-    // Callbacks    
+    // Callbacks 
+    void positionCartesianCurrentCB(
+    		const irob_autosurg::ToolPoseStampedConstPtr&, const std::string&);   
    	
    	// Robot motions
    	void dissect(std::string, Pose, double, double, double);	
@@ -72,7 +82,9 @@ public:
 			
 	bool isDissectDone();
 	bool isGraspDone();	
+	
+	Pose getPoseCurrent(std::string);
 };
 
 
-#endif /* GESTURE_SERVER_HPP_ */
+#endif /* MANEUVER_CLIENT_HPP_ */

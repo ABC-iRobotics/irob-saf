@@ -13,16 +13,16 @@ using namespace ias;
 
 GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name): 
 			nh(nh), arm_name(arm_name),
-			close_tool_ac("close_tool", true),
-			open_tool_ac("open_tool", true),
-			penetrate_ac("penetrate", true),
-			go_to_ac("go_to", true)
+			close_tool_ac("gesture/"+arm_name+"/close_tool", true),
+			open_tool_ac("gesture/"+arm_name+"/open_tool", true),
+			penetrate_ac("gesture/"+arm_name+"/penetrate", true),
+			go_to_ac("gesture/"+arm_name+"/go_to", true)
 {
 
 	// Subscribe and advertise topics
 	
 	subscribeTopics();
-    advertiseTopics();
+   // advertiseTopics();
     waitForActionServers();
 }
 
@@ -40,8 +40,7 @@ void GestureClient::positionCartesianCurrentCB(
 				const irob_autosurg::ToolPoseStampedConstPtr& msg) 
 {
     position_cartesian_current = *msg;
-    // position_cartesian_current_pub.publish(msg);
-    // TODO need forwarding??
+    position_cartesian_current_pub.publish(msg);
 }
 
 
@@ -50,20 +49,20 @@ void GestureClient::subscribeTopics()
 {                 	            	
    	position_cartesian_current_sub = 
    			nh.subscribe<irob_autosurg::ToolPoseStamped>(
-                        "position_cartesian_current_in",
+                        "gesture/"+arm_name+"/position_cartesian_current_cf",
                        	1000, &GestureClient::positionCartesianCurrentCB,this);
 }
 
 // TODO remap
-/*
+
 void GestureClient::advertiseTopics() 
 {
 	position_cartesian_current_pub 
 				= nh.advertise<irob_autosurg::ToolPoseStamped>(
-                    	"position_cartesian_current_out",
+                    	"maneuver/"+arm_name+"/position_cartesian_current_cf",
                         1000);   
 }
-*/
+
 
 void GestureClient::waitForActionServers() 
 {

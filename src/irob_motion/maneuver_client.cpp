@@ -11,16 +11,16 @@
 using namespace ias;
 
 
-ManeuverClient::ManeuverClient(ros::NodeHandle nh): 
-			nh(nh),
-			dissect_ac("dissect", true),
-			grasp_ac("grasp", true)
+ManeuverClient::ManeuverClient(ros::NodeHandle nh, 
+					std::vector<std::string> arm_names): 
+			nh(nh), arm_names(arm_names),
+			dissect_ac("maneuver/dissect", true),
+			grasp_ac("maneuver/grasp", true)
 {
 
 	// Subscribe and advertise topics
 	
 	subscribeTopics();
-    advertiseTopics();
     waitForActionServers();
 }
 
@@ -32,6 +32,28 @@ ManeuverClient::~ManeuverClient()
 /*
  * Callbacks
  */
+ 
+// Read pos 
+void ManeuverClient::positionCartesianCurrentCB(
+				const irob_autosurg::ToolPoseStampedConstPtr& msg,
+				const std::string& arm_name) 
+{
+    position_cartesian_current[arm_name] = *msg;
+}
+
+void ManeuverClient::subscribeTopics() 
+{      
+	for(std::vector<std::string>::size_type i = 0; i != arm_names.size(); i++) {
+   		position_cartesian_current_subs[arm_names[i]] = 
+   			nh.subscribe<irob_autosurg::ToolPoseStamped>(
+                        "maneuver/"+arm_names[i]
+                        +"/position_cartesian_current_cf",
+                       	1000, 
+                       	boost::bind(
+						&ManeuverClient::positionCartesianCurrentCB, 
+						this, _1, arm_names[i]));
+	}
+}
 
 
 void ManeuverClient::waitForActionServers() 
@@ -86,6 +108,14 @@ bool ManeuverClient::isDissectDone()
 bool ManeuverClient::isGraspDone()
 {
 	return grasp_ac.isDone();
+}
+
+Pose ManeuverClient::getPoseCurrent(std::string arm_name)
+{
+ 	ros::spinOnce();
+ 	Pose ret(position_cartesian_current[arm_name]);
+ 	return ret;
+
 }
 
 

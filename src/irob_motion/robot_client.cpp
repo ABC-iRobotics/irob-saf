@@ -13,9 +13,9 @@ using namespace ias;
 
 RobotClient::RobotClient(ros::NodeHandle nh, std::string arm_name, double dt): 
 			nh(nh), arm_name(arm_name), dt(dt),
-			init_arm_ac("init_arm", true),
-			reset_pose_ac("reset_pose", true),
-			follow_tr_ac("follow_trajectory", true)
+			init_arm_ac("robot/"+arm_name+"/init_arm", true),
+			reset_pose_ac("robot/"+arm_name+"/reset_pose", true),
+			follow_tr_ac("robot/"+arm_name+"/follow_trajectory", true)
 {
 
 	// Subscribe and advertise topics
@@ -47,7 +47,7 @@ void RobotClient::subscribeTopics()
 {                 	            	
    	position_cartesian_current_sub = 
    			nh.subscribe<irob_autosurg::ToolPoseStamped>(
-                        "position_cartesian_current_in",
+                        "robot/"+arm_name+"/position_cartesian_current_cf",
                        	1000, &RobotClient::positionCartesianCurrentCB,this);
 }
 
@@ -56,7 +56,7 @@ void RobotClient::advertiseTopics()
 {
 	position_cartesian_current_pub 
 				= nh.advertise<irob_autosurg::ToolPoseStamped>(
-                    	"position_cartesian_current_out",
+                    	"gesture/"+arm_name+"/position_cartesian_current_cf",
                         1000);   
 }
 

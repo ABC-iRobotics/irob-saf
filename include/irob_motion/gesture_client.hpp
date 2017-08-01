@@ -67,8 +67,8 @@ protected:
 
 
 
-    // Publishers ?
-	// ros::Publisher position_cartesian_current_pub;
+    // Publishers
+	ros::Publisher position_cartesian_current_pub;
    	
    	
     void subscribeTopics();

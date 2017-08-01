@@ -326,6 +326,52 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
   	}
 }
 
+/**
+ * Main for PSM
+ */
+int main(int argc, char **argv)
+{
+	
+	// Initialize ros node
+    ros::init(argc, argv, "dvrk_interface");
+    ros::NodeHandle nh;
+    ros::NodeHandle priv_nh("~");
+    
+    std::string arm_typ;
+	priv_nh.getParam("arm_typ", arm_typ);
+	ArmTypes arm_type = ArmTypes::typeForString(arm_typ);
+
+	std::string arm_name;
+	priv_nh.getParam("arm_name", arm_name);
+	
+
+
+	
+    
+    // Robot control
+  	try {
+  		if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
+    		PSM psm(nh, arm_type, arm_name,PSM::ACTIVE);
+    		ros::spin();
+    	}
+    	else {
+    		Arm arm(nh, arm_type, arm_name,Arm::ACTIVE);
+    		ros::spin();
+    	}  	   		    	
+    	
+    	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
+    	
+    } catch (const std::exception& e) {
+  		ROS_ERROR_STREAM(e.what());
+  		ROS_ERROR_STREAM("Program stopped by an error, shutting down ...");
+  	}
+    
+    
+    // Exit
+    ros::shutdown();
+	return 0;
+}
+
 
 
 

@@ -30,16 +30,14 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
 	bool isActive): 
 			nh(nh), arm_typ(arm_typ), arm_name(arm_name),
-			init_as(nh, "init_arm", boost::bind(
+			init_as(nh, "robot/"+arm_name+"/init_arm", boost::bind(
 				&Arm::initArmActionCB, this, _1), false),
-			reset_pose_as(nh, "reset_pose", boost::bind(
+			reset_pose_as(nh, "robot/"+arm_name+"/reset_pose", boost::bind(
 				&Arm::resetPoseActionCB, this, _1), false),
-			follow_tr_as(nh,"follow_trajectory",boost::bind(
+			follow_tr_as(nh, "robot/"+arm_name+"/follow_trajectory",boost::bind(
 				&Arm::followTrajectoryActionCB, this, _1), false)
 {
-
 	// Subscribe and advertise topics
-	
 	subscribeTopics();
     if (isActive == ACTIVE)
     	advertiseTopics();
@@ -134,7 +132,7 @@ void Arm::resetPoseActionCB(const irob_autosurg::ResetPoseGoalConstPtr &goal)
     if(success)
     {
       result.descript = "done";
-      ROS_INFO_STREAM(arm_typ.name << " pose reset succeded");
+      ROS_INFO_STREAM(arm_typ.name << " pose reset succeeded");
       // set the action state to succeeded
       reset_pose_as.setSucceeded(result);
     }
@@ -285,8 +283,8 @@ void Arm::advertiseTopics()
 	// robot interface
 	position_cartesian_current_pub 
 				= nh.advertise<irob_autosurg::ToolPoseStamped>(
-                    	"position_cartesian_current",
-                        1000);   
+                    	"robot/"+arm_name+"/position_cartesian_current_cf",
+                        1000); 
 }
 
 void Arm::startActionServers() 
@@ -743,6 +741,9 @@ void Arm::recordTrajectory(Trajectory<Pose>& tr)
 
 
 }
+
+
+
 
 
 
