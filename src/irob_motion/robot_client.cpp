@@ -122,7 +122,7 @@ void RobotClient::resetPose(bool move_allowed)
  * @param angle angle of jaws in deg
  * @param speed opening speed in deg/s
  */	
-void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
+void RobotClient::moveGripper(double angle, double speed /*=0.01*/)
 {
 	Pose p1 = getPoseCurrent();
 	
@@ -150,7 +150,7 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
   	// in followTrajectoryDoneCB
 }
 
-void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
+void RobotClient::goTo(Pose target, double speed /* = 0.01 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -160,8 +160,11 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 	
 	if (waypoints.empty()) {
 	// Go straight to target
-	T = std::abs((p1.dist(target)).cartesian / speed);
-	tr = TrajectoryFactory::
+
+		// TODO speed is in mm/s
+		T = std::abs((p1.dist(target)).cartesian / speed);
+		ROS_INFO_STREAM(T);
+		tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						target,
@@ -169,9 +172,14 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 	
 	} else if (interp_method == LINEAR) {
 	// Linear trajectory through waypoints
-	// TODO
-		throw std::runtime_error(
-			"Trajectory through waypoints is not implemented yet");		
+			// TODO issue with speed...
+		T = std::abs((p1.dist(target)).cartesian / speed);
+		tr = TrajectoryFactory::
+   				linearTrajectoryWithSmoothAcceleration(
+   						p1, 
+   						waypoints,
+   						target,
+   						T, T*0.1, dt);	
 	} else {
 	// Go on Bezier curve through waypoints
 	// TODO
@@ -182,10 +190,6 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
   	follow_tr_ac.sendGoal(goal);
-  	
-  	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T)))
-  		throw std::runtime_error("Follow trajectory action has timed out");
 
 }
 
@@ -225,10 +229,6 @@ void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
   	follow_tr_ac.sendGoal(goal);
-  	
-  	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0+T)))
-  		throw std::runtime_error("Follow trajectory action has timed out");
 	
 }
 

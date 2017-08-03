@@ -152,13 +152,44 @@ void GestureServer::goToActionCB(
     ros::Rate loop_rate(50.0);
 
     irob_autosurg::GoToResult result;
+    irob_autosurg::GoToFeedback feedback;
 
-	// TODO
-  	ROS_INFO_STREAM("Go to not implemented yet");
-  	//arm.moveGripper(goal->angle, goal->speed);
+	ROS_INFO_STREAM(arm.getName()  << " go to pos");
+	
+	Pose target(goal->target);
+	std::vector<Pose> waypoints;
+	for (irob_autosurg::ToolPose p : goal->waypoints)
+		waypoints.push_back(Pose(p));
+  	arm.goTo(target, goal->speed, waypoints, InterpolationMethod::LINEAR);
+  	
+    while(!success)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (go_to_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM(arm.getName()  << " go to: Preempted");
+        	// Set the action state to preempted
+        	go_to_as.setPreempted();
+        	success = false;
+        	break;
+      	}
+		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+		
+		success = arm.isFollowTrajectoryDone();
+  		loop_rate.sleep();
+  		// TODO send feedback
+    }
 
-    // set the action state to succeeded
-    go_to_as.setSucceeded(result);
+    if(success)
+    {
+    	result.pose = arm.getPoseCurrent().toRosToolPose();
+      	ROS_INFO_STREAM(arm.getName()  << " go to succeeded");
+		result.info = arm.getName()  + " go to succeeded";
+      	// set the action state to succeeded
+      	go_to_as.setSucceeded(result);
+    }
 }
 
 

@@ -4,6 +4,7 @@ int8 BEZIER=2
 
 ToolPose target
 ToolPose[] waypoints
+float64 speed
 int8 interpolation
 
 ---

@@ -93,8 +93,8 @@ public:
    		// Robot motions
    	void closeTool(double, double = 10.0);	
    	void openTool(double, double = 10.0);
-	void penetrate(double, double = 10.0);
-	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
+	void penetrate(double, double = 0.01);
+	void goTo(Pose, double = 0.01, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 			
 	bool isCloseToolDone();

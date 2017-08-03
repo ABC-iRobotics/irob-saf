@@ -22,7 +22,7 @@ GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name):
 	// Subscribe and advertise topics
 	
 	subscribeTopics();
-   // advertiseTopics();
+    advertiseTopics();
     waitForActionServers();
 }
 
@@ -114,7 +114,7 @@ void GestureClient::openTool(double angle, double speed /* = 10.0 */)
 }
 
 
-void GestureClient::penetrate(double depth, double speed /*=10.0*/)
+void GestureClient::penetrate(double depth, double speed /*=0.01*/)
 {
 	irob_autosurg::PenetrateGoal goal;
  
@@ -127,16 +127,21 @@ void GestureClient::penetrate(double depth, double speed /*=10.0*/)
   	// in followTrajectoryDoneCB
 }
 
-void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
+void GestureClient::goTo(Pose target, double speed /* = 0.01 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {
 	irob_autosurg::GoToGoal goal;
- 
- 	ROS_INFO_STREAM("GoTo action not implemented yet");
- 	// TODO not implemented yet
-
-   	
+    goal.target = target.toRosToolPose();
+    goal.speed = speed;
+    for (Pose p : waypoints)
+    	goal.waypoints.push_back(p.toRosToolPose());
+    
+    if (interp_method == InterpolationMethod::LINEAR)
+    	goal.interpolation = irob_autosurg::GoToGoal::LINEAR;
+    else
+    	goal.interpolation = irob_autosurg::GoToGoal::BEZIER;
+    	
   	go_to_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received

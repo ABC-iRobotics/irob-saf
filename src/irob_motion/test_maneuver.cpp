@@ -39,10 +39,15 @@ int main(int argc, char **argv)
   		
   		ros::Rate loop_rate(50.0);		
 		ManeuverClient mc(nh, arm_names);
-
+		
+		// Todo wait for data
+		ros::Duration(1.0).sleep();
+		
 		Eigen::Vector3d offset(0.02, 0.02, -0.05);
+		ROS_INFO_STREAM(mc.getPoseCurrent(arm_names[0]));
+		ROS_INFO_STREAM(mc.getPoseCurrent(arm_names[0])+offset);
 
-		mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0]),
+		mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
 		0.02, 0.0, 30.0);	
 		while(!mc.isDissectDone() && ros::ok())
     	{

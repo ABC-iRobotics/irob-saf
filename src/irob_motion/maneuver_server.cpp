@@ -80,6 +80,7 @@ void ManeuverServer::dissectActionCB(
     }
     
     // Go to pos
+    // TODO speed not used
     arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle));
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
