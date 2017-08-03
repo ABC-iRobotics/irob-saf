@@ -70,13 +70,19 @@ void ManeuverClient::waitForActionServers()
 
 void ManeuverClient::dissect(std::string arm_name, 
 								Pose pos, double depth,
-								double closed_angle, double open_angle)	
+								double closed_angle, double open_angle,
+								std::vector<Pose> waypoints 
+								/* = std::vector<Pose>()*/)	
 {
     // Send a goal to the action
   	irob_autosurg::DissectGoal goal;
  
   	goal.arm_name = arm_name;
   	goal.pose = pos.toRosPose();
+  	
+  	for (Pose p : waypoints)
+    	goal.waypoints.push_back(p.toRosPose());
+    	
   	goal.depth = depth;
   	goal.closed_angle = closed_angle;
   	goal.open_angle = open_angle;
@@ -112,7 +118,11 @@ bool ManeuverClient::isGraspDone()
 
 Pose ManeuverClient::getPoseCurrent(std::string arm_name)
 {
- 	ros::spinOnce();
+ 	while (position_cartesian_current[arm_name].header.seq == 0)
+	{
+ 		ros::spinOnce();
+ 		ros::Duration(0.05).sleep();
+ 	}
  	Pose ret(position_cartesian_current[arm_name]);
  	return ret;
 

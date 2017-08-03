@@ -114,7 +114,6 @@ public:
     virtual Pose getPoseCurrent();
 
     //DVRK actions
-    bool home();
     bool setRobotState(std::string);
     void moveJointRelative(int, double, double = 0.01 );
     void moveJointAbsolute(int, double, double = 0.01 );
@@ -122,12 +121,7 @@ public:
     void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
     void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
     virtual void moveCartesianAbsolute(Pose, double = 0.01);
-    
-
-	void playTrajectory(Trajectory<Eigen::Vector3d>&);
-	void playTrajectory(Trajectory<Eigen::Quaternion<double>>&);
-	void playTrajectory(Trajectory<Pose>&);
-	void playTrajectory(int, Trajectory<double>&);
+ 
 	
 	void recordTrajectory(Trajectory<Eigen::Vector3d>&);
 	void recordTrajectory(Trajectory<Pose>&);

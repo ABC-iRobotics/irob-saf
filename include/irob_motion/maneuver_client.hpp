@@ -76,7 +76,8 @@ public:
     		const irob_autosurg::ToolPoseStampedConstPtr&, const std::string&);   
    	
    	// Robot motions
-   	void dissect(std::string, Pose, double, double, double);	
+   	void dissect(std::string, Pose, double, double, double, 
+   									std::vector<Pose> = std::vector<Pose>());	
    	void grasp(std::string, Pose, double, double);	
 
 			

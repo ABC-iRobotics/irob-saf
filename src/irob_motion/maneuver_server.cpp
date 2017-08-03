@@ -81,7 +81,12 @@ void ManeuverServer::dissectActionCB(
     
     // Go to pos
     // TODO speed not used
-    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle));
+    
+    std::vector<Pose> waypoints;
+	for (geometry_msgs::Pose p : goal->waypoints)
+		waypoints.push_back(Pose(p,  goal->closed_angle));
+    
+    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle), 0.03, waypoints);
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client

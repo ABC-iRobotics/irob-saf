@@ -72,7 +72,11 @@ void RobotClient::waitForActionServers()
 
 Pose RobotClient::getPoseCurrent()
 {
- 	ros::spinOnce();
+	while (position_cartesian_current.header.seq == 0)
+	{
+ 		ros::spinOnce();
+ 		ros::Duration(0.05).sleep();
+ 	}
  	Pose ret(position_cartesian_current);
  	return ret;
 
@@ -139,7 +143,7 @@ void RobotClient::moveGripper(double angle, double speed /*=0.01*/)
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						p2,
-   						T, T*0.1, dt);						
+   						speed, speed * 10.0, dt);						
    						
    	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
@@ -155,31 +159,26 @@ void RobotClient::goTo(Pose target, double speed /* = 0.01 */,
 			InterpolationMethod interp_method /* = LINEAR */)
 {
 	Pose p1 = getPoseCurrent();
-	double T;
 	Trajectory<Pose> tr;
 	
 	if (waypoints.empty()) {
 	// Go straight to target
 
-		// TODO speed is in mm/s
-		T = std::abs((p1.dist(target)).cartesian / speed);
-		ROS_INFO_STREAM(T);
 		tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						target,
-   						T, T*0.1, dt);
+   						speed, speed * 10.0, dt);
 	
 	} else if (interp_method == LINEAR) {
 	// Linear trajectory through waypoints
 			// TODO issue with speed...
-		T = std::abs((p1.dist(target)).cartesian / speed);
 		tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						waypoints,
    						target,
-   						T, T*0.1, dt);	
+   						speed, speed * 10.0, dt);	
 	} else {
 	// Go on Bezier curve through waypoints
 	// TODO
@@ -219,12 +218,11 @@ void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 	
 	Pose p2 = p1 + v_rot;
 	
-	double T = std::abs(v_rot.norm() / speed);
 	Trajectory<Pose> tr = TrajectoryFactory::
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						p2,
-   						T, T*0.1, dt);
+   						speed, speed * 10.0, dt);
 	
 	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);

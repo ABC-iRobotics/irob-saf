@@ -37,7 +37,6 @@ class TrajectoryFactory
 								double x1=0.0, double x2=1.0)
 		{
 			Trajectory<double> v;
-			// TODO check NaN generation
 			for (int i = 0; i < N; i++)
 			{
 				v.addPoint(interpolate(((double)i)/(N-1), x1, x2));
@@ -72,7 +71,10 @@ class TrajectoryFactory
 								double x1=0.0, double x2=1.0)
 		{
 			Trajectory<double> v, stepsAcc, stepsDecc;
-		
+			
+			if (Nfull < Nacc || Nfull < Ndecc)
+				throw std::runtime_error("Trajectory Nacc > Nfull");
+				
 			double accRatio = ((double)Nacc) / Nfull;
 			double deccRatio = ((double)Ndecc) / Nfull;
 			double maxStep = (x2-x1)/(Nfull-((Nacc+Ndecc)/2.0));
@@ -97,26 +99,11 @@ class TrajectoryFactory
 				a += stepsDecc[i];
 				v.addPoint(interpolate(a, x1, x2));
 			}
-			//ROS_INFO_STREAM(v);
 			return v;
 		}
 	
 		template <class P>
-		static Trajectory<P> linearTrajectoryForTime(P start,P end, 
-											double T, double dt)
-		{
-			Trajectory<P> tr(dt);
-			int N = (int)round(T / dt)+1;
-			Trajectory<double> ramp = uniformRamp(N);
-			for (int i = 0; i < ramp.size(); i++)
-			{
-				tr.addPoint(interpolate(ramp[i], start, end));
-			}
-			return tr;
-		}
-		
-		template <class P>
-		static Trajectory<P> linearTrajectoryForSpeed(P start,P end, 
+		static Trajectory<P> linearTrajectory(P start,P end, 
 											double speed, double dt)
 		{
 			Trajectory<P> tr(dt);
@@ -137,15 +124,25 @@ class TrajectoryFactory
 		static Trajectory<P> linearTrajectoryWithSmoothAcceleration(
 						P start,
 						P end, 
-						double Tfull,
-						double Tacc, 
+						double speed,
+						double acc, 
 						double dt)
 		{
 			Trajectory<P> tr(dt);
-			int Nfull = (int)round(Tfull / dt)+1;
-			int Nacc = (int)round(Tacc / dt)+1;
-				
-			Trajectory<double> ramp = smoothenedRamp(Nfull, Nacc, Nacc);
+			double s_full = distanceEuler(start, end);
+			if (s_full < 0.00001)
+				return tr;
+			
+			double t_acc = speed / acc;
+			double s_acc = 0.5 * acc * t_acc * t_acc;
+			
+			double t_full = (2.0 * t_acc) + ((s_full-(2.0 * s_acc)) / speed);
+		
+			int N_full = (int)round(t_full / dt)+1;
+			int N_acc = (int)round(t_acc / dt)+1;
+					
+			Trajectory<double> ramp = smoothenedRamp(N_full, N_acc, N_acc);
+			
 			for (int i = 0; i < ramp.size(); i++)
 			{
 				tr.addPoint(interpolate(ramp[i], start, end));
@@ -161,49 +158,39 @@ class TrajectoryFactory
 						P start,
 						std::vector<P> waypoints,
 						P end, 
-						double Tfull,
-						double Tacc, 
+						double speed,
+						double acc, 
 						double dt)
 		{
 			if (waypoints.empty())
 				return linearTrajectoryWithSmoothAcceleration(
-											start, end, Tfull, Tacc, dt);
+											start, end, speed, acc, dt);
 			Trajectory<P> tr(dt);
-			// Calculate time for waypoints
-			std::vector<double> dists(waypoints.size() + 1);
-			
-			dists[0] = (distanceEuler(start, waypoints[0]));
-			
-			for (typename std::vector<P>::size_type i = 0; 
-											i < waypoints.size()-1; i++)
-				dists[1+i] = (distanceEuler(waypoints[i], waypoints[i+1]));
-				
-			dists[waypoints.size()] = (distanceEuler(end, waypoints.back()));
-			
-			double dist = 0.0;
-			for (std::vector<double>::size_type i = 0; i < dists.size(); i++)
-				dist += dists[i];
-			
-			std::vector<double> Ts(dists.size());
-			for (std::vector<double>::size_type i = 0; i < dists.size(); i++)
-				Ts [i] = dists[i] / dist;
 					
 			// To first waypoints
-			int Nfull = (int)round(Ts[0] / dt)+1;
-			int Nacc = (int)round(Tacc / dt)+1;	
-			Trajectory<double> accRamp = smoothenedRamp(Nfull, Nacc, 0);
-			for (int i = 0; i < accRamp.size(); i++)
+			double s_full = distanceEuler(start,  waypoints[0]);
+			double t_acc = speed / acc;
+			double s_acc = 0.5 * acc * t_acc * t_acc;
+			double t_full = t_acc + ((s_full-s_acc) / speed);
+
+			int N_full = (int)round(t_full / dt)+1;
+			int N_acc = (int)round(t_acc / dt)+1;	
+			Trajectory<double> acc_ramp = smoothenedRamp(N_full, N_acc, 0);
+			
+			for (int i = 0; i < acc_ramp.size(); i++)
 			{
-				tr.addPoint(interpolate(accRamp[i], start, waypoints[0]));
+				tr.addPoint(interpolate(acc_ramp[i], start, waypoints[0]));
 			}
 			
 			// Between waypoints
 			for(typename std::vector<P>::size_type i = 0;
 						 i < waypoints.size()-1; i++)
 			{
-				// Ebed utan itt folytatom
-				Nfull = (int)round(Ts[i+1] / dt)+1;
-				Trajectory<double> ramp = uniformRamp(Nfull);
+				s_full = distanceEuler(waypoints[i],waypoints[i+1]);
+				t_full = s_full / speed;
+
+				N_full = (int)round(t_full / dt)+1;
+				Trajectory<double> ramp = uniformRamp(N_full);
 				for (int j = 0; j < ramp.size(); j++)
 				{
 					tr.addPoint(interpolate(ramp[j],
@@ -213,10 +200,18 @@ class TrajectoryFactory
 			}
 			
 			// To endpoint
-			Trajectory<double> deccRamp = smoothenedRamp(Nfull, 0, Nacc);
-			for (int i = 0; i < deccRamp.size(); i++)
+			s_full = distanceEuler(waypoints.back(), end);
+			t_acc = speed / acc;
+			s_acc = 0.5 * acc * t_acc * t_acc;
+			t_full = t_acc + ((s_full-s_acc) / speed);
+
+			N_full = (int)round(t_full / dt)+1;
+			N_acc = (int)round(t_acc / dt)+1;	
+			
+			Trajectory<double> decc_ramp = smoothenedRamp(N_full, 0, N_acc);
+			for (int i = 0; i < decc_ramp.size(); i++)
 			{
-				tr.addPoint(interpolate(deccRamp[i], 
+				tr.addPoint(interpolate(decc_ramp[i], 
 										waypoints.back(),
 										end));
 			}

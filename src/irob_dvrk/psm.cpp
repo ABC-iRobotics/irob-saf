@@ -18,7 +18,7 @@ const std::string PSM::ERROR_INSIDE_CANNULA
                     ="make sure the tool is inserted past the cannula";
                     
 const double PSM::INSERTION_DEPTH = 0.055;
-const double PSM::INSERTION_T = 1.0;
+const double PSM::INSERTION_SPEED = 0.05;
 const double PSM::INSERTION_DT = 0.01;
 const int PSM::INSERTION_JOINT_IDX = 2;
 
@@ -92,8 +92,8 @@ void PSM::initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &goal)
         					linearTrajectoryWithSmoothAcceleration(
 								getJointStateCurrent(INSERTION_JOINT_IDX),
 								INSERTION_DEPTH, 
-								INSERTION_T,
-								INSERTION_T * 0.2, 
+								INSERTION_SPEED,
+								INSERTION_SPEED * 10.0, 
 								INSERTION_DT);
 						i = 0;
 						to_do = INSERT;

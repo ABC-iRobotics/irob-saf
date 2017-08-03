@@ -346,24 +346,6 @@ Pose Arm::getPoseCurrent()
 }
 
 
-bool Arm::home()
-{
-	std_msgs::String msg;
-	std::stringstream ss;
-    ss << HOME_CMD;
-    msg.data = ss.str();
-    robot_state_pub.publish(msg);
-    ros::Duration(0.5).sleep();
-	ros::spinOnce();
-    if (robot_state.data == HOME_DONE) {
-    	ROS_INFO_STREAM("State set to Home");
-        return true;
-   	}
-   	
-    ros::spinOnce();
-    return false;
-}
-
 bool Arm::setRobotState(std::string state)
 {
 	std_msgs::String msg;
@@ -653,62 +635,6 @@ void Arm::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)
 		}
 }
 
-/*
- * Trajectories
- */
-void Arm::playTrajectory(Trajectory<Eigen::Vector3d>& tr)
-{
-	ros::Rate loop_rate(1.0/tr.dt);
-	//int cnt = 0;
-	for (int i = 0; i < tr.size() && ros::ok(); i++)
-	{
-		//auto start = std::chrono::high_resolution_clock::now();
-		
-		moveCartesianAbsolute(tr[i],tr.dt);
-		
-		loop_rate.sleep();
-		/*
-		std::chrono::duration<double> elapsed =
-	 			std::chrono::high_resolution_clock::now()-start;
-	 	cnt ++;
-	 	if (cnt >= 10)
-	 	{
-			ROS_INFO("Time elapsed: %f us", (elapsed*1000000.0));
-			cnt = 0;
-		}*/
-	}
-
-}
-
-void Arm::playTrajectory(Trajectory<Eigen::Quaternion<double>>& tr)
-{
-	ros::Rate loop_rate(1.0/tr.dt);
-	for (int i = 0; i < tr.size() && ros::ok(); i++)
-	{
-		moveCartesianAbsolute(tr[i],tr.dt);
-		loop_rate.sleep();
-	}
-}
-
-void Arm::playTrajectory(Trajectory<Pose>& tr)
-{
-	ros::Rate loop_rate(1.0/tr.dt);
-	for (int i = 0; i < tr.size() && ros::ok(); i++)
-	{
-		moveCartesianAbsolute(tr[i],tr.dt);
-		loop_rate.sleep();
-	}
-}
-
-void Arm::playTrajectory(int jointIndex, Trajectory<double>& tr)
-{
-	ros::Rate loop_rate(1.0/tr.dt);
-	for (int i = 0; i < tr.size() && ros::ok(); i++)
-	{
-		moveJointAbsolute(jointIndex, tr[i],tr.dt);
-		loop_rate.sleep();
-	}
-}
 
 void Arm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
 {

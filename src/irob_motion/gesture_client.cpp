@@ -77,7 +77,11 @@ void GestureClient::waitForActionServers()
 
 Pose GestureClient::getPoseCurrent()
 {
- 	ros::spinOnce();
+ 	while (position_cartesian_current.header.seq == 0)
+	{
+ 		ros::spinOnce();
+ 		ros::Duration(0.05).sleep();
+ 	}
  	Pose ret(position_cartesian_current);
  	return ret;
 

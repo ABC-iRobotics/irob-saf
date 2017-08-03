@@ -36,7 +36,7 @@ class PSM: public Arm {
 private:       
     static const std::string ERROR_INSIDE_CANNULA;
     static const double INSERTION_DEPTH;
-    static const double INSERTION_T;
+    static const double INSERTION_SPEED;
     static const double INSERTION_DT;
     static const int INSERTION_JOINT_IDX;
     
