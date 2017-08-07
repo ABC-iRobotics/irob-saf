@@ -44,7 +44,6 @@ ManeuverServer::~ManeuverServer()
 void ManeuverServer::dissectActionCB(
 		const irob_autosurg::DissectGoalConstPtr &goal)
 {
-	// TODO open-close stuff
     bool success = true;
     bool preempted = false;
     ros::Rate loop_rate(50.0);
@@ -56,6 +55,8 @@ void ManeuverServer::dissectActionCB(
     if (arm_idx < 0)
     	throw std::runtime_error(
 			"Arm with the given name not found");
+    
+    ROS_INFO_STREAM("Start dissection");
     
     // Close tool
     arms[arm_idx]->closeTool(goal->closed_angle);
@@ -84,9 +85,9 @@ void ManeuverServer::dissectActionCB(
     
     std::vector<Pose> waypoints;
 	for (geometry_msgs::Pose p : goal->waypoints)
-		waypoints.push_back(Pose(p,  goal->closed_angle));
+		waypoints.push_back(Pose(p,  degToRad(goal->closed_angle)));
     
-    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle), 0.02, waypoints);
+    arms[arm_idx]->goTo(Pose(goal->target, degToRad(goal->closed_angle)), 0.02, waypoints);
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client
@@ -141,14 +142,12 @@ void ManeuverServer::dissectActionCB(
         	preempted = true;
         	break;
       	}
-		
-		// TODO this can be determined by the details received 
-		// in the arm's doneCB
+
   		loop_rate.sleep();
   		// TODO send feedback
     }
     
-    // penetrate TODO pull action
+    // Pull tool out 
     arms[arm_idx]->pullOut(goal->depth);
     while(!arms[arm_idx]->isPullOutDone()&& !preempted)
     {
@@ -183,9 +182,7 @@ void ManeuverServer::dissectActionCB(
 void ManeuverServer::graspActionCB(
 		const irob_autosurg::GraspGoalConstPtr &goal)
 {
-    ROS_INFO_STREAM("Grasping not implemented yet");
-    
-    bool success = false;
+    bool success = true;
     bool preempted = false;
     ros::Rate loop_rate(50.0);
 
@@ -193,10 +190,116 @@ void ManeuverServer::graspActionCB(
     irob_autosurg::GraspResult result;
     
     int arm_idx = findArmIdx(goal -> arm_name);
+    if (arm_idx < 0)
+    	throw std::runtime_error(
+			"Arm with the given name not found");
     
-    // TODO not implemented
+    ROS_INFO_STREAM("Start grasping");
     
-    grasp_as.setSucceeded(result);
+    // Open tool
+    arms[arm_idx]->openTool(goal->open_angle);
+    while(!arms[arm_idx]->isOpenToolDone() && !preempted)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (grasp_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("Dissect: Preempted");
+        	// Set the action state to preempted
+        	grasp_as.setPreempted();
+        	success = false;
+        	preempted = true;
+        	break;
+      	}
+		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+  		loop_rate.sleep();
+  		
+  		// TODO send feedback
+    }
+    
+    // Calc approach params
+    Pose tgt(goal->target, degToRad(goal->open_angle));
+    Eigen::Matrix3d R = tgt.orientation.toRotationMatrix();
+    Eigen::Vector3d v(0.0, 0.0, -std::abs(goal->approach_dist));
+	v = R*v;
+	
+	Pose approach_pos(tgt + v);
+    
+    // Go to pos    
+    std::vector<Pose> waypoints;
+	for (geometry_msgs::Pose p : goal->waypoints)
+		waypoints.push_back(Pose(p,  degToRad(goal->open_angle)));
+    
+    arms[arm_idx]->goTo(approach_pos, 0.02, waypoints);
+    while(!arms[arm_idx]->isGoToDone() && !preempted)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (grasp_as.isPreemptRequested() || !ros::ok())
+      	{
+			ROS_INFO_STREAM("Dissect: Preempted");
+        	// Set the action state to preempted
+        	grasp_as.setPreempted();
+        	success = false;
+        	preempted = true;
+        	break;
+      	}
+		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+  		loop_rate.sleep();
+  		// TODO send feedback
+    }
+    
+    // Approach
+    arms[arm_idx]->pushIn(goal->approach_dist);
+    while(!arms[arm_idx]->isPushInDone()&& !preempted)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (grasp_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("Dissect: Preempted");
+        	// Set the action state to preempted
+        	grasp_as.setPreempted();
+        	success = false;
+        	preempted = true;
+        	break;
+      	}
+		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+  		loop_rate.sleep();
+  		// TODO send feedback
+    }
+    
+    // Close tool
+    arms[arm_idx]->closeTool(goal->closed_angle);
+    while(!arms[arm_idx]->isCloseToolDone()&& !preempted)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (grasp_as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM("Dissect: Preempted");
+        	// Set the action state to preempted
+        	grasp_as.setPreempted();
+        	success = false;
+        	preempted = true;
+        	break;
+      	}
+		
+		// TODO this can be determined by the details received 
+		// in the arm's doneCB
+  		loop_rate.sleep();
+  		// TODO send feedback
+    }
+
+    if(success)
+    {
+      	ROS_INFO_STREAM("Grasp succeeded");
+		result.info = "Grasp succeeded";
+      	// set the action state to succeeded
+      	grasp_as.setSucceeded(result);
+    }
 }
   
   

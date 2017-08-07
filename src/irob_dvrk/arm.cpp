@@ -166,7 +166,6 @@ void Arm::followTrajectoryActionCB(
         	break;
       	}
 		moveCartesianAbsolute(tr[i],tr.dt);
-		
 		feedback.pose = tr[i].toRosToolPose();
       	follow_tr_as.publishFeedback(feedback);
 		

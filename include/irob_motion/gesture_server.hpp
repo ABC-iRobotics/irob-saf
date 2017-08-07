@@ -86,8 +86,7 @@ public:
     
 
    	Pose getPoseCurrent();
-   	std::string getArmName();
-	
+   	std::string getArmName();	
 };
 
 

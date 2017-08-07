@@ -78,7 +78,8 @@ public:
    	// Robot motions
    	void dissect(std::string, Pose, double, double, double, 
    									std::vector<Pose> = std::vector<Pose>());	
-   	void grasp(std::string, Pose, double, double);	
+   	void grasp(std::string, Pose, double, double, double,
+   									std::vector<Pose> = std::vector<Pose>());	
 
 			
 	bool isDissectDone();

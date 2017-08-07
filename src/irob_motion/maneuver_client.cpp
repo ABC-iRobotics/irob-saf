@@ -80,7 +80,7 @@ void ManeuverClient::dissect(std::string arm_name,
   	irob_autosurg::DissectGoal goal;
  
   	goal.arm_name = arm_name;
-  	goal.pose = pos.toRosPose();
+  	goal.target = pos.toRosPose();
   	
   	for (Pose p : waypoints)
     	goal.waypoints.push_back(p.toRosPose());
@@ -94,15 +94,23 @@ void ManeuverClient::dissect(std::string arm_name,
 
 void ManeuverClient::grasp(std::string arm_name, 
 								Pose pos, double open_angle,
-								double closed_angle)
+								double closed_angle,
+								double approach_dist,
+								std::vector<Pose> waypoints 
+								/* = std::vector<Pose>()*/)
 {
     // Send a goal to the action
   	irob_autosurg::GraspGoal goal;
  
   	goal.arm_name = arm_name;
-  	goal.pose = pos.toRosPose();
+  	goal.target = pos.toRosPose();
+  	
+  	for (Pose p : waypoints)
+    	goal.waypoints.push_back(p.toRosPose());
+  	
   	goal.closed_angle = closed_angle;
   	goal.open_angle = open_angle;
+  	goal.approach_dist = approach_dist;
   	
   	grasp_ac.sendGoal(goal);
 }

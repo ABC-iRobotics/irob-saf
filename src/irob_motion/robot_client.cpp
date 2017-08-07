@@ -42,7 +42,6 @@ void RobotClient::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(msg);
 }
 
-// TODO remap
 void RobotClient::subscribeTopics() 
 {                 	            	
    	position_cartesian_current_sub = 
@@ -51,7 +50,6 @@ void RobotClient::subscribeTopics()
                        	1000, &RobotClient::positionCartesianCurrentCB,this);
 }
 
-// TODO remap
 void RobotClient::advertiseTopics() 
 {
 	position_cartesian_current_pub 
@@ -79,7 +77,6 @@ Pose RobotClient::getPoseCurrent()
  	}
  	Pose ret(position_cartesian_current);
  	return ret;
-
 }
 
 std::string RobotClient::getName()
@@ -89,7 +86,6 @@ std::string RobotClient::getName()
    	
 
 // Robot motions
-
 void RobotClient::initArm(bool move_allowed, bool reset_pose)
 {
     // Send a goal to the action
@@ -193,7 +189,7 @@ void RobotClient::moveRelative(Pose p, double speed, CoordFrame cf)
 {
 	// TODO
 	throw std::runtime_error(
-			"Tool rotation is not implemented yet");	
+			"Relative movement by Pose is not implemented yet");	
 }
 
 /**

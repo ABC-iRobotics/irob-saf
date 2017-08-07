@@ -1,6 +1,6 @@
 # Define the goal
 string arm_name
-geometry_msgs/Pose pose
+geometry_msgs/Pose target
 geometry_msgs/Pose[] waypoints
 float64 depth
 float64 closed_angle

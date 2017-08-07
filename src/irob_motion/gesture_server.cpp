@@ -50,24 +50,36 @@ void GestureServer::closeToolActionCB(
     irob_autosurg::CloseToolFeedback feedback;
     irob_autosurg::CloseToolResult result;
 
-	ROS_INFO_STREAM(arm.getName() << " closing tool");
+	Pose p = arm.getPoseCurrent();
+	double curr_angle = radToDeg(p.jaw);
+	
+	if (curr_angle < (goal->angle - 0.1)) {
+		result.angle = curr_angle;
+      	ROS_INFO_STREAM(arm.getName()  
+      			<< " close tool not possible, goal > current");
+		result.info = arm.getName()  
+				+ " close tool not possible, goal > current";
+      	close_tool_as.setAborted(result);
+      	return;
+    } 
+	
+	ROS_INFO_STREAM(arm.getName() << " closing tool to " << 
+						goal->angle << " degrees");
   	
   	arm.moveGripper(goal->angle, goal->speed);
   	
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (close_tool_as.isPreemptRequested() || !ros::ok())
-      	{
+      	if (close_tool_as.isPreemptRequested() || !ros::ok()) {
+      		
         	ROS_INFO_STREAM(arm.getName()  << " close tool: Preempted");
         	// Set the action state to preempted
         	close_tool_as.setPreempted();
         	success = false;
         	break;
       	}
-		
-		// TODO this can be determined by the details received 
-		// in the arm's doneCB
+	
 		
 		success = arm.isFollowTrajectoryDone();
   		loop_rate.sleep();
@@ -76,12 +88,13 @@ void GestureServer::closeToolActionCB(
 
     if(success)
     {
-      	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
+      	result.angle = radToDeg(arm.getPoseCurrent().jaw);
       	ROS_INFO_STREAM(arm.getName()  << " close tool succeeded");
 		result.info = arm.getName()  + " close tool succeeded";
       	// set the action state to succeeded
       	close_tool_as.setSucceeded(result);
-    }
+	}
+	
 }
   
 void GestureServer::openToolActionCB(
@@ -93,9 +106,23 @@ void GestureServer::openToolActionCB(
 
     irob_autosurg::OpenToolFeedback feedback;
     irob_autosurg::OpenToolResult result;
-
+    
+    Pose p = arm.getPoseCurrent();
+	double curr_angle = radToDeg(p.jaw);
+	
+	if (curr_angle > (goal->angle + 0.1)) {
+		result.angle = curr_angle;
+      	ROS_INFO_STREAM(arm.getName()  
+      			<< " open tool not possible, goal < current");
+		result.info = arm.getName()  + " open tool not possible, goal < current";
+      	open_tool_as.setAborted(result);
+    	return;
+	}
+	
 	ROS_INFO_STREAM(arm.getName()  << " opening tool to " 
 			<< goal->angle << " degrees");
+  	
+  	
   	
   	arm.moveGripper(goal->angle, goal->speed);
   	
@@ -121,7 +148,7 @@ void GestureServer::openToolActionCB(
 
     if(success)
     {
-    	result.angle = (arm.getPoseCurrent().jaw * 180.0) / (M_PI);
+    	result.angle = radToDeg(arm.getPoseCurrent().jaw);
       	ROS_INFO_STREAM(arm.getName()  << " open tool succeeded");
 		result.info = arm.getName()  + " open tool succeeded";
       	// set the action state to succeeded
@@ -146,7 +173,7 @@ void GestureServer::pushInActionCB(
     	// Check that preempt has not been requested by the client
       	if (open_tool_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM(arm.getName()  << " open tool: Preempted");
+        	ROS_INFO_STREAM(arm.getName()  << " push in: Preempted");
         	// Set the action state to preempted
         	push_in_as.setPreempted();
         	success = false;
@@ -187,7 +214,7 @@ void GestureServer::pullOutActionCB(
     	// Check that preempt has not been requested by the client
       	if (open_tool_as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM(arm.getName()  << " open tool: Preempted");
+        	ROS_INFO_STREAM(arm.getName()  << " pull out: Preempted");
         	// Set the action state to preempted
         	pull_out_as.setPreempted();
         	success = false;

@@ -53,12 +53,23 @@ int main(int argc, char **argv)
 		wps.push_back(mc.getPoseCurrent(arm_names[0])+offset2);
 
 		mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
-		0.02, 0.0, 30.0, wps);	
+			0.02, 0.0, 30.0, wps);
+		//ros::Duration(10.0).sleep();
+		//mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
+		//0.02, 0.0, 10.0);
+			
 		while(!mc.isDissectDone() && ros::ok())
     	{
   			loop_rate.sleep();
 		}
-   	
+		
+		mc.grasp(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,40.0, 0.0,
+			0.03, wps);
+   		while(!mc.isGraspDone() && ros::ok())
+    	{
+  			loop_rate.sleep();
+		}
+		
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	
     	} catch (const std::exception& e) {
