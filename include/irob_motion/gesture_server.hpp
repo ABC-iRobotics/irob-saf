@@ -33,7 +33,8 @@
 
 #include <irob_autosurg/CloseToolAction.h>
 #include <irob_autosurg/OpenToolAction.h>
-#include <irob_autosurg/PenetrateAction.h>
+#include <irob_autosurg/PushInAction.h>
+#include <irob_autosurg/PullOutAction.h>
 #include <irob_autosurg/GoToAction.h>
 
 using namespace ias;
@@ -53,8 +54,10 @@ protected:
     	 close_tool_as;
    	actionlib::SimpleActionServer<irob_autosurg::OpenToolAction>
     	 open_tool_as;
-   	actionlib::SimpleActionServer<irob_autosurg::PenetrateAction>
-    	 penetrate_as;
+   	actionlib::SimpleActionServer<irob_autosurg::PullOutAction>
+    	 pull_out_as;
+   	actionlib::SimpleActionServer<irob_autosurg::PushInAction>
+    	 push_in_as;
     actionlib::SimpleActionServer<irob_autosurg::GoToAction>
     	 go_to_as;
    	
@@ -73,8 +76,10 @@ public:
    	void openToolActionCB(
     		const irob_autosurg::OpenToolGoalConstPtr &);
     		
-   	void penetrateActionCB(
-    		const irob_autosurg::PenetrateGoalConstPtr &);
+   	void pushInActionCB(
+    		const irob_autosurg::PushInGoalConstPtr &);
+    void pullOutActionCB(
+    		const irob_autosurg::PullOutGoalConstPtr &);
     		
    	void goToActionCB(
     		const irob_autosurg::GoToGoalConstPtr &);

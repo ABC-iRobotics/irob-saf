@@ -76,7 +76,8 @@ find_package(catkin REQUIRED
    	
    	gesture/CloseTool.action
    	gesture/OpenTool.action
-   	gesture/Penetrate.action
+   	gesture/PushIn.action
+   	gesture/PullOut.action
    	gesture/GoTo.action
    	
    	maneuver/Grasp.action

@@ -86,7 +86,7 @@ void ManeuverServer::dissectActionCB(
 	for (geometry_msgs::Pose p : goal->waypoints)
 		waypoints.push_back(Pose(p,  goal->closed_angle));
     
-    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle), 0.03, waypoints);
+    arms[arm_idx]->goTo(Pose(goal->pose, goal->closed_angle), 0.02, waypoints);
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client
@@ -107,8 +107,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // penetrate
-    arms[arm_idx]->penetrate(goal->depth);
-    while(!arms[arm_idx]->isPenetrateDone()&& !preempted)
+    arms[arm_idx]->pushIn(goal->depth);
+    while(!arms[arm_idx]->isPushInDone()&& !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())
@@ -149,8 +149,8 @@ void ManeuverServer::dissectActionCB(
     }
     
     // penetrate TODO pull action
-    arms[arm_idx]->penetrate(-(goal->depth));
-    while(!arms[arm_idx]->isPenetrateDone()&& !preempted)
+    arms[arm_idx]->pullOut(goal->depth);
+    while(!arms[arm_idx]->isPullOutDone()&& !preempted)
     {
     	// Check that preempt has not been requested by the client
       	if (dissect_as.isPreemptRequested() || !ros::ok())

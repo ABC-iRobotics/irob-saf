@@ -15,7 +15,8 @@ GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name):
 			nh(nh), arm_name(arm_name),
 			close_tool_ac("gesture/"+arm_name+"/close_tool", true),
 			open_tool_ac("gesture/"+arm_name+"/open_tool", true),
-			penetrate_ac("gesture/"+arm_name+"/penetrate", true),
+			push_in_ac("gesture/"+arm_name+"/push_in", true),
+			pull_out_ac("gesture/"+arm_name+"/pull_out", true),
 			go_to_ac("gesture/"+arm_name+"/go_to", true)
 {
 
@@ -69,7 +70,8 @@ void GestureClient::waitForActionServers()
 	ROS_INFO_STREAM("Wating for action servers...");
 	close_tool_ac.waitForServer();
 	open_tool_ac.waitForServer();
-    penetrate_ac.waitForServer();
+    push_in_ac.waitForServer();
+    pull_out_ac.waitForServer();
     go_to_ac.waitForServer();
     ROS_INFO_STREAM("Action servers started");
 }
@@ -118,14 +120,27 @@ void GestureClient::openTool(double angle, double speed /* = 10.0 */)
 }
 
 
-void GestureClient::penetrate(double depth, double speed /*=0.01*/)
+void GestureClient::pushIn(double depth, double speed /*=0.01*/)
 {
-	irob_autosurg::PenetrateGoal goal;
+	irob_autosurg::PushInGoal goal;
  
   	goal.depth = depth;
   	goal.speed = speed;
    	
-  	penetrate_ac.sendGoal(goal);
+  	push_in_ac.sendGoal(goal);
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in followTrajectoryDoneCB
+}
+
+void GestureClient::pullOut(double depth, double speed /*=0.01*/)
+{
+	irob_autosurg::PullOutGoal goal;
+ 
+  	goal.depth = depth;
+  	goal.speed = speed;
+   	
+  	pull_out_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in followTrajectoryDoneCB
@@ -163,9 +178,14 @@ bool GestureClient::isOpenToolDone()
 	return open_tool_ac.isDone();
 }
 
-bool GestureClient::isPenetrateDone()
+bool GestureClient::isPushInDone()
 {
-	return penetrate_ac.isDone();
+	return push_in_ac.isDone();
+}
+
+bool GestureClient::isPullOutDone()
+{
+	return pull_out_ac.isDone();
 }
 
 bool GestureClient::isGoToDone()

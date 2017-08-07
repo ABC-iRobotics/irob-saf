@@ -36,7 +36,8 @@
 
 #include <irob_autosurg/CloseToolAction.h>
 #include <irob_autosurg/OpenToolAction.h>
-#include <irob_autosurg/PenetrateAction.h>
+#include <irob_autosurg/PushInAction.h>
+#include <irob_autosurg/PullOutAction.h>
 #include <irob_autosurg/GoToAction.h>
 
 using namespace ias;
@@ -52,8 +53,11 @@ protected:
     									 close_tool_ac;
     IrobActionClient<irob_autosurg::OpenToolAction>
     									 open_tool_ac;
-   	IrobActionClient<irob_autosurg::PenetrateAction> 
-   										penetrate_ac;
+   	IrobActionClient<irob_autosurg::PushInAction> 
+   										push_in_ac;
+   																			IrobActionClient<irob_autosurg::PullOutAction> 
+   												
+   										pull_out_ac;
    	IrobActionClient<irob_autosurg::GoToAction> 
     									go_to_ac;
    	
@@ -93,13 +97,15 @@ public:
    		// Robot motions
    	void closeTool(double, double = 10.0);	
    	void openTool(double, double = 10.0);
-	void penetrate(double, double = 0.01);
+	void pushIn(double, double = 0.01);
+	void pullOut(double, double = 0.01);
 	void goTo(Pose, double = 0.01, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 			
 	bool isCloseToolDone();
 	bool isOpenToolDone();
-	bool isPenetrateDone();
+	bool isPushInDone();
+	bool isPullOutDone();
 	bool isGoToDone();
 	
 };

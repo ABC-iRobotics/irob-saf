@@ -69,8 +69,10 @@ void ManeuverClient::waitForActionServers()
 // Robot motions
 
 void ManeuverClient::dissect(std::string arm_name, 
-								Pose pos, double depth,
-								double closed_angle, double open_angle,
+								Pose pos, 
+								double depth,
+								double closed_angle,
+								double open_angle,
 								std::vector<Pose> waypoints 
 								/* = std::vector<Pose>()*/)	
 {

@@ -96,7 +96,7 @@ public:
    	// Robot motions
    	void initArm(bool, bool);	
    	void resetPose(bool);
-	void moveGripper(double, double = 0.01);
+	void moveGripper(double, double = 10.0);
 	void goTo(Pose, double = 0.01, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 	void moveRelative(Pose, double, CoordFrame);

@@ -121,20 +121,17 @@ void RobotClient::resetPose(bool move_allowed)
 }
 
 /**
- * Open tool to separate tissues.
+ * Move tool gripper.
  *
  * @param angle angle of jaws in deg
  * @param speed opening speed in deg/s
  */	
-void RobotClient::moveGripper(double angle, double speed /*=0.01*/)
+void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
 {
 	Pose p1 = getPoseCurrent();
 	
 	double angle_rad = (std::abs(angle)/360.0)* M_PI * 2.0;
-	double speed_rad = (std::abs(speed)/360.0)* M_PI * 2.0;
-		
-	double T = std::abs((angle_rad-p1.jaw) / speed_rad);
-	
+	double speed_rad = (std::abs(speed)/360.0)* M_PI * 2.0;	
 		
 	Pose p2 = p1;
 	p2.jaw = angle_rad;
@@ -143,7 +140,7 @@ void RobotClient::moveGripper(double angle, double speed /*=0.01*/)
    				linearTrajectoryWithSmoothAcceleration(
    						p1, 
    						p2,
-   						speed, speed * 10.0, dt);						
+   						speed_rad, speed_rad * 10.0, dt);					
    						
    	irob_autosurg::FollowTrajectoryGoal goal;
    	tr.copyToRosTrajectory(goal.trajectory);
@@ -199,11 +196,15 @@ void RobotClient::moveRelative(Pose p, double speed, CoordFrame cf)
 			"Tool rotation is not implemented yet");	
 }
 
+/**
+ * Move relative in TCPF or WCS
+ */
 void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 {
 	Pose p1 = getPoseCurrent();
 	Eigen::Vector3d v_rot;
 	
+	// Rotate v to TCP or WCS
 	switch (cf) {
 		case WCS:
 			v_rot = v;
