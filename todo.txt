@@ -1,0 +1,6 @@
+TODO:
+	- Preempt check for all action servers needed?
+	- Find cause of random crashes (may be moving too fast?)
+	- Set execution speed in launch file
+	- Change high level units to mm
+	- Implement camera coord frame transform
