@@ -87,7 +87,7 @@ void ManeuverServer::dissectActionCB(
 	for (geometry_msgs::Pose p : goal->waypoints)
 		waypoints.push_back(Pose(p,  degToRad(goal->closed_angle)));
     
-    arms[arm_idx]->goTo(Pose(goal->target, degToRad(goal->closed_angle)), 0.02, waypoints);
+    arms[arm_idx]->goTo(Pose(goal->target, degToRad(goal->closed_angle)), 20.0, waypoints);
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client
@@ -231,7 +231,7 @@ void ManeuverServer::graspActionCB(
 	for (geometry_msgs::Pose p : goal->waypoints)
 		waypoints.push_back(Pose(p,  degToRad(goal->open_angle)));
     
-    arms[arm_idx]->goTo(approach_pos, 0.02, waypoints);
+    arms[arm_idx]->goTo(approach_pos, 20.0, waypoints);
     while(!arms[arm_idx]->isGoToDone() && !preempted)
     {
     	// Check that preempt has not been requested by the client

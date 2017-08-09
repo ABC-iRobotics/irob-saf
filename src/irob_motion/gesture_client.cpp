@@ -120,7 +120,7 @@ void GestureClient::openTool(double angle, double speed /* = 10.0 */)
 }
 
 
-void GestureClient::pushIn(double depth, double speed /*=0.01*/)
+void GestureClient::pushIn(double depth, double speed /*=10.0*/)
 {
 	irob_autosurg::PushInGoal goal;
  
@@ -133,7 +133,7 @@ void GestureClient::pushIn(double depth, double speed /*=0.01*/)
   	// in followTrajectoryDoneCB
 }
 
-void GestureClient::pullOut(double depth, double speed /*=0.01*/)
+void GestureClient::pullOut(double depth, double speed /*=10.0*/)
 {
 	irob_autosurg::PullOutGoal goal;
  
@@ -146,7 +146,7 @@ void GestureClient::pullOut(double depth, double speed /*=0.01*/)
   	// in followTrajectoryDoneCB
 }
 
-void GestureClient::goTo(Pose target, double speed /* = 0.01 */,
+void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {

@@ -46,7 +46,7 @@ private:
     void advertiseTopics();
 
 public:
-    PSM(ros::NodeHandle, ArmTypes, std::string, bool);
+    PSM(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
 	~PSM();	
 
 	void initArmActionCB(const irob_autosurg::InitArmGoalConstPtr &);

@@ -41,9 +41,9 @@ int main(int argc, char **argv)
 		ManeuverClient mc(nh, arm_names);
 	
 		
-		Eigen::Vector3d offset(0.02, 0.02, -0.05);
-		Eigen::Vector3d offset1(-0.02, 0.02, 0.0);
-		Eigen::Vector3d offset2(0.02, -0.02, 0.0);
+		Eigen::Vector3d offset(20.0, 20.0, -50.0);
+		Eigen::Vector3d offset1(-20.0, 20.0, 0.0);
+		Eigen::Vector3d offset2(20.0, -20.0, 0.0);
 		//ROS_INFO_STREAM(mc.getPoseCurrent(arm_names[0]));
 		//ROS_INFO_STREAM(mc.getPoseCurrent(arm_names[0])+offset);
 		
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 		wps.push_back(mc.getPoseCurrent(arm_names[0])+offset2);
 
 		mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
-			0.02, 0.0, 30.0, wps);
+			20.0, 0.0, 30.0, wps);
 		//ros::Duration(10.0).sleep();
 		//mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
 		//0.02, 0.0, 10.0);
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 		}
 		
 		mc.grasp(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,40.0, 0.0,
-			0.03, wps);
+			30.0, wps);
    		while(!mc.isGraspDone() && ros::ok())
     	{
   			loop_rate.sleep();

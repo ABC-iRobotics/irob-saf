@@ -11,6 +11,8 @@
 
 #include <iostream>
 #include <ros/ros.h>
+#include <Eigen/Dense>
+#include <Eigen/Geometry> 
 #include <vector>
 #include <fstream>
 #include <string>
@@ -48,6 +50,11 @@ class Trajectory
 		
 		Trajectory<T> operator+=(const Trajectory<T>&);
    		Trajectory<T> operator+(const Trajectory<T>&);
+   		
+   		void transform(const Eigen::Matrix3d&, const Eigen::Vector3d&,
+   													 double = 1.0);
+   		void invTransform(const Eigen::Matrix3d&, const Eigen::Vector3d&,
+   													 double = 1.0);
 		
 		void copyToRosTrajectory(irob_autosurg::TrajectoryToolPose&);
 		
@@ -127,8 +134,8 @@ Trajectory<T> Trajectory<T>::operator+=(const Trajectory<T>& other)
 {
 	if (dt != other.dt)
 		// TODO err
-   	for (int i = 0; i < other.size(); i++)
-		points.push_back(other[i]);
+   	for (T p : other.points)
+		points.push_back(p);
 	
    	return *this;
 }
@@ -141,6 +148,24 @@ Trajectory<T> Trajectory<T>::operator+(const Trajectory<T>& other)
 	tmp += other;
 	
    	return tmp;
+}
+
+// Transform trajectory in place
+template <class T>
+void Trajectory<T>::transform(const Eigen::Matrix3d& R, 
+				const Eigen::Vector3d& t, double scale /* = 1.0 */)
+{
+	for (T& p : points)
+		p = p.transform(R, t, scale);
+}
+
+// Transform trajectory in place
+template <class T>
+void Trajectory<T>::invTransform(const Eigen::Matrix3d& R, 
+				const Eigen::Vector3d& t, double scale /* = 1.0 */)
+{
+	for (T& p : points)
+		p = p.invTransform(R, t, scale);
 }
    	
 
@@ -193,8 +218,8 @@ void Trajectory<T>::writeToFile(std::string filename) const
 	// The first line is always the dt
 	logfile << dt << std::endl;
 	// One line contains one point in the trajectory
-	for (int i = 0; i < points.size(); i++)
-		logfile << points[i] << std::endl;
+	for (T p : points)
+		logfile << p << std::endl;
 	
 	logfile.flush();
 	logfile.close();

@@ -126,8 +126,8 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
 {
 	Pose p1 = getPoseCurrent();
 	
-	double angle_rad = (std::abs(angle)/360.0)* M_PI * 2.0;
-	double speed_rad = (std::abs(speed)/360.0)* M_PI * 2.0;	
+	double angle_rad = degToRad(std::abs(angle));
+	double speed_rad = degToRad(std::abs(speed));	
 		
 	Pose p2 = p1;
 	p2.jaw = angle_rad;
@@ -147,7 +147,7 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
   	// in followTrajectoryDoneCB
 }
 
-void RobotClient::goTo(Pose target, double speed /* = 0.01 */,
+void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {

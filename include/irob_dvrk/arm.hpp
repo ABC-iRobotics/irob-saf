@@ -61,7 +61,9 @@ protected:
     actionlib::SimpleActionServer<irob_autosurg::FollowTrajectoryAction>
     	 follow_tr_as;
    	
-   
+    // Hand-eye registration
+    Eigen::Vector3d t;
+    Eigen::Matrix3d R;
 
     // States
     std_msgs::String robot_state;
@@ -90,7 +92,7 @@ protected:
     void startActionServers();
 
 public:
-	Arm(ros::NodeHandle, ArmTypes, std::string, bool);
+	Arm(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
 	~Arm();
 
     // Callbacks
@@ -106,6 +108,7 @@ public:
     virtual void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
 
    
+    void loadRegistration(std::string);
     
     double getJointStateCurrent(int);
     std::vector<double> getJointStateCurrent();

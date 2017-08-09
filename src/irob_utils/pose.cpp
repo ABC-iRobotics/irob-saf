@@ -239,6 +239,34 @@ namespace ias {
     	 ret /= d;
     	 return ret;
     }
+    
+    /**
+     * Transform Pose; first scales the position, then does the rotation and 
+     * finally the translation
+	 */
+	Pose Pose::transform(const Eigen::Matrix3d& R, 
+				const Eigen::Vector3d& t, double scale /* = 1.0 */)
+	{
+		Pose ret(*this);
+		ret.position *= scale;
+		ret = ret.rotate(R);
+		ret += t;
+		return ret;
+	}
+	
+	/**
+     * Transform Pose; first un-translates the position, then does the inverse
+     * rotation and finally the inverse scaling
+	 */
+	Pose Pose::invTransform(const Eigen::Matrix3d& R, 
+				const Eigen::Vector3d& t, double scale /* = 1.0 */)
+	{
+		Pose ret(*this);
+		ret -= t;
+		ret = ret.rotate(R.transpose());
+		ret.position *= (1.0 / scale);
+		return ret;
+	}
    	
    	std::ostream& operator<<(std::ostream& os, const Pose& p)
    	{

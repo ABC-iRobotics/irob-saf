@@ -65,6 +65,8 @@ class Pose {
    	Pose interpolate(double, const Pose&) const;
    	
    	Pose rotate(const Eigen::Matrix3d&) const;
+   	Pose transform(const Eigen::Matrix3d&, const Eigen::Vector3d&, double = 1.0);
+   	Pose invTransform(const Eigen::Matrix3d&, const Eigen::Vector3d&, double = 1.0);
    	
    	bool isNaN() const;
    	

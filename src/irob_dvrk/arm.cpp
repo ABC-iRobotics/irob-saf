@@ -27,8 +27,8 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 
 
 
-Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
-	bool isActive): 
+Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
+									std::string regfile, bool isActive): 
 			nh(nh), arm_typ(arm_typ), arm_name(arm_name),
 			init_as(nh, "robot/"+arm_name+"/init_arm", boost::bind(
 				&Arm::initArmActionCB, this, _1), false),
@@ -37,13 +37,12 @@ Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
 			follow_tr_as(nh, "robot/"+arm_name+"/follow_trajectory",boost::bind(
 				&Arm::followTrajectoryActionCB, this, _1), false)
 {
+	loadRegistration(regfile);
 	// Subscribe and advertise topics
 	subscribeTopics();
     if (isActive == ACTIVE)
     	advertiseTopics();
     startActionServers();
-   
-    
 }
 
 Arm::~Arm()
@@ -149,8 +148,11 @@ void Arm::followTrajectoryActionCB(
 
 	ROS_INFO_STREAM("Starting trajectory follow action.");
 	
+	// Go to m-s from mm-s here
+	// Hande-eye calibration
 	Trajectory<Pose> tr(goal->trajectory);
-	// TODO hande-eye calibration
+	tr.invTransform(R, t, 1000.0);
+	
 	
 	ros::Rate loop_rate(1.0/tr.dt);
 	// start executing the action
@@ -202,9 +204,9 @@ void Arm::positionCartesianCurrentCB(
 
  	Pose tmp(position_cartesian_current, 0.0);
 
-	// TODO hand-eye calibration
-	
-	fwd.pose = tmp.toRosToolPose();
+	// Hand-eye calibration
+	// Convert from m-s to mm-s
+	fwd.pose = tmp.transform(R, t, 1000.0).toRosToolPose();
     position_cartesian_current_pub.publish(fwd);
 }
 
@@ -292,6 +294,33 @@ void Arm::startActionServers()
 	init_as.start();
 	reset_pose_as.start();
     follow_tr_as.start();
+}
+
+
+void Arm::loadRegistration(std::string registration_file)
+{
+	std::ifstream cfgfile(registration_file.c_str());
+    if (!cfgfile.is_open())
+    	throw std::runtime_error("Cannot open file " + registration_file);
+    if (cfgfile.eof())
+    	throw std::runtime_error("Cfgfile " + registration_file + " is empty.");
+   	
+   	double x, y, z;
+   	
+    cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
+    t << x, y, z;
+    
+    for (int i = 0; i < 3; i++)
+    {
+    	cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
+    	R(i,0) = x;
+    	R(i,1) = y;
+    	R(i,2) = z;
+    }
+    
+    cfgfile.close();
+    
+    ROS_INFO_STREAM("Registration read: "<< std::endl << t << std::endl << R);
 }
 
 /*

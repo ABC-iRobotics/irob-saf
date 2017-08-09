@@ -23,8 +23,9 @@ const double PSM::INSERTION_DT = 0.01;
 const int PSM::INSERTION_JOINT_IDX = 2;
 
 
-PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
-	 bool isActive): Arm(nh, arm_typ, arm_name, isActive)
+PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
+	std::string regfile, bool isActive): 
+		Arm(nh, arm_typ, arm_name, regfile, isActive)
 {
 	if (!(arm_typ == ArmTypes::PSM1 || 
   							arm_typ == ArmTypes::PSM2))
@@ -226,9 +227,9 @@ void PSM::positionCartesianCurrentCB(
 
  	Pose tmp(position_cartesian_current, position_joint.position[6]);
 
-	// TODO hand-eye calibration
-	
-	fwd.pose = tmp.toRosToolPose();
+	// Hand-eye calibration
+	// Convert from m-s to mm-s
+	fwd.pose = tmp.transform(R, t, 1000.0).toRosToolPose();
     position_cartesian_current_pub.publish(fwd);
 }
 
@@ -344,6 +345,9 @@ int main(int argc, char **argv)
 	std::string arm_name;
 	priv_nh.getParam("arm_name", arm_name);
 	
+	std::string camera_registration_file;
+	priv_nh.getParam("camera_registration_file", camera_registration_file);
+	
 
 
 	
@@ -351,11 +355,13 @@ int main(int argc, char **argv)
     // Robot control
   	try {
   		if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
-    		PSM psm(nh, arm_type, arm_name,PSM::ACTIVE);
+    		PSM psm(nh, arm_type, 
+    			 arm_name, camera_registration_file, PSM::ACTIVE);
     		ros::spin();
     	}
     	else {
-    		Arm arm(nh, arm_type, arm_name,Arm::ACTIVE);
+    		Arm arm(nh, arm_type, 
+    			arm_name, camera_registration_file, Arm::ACTIVE);
     		ros::spin();
     	}  	   		    	
     	

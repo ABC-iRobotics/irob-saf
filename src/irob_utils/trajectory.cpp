@@ -12,17 +12,18 @@ namespace ias {
 template <>
 Trajectory<Pose>::Trajectory(const irob_autosurg::TrajectoryToolPose& other): dt(other.dt)
 {
-	for (int i = 0; i < other.poses.size(); i++)
-		points.push_back(Pose(other.poses[i]));
+	for (irob_autosurg::ToolPose tp : other.poses)
+		points.push_back(Pose(tp));
 }
+
 
 // TODO This method is called frequently, is it effective enough?
 template<>
 void Trajectory<Pose>::copyToRosTrajectory(
 			irob_autosurg::TrajectoryToolPose& ros_tr)
 {
-  	for (int i = 0; i < size(); i++)
-  		ros_tr.poses.push_back(points[i].toRosToolPose());
+  	for (Pose p : points)
+  		ros_tr.poses.push_back(p.toRosToolPose());
   	ros_tr.dt = dt;
 }
 
