@@ -32,6 +32,10 @@ Raspberry:
   - Ubuntu + ROS kinetic: 
   	http://www.german-robot.com/2016/05/26/raspberry-pi-sd-card-image/
   - Rospicam node: https://github.com/UbiquityRobotics/raspicam_node
+    - sudo sh -c 'echo "deb https://packages.ubiquityrobotics.com/ubuntu/ubiquity xenial main" > /etc/apt/sources.list.d/ubiquity-latest.list'
+    - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C3032ED8
+    - sudo apt-get update
+    - sudo apt install ros-kinetic-raspicam-node
   
 ROS network setup:
   - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
