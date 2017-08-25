@@ -41,4 +41,3 @@ disparityMap = disparityMapInterpolated;
  subplot(1,2,2), imshow(disparityMap,disparityRange);colormap jet
 
 end
-

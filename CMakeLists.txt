@@ -139,6 +139,16 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 ## Declare a C++ library
 
+file(GLOB irob_vision_lib_src
+    "src/irob_vision/*.cpp"
+)
+
+
+add_library( irob_vision_lib STATIC
+       ${irob_vision_lib_src}
+       )
+
+set_target_properties( irob_vision_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 file(GLOB irob_utils_lib_src
     "src/irob_utils/*.cpp"
@@ -202,6 +212,8 @@ add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
 
 add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
+add_executable(camera_info_rotator src/irob_vision/camera_info_rotator.cpp)
+
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -216,6 +228,10 @@ add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 
 
+ target_link_libraries(irob_vision_lib
+ 	${catkin_LIBRARIES}
+ )
+ 
  target_link_libraries(irob_utils_lib
  	${catkin_LIBRARIES}
  )
@@ -263,6 +279,10 @@ add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_motion_lib
+ )
+ 
+ target_link_libraries(camera_info_rotator
+   ${catkin_LIBRARIES}
  )
  
 

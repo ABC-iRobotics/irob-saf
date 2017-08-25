@@ -19,5 +19,23 @@ PSM workspace:
       - y: (-0.175, 0.160)
       - z: (-0.040, -0.222)
   - HW and simulator coordinate systems are compatible and matching
+  
+Using cv-camera:
+  - sudo apt-get install ros-kinetic-cv-camera
+  - usage: http://wiki.ros.org/cv_camera
+  - device ID is based on the connection order of the cameras
+  - sudo apt-get install ros-kinetic-camera-calibration
+  - http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration
+  - http://wiki.ros.org/stereo_image_proc
+  
+Raspberry:
+  - Ubuntu + ROS kinetic: 
+  	http://www.german-robot.com/2016/05/26/raspberry-pi-sd-card-image/
+  - Rospicam node: https://github.com/UbiquityRobotics/raspicam_node
+  
+ROS network setup:
+  - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
+  - export ROS_HOSTNAME, ROS_IP, ROS_MASTER_URI
+  - add to /etc/hosts "tamas 192.168.1.104", "raspi 192.168.1.105"
       
 ![alt tag](docs/PSM_coordinates.png)
