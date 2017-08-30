@@ -17,6 +17,12 @@
 #include <Eigen/Geometry> 
 #include "irob_utils/pose.hpp"
 
+#include <std_msgs/Float32.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <irob_autosurg/ToolPose.h>
+#include <irob_autosurg/ToolPoseStamped.h>
+
 namespace ias {
 
 typedef enum InterpolationMethod 
@@ -89,6 +95,93 @@ inline double distanceEuler(const Eigen::Vector3d& x1,
    return std::abs((x2-x1).norm());
 }
 
+// Conversion from ROS msg
+template<typename MsgT, typename DataT>
+inline DataT unwrapMsg(const MsgT& msg);
+
+
+template <>
+inline double unwrapMsg(const std_msgs::Float32& msg){
+	return msg.data;
+}
+
+template <>
+inline Pose unwrapMsg(const geometry_msgs::Pose& msg){
+	Pose ret(msg, 0);
+	return ret;
+}
+
+template <>
+inline Pose unwrapMsg(const irob_autosurg::ToolPose& msg){
+	Pose ret(msg);
+	return ret;
+}
+
+template <>
+inline Pose unwrapMsg(const geometry_msgs::PoseStamped& msg){
+	Pose ret(msg, 0);
+	return ret;
+}
+
+template <>
+inline Pose unwrapMsg(const irob_autosurg::ToolPoseStamped& msg){
+	Pose ret(msg);
+	return ret;
+}
+
+template <>
+inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
+	Eigen::Vector3d ret(msg.x, msg.y, msg.z);
+	return ret;
+}
+
+template <>
+inline Eigen::Quaternion<double> unwrapMsg(const geometry_msgs::Quaternion& msg){
+	Eigen::Quaternion<double> ret(msg.w, msg.x, msg.y, msg.z);
+	return ret;
+}
+
+
+// Conversion to ROS msg
+template<typename MsgT, typename DataT>
+inline MsgT wrapToMsg(const DataT& data);
+
+template <>
+inline std_msgs::Float32 wrapToMsg(const double& data){
+	std_msgs::Float32 msg;
+   	msg.data = data;
+	return msg;
+}
+
+template <>
+inline geometry_msgs::Pose wrapToMsg(const Pose& data){
+	return data.toRosPose();
+}
+
+template <>
+inline irob_autosurg::ToolPose wrapToMsg(const Pose& data){
+	return data.toRosToolPose();
+}
+
+template <>
+inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
+	geometry_msgs::Point msg;
+   	msg.x = data.x();
+   	msg.y = data.y();
+   	msg.z = data.z();
+	return msg;
+}
+
+template <>
+inline geometry_msgs::Quaternion wrapToMsg(
+									const Eigen::Quaternion<double>& data){
+	geometry_msgs::Quaternion msg;
+	msg.w = data.w();
+   	msg.x = data.x();
+   	msg.y = data.y();
+   	msg.z = data.z();
+	return msg;
+}
 
 
 }

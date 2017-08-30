@@ -1,0 +1,34 @@
+<!-- Launch file for left and right camera nodes using cv-camera -->
+
+<launch>	
+
+	<arg name="left" default="left"/> 
+	<arg name="right" default="right"/> 
+				
+	<node name="stereo_image_proc" pkg="stereo_image_proc" 
+				type="stereo_image_proc" output="screen">
+				
+			 <rosparam param="approximate_sync">true</rosparam>
+			 	
+			 <rosparam param="stereo_algorithm">1</rosparam>
+			 	
+			 	
+			 <rosparam param="min_disparity">64</rosparam>
+			 	
+			 <rosparam param="disparity_range">128</rosparam>
+			 	
+			 <rosparam param="correlation_window_size">11</rosparam>
+			 	
+			 <rosparam param="uniqueness_ratio">15</rosparam>
+			 	
+			 <rosparam param="prefilter_cap ">11</rosparam>
+  		
+  			<remap from="left/image_raw" to="$(arg left)/image_raw"/>
+  			<remap from="left/camera_info" to="$(arg left)/camera_info"/>
+  			
+  			<remap from="right/image_raw" to="$(arg right)/image_raw"/>
+  			<remap from="right/camera_info" to="$(arg right)/camera_info"/>
+					
+	</node>
+
+</launch>

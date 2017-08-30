@@ -1,0 +1,20 @@
+<!-- Launch file for left and right camera nodes using cv-camera, also rotates the camera streams -->
+
+<launch>
+	<group ns="ias"><group ns="stereo">
+		
+	<node name="cameracalibrator" pkg="camera_calibration" 
+			type="cameracalibrator.py" 
+			args="--size 9x7 --square 0.025 --approximate=0.01" 
+			output="screen">
+  		
+  		<rosparam param="left">left/image_raw</rosparam>
+		<rosparam param="right">right/image_raw</rosparam>
+		<rosparam param="left_camera">left</rosparam>
+		<rosparam param="right_camera">right</rosparam>
+		
+	</node>						
+		
+  	</group>
+  	</group>
+</launch>

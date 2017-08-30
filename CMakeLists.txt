@@ -13,10 +13,14 @@ find_package(catkin REQUIRED
                         geometry_msgs
                         std_msgs
                         sensor_msgs
+                        stereo_msgs
                         message_generation
                         actionlib_msgs
                         actionlib
                         dvrk_kinematics
+                        sensor_msgs
+						cv_bridge
+						image_transport
                         )
 
 
@@ -212,8 +216,6 @@ add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
 
 add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
-add_executable(camera_info_rotator src/irob_vision/camera_info_rotator.cpp)
-
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -279,10 +281,6 @@ add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_motion_lib
- )
- 
- target_link_libraries(camera_info_rotator
-   ${catkin_LIBRARIES}
  )
  
 
