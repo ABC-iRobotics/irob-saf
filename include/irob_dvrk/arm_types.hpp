@@ -14,7 +14,7 @@
 #include <vector>
 #include "irob_utils/pose.hpp"
 
-using namespace ias;
+namespace ias {
 
 class ArmTypes {
   public:
@@ -60,4 +60,5 @@ class ArmTypes {
     }
 };
 
+}
 #endif

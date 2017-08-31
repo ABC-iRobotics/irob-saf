@@ -8,6 +8,8 @@
 
 #include "irob_dvrk/arm_types.hpp"
 
+namespace ias {
+
 // Enum value DEFINITIONS
 // The initialization occurs in the scope of the class,
 // so the private DVRKArmParams constructor can be used.
@@ -29,3 +31,5 @@ const ArmTypes ArmTypes::ECM = ArmTypes("ECM", 6,
 	{1.0, 1000.0, std::numeric_limits<double>::infinity()},
 	{1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
 
+
+}

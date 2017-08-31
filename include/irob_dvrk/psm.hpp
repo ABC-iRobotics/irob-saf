@@ -28,7 +28,7 @@
 #include "irob_utils/pose.hpp"
 #include "irob_utils/trajectory.hpp"
 
-using namespace ias;
+namespace ias {
 
 class PSM: public Arm {
 
@@ -63,5 +63,5 @@ public:
 	
 };
 
-
+}
 #endif /* DVRK_PSM_HPP_ */

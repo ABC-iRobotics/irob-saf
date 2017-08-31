@@ -8,7 +8,7 @@
 
 #include "irob_motion/robot_client.hpp"
 
-using namespace ias;
+namespace ias {
 
 
 RobotClient::RobotClient(ros::NodeHandle nh, std::string arm_name, double dt): 
@@ -258,7 +258,7 @@ bool RobotClient::isResetPoseDone()
 
 
 
-
+}
 
 
 

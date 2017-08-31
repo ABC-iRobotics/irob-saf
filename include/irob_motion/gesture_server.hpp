@@ -37,7 +37,7 @@
 #include <irob_autosurg/PullOutAction.h>
 #include <irob_autosurg/GoToAction.h>
 
-using namespace ias;
+namespace ias {
 
 class GestureServer {
 
@@ -89,5 +89,5 @@ public:
    	std::string getArmName();	
 };
 
-
+}
 #endif /* GESTURE_SERVER_HPP_ */

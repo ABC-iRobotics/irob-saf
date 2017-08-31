@@ -11,7 +11,7 @@
 #include <chrono>
 #include "irob_utils/trajectory_factory.hpp"
 
-using namespace ias;
+namespace ias {
 
                    
 const std::string PSM::ERROR_INSIDE_CANNULA
@@ -327,6 +327,12 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
   	}
 }
 
+
+
+}
+
+using namespace ias;
+
 /**
  * Main for PSM
  */
@@ -377,7 +383,4 @@ int main(int argc, char **argv)
     ros::shutdown();
 	return 0;
 }
-
-
-
 

@@ -4,3 +4,5 @@ TODO:
 	- Set execution speed in launch file
 	- Change high level units to mm
 	- Implement camera coord frame transform
+	- High level nodes should know if the low level ones are failed 
+		(while waiting for isDone())

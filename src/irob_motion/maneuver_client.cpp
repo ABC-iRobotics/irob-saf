@@ -8,7 +8,7 @@
 
 #include "irob_motion/maneuver_client.hpp"
 
-using namespace ias;
+namespace ias {
 
 
 ManeuverClient::ManeuverClient(ros::NodeHandle nh, 
@@ -19,7 +19,6 @@ ManeuverClient::ManeuverClient(ros::NodeHandle nh,
 {
 
 	// Subscribe and advertise topics
-	
 	subscribeTopics();
     waitForActionServers();
 }
@@ -59,8 +58,9 @@ void ManeuverClient::subscribeTopics()
 void ManeuverClient::waitForActionServers() 
 {
 	ROS_INFO_STREAM("Wating for action servers...");
-	dissect_ac.waitForServer();
 	grasp_ac.waitForServer();
+	dissect_ac.waitForServer();
+	
     ROS_INFO_STREAM("Action servers started");
 }
 
@@ -140,7 +140,7 @@ Pose ManeuverClient::getPoseCurrent(std::string arm_name)
 
 
 
-
+}
 
 
 

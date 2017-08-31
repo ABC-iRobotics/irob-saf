@@ -45,6 +45,8 @@ protected:
    	// States
    	MsgT result_msg;
    	
+   	ros::Subscriber result_sub;
+   	
     void subscribeTopics();
 
 public:
@@ -52,7 +54,7 @@ public:
 	~VisionClient();
 
     // Callbacks 
-    void resultCB(const MsgT::ConstPtr&);   
+    void resultCB(const typename MsgT::ConstPtr&);   
 	
 	// Does not block if the result is not valid
 	DataT getResult();
@@ -62,6 +64,7 @@ public:
 template <class MsgT, class DataT>
 VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh): nh(nh)
 {
+	result_msg = makeNaN<MsgT>();
 	subscribeTopics();
 }
 
@@ -72,16 +75,16 @@ VisionClient<MsgT, DataT>::~VisionClient() {}
 
 
 template <class MsgT, class DataT>
-void VisionClient<MsgT>::subscribeTopics() 
+void VisionClient<MsgT, DataT>::subscribeTopics() 
 {                 	            						
-   	result_sub = nh.subscribe<MstgT>(
-   					"result", 1000, 
+   	result_sub = nh.subscribe<MsgT>(
+   					"target", 1000, 
    					&VisionClient<MsgT, DataT>::resultCB,this);
 }
 
 // Callbacks
 template <class MsgT, class DataT>
-void VisionClient<MsgT>::resultCB(const MsgT::ConstPtr& msg);
+void VisionClient<MsgT, DataT>::resultCB(const typename MsgT::ConstPtr& msg)
 {
     result_msg = *msg;
 }
@@ -91,11 +94,12 @@ void VisionClient<MsgT>::resultCB(const MsgT::ConstPtr& msg);
  * DataT unwrapMsg(const MsgT& msg) is used here
  */
 template <class MsgT, class DataT>
-DataT VisionServer<MsgT, DataT>::getResult()
+DataT VisionClient<MsgT, DataT>::getResult()
 {
 	ros::spinOnce();
 	
-	return unwrapMsg(msg);
+	return unwrapMsg<MsgT, DataT>(result_msg);
+	
 }
 
 

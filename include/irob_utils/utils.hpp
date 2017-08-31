@@ -15,11 +15,14 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
+#include <limits>
 #include "irob_utils/pose.hpp"
 
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
 #include <irob_autosurg/ToolPose.h>
 #include <irob_autosurg/ToolPoseStamped.h>
 
@@ -136,6 +139,12 @@ inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
 }
 
 template <>
+inline Eigen::Vector3d unwrapMsg(const geometry_msgs::PointStamped& msg){
+	Eigen::Vector3d ret(msg.point.x, msg.point.y, msg.point.z);
+	return ret;
+}
+
+template <>
 inline Eigen::Quaternion<double> unwrapMsg(const geometry_msgs::Quaternion& msg){
 	Eigen::Quaternion<double> ret(msg.w, msg.x, msg.y, msg.z);
 	return ret;
@@ -173,6 +182,15 @@ inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
 }
 
 template <>
+inline geometry_msgs::PointStamped wrapToMsg(const Eigen::Vector3d& data){
+	geometry_msgs::PointStamped msg;
+   	msg.point.x = data.x();
+   	msg.point.y = data.y();
+   	msg.point.z = data.z();
+	return msg;
+}
+
+template <>
 inline geometry_msgs::Quaternion wrapToMsg(
 									const Eigen::Quaternion<double>& data){
 	geometry_msgs::Quaternion msg;
@@ -182,6 +200,96 @@ inline geometry_msgs::Quaternion wrapToMsg(
    	msg.z = data.z();
 	return msg;
 }
+
+// NaN
+template<typename DataT>
+inline DataT makeNaN();
+
+
+template <>
+inline double makeNaN(){
+	return std::numeric_limits<double>::quiet_NaN();
+}
+
+template <>
+inline Pose makeNaN(){
+	Pose ret(std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN());
+	return ret;
+}
+
+
+template <>
+inline Eigen::Vector3d makeNaN(){
+	Eigen::Vector3d ret(std::numeric_limits<double>::quiet_NaN(),
+						std::numeric_limits<double>::quiet_NaN(),
+						std::numeric_limits<double>::quiet_NaN());
+	return ret;
+}
+
+
+template <>
+inline Eigen::Quaternion<double> makeNaN(){
+	Eigen::Quaternion<double> ret(std::numeric_limits<double>::quiet_NaN(),
+								std::numeric_limits<double>::quiet_NaN(),
+								std::numeric_limits<double>::quiet_NaN(),
+								std::numeric_limits<double>::quiet_NaN());
+	return ret;
+}
+
+template <>
+inline std_msgs::Float32 makeNaN(){
+	std_msgs::Float32 msg;
+   	msg.data = std::numeric_limits<double>::quiet_NaN();
+	return msg;
+}
+
+template <>
+inline geometry_msgs::Pose makeNaN(){
+	Pose nanp = makeNaN<Pose>();
+	return nanp.toRosPose();
+}
+
+template <>
+inline irob_autosurg::ToolPose makeNaN(){
+	Pose nanp = makeNaN<Pose>();
+	return nanp.toRosToolPose();
+}
+
+template <>
+inline geometry_msgs::Point makeNaN(){
+	geometry_msgs::Point msg;
+   	msg.x = std::numeric_limits<double>::quiet_NaN();
+   	msg.y = std::numeric_limits<double>::quiet_NaN();
+   	msg.z = std::numeric_limits<double>::quiet_NaN();
+	return msg;
+}
+
+template <>
+inline geometry_msgs::PointStamped makeNaN(){
+	geometry_msgs::PointStamped msg;
+   	msg.point.x = std::numeric_limits<double>::quiet_NaN();
+   	msg.point.y = std::numeric_limits<double>::quiet_NaN();
+   	msg.point.z = std::numeric_limits<double>::quiet_NaN();
+	return msg;
+}
+
+template <>
+inline geometry_msgs::Quaternion makeNaN(){
+	geometry_msgs::Quaternion msg;
+	msg.w = std::numeric_limits<double>::quiet_NaN();
+   	msg.x = std::numeric_limits<double>::quiet_NaN();
+   	msg.y = std::numeric_limits<double>::quiet_NaN();
+   	msg.z = std::numeric_limits<double>::quiet_NaN();
+	return msg;
+}
+
 
 
 }

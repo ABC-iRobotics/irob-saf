@@ -5,6 +5,7 @@
 	<include file="$(find irob_autosurg)/launch/dvrk_interface.launch" />  
 	<include file="$(find irob_autosurg)/launch/gesture_server.launch" />  
 	<include file="$(find irob_autosurg)/launch/maneuver_server.launch" />  
-	<include file="$(find irob_autosurg)/launch/test_maneuver.launch" />  	
-  	
+	
+	<!-- <include file="$(find irob_autosurg)/launch/test_maneuver.launch" /> -->
+	
 </launch>

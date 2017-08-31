@@ -33,7 +33,7 @@
 #include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
 
-using namespace ias;
+namespace ias {
 
 class Arm {
 
@@ -138,5 +138,5 @@ public:
 	
 };
 
-
+}
 #endif /* DVRK_ARM_HPP_ */

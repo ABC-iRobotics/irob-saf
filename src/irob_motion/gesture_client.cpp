@@ -8,7 +8,7 @@
 
 #include "irob_motion/gesture_client.hpp"
 
-using namespace ias;
+namespace ias {
 
 
 GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name): 
@@ -45,7 +45,6 @@ void GestureClient::positionCartesianCurrentCB(
 }
 
 
-// TODO remap
 void GestureClient::subscribeTopics() 
 {                 	            	
    	position_cartesian_current_sub = 
@@ -54,7 +53,6 @@ void GestureClient::subscribeTopics()
                        	1000, &GestureClient::positionCartesianCurrentCB,this);
 }
 
-// TODO remap
 
 void GestureClient::advertiseTopics() 
 {
@@ -198,7 +196,7 @@ bool GestureClient::isGoToDone()
 
 
 
-
+}
 
 
 

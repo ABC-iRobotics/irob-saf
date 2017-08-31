@@ -35,7 +35,7 @@
 #include <irob_autosurg/DissectAction.h>
 #include <irob_autosurg/GraspAction.h>
 
-using namespace ias;
+namespace ias {
 
 class ManeuverClient {
 
@@ -88,5 +88,5 @@ public:
 	Pose getPoseCurrent(std::string);
 };
 
-
+}
 #endif /* MANEUVER_CLIENT_HPP_ */

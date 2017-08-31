@@ -10,7 +10,7 @@
 #include <numeric>
 #include <chrono>
 
-using namespace ias;
+namespace ias {
 
 
 const std::string Arm::HOME_CMD
@@ -699,5 +699,5 @@ void Arm::recordTrajectory(Trajectory<Pose>& tr)
 
 
 
-
+}
 

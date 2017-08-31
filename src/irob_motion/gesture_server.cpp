@@ -8,7 +8,7 @@
 
 #include "irob_motion/gesture_server.hpp"
 
-using namespace ias;
+namespace ias {
 
 
 GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name, 
@@ -309,6 +309,10 @@ std::string GestureServer::getArmName()
 	return arm.getName();
 }
 
+}
+
+using namespace ias;
+
 
 /**
  * Gesture server main 
@@ -320,7 +324,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "gesture_server");
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
-
+	
 	std::string arm_name;
 	priv_nh.getParam("arm_name", arm_name);
 	
@@ -346,7 +350,5 @@ int main(int argc, char **argv)
     ros::shutdown();
 	return 0;
 }
-
-
 
 

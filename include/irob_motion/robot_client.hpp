@@ -40,7 +40,7 @@
 #include <irob_autosurg/ResetPoseAction.h>
 #include <irob_autosurg/FollowTrajectoryAction.h>
 
-using namespace ias;
+namespace ias {
 
 class RobotClient {
 
@@ -110,5 +110,5 @@ public:
 	
 };
 
-
+}
 #endif /* ROBOT_CLIENT_HPP_ */

@@ -188,6 +188,17 @@ add_library( irob_motion_lib STATIC
 
 set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
+file(GLOB irob_task_lib_src
+    "src/irob_task/*.cpp"
+)
+
+
+add_library( irob_task_lib STATIC
+       ${irob_task_lib_src}
+       )
+
+set_target_properties( irob_task_lib  PROPERTIES LINKER_LANGUAGE CXX)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -196,6 +207,8 @@ set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 add_dependencies(irob_dvrk_lib irob_autosurg_generate_messages_cpp)
 add_dependencies(irob_utils_lib irob_autosurg_generate_messages_cpp)
 add_dependencies(irob_motion_lib irob_autosurg_generate_messages_cpp)
+add_dependencies(irob_task_lib irob_autosurg_generate_messages_cpp)
+add_dependencies(irob_vision_lib irob_autosurg_generate_messages_cpp)
 
 ## Declare a C++ executable
 #add_executable(move_test src/move_test.cpp)
@@ -216,6 +229,11 @@ add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
 
 add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
+add_executable(test_task src/irob_task/test_task.cpp)
+
+add_executable(vision_server_test_dummy 
+				src/irob_vision/vision_server_test_dummy.cpp)
+
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -226,6 +244,9 @@ add_dependencies(test_gesture_client irob_autosurg_generate_messages_cpp)
 add_dependencies(dvrk_interface irob_autosurg_generate_messages_cpp)
 add_dependencies(gesture_server irob_autosurg_generate_messages_cpp)
 add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
+
+add_dependencies(test_task irob_autosurg_generate_messages_cpp)
+add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 
@@ -251,6 +272,13 @@ add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
  target_link_libraries(dvrk_interface
    ${catkin_LIBRARIES}
     irob_dvrk_lib
+ )
+ 
+  target_link_libraries(irob_task_lib
+ 	${catkin_LIBRARIES}
+ 	irob_utils_lib
+ 	irob_vision_lib
+ 	irob_motion_lib
  )
  
  
@@ -282,6 +310,22 @@ add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
    irob_utils_lib
    irob_motion_lib
  )
+ 
+ target_link_libraries(test_task
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
+   irob_vision_lib
+   irob_task_lib
+ )
+ 
+ 
+ target_link_libraries(vision_server_test_dummy
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_vision_lib
+ )
+ 
  
 
  

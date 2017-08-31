@@ -40,7 +40,7 @@
 #include <irob_autosurg/PullOutAction.h>
 #include <irob_autosurg/GoToAction.h>
 
-using namespace ias;
+namespace ias {
 
 class GestureClient {
 
@@ -110,5 +110,5 @@ public:
 	
 };
 
-
+}
 #endif /* GESTURE_SERVER_HPP_ */

@@ -40,7 +40,7 @@
 #include <irob_autosurg/GraspAction.h>
 #include <irob_autosurg/DissectAction.h>
 
-using namespace ias;
+namespace ias {
 
 class ManeuverServer {
 public:
@@ -88,5 +88,5 @@ public:
 	
 };
 
-
+}
 #endif /* GESTURE_SERVER_HPP_ */

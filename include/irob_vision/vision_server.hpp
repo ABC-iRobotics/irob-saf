@@ -20,7 +20,7 @@
 #include <sensor_msgs/Image.h>
 #include <stereo_msgs/DisparityImage.h>
 
-#include <ros/ros.h>
+
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -31,9 +31,10 @@
 #include "irob_utils/utils.hpp"
 
 
-using namespace ias;
 
-template <class MsgT>
+namespace ias {
+
+template <class MsgT, class ImageProcessor>
 class VisionServer {
 public:
   
@@ -42,6 +43,7 @@ private:
 	
     ros::NodeHandle nh;
     double rate;
+    ImageProcessor img_proc;
     
     // States
     cv_bridge::CvImagePtr image_left_ptr;
@@ -68,8 +70,6 @@ public:
 	VisionServer(ros::NodeHandle, double);
 	~VisionServer();
 	
-	virtual MsgT processImages() = 0; // Makes class abstract
-	
 	void loopImageProcessing();
 
 
@@ -87,13 +87,14 @@ public:
     		const sensor_msgs::ImageConstPtr &);
     		
    	void disparityCB(
-    		const sensor_msgs::ImageConstPtr &);
+    		const stereo_msgs::DisparityImageConstPtr &);
     		
 	
 };
 
-template <class MsgT>
-VisionServer<MsgT>::VisionServer(ros::NodeHandle nh, double rate): 
+template <class MsgT, class ImageProcessor>
+VisionServer<MsgT, ImageProcessor>::VisionServer(ros::NodeHandle nh,
+																 double rate): 
 										nh(nh), rate(rate)
 {
 	subscribeTopics();
@@ -101,48 +102,48 @@ VisionServer<MsgT>::VisionServer(ros::NodeHandle nh, double rate):
 	loopImageProcessing();
 }
 
-template <class MsgT>
-VisionServer<MsgT>::~VisionServer() {}
+template <class MsgT, class ImageProcessor>
+VisionServer<MsgT, ImageProcessor>::~VisionServer() {}
 
-template <class MsgT>
-void VisionServer<MsgT>::subscribeTopics() 
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::subscribeTopics() 
 {                 	            	
 	image_left_sub = nh.subscribe<sensor_msgs::Image>(
    					"left/image", 1000, 
-   					&VisionServer<MsgT>::imageLeftCB,this);
+   					&VisionServer<MsgT, ImageProcessor>::imageLeftCB,this);
    					
    	image_right_sub = nh.subscribe<sensor_msgs::Image>(
    					"right/image", 1000, 
-   					&VisionServer<MsgT>::imageRightCB,this);
+   					&VisionServer<MsgT, ImageProcessor>::imageRightCB,this);
    
    	color_image_left_sub = nh.subscribe<sensor_msgs::Image>(
    					"left/color_image", 1000, 
-   					&VisionServer<MsgT>::colorImageLeftCB,this);
+   					&VisionServer<MsgT, ImageProcessor>::colorImageLeftCB,this);
    					
    	color_image_right_sub = nh.subscribe<sensor_msgs::Image>(
    					"right/color_image", 1000, 
-   					&VisionServer<MsgT>::colorImageRightCB,this);
+   					&VisionServer<MsgT, ImageProcessor>::colorImageRightCB,this);
    					
-   	disparity_sub = nh.subscribe<sensor_msgs::DisparityImage>(
+   	disparity_sub = nh.subscribe<stereo_msgs::DisparityImage>(
    					"disparity", 1000, 
-   					&VisionServer<MsgT>::disparityCB,this);
+   					&VisionServer<MsgT, ImageProcessor>::disparityCB,this);
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::advertiseTopics() 
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::advertiseTopics() 
 {
 	result_pub = nh.advertise<MsgT>("result", 1000);   
 }
 
 // Callbacks
-template <class MsgT>
-void VisionServer<MsgT>::imageLeftCB(
-    		const sensor_msgs::ImageConstPtr& msg);
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::imageLeftCB(
+    		const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
     	image_left_ptr = 
-    		cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    		cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -151,14 +152,14 @@ void VisionServer<MsgT>::imageLeftCB(
     }
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::imageRightCB(
-    		const sensor_msgs::ImageConstPtr& msg);
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::imageRightCB(
+    		const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
     	image_right_ptr = 
-    		cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    		cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -167,13 +168,13 @@ void VisionServer<MsgT>::imageRightCB(
     }
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::colorImageLeftCB(
-    		const sensor_msgs::ImageConstPtr& msg);
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::colorImageLeftCB(
+    		const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
-    	clor_image_left_ptr = 
+    	color_image_left_ptr = 
     		cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     }
     catch (cv_bridge::Exception& e)
@@ -183,9 +184,9 @@ void VisionServer<MsgT>::colorImageLeftCB(
     }
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::colorImageRightCB(
-    		const sensor_msgs::ImageConstPtr& msg);
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::colorImageRightCB(
+    		const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
@@ -199,14 +200,14 @@ void VisionServer<MsgT>::colorImageRightCB(
     }
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::disparityCB(
-    		const sensor_msgs::DisparityImageConstPtr& msg);
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::disparityCB(
+    		const stereo_msgs::DisparityImageConstPtr& msg)
 {
     try
     {
     	disparity_ptr = 
-    		cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::BGR8);
+    		cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::MONO8);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -215,17 +216,21 @@ void VisionServer<MsgT>::disparityCB(
     }
 }
 
-template <class MsgT>
-void VisionServer<MsgT>::loopImageProcessing()
+template <class MsgT, class ImageProcessor>
+void VisionServer<MsgT, ImageProcessor>::loopImageProcessing()
 {
 	ros::Rate loop_rate(rate);
+
 	while (ros::ok())
   	{
   		ros::spinOnce(); 
-  		// Virtual function
-  		MsgT res = processImages();
-  		
-  		result_pub.publish(result);
+
+  		MsgT res = img_proc.processImages(image_left_ptr,
+  										image_right_ptr,
+  										color_image_left_ptr,
+  										color_image_right_ptr,
+  										disparity_ptr);
+  		result_pub.publish(res);
   		ros::spinOnce(); 
   		
   		loop_rate.sleep();
@@ -264,5 +269,5 @@ void VisionServer<MsgT>::loopImageProcessing()
 
 
 
-
+}
 #endif /* VISION_SERVER_HPP_ */

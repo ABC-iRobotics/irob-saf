@@ -8,7 +8,7 @@
 
 #include "irob_motion/maneuver_server.hpp"
 
-using namespace ias;
+namespace ias {
 
 
 ManeuverServer::ManeuverServer(ros::NodeHandle nh, 
@@ -331,6 +331,9 @@ int ManeuverServer::findArmIdx(std::string arm_name)
 	return idx;
 }
 
+}
+
+using namespace ias;
 
 /**
  * Maneuver server main 
@@ -366,6 +369,5 @@ int main(int argc, char **argv)
     ros::shutdown();
 	return 0;
 }
-
 
 

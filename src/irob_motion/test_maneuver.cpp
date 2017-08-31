@@ -19,6 +19,7 @@
 
 #include "irob_motion/maneuver_client.hpp"
 
+using namespace ias;
 
 int main(int argc, char **argv)
 {
