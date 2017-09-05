@@ -15,7 +15,8 @@ ManeuverClient::ManeuverClient(ros::NodeHandle nh,
 					std::vector<std::string> arm_names): 
 			nh(nh), arm_names(arm_names),
 			dissect_ac("maneuver/dissect", true),
-			grasp_ac("maneuver/grasp", true)
+			grasp_ac("maneuver/grasp", true),
+			move_to_ac("maneuver/move_to", true)
 {
 
 	// Subscribe and advertise topics
@@ -60,7 +61,7 @@ void ManeuverClient::waitForActionServers()
 	ROS_INFO_STREAM("Wating for action servers...");
 	grasp_ac.waitForServer();
 	dissect_ac.waitForServer();
-	
+	move_to_ac.waitForServer();
     ROS_INFO_STREAM("Action servers started");
 }
 
@@ -115,6 +116,24 @@ void ManeuverClient::grasp(std::string arm_name,
   	grasp_ac.sendGoal(goal);
 }
 
+void ManeuverClient::moveTo(std::string arm_name, 
+								Pose pos,
+								std::vector<Pose> waypoints 
+								/* = std::vector<Pose>()*/)
+{
+    // Send a goal to the action
+  	irob_autosurg::MoveToGoal goal;
+ 
+  	goal.arm_name = arm_name;
+  	goal.target = pos.toRosPose();
+  	
+  	for (Pose p : waypoints)
+    	goal.waypoints.push_back(p.toRosPose());
+  	
+  	
+  	move_to_ac.sendGoal(goal);
+}
+
 
 bool ManeuverClient::isDissectDone()
 {
@@ -124,6 +143,11 @@ bool ManeuverClient::isDissectDone()
 bool ManeuverClient::isGraspDone()
 {
 	return grasp_ac.isDone();
+}
+
+bool ManeuverClient::isMoveToDone()
+{
+	return move_to_ac.isDone();
 }
 
 Pose ManeuverClient::getPoseCurrent(std::string arm_name)

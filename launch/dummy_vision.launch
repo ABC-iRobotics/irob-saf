@@ -26,6 +26,9 @@
 							
 				<remap from="result" 
 							to="vision/target" />
+							
+				<remap from="marker" 
+							to="vison/dummy_target_marker" />
 					
 					
 		

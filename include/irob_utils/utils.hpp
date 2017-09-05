@@ -291,6 +291,105 @@ inline geometry_msgs::Quaternion makeNaN(){
 }
 
 
+// isnan
+template<typename DataT>
+inline bool isnan(const DataT& d);
+
+
+template <>
+inline bool isnan(const double& d)
+{
+	return std::isnan(d);
+}
+
+template <>
+inline bool isnan(const Pose& d)
+{
+	return (std::isnan(d.position.x()) 
+			|| std::isnan(d.position.y()) 
+			|| std::isnan(d.position.z()) 
+			|| std::isnan(d.orientation.x()) 
+			|| std::isnan(d.orientation.y()) 
+			|| std::isnan(d.orientation.z()) 
+			|| std::isnan(d.orientation.w()) 
+			|| std::isnan(d.jaw));
+}
+
+
+template <>
+inline bool isnan(const Eigen::Vector3d& d)
+{
+	return (std::isnan(d.x())
+			|| std::isnan(d.y())
+			|| std::isnan(d.z()));
+}
+
+
+template <>
+inline bool isnan(const Eigen::Quaternion<double>& d)
+{
+	return (std::isnan(d.x()) 
+			|| std::isnan(d.y())
+			|| std::isnan(d.z())
+			|| std::isnan(d.w()));
+}
+
+template <>
+inline bool isnan(const std_msgs::Float32& d)
+{
+	
+	return (std::isnan(d.data));
+}
+
+template <>
+inline bool isnan(const geometry_msgs::Pose& d)
+{
+	return (std::isnan(d.position.x) 
+			|| std::isnan(d.position.y) 
+			|| std::isnan(d.position.z) 
+			|| std::isnan(d.orientation.x) 
+			|| std::isnan(d.orientation.y) 
+			|| std::isnan(d.orientation.z) 
+			|| std::isnan(d.orientation.w));
+}
+
+template <>
+inline bool isnan(const irob_autosurg::ToolPose& d)
+{
+	return (std::isnan(d.position.x) 
+			|| std::isnan(d.position.y) 
+			|| std::isnan(d.position.z) 
+			|| std::isnan(d.orientation.x) 
+			|| std::isnan(d.orientation.y) 
+			|| std::isnan(d.orientation.z) 
+			|| std::isnan(d.orientation.w)
+			|| std::isnan(d.jaw));
+}
+
+template <>
+inline bool isnan(const geometry_msgs::Point& d)
+{
+	return (std::isnan(d.x) 
+			|| std::isnan(d.y) 
+			|| std::isnan(d.z) );
+}
+
+template <>
+inline bool isnan(const geometry_msgs::PointStamped& d)
+{
+	return isnan<geometry_msgs::Point>(d.point);
+}
+
+template <>
+inline bool isnan(const geometry_msgs::Quaternion& d)
+{
+	return (std::isnan(d.x)
+			|| std::isnan(d.y)
+			|| std::isnan(d.z)
+			|| std::isnan(d.w));
+}
+
+
 
 }
 

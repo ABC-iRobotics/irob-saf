@@ -95,7 +95,7 @@ public:
 template <class MsgT, class ImageProcessor>
 VisionServer<MsgT, ImageProcessor>::VisionServer(ros::NodeHandle nh,
 																 double rate): 
-										nh(nh), rate(rate)
+										nh(nh), rate(rate), img_proc(nh)
 {
 	subscribeTopics();
 	advertiseTopics();

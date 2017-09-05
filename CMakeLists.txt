@@ -86,6 +86,7 @@ find_package(catkin REQUIRED
    	
    	maneuver/Grasp.action
    	maneuver/Dissect.action
+   	maneuver/MoveTo.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -231,8 +232,13 @@ add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
 add_executable(test_task src/irob_task/test_task.cpp)
 
+add_executable(retractor src/irob_task/retractor.cpp)
+
 add_executable(vision_server_test_dummy 
 				src/irob_vision/vision_server_test_dummy.cpp)
+				
+add_executable(dummy_target_publisher 
+				src/irob_vision/dummy_target_publisher.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -246,7 +252,9 @@ add_dependencies(gesture_server irob_autosurg_generate_messages_cpp)
 add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
 
 add_dependencies(test_task irob_autosurg_generate_messages_cpp)
+add_dependencies(retractor irob_autosurg_generate_messages_cpp)
 add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
+
 
 ## Specify libraries to link a library or executable target against
 
@@ -319,8 +327,22 @@ add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
    irob_task_lib
  )
  
+ target_link_libraries(retractor
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_motion_lib
+   irob_vision_lib
+   irob_task_lib
+ )
+ 
  
  target_link_libraries(vision_server_test_dummy
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_vision_lib
+ )
+ 
+  target_link_libraries(dummy_target_publisher
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_vision_lib

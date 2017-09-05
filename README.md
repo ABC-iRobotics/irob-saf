@@ -39,11 +39,12 @@ Raspberry:
   
 ROS network setup:
   - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
+  - DNS: 8.8.4.4
   - /etc/hosts: 
   				192.168.1.104	master
 				192.168.1.105	left-pi
 				192.168.1.106	right-pi
   - export ROS_HOSTNAME, ROS_IP, ROS_MASTER_URI
-  - add to /etc/hosts "tamas 192.168.1.104", "raspi 192.168.1.105"
+  - see http://elinux.org/RPi_Setting_up_a_static_IP_in_Debian
       
 ![alt tag](docs/PSM_coordinates.png)

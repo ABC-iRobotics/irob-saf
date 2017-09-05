@@ -34,6 +34,7 @@
 
 #include <irob_autosurg/DissectAction.h>
 #include <irob_autosurg/GraspAction.h>
+#include <irob_autosurg/MoveToAction.h>
 
 namespace ias {
 
@@ -52,6 +53,8 @@ protected:
     									 dissect_ac;
     IrobActionClient<irob_autosurg::GraspAction>
     									 grasp_ac;
+    IrobActionClient<irob_autosurg::MoveToAction>
+    									 move_to_ac;
    	
    	// States
     std::map<std::string, irob_autosurg::ToolPoseStamped>
@@ -79,11 +82,13 @@ public:
    	void dissect(std::string, Pose, double, double, double, 
    									std::vector<Pose> = std::vector<Pose>());	
    	void grasp(std::string, Pose, double, double, double,
-   									std::vector<Pose> = std::vector<Pose>());	
+   									std::vector<Pose> = std::vector<Pose>());
+   	void moveTo(std::string, Pose, std::vector<Pose> = std::vector<Pose>());	
 
 			
 	bool isDissectDone();
 	bool isGraspDone();	
+	bool isMoveToDone();
 	
 	Pose getPoseCurrent(std::string);
 };

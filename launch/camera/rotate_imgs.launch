@@ -1,0 +1,82 @@
+<!-- Launch file for left and right camera nodes using cv-camera -->
+
+<launch>
+
+		<arg name="left_in" default="raspicam_left/image/compressed"/> 
+		<arg name="right_in" default="raspicam_right/image/compressed"/> 
+		
+		<arg name="left_out" default="left_final/image"/> 
+		<arg name="right_out" default="right_final/image"/> 
+	
+		<node pkg="nodelet" type="nodelet" 
+				name="standalone_nodelet"  args="manager"/>	
+	
+		<node name="image_rotate_left" pkg="image_rotate" 
+			type="image_rotate" output="screen">
+  		
+				
+			<rosparam param="target_frame_id">''</rosparam>
+				
+			<rosparam param="target_x">10.0</rosparam>
+			<rosparam param="target_y">0.0</rosparam>
+			<rosparam param="target_z">0.0</rosparam>
+				
+			<rosparam param="source_x">0.0</rosparam>
+			<rosparam param="source_y">-10.0</rosparam>
+			<rosparam param="source_z">0.0</rosparam>
+				
+			<rosparam param="max_angular_rate">0.0</rosparam>
+			<rosparam param="output_image_size">2.0</rosparam>
+			
+			<remap from="image" to="$(arg left_in)"/>
+			<remap from="rotated/image" to="left_rotated/image"/>
+		</node>
+
+  		<node pkg="nodelet" type="nodelet" name="image_crop_left"
+        	args="load image_proc/crop_decimate standalone_nodelet">
+        	
+    		<remap from="camera/image_raw" to="left_rotated/image"/>
+    		<remap from="camera_out/image_raw" 
+    								to="$(arg left_out)"/>
+    		
+    		<rosparam param="x_offset">280</rosparam>
+    		<rosparam param="width">720</rosparam>
+    		
+  		</node>
+  		
+  		
+  		
+  		
+  		<node name="image_rotate_right" pkg="image_rotate" 
+			type="image_rotate" output="screen">
+  		
+				
+			<rosparam param="target_frame_id">''</rosparam>
+				
+			<rosparam param="target_x">10.0</rosparam>
+			<rosparam param="target_y">0.0</rosparam>
+			<rosparam param="target_z">0.0</rosparam>
+				
+			<rosparam param="source_x">0.0</rosparam>
+			<rosparam param="source_y">10.0</rosparam>
+			<rosparam param="source_z">0.0</rosparam>
+				
+			<rosparam param="max_angular_rate">0.0</rosparam>
+			<rosparam param="output_image_size">2.0</rosparam>
+			
+			<remap from="image" to="$(arg right_in)"/>
+			<remap from="rotated/image" to="right_rotated/image"/>
+		</node>
+
+  		<node pkg="nodelet" type="nodelet" name="image_crop_right"
+        	args="load image_proc/crop_decimate standalone_nodelet">
+        	
+    		<remap from="camera/image_raw" to="right_rotated/image"/>
+    		<remap from="camera_out/image_raw" 
+    								to="$(arg right_out)"/>
+    		
+    		<rosparam param="x_offset">280</rosparam>
+    		<rosparam param="width">720</rosparam>
+    		
+  		</node>
+</launch>

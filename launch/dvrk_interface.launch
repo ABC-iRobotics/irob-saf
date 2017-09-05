@@ -6,9 +6,10 @@
 	
   		<arg name="arm_typ" default="PSM1"/>
 		<arg name="arm_name" default="arm_1"/>
-		<arg name="camera_registration_file" default="$(find irob_autosurg)/config/registration_identity.cfg"/>
+		<arg name="camera_registration_file" 
+			default="$(find irob_autosurg)/config/registration_identity.cfg"/>
 	
-			<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" />  	
+			<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" /> 
   	
 			<node name="PSM1_interface" pkg="irob_autosurg" 
 			type="dvrk_interface" output="screen">

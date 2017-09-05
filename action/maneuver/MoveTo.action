@@ -1,0 +1,14 @@
+# Define the goal
+string arm_name
+geometry_msgs/Pose[] waypoints
+geometry_msgs/Pose target
+
+---
+# Define the result
+geometry_msgs/Pose pose
+string info
+---
+# Define a feedback message
+geometry_msgs/Pose pose
+string info
+

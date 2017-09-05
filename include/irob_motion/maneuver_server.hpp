@@ -39,6 +39,7 @@
 
 #include <irob_autosurg/GraspAction.h>
 #include <irob_autosurg/DissectAction.h>
+#include <irob_autosurg/MoveToAction.h>
 
 namespace ias {
 
@@ -56,6 +57,8 @@ private:
     	 dissect_as;
    	actionlib::SimpleActionServer<irob_autosurg::GraspAction>
     	 grasp_as;
+   	actionlib::SimpleActionServer<irob_autosurg::MoveToAction>
+    	 move_to_as;
    	
    	
 
@@ -83,6 +86,9 @@ public:
     		
    	void graspActionCB(
     		const irob_autosurg::GraspGoalConstPtr &);
+    		
+    void moveToActionCB(
+    		const irob_autosurg::MoveToGoalConstPtr &);
     		
  	
 	
