@@ -14,11 +14,17 @@
     		<param name="width" value="1280"/>
     		<param name="height" value="720"/>
     		<!-- We are running at 90fps to reduce motion blur -->
-    		<param name="framerate" value="90"/>
+    		<param name="framerate" value="30"/>
     		<param name="hFlip" value="true"/>
     		<param name="vFlip" value="true"/>
 
     		<param name="camera_frame_id" value="raspicam"/> 
+    		
+    		<remap from="/ias/stereo/raspicam_$(arg postfix)/camera_info" 
+    			to="/ias/stereo/$(arg postfix)/compressed/camera_info" />
+    			
+    		<remap from="/ias/stereo/raspicam_$(arg postfix)/compressed/image" 
+    			to="/ias/stereo/$(arg postfix)/compressed/image" />
 
 		</node>
 	

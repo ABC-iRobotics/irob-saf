@@ -2,11 +2,11 @@
 
 <launch>
 
-		<arg name="left_in" default="raspicam_left/image/compressed"/> 
-		<arg name="right_in" default="raspicam_right/image/compressed"/> 
+		<arg name="left_in" default="raspicam_left/image_raw"/> 
+		<arg name="right_in" default="raspicam_right/image_raw"/> 
 		
-		<arg name="left_out" default="left_final/image"/> 
-		<arg name="right_out" default="right_final/image"/> 
+		<arg name="left_out" default="left_final/image_raw"/> 
+		<arg name="right_out" default="right_final/image_raw"/> 
 	
 		<node pkg="nodelet" type="nodelet" 
 				name="standalone_nodelet"  args="manager"/>	
