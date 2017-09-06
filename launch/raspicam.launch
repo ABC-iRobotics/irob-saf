@@ -21,10 +21,10 @@
     		<param name="camera_frame_id" value="raspicam"/> 
     		
     		<remap from="/ias/stereo/raspicam_$(arg postfix)/camera_info" 
-    			to="/ias/stereo/$(arg postfix)/compressed/camera_info" />
+    			to="/ias/stereo/$(arg postfix)/raspicam/camera_info" />
     			
     		<remap from="/ias/stereo/raspicam_$(arg postfix)/compressed/image" 
-    			to="/ias/stereo/$(arg postfix)/compressed/image" />
+    			to="/ias/stereo/$(arg postfix)/raspicam/image" />
 
 		</node>
 	
