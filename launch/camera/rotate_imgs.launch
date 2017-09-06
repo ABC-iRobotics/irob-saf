@@ -29,13 +29,13 @@
 			<rosparam param="output_image_size">2.0</rosparam>
 			
 			<remap from="image" to="$(arg left_in)"/>
-			<remap from="rotated/image" to="left_rotated/image"/>
+			<remap from="rotated/image" to="left/rotated/image"/>
 		</node>
 
   		<node pkg="nodelet" type="nodelet" name="image_crop_left"
         	args="load image_proc/crop_decimate standalone_nodelet">
         	
-    		<remap from="camera/image_raw" to="left_rotated/image"/>
+    		<remap from="camera/image_raw" to="left/rotated/image"/>
     		<remap from="camera_out/image_raw" 
     								to="$(arg left_out)"/>
     		
@@ -65,13 +65,13 @@
 			<rosparam param="output_image_size">2.0</rosparam>
 			
 			<remap from="image" to="$(arg right_in)"/>
-			<remap from="rotated/image" to="right_rotated/image"/>
+			<remap from="rotated/image" to="right/rotated/image"/>
 		</node>
 
   		<node pkg="nodelet" type="nodelet" name="image_crop_right"
         	args="load image_proc/crop_decimate standalone_nodelet">
         	
-    		<remap from="camera/image_raw" to="right_rotated/image"/>
+    		<remap from="camera/image_raw" to="right/rotated/image"/>
     		<remap from="camera_out/image_raw" 
     								to="$(arg right_out)"/>
     		

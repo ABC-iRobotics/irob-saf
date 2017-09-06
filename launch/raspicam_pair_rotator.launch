@@ -4,21 +4,25 @@
 	<group ns="ias"><group ns="stereo">
 		<include 
 			file="$(find irob_autosurg)/launch/camera/republish_stereo_raw.launch">
-			<arg name="left_in" value="/ias/stereo/left/compressed/image"/> 
-			<arg name="right_in" value="/ias/stereo/right/compressed/image"/> 
+			<arg name="left_in" 
+					value="/ias/stereo/left/raspicam/image"/> 
+			<arg name="right_in" 
+					value="/ias/stereo/right/raspicam/image"/> 
 		
-			<arg name="left_out" value="/ias/stereo/left/raw/image_raw"/> 
-			<arg name="right_out" value="/ias/stereo/right/raw/image_raw"/> 
+			<arg name="left_out" 
+					value="/ias/stereo/left/raspicam/image/image_raw"/> 
+			<arg name="right_out" 
+					value="/ias/stereo/right/raspicam/image/image_raw"/> 
 		</include> 
 		
 		<include 
 			file="$(find irob_autosurg)/launch/camera/rotate_imgs.launch">
 			
-			<arg name="left_in" value="raspicam_left/image_raw" />
-			<arg name="right_in" value="raspicam_right/image_raw" />
+			<arg name="left_in" value="left/raspicam/image/image_raw" />
+			<arg name="right_in" value="right/raspicam/image/image_raw" />
 			
-			<arg name="left_out" value="left_final/image" />
-			<arg name="right_out" value="right_final/image" />
+			<arg name="left_out" value="left/final/image/image_raw" />
+			<arg name="right_out" value="right/final/image/image_raw" />
 		</include> 
 		
   	</group>
