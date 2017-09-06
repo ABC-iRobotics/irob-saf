@@ -16,15 +16,13 @@
 		</include> 
 		
 		<include 
-			file="$(find irob_autosurg)/launch/camera/rotate_stereo_imgs.launch">
+			file="$(find irob_autosurg)/launch/camera/rotate_imgs.launch">
 			
-			<arg name="left_angle" value="-90"/> 
 			<arg name="left_in" value="left/raspicam/image/image_raw" />
 			<arg name="right_in" value="right/raspicam/image/image_raw" />
 			
-			<arg name="right_angle" value="90"/> 
-			<arg name="left_out" value="left/final/image" />
-			<arg name="right_out" value="right/final/image" />
+			<arg name="left_out" value="left/final/image/image_raw" />
+			<arg name="right_out" value="right/final/image/image_raw" />
 		</include> 
 		
   	</group>
