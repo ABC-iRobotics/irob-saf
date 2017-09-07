@@ -1,0 +1,21 @@
+<!-- Launch file for left and right camera nodes using cv-camera -->
+
+<launch>
+	<group ns="ias"><group ns="stereo">
+	
+		<include 
+			file="$(find irob_autosurg)/launch/camera/cam_driver.launch">
+			
+			<arg name="left" value="left" />
+		</include> 
+			
+		
+		<include 
+			file="$(find irob_autosurg)/launch/camera/rotate_stereo_img_info.launch">
+			
+			<arg name="left_in" value="left/image_raw" />
+		</include> 						
+		
+  	</group>
+  	</group>
+</launch>

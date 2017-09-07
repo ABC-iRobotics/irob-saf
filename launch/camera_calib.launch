@@ -5,13 +5,13 @@
 		
 	<node name="cameracalibrator" pkg="camera_calibration" 
 			type="cameracalibrator.py" 
-			args="--size 9x7 --square 0.025 --approximate=0.01" 
+			args="--size 9x7 --square 0.025 --approximate=0.01 --no-service-check" 
 			output="screen">
   		
-  		<rosparam param="left">left/image_raw</rosparam>
-		<rosparam param="right">right/image_raw</rosparam>
-		<rosparam param="left_camera">left</rosparam>
-		<rosparam param="right_camera">right</rosparam>
+  		<rosparam param="left">left/synced/image</rosparam>
+		<rosparam param="right">right/synced/image</rosparam>
+		<rosparam param="left_camera">left/raspicam/image</rosparam>
+		<rosparam param="right_camera">right/raspicam/image</rosparam>
 		
 	</node>						
 		

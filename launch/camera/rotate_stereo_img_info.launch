@@ -1,0 +1,22 @@
+<!-- Launch file-->
+
+<launch>
+
+		<arg name="left_angle" default="180"/> 
+		<arg name="left_in" default="left/image_raw"/> 
+		
+	
+	
+		<node name="image_rotate_left" pkg="irob_autosurg" 
+			type="image_rotator_info" output="screen">
+			
+			<param name="angle" type="int" value="$(arg left_angle)" />
+			
+			<remap from="image" to="$(arg left_in)"/>
+ 
+  		
+		</node>
+		
+
+  		
+</launch>

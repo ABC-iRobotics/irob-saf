@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
                         sensor_msgs
 						cv_bridge
 						image_transport
+						camera_info_manager
                         )
 
 
@@ -242,6 +243,12 @@ add_executable(dummy_target_publisher
 				
 add_executable(image_rotator 
 				src/irob_vision/image_rotator.cpp)
+				
+add_executable(image_rotator_info 
+				src/irob_vision/image_rotator_info.cpp)
+				
+add_executable(stereo_sync
+				src/irob_vision/stereo_sync.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -352,6 +359,18 @@ add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
  )
  
    target_link_libraries(image_rotator
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_vision_lib
+ )
+ 
+   target_link_libraries(image_rotator_info
+   ${catkin_LIBRARIES}
+   irob_utils_lib
+   irob_vision_lib
+ )
+ 
+    target_link_libraries(stereo_sync
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_vision_lib

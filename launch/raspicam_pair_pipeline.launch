@@ -27,6 +27,16 @@
 			<arg name="right_out" value="right/final/image" />
 		</include> 
 		
+		<include 
+			file="$(find irob_autosurg)/launch/camera/sync_stereo_imgs.launch">
+			
+			<arg name="left_in" value="left/final/image"/> 
+			<arg name="right_in" value="right/final/image"/> 
+
+			<arg name="left_out" value="left/synced/image"/> 
+			<arg name="right_out" value="right/synced/image"/> 
+		</include> 
+		
   	</group>
   	</group>
 </launch>
