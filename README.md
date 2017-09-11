@@ -27,6 +27,9 @@ Using cv-camera:
   - sudo apt-get install ros-kinetic-camera-calibration
   - http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration
   - http://wiki.ros.org/stereo_image_proc
+  - stereo camera calibrations must be saved from separate files 
+  	(elsehow the disparity will be extremely noisy)
+  - use the calibration app with option --approximate=0.1
   
 Raspberry:
   - Ubuntu + ROS kinetic: 

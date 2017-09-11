@@ -24,8 +24,12 @@
 
 namespace ias {
 
-ImageRotatorInfo::ImageRotatorInfo(ros::NodeHandle nh, int angle): nh(nh),
-	 c_info_man(nh, "rotated", "package://raspicam/calibrations/rotated.yaml")
+ImageRotatorInfo::ImageRotatorInfo(ros::NodeHandle nh, 
+					std::string camera, std::string calibration, int angle):
+					nh(nh), camera(camera),
+					c_info_man(ros::NodeHandle(nh, camera + "/rotated")
+						, camera + "/rotated"
+						, calibration)
 {
 	switch (angle)
 	{
@@ -46,8 +50,7 @@ ImageRotatorInfo::ImageRotatorInfo(ros::NodeHandle nh, int angle): nh(nh),
 			break;	
 	}
 	
-	if(!c_info_man.loadCameraInfo (	
-			"package://raspicam/calibrations/rotated.yaml")){
+	if(!c_info_man.loadCameraInfo (calibration)){
 		ROS_INFO_STREAM("Calibration file missing. Camera not calibrated");
    	}
    	else
@@ -65,15 +68,18 @@ ImageRotatorInfo::~ImageRotatorInfo() {}
 void ImageRotatorInfo::subscribeTopics() 
 {                 	            	
 	image_sub = nh.subscribe<sensor_msgs::Image>(
-   					"image", 1000, 
+   					camera + "/image_raw", 1000, 
    					&ImageRotatorInfo::imageCB,this);
+   	camera_info_sub = nh.subscribe<sensor_msgs::CameraInfo>(
+   					camera + "/camera_info", 1000, 
+   					&ImageRotatorInfo::cameraInfoCB,this);
 }
 
 void ImageRotatorInfo::advertiseTopics() 
 {
-	image_pub = nh.advertise<sensor_msgs::Image>("rotated/image", 1000); 
+	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/rotated/image", 1000); 
 	camera_info_pub = 
-    	nh.advertise<sensor_msgs::CameraInfo>("rotated/camera_info", 1); 
+    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/rotated/camera_info", 1); 
 }
 
 void ImageRotatorInfo::imageCB(
@@ -107,6 +113,21 @@ void ImageRotatorInfo::imageCB(
     }
 }
 
+void ImageRotatorInfo::cameraInfoCB(
+    		const sensor_msgs::CameraInfoConstPtr& msg)
+{
+	if (c_info.width <= 0)
+	{
+		c_info = *msg;
+		if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
+			|| angle_code == cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE)
+		{
+			c_info.width = msg -> height;
+			c_info.height = msg -> width;
+ 		}
+	}
+}
+
 
 
 
@@ -134,10 +155,16 @@ int main(int argc, char **argv)
 	int angle;
 	priv_nh.getParam("angle", angle);
 	
+	std::string camera;
+	priv_nh.getParam("camera", camera);
+	
+	std::string calibration;
+	priv_nh.getParam("calibration", calibration);
+	
     
     // Start Vision server
   	try {
-    	ImageRotatorInfo rot(nh, angle);
+    	ImageRotatorInfo rot(nh, camera, calibration, angle);
     		
     	ros::spin();
     	

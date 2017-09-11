@@ -12,13 +12,13 @@
 		</include> 
 			
 		
-		<include 
+		<!--<include 
 			file="$(find irob_autosurg)/launch/camera/stereo_img_proc.launch"
 			pass_all_args="true">
 			
 			<arg name="left" value="left" />
 			<arg name="right" value="right" />
-		</include> 						
+		</include> 	-->					
 		
   	</group>
   	</group>

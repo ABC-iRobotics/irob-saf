@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <cmath>
 #include <ros/ros.h>
@@ -39,23 +40,26 @@ private:
 	
     ros::NodeHandle nh;
     int angle_code;
+    std::string camera;
     
     sensor_msgs::CameraInfo c_info;
     camera_info_manager::CameraInfoManager c_info_man;
+    
+    sensor_msgs::CameraInfo pre_rot_c_info;
    	
     // Subscribers
     ros::Subscriber image_sub;
-
+ 	ros::Subscriber camera_info_sub;
 
     // Publishers
     ros::Publisher image_pub;
-     ros::Publisher camera_info_pub;
+    ros::Publisher camera_info_pub;
     
     void subscribeTopics();
     void advertiseTopics();
 
 public:
-	ImageRotatorInfo(ros::NodeHandle, int);
+	ImageRotatorInfo(ros::NodeHandle, std::string, std::string, int);
 	~ImageRotatorInfo();
 	
 
@@ -63,6 +67,9 @@ public:
     // Callbacks
     void imageCB(
     		const sensor_msgs::ImageConstPtr &);
+    		
+    void cameraInfoCB(
+    		const sensor_msgs::CameraInfoConstPtr &);
     
     		
 	
