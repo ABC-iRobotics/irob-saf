@@ -37,9 +37,7 @@
 
 #include <irob_autosurg/ToolPoseStamped.h>
 
-#include <irob_autosurg/GraspAction.h>
-#include <irob_autosurg/DissectAction.h>
-#include <irob_autosurg/MoveToAction.h>
+#include <irob_autosurg/ManeuverAction.h>
 
 namespace ias {
 
@@ -52,14 +50,8 @@ private:
     ros::NodeHandle nh;
     std::vector<GestureClient*> arms;
     
-    // Action servers
-    actionlib::SimpleActionServer<irob_autosurg::DissectAction>
-    	 dissect_as;
-   	actionlib::SimpleActionServer<irob_autosurg::GraspAction>
-    	 grasp_as;
-   	actionlib::SimpleActionServer<irob_autosurg::MoveToAction>
-    	 move_to_as;
-   	
+    // Action server
+    actionlib::SimpleActionServer<irob_autosurg::ManeuverAction> as;   	
    	
 
     // Publishers
@@ -72,7 +64,6 @@ private:
    	
     void subscribeTopics();
     void advertiseTopics();
-    void startActionServers();
     
     int findArmIdx(std::string);
 
@@ -81,14 +72,14 @@ public:
 	~ManeuverServer();
 
     // Callbacks
-    void dissectActionCB(
-    		const irob_autosurg::DissectGoalConstPtr &);
+    void maneuverActionCB(
+    		const irob_autosurg::ManeuverGoalConstPtr &);
+    	
+    void dissect(std::string, Pose, double, double, double, std::vector<Pose>);
     		
-   	void graspActionCB(
-    		const irob_autosurg::GraspGoalConstPtr &);
+   	void grasp(std::string, Pose, double, double, double, std::vector<Pose>);
     		
-    void moveToActionCB(
-    		const irob_autosurg::MoveToGoalConstPtr &);
+    void moveTo(std::string, Pose, std::vector<Pose>);
     		
  	
 	

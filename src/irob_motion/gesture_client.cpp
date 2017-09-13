@@ -13,14 +13,14 @@ namespace ias {
 
 GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name): 
 			nh(nh), arm_name(arm_name),
-			close_tool_ac("gesture/"+arm_name, true)
+			ac("gesture/"+arm_name, true)
 {
 
 	// Subscribe and advertise topics
 	
 	subscribeTopics();
     advertiseTopics();
-    waitForActionServers();
+    waitForActionServer();
 }
 
 GestureClient::~GestureClient()
@@ -92,7 +92,7 @@ void GestureClient::toolClose(double angle, double speed /* = 10.0 */)
     // Send a goal to the action
   	irob_autosurg::GestureGoal goal;
  
- 	goal.action = irob_autosurg::GestureGoal.TOOL_CLOSE;
+ 	goal.action = irob_autosurg::GestureGoal::TOOL_CLOSE;
  	
   	goal.angle = angle;
   	goal.speed = speed;
@@ -108,7 +108,7 @@ void GestureClient::toolOpen(double angle, double speed /* = 10.0 */)
     // Send a goal to the action
   	irob_autosurg::GestureGoal goal;
  
- 	goal.action = irob_autosurg::GestureGoal.TOOL_OPEN;
+ 	goal.action = irob_autosurg::GestureGoal::TOOL_OPEN;
  
   	goal.angle = angle;
   	goal.speed = speed;
@@ -120,33 +120,33 @@ void GestureClient::toolOpen(double angle, double speed /* = 10.0 */)
 }
 
 
-void GestureClient::inTCPforward(double depth, double speed /*=10.0*/)
+void GestureClient::inTCPforward(double distance, double speed /*=10.0*/)
 {
 	// Send a goal to the action
 	irob_autosurg::GestureGoal goal;
  
- 	goal.action = irob_autosurg::GestureGoal.IN_TCP_FORWARD;
+ 	goal.action = irob_autosurg::GestureGoal::IN_TCP_FORWARD;
  
-  	goal.depth = distance;
+  	goal.distance = distance;
   	goal.speed = speed;
    	
-  	push_in_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in gestureDoneCB
 }
 
-void GestureClient::inTCPbackward(double depth, double speed /*=10.0*/)
+void GestureClient::inTCPbackward(double distance, double speed /*=10.0*/)
 {
 	// Send a goal to the action
 	irob_autosurg::GestureGoal goal;
  
- 	goal.action = irob_autosurg::GestureGoal.IN_TCP_BACKWARD;
+ 	goal.action = irob_autosurg::GestureGoal::IN_TCP_BACKWARD;
  
-  	goal.depth = distance;
+  	goal.distance = distance;
   	goal.speed = speed;
    	
-  	pull_out_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in gestureDoneCB
@@ -159,7 +159,7 @@ void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
 	// Send a goal to the action
 	irob_autosurg::GestureGoal goal;
  
- 	goal.action = irob_autosurg::GestureGoal.GO_TO;
+ 	goal.action = irob_autosurg::GestureGoal::GO_TO;
  	
     goal.target = target.toRosToolPose();
     goal.speed = speed;
@@ -167,46 +167,21 @@ void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
     	goal.waypoints.push_back(p.toRosToolPose());
     
     if (interp_method == InterpolationMethod::LINEAR)
-    	goal.interpolation = irob_autosurg::GoToGoal::LINEAR;
+    	goal.interpolation = irob_autosurg::GestureGoal::INTERPOLATION_LINEAR;
     else
-    	goal.interpolation = irob_autosurg::GoToGoal::BEZIER;
+    	goal.interpolation = irob_autosurg::GestureGoal::INTERPOLATION_BEZIER;
     	
-  	go_to_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
   	// in gestureDoneCB
 }
 
 
-bool GestureClient::isCloseToolDone()
+bool GestureClient::isGestureDone()
 {
-	return close_tool_ac.isDone();
+	return ac.isDone();
 }
-
-bool GestureClient::isOpenToolDone()
-{
-	return open_tool_ac.isDone();
-}
-
-bool GestureClient::isPushInDone()
-{
-	return push_in_ac.isDone();
-}
-
-bool GestureClient::isPullOutDone()
-{
-	return pull_out_ac.isDone();
-}
-
-bool GestureClient::isGoToDone()
-{
-	return go_to_ac.isDone();
-}
-
-
-
-
-
 
 }
 

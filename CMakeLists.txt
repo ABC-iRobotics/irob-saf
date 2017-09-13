@@ -75,15 +75,13 @@ find_package(catkin REQUIRED
  	action
    	FILES
    	
-   	robot/FollowTrajectory.action
-   	robot/InitArm.action
-   	robot/ResetPose.action
+   	FollowTrajectory.action
+   	InitArm.action
+   	ResetPose.action
    	
-   	gesture/Gesture.action
+   	Gesture.action
    	
-   	maneuver/Grasp.action
-   	maneuver/Dissect.action
-   	maneuver/MoveTo.action
+	Maneuver.action
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -223,8 +221,6 @@ add_executable(gesture_server src/irob_motion/gesture_server.cpp)
 add_executable(maneuver_server src/irob_motion/maneuver_server.cpp)
 
 
-add_executable(test_gesture_client src/irob_motion/test_gesture_client.cpp)
-
 add_executable(test_maneuver src/irob_motion/test_maneuver.cpp)
 
 add_executable(test_task src/irob_task/test_task.cpp)
@@ -249,7 +245,6 @@ add_executable(stereo_sync
 ## same as for the library above
 # add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(test_gesture_client irob_autosurg_generate_messages_cpp)
 add_dependencies(dvrk_interface irob_autosurg_generate_messages_cpp)
 add_dependencies(gesture_server irob_autosurg_generate_messages_cpp)
 add_dependencies(maneuver_server irob_autosurg_generate_messages_cpp)
@@ -310,11 +305,6 @@ add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
    irob_motion_lib
  )
  
- target_link_libraries(test_gesture_client
-   ${catkin_LIBRARIES}
-   irob_utils_lib
-   irob_motion_lib
- )
  
  target_link_libraries(test_maneuver
    ${catkin_LIBRARIES}

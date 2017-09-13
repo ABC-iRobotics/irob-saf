@@ -14,14 +14,12 @@ namespace ias {
 ManeuverClient::ManeuverClient(ros::NodeHandle nh, 
 					std::vector<std::string> arm_names): 
 			nh(nh), arm_names(arm_names),
-			dissect_ac("maneuver/dissect", true),
-			grasp_ac("maneuver/grasp", true),
-			move_to_ac("maneuver/move_to", true)
+			ac("maneuver", true)
 {
 
 	// Subscribe and advertise topics
 	subscribeTopics();
-    waitForActionServers();
+    waitForActionServer();
 }
 
 ManeuverClient::~ManeuverClient()
@@ -56,12 +54,10 @@ void ManeuverClient::subscribeTopics()
 }
 
 
-void ManeuverClient::waitForActionServers() 
+void ManeuverClient::waitForActionServer() 
 {
 	ROS_INFO_STREAM("Wating for action servers...");
-	grasp_ac.waitForServer();
-	dissect_ac.waitForServer();
-	move_to_ac.waitForServer();
+	ac.waitForServer();
     ROS_INFO_STREAM("Action servers started");
 }
 
@@ -78,7 +74,9 @@ void ManeuverClient::dissect(std::string arm_name,
 								/* = std::vector<Pose>()*/)	
 {
     // Send a goal to the action
-  	irob_autosurg::DissectGoal goal;
+  	irob_autosurg::ManeuverGoal goal;
+  	
+  	goal.action = irob_autosurg::ManeuverGoal::DISSECT;
  
   	goal.arm_name = arm_name;
   	goal.target = pos.toRosPose();
@@ -90,7 +88,7 @@ void ManeuverClient::dissect(std::string arm_name,
   	goal.closed_angle = closed_angle;
   	goal.open_angle = open_angle;
   	
-  	dissect_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
 }
 
 void ManeuverClient::grasp(std::string arm_name, 
@@ -101,7 +99,9 @@ void ManeuverClient::grasp(std::string arm_name,
 								/* = std::vector<Pose>()*/)
 {
     // Send a goal to the action
-  	irob_autosurg::GraspGoal goal;
+  	irob_autosurg::ManeuverGoal goal;
+  	
+  	goal.action = irob_autosurg::ManeuverGoal::GRASP;
  
   	goal.arm_name = arm_name;
   	goal.target = pos.toRosPose();
@@ -113,7 +113,7 @@ void ManeuverClient::grasp(std::string arm_name,
   	goal.open_angle = open_angle;
   	goal.approach_dist = approach_dist;
   	
-  	grasp_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
 }
 
 void ManeuverClient::moveTo(std::string arm_name, 
@@ -122,7 +122,9 @@ void ManeuverClient::moveTo(std::string arm_name,
 								/* = std::vector<Pose>()*/)
 {
     // Send a goal to the action
-  	irob_autosurg::MoveToGoal goal;
+  	irob_autosurg::ManeuverGoal goal;
+  	
+  	goal.action = irob_autosurg::ManeuverGoal::DISSECT;
  
   	goal.arm_name = arm_name;
   	goal.target = pos.toRosPose();
@@ -130,24 +132,13 @@ void ManeuverClient::moveTo(std::string arm_name,
   	for (Pose p : waypoints)
     	goal.waypoints.push_back(p.toRosPose());
   	
-  	
-  	move_to_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
 }
 
 
-bool ManeuverClient::isDissectDone()
+bool ManeuverClient::isManeuverDone()
 {
-	return dissect_ac.isDone();
-}
-
-bool ManeuverClient::isGraspDone()
-{
-	return grasp_ac.isDone();
-}
-
-bool ManeuverClient::isMoveToDone()
-{
-	return move_to_ac.isDone();
+	return ac.isDone();
 }
 
 Pose ManeuverClient::getPoseCurrent(std::string arm_name)

@@ -47,7 +47,7 @@ void Retractor::graspTissue()
 	ROS_INFO_STREAM("Start grasp maneuver...");
 	maneuver.grasp(arm_names[0], pose, 30, 0, 10.0);
 	old_p = p;
-	while(!maneuver.isGraspDone() && ros::ok())
+	while(!maneuver.isManeuverDone() && ros::ok())
 	{
 		
 		p = vision.getResult();
@@ -82,7 +82,7 @@ void Retractor::retract()
 	ROS_INFO_STREAM("Start grasp maneuver...");
 	maneuver.grasp(arm_names[0], pose, 30, 0, 10.0);
 	old_p = p;
-	while(!maneuver.isGraspDone() && ros::ok())
+	while(!maneuver.isManeuverDone() && ros::ok())
 	{
 		
 		p = vision.getResult();

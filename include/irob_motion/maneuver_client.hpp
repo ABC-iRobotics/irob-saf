@@ -32,9 +32,7 @@
 
 #include <irob_autosurg/ToolPoseStamped.h>
 
-#include <irob_autosurg/DissectAction.h>
-#include <irob_autosurg/GraspAction.h>
-#include <irob_autosurg/MoveToAction.h>
+#include <irob_autosurg/ManeuverAction.h>
 
 namespace ias {
 
@@ -49,12 +47,7 @@ protected:
     ros::NodeHandle nh;
     
     // Action clients
-    IrobActionClient<irob_autosurg::DissectAction> 
-    									 dissect_ac;
-    IrobActionClient<irob_autosurg::GraspAction>
-    									 grasp_ac;
-    IrobActionClient<irob_autosurg::MoveToAction>
-    									 move_to_ac;
+    IrobActionClient<irob_autosurg::ManeuverAction> ac;
    	
    	// States
     std::map<std::string, irob_autosurg::ToolPoseStamped>
@@ -68,7 +61,7 @@ protected:
    	
     void subscribeTopics();
     void startActionClients(); 
-    void waitForActionServers();
+    void waitForActionServer();
 
 public:
 	ManeuverClient(ros::NodeHandle, std::vector<std::string>);
@@ -86,9 +79,7 @@ public:
    	void moveTo(std::string, Pose, std::vector<Pose> = std::vector<Pose>());	
 
 			
-	bool isDissectDone();
-	bool isGraspDone();	
-	bool isMoveToDone();
+	bool isManeuverDone();
 	
 	Pose getPoseCurrent(std::string);
 };

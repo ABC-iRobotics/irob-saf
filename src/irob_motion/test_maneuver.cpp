@@ -59,14 +59,14 @@ int main(int argc, char **argv)
 		//mc.dissect(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,
 		//0.02, 0.0, 10.0);
 			
-		while(!mc.isDissectDone() && ros::ok())
+		while(!mc.isManeuverDone() && ros::ok())
     	{
   			loop_rate.sleep();
 		}
 		
 		mc.grasp(arm_names[0], mc.getPoseCurrent(arm_names[0])+offset,40.0, 0.0,
 			30.0, wps);
-   		while(!mc.isGraspDone() && ros::ok())
+   		while(!mc.isManeuverDone() && ros::ok())
     	{
   			loop_rate.sleep();
 		}

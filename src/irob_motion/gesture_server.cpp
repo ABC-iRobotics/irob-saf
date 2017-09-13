@@ -37,49 +37,56 @@ void GestureServer::gestureActionCB(
 {
     switch(goal -> action)
     {
-    	case irob_autosurg::GestureGoal.GO_TO:
+    	case irob_autosurg::GestureGoal::GO_TO:
+    	{
     		std::vector<Pose> waypoints;
 			for (irob_autosurg::ToolPose p : goal->waypoints)
 				waypoints.push_back(Pose(p));
 			InterpolationMethod	interp_method;
-			if (goal -> interp_method == goal -> INTERPOLATION_LINEAR)
-				interp_method = InterpolationMethod::LINERAR;
+			if (goal -> interpolation == goal -> INTERPOLATION_LINEAR)
+				interp_method = InterpolationMethod::LINEAR;
 			else
 				interp_method = InterpolationMethod::BEZIER;
 				
     		goTo(goal -> target, goal -> speed, waypoints, interp_method);
     		break;
+    	}	
     		
-    		
-    	case irob_autosurg::GestureGoal.TOOL_CLOSE:
+    	case irob_autosurg::GestureGoal::TOOL_CLOSE:
+    	{
     		toolClose(goal -> angle, goal -> speed);
     		break;
+    	}	
     		
-    		
-    	case irob_autosurg::GestureGoal.TOOL_OPEN:
+    	case irob_autosurg::GestureGoal::TOOL_OPEN:
+    	{
     		toolOpen(goal -> angle, goal -> speed);
     		break;
+    	}	
     		
-    		
-    	case irob_autosurg::GestureGoal.IN_TCP_FORWARD:
+    	case irob_autosurg::GestureGoal::IN_TCP_FORWARD:
+    	{
     		inTCPforward(goal -> distance, goal -> speed);
     		break;
+    	}	
     		
-    		
-    	case irob_autosurg::GestureGoal.IN_TCP_BACKWARD:
+    	case irob_autosurg::GestureGoal::IN_TCP_BACKWARD:
+    	{
     		inTCPbackward(goal -> distance, goal -> speed);
     		break;
-    		
+    	}	
     		
     	default:
-    		ROS_ERR_STREAM(arm.getName()  << 
+    	{
+    		ROS_ERROR_STREAM(arm.getName()  << 
     					": invalid gesture action code received");
     		irob_autosurg::GestureResult result;
     		result.pose = arm.getPoseCurrent().toRosToolPose();
 			result.info = arm.getName()  + 
 						": invalid gesture action code";
       		as.setAborted(result);
-    		break;    	
+    		break;
+    	}    	
     }	
 }
 
@@ -209,7 +216,7 @@ void GestureServer::inTCPforward(double distance, double speed)
     ros::Rate loop_rate(50.0);
 
     irob_autosurg::GestureResult result;
-    irob_autosurg::GestureReedback feedback;
+    irob_autosurg::GestureFeedback feedback;
     Eigen::Vector3d v(0.0, 0.0, distance);
 
 	arm.moveRelative(v, speed, RobotClient::CoordFrame::TCPF);
@@ -251,7 +258,7 @@ void GestureServer::inTCPbackward(double distance, double speed)
     ros::Rate loop_rate(50.0);
 
     irob_autosurg::GestureResult result;
-    irob_autosurg::GestureReedback feedback;
+    irob_autosurg::GestureFeedback feedback;
     Eigen::Vector3d v(0.0, 0.0, (-1.0) * distance);
 
 	arm.moveRelative(v, speed, RobotClient::CoordFrame::TCPF);
@@ -299,7 +306,7 @@ void GestureServer::goTo(Pose target, double speed, std::vector<Pose> waypoints,
 
 	ROS_INFO_STREAM(arm.getName()  << ": go to position");
 	
-  	arm.goTo(target, goal->speed, waypoints, interp_method);
+  	arm.goTo(target, speed, waypoints, interp_method);
   	
     while(!success)
     {

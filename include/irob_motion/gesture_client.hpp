@@ -78,10 +78,10 @@ public:
    	std::string getName();
    	
    		// Robot motions
-   	void closeTool(double, double = 10.0);	
-   	void openTool(double, double = 10.0);
-	void pushIn(double, double = 10.0);
-	void pullOut(double, double = 10.0);
+   	void toolClose(double, double = 10.0);	
+   	void toolOpen(double, double = 10.0);
+	void inTCPforward(double, double = 10.0);
+	void inTCPbackward(double, double = 10.0);
 	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 			
