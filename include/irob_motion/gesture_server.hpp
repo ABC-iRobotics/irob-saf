@@ -31,11 +31,8 @@
 #include <actionlib/client/terminal_state.h>
 #include <irob_autosurg/ToolPoseStamped.h>
 
-#include <irob_autosurg/CloseToolAction.h>
-#include <irob_autosurg/OpenToolAction.h>
-#include <irob_autosurg/PushInAction.h>
-#include <irob_autosurg/PullOutAction.h>
-#include <irob_autosurg/GoToAction.h>
+#include <irob_autosurg/GestureAction.h>
+
 
 namespace ias {
 
@@ -50,19 +47,8 @@ protected:
     ros::NodeHandle nh;
     
     // Action servers
-    actionlib::SimpleActionServer<irob_autosurg::CloseToolAction>
-    	 close_tool_as;
-   	actionlib::SimpleActionServer<irob_autosurg::OpenToolAction>
-    	 open_tool_as;
-   	actionlib::SimpleActionServer<irob_autosurg::PullOutAction>
-    	 pull_out_as;
-   	actionlib::SimpleActionServer<irob_autosurg::PushInAction>
-    	 push_in_as;
-    actionlib::SimpleActionServer<irob_autosurg::GoToAction>
-    	 go_to_as;
-   	
-
-    void startActionServers();
+    actionlib::SimpleActionServer<irob_autosurg::GestureAction> as;
+	
 
 public:
 	GestureServer(ros::NodeHandle, std::string, double);		// dt
@@ -70,19 +56,18 @@ public:
 
     // Callbacks
 
-    void closeToolActionCB(
-    		const irob_autosurg::CloseToolGoalConstPtr &);
+    void gestureActionCB(
+    		const irob_autosurg::GestureGoalConstPtr &);
+   
+   	void toolClose(double, double); 	
     		
-   	void openToolActionCB(
-    		const irob_autosurg::OpenToolGoalConstPtr &);
+   	void toolOpen(double, double);
     		
-   	void pushInActionCB(
-    		const irob_autosurg::PushInGoalConstPtr &);
-    void pullOutActionCB(
-    		const irob_autosurg::PullOutGoalConstPtr &);
+   	void inTCPforward(double, double);
+   	
+    void inTCPbackward(double, double);
     		
-   	void goToActionCB(
-    		const irob_autosurg::GoToGoalConstPtr &);
+   	void goTo(Pose, double,	std::vector<Pose>, InterpolationMethod);
     
 
    	Pose getPoseCurrent();

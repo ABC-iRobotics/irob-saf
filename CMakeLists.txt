@@ -79,11 +79,7 @@ find_package(catkin REQUIRED
    	robot/InitArm.action
    	robot/ResetPose.action
    	
-   	gesture/CloseTool.action
-   	gesture/OpenTool.action
-   	gesture/PushIn.action
-   	gesture/PullOut.action
-   	gesture/GoTo.action
+   	gesture/Gesture.action
    	
    	maneuver/Grasp.action
    	maneuver/Dissect.action

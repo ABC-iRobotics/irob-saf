@@ -13,11 +13,7 @@ namespace ias {
 
 GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name): 
 			nh(nh), arm_name(arm_name),
-			close_tool_ac("gesture/"+arm_name+"/close_tool", true),
-			open_tool_ac("gesture/"+arm_name+"/open_tool", true),
-			push_in_ac("gesture/"+arm_name+"/push_in", true),
-			pull_out_ac("gesture/"+arm_name+"/pull_out", true),
-			go_to_ac("gesture/"+arm_name+"/go_to", true)
+			close_tool_ac("gesture/"+arm_name, true)
 {
 
 	// Subscribe and advertise topics
@@ -63,14 +59,10 @@ void GestureClient::advertiseTopics()
 }
 
 
-void GestureClient::waitForActionServers() 
+void GestureClient::waitForActionServer() 
 {
-	ROS_INFO_STREAM("Wating for action servers...");
-	close_tool_ac.waitForServer();
-	open_tool_ac.waitForServer();
-    push_in_ac.waitForServer();
-    pull_out_ac.waitForServer();
-    go_to_ac.waitForServer();
+	ROS_INFO_STREAM("Wating for action server...");
+	ac.waitForServer();
     ROS_INFO_STREAM("Action servers started");
 }
 
@@ -95,60 +87,80 @@ std::string GestureClient::getName()
 
 // Robot motions
 
-void GestureClient::closeTool(double angle, double speed /* = 10.0 */)
+void GestureClient::toolClose(double angle, double speed /* = 10.0 */)
 {
     // Send a goal to the action
-  	irob_autosurg::CloseToolGoal goal;
+  	irob_autosurg::GestureGoal goal;
+ 
+ 	goal.action = irob_autosurg::GestureGoal.TOOL_CLOSE;
+ 	
+  	goal.angle = angle;
+  	goal.speed = speed;
+  	
+  	ac.sendGoal(goal);
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in gestureDoneCB
+}
+
+void GestureClient::toolOpen(double angle, double speed /* = 10.0 */)
+{
+    // Send a goal to the action
+  	irob_autosurg::GestureGoal goal;
+ 
+ 	goal.action = irob_autosurg::GestureGoal.TOOL_OPEN;
  
   	goal.angle = angle;
   	goal.speed = speed;
   	
-  	close_tool_ac.sendGoal(goal);
-}
-
-void GestureClient::openTool(double angle, double speed /* = 10.0 */)
-{
-    // Send a goal to the action
-  	irob_autosurg::OpenToolGoal goal;
- 
-  	goal.angle = angle;
-  	goal.speed = speed;
+  	ac.sendGoal(goal);
   	
-  	open_tool_ac.sendGoal(goal);
+  	// Not waiting for action finish here, a notification will be received
+  	// in gestureDoneCB
 }
 
 
-void GestureClient::pushIn(double depth, double speed /*=10.0*/)
+void GestureClient::inTCPforward(double depth, double speed /*=10.0*/)
 {
-	irob_autosurg::PushInGoal goal;
+	// Send a goal to the action
+	irob_autosurg::GestureGoal goal;
  
-  	goal.depth = depth;
+ 	goal.action = irob_autosurg::GestureGoal.IN_TCP_FORWARD;
+ 
+  	goal.depth = distance;
   	goal.speed = speed;
    	
   	push_in_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in followTrajectoryDoneCB
+  	// in gestureDoneCB
 }
 
-void GestureClient::pullOut(double depth, double speed /*=10.0*/)
+void GestureClient::inTCPbackward(double depth, double speed /*=10.0*/)
 {
-	irob_autosurg::PullOutGoal goal;
+	// Send a goal to the action
+	irob_autosurg::GestureGoal goal;
  
-  	goal.depth = depth;
+ 	goal.action = irob_autosurg::GestureGoal.IN_TCP_BACKWARD;
+ 
+  	goal.depth = distance;
   	goal.speed = speed;
    	
   	pull_out_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in followTrajectoryDoneCB
+  	// in gestureDoneCB
 }
 
 void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {
-	irob_autosurg::GoToGoal goal;
+	// Send a goal to the action
+	irob_autosurg::GestureGoal goal;
+ 
+ 	goal.action = irob_autosurg::GestureGoal.GO_TO;
+ 	
     goal.target = target.toRosToolPose();
     goal.speed = speed;
     for (Pose p : waypoints)
@@ -162,7 +174,7 @@ void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
   	go_to_ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in goToDoneCB
+  	// in gestureDoneCB
 }
 
 

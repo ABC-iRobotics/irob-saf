@@ -34,11 +34,7 @@
 
 #include <irob_autosurg/ToolPoseStamped.h>
 
-#include <irob_autosurg/CloseToolAction.h>
-#include <irob_autosurg/OpenToolAction.h>
-#include <irob_autosurg/PushInAction.h>
-#include <irob_autosurg/PullOutAction.h>
-#include <irob_autosurg/GoToAction.h>
+#include <irob_autosurg/GestureAction.h>
 
 namespace ias {
 
@@ -49,18 +45,7 @@ protected:
     ros::NodeHandle nh;
     
     // Action clients
-    IrobActionClient<irob_autosurg::CloseToolAction> 
-    									 close_tool_ac;
-    IrobActionClient<irob_autosurg::OpenToolAction>
-    									 open_tool_ac;
-   	IrobActionClient<irob_autosurg::PushInAction> 
-   										push_in_ac;
-   																			IrobActionClient<irob_autosurg::PullOutAction> 
-   												
-   										pull_out_ac;
-   	IrobActionClient<irob_autosurg::GoToAction> 
-    									go_to_ac;
-   	
+    IrobActionClient<irob_autosurg::GestureAction> ac;
    
 
     // States
@@ -69,8 +54,6 @@ protected:
     // Subscribers
     ros::Subscriber position_cartesian_current_sub;
 
-
-
     // Publishers
 	ros::Publisher position_cartesian_current_pub;
    	
@@ -78,7 +61,7 @@ protected:
     void subscribeTopics();
     void advertiseTopics();
     void startActionClients(); 
-    void waitForActionServers();
+    void waitForActionServer();
 
 public:
 	GestureClient(ros::NodeHandle, std::string);
@@ -102,11 +85,7 @@ public:
 	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 			
-	bool isCloseToolDone();
-	bool isOpenToolDone();
-	bool isPushInDone();
-	bool isPullOutDone();
-	bool isGoToDone();
+	bool isGestureDone();
 	
 };
 
