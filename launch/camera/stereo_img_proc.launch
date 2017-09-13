@@ -21,7 +21,7 @@
 			 	
 			 <rosparam param="uniqueness_ratio">15</rosparam>
 			 	
-			 <rosparam param="prefilter_cap ">11</rosparam>
+			 <rosparam param="prefilter_cap ">7</rosparam>
   		
   			<remap from="left/image_raw" to="$(arg left)/image"/>
   			<remap from="left/camera_info" to="$(arg left)/camera_info"/>

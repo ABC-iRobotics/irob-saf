@@ -19,12 +19,17 @@
 
 
 
-#include "irob_vision/image_rotator.hpp"
+#include "irob_vision/camera_rotator.hpp"
 
 
 namespace ias {
 
-ImageRotator::ImageRotator(ros::NodeHandle nh, int angle): nh(nh)
+CameraRotator::CameraRotator(ros::NodeHandle nh, 
+					std::string camera, std::string calibration, int angle):
+					nh(nh), camera(camera),
+					c_info_man(ros::NodeHandle(nh, camera + "/rotated")
+						, camera + "/rotated"
+						, calibration)
 {
 	switch (angle)
 	{
@@ -44,26 +49,40 @@ ImageRotator::ImageRotator(ros::NodeHandle nh, int angle): nh(nh)
 			angle_code = cv::RotateFlags::ROTATE_90_CLOCKWISE;	// 0
 			break;	
 	}
+	
+	if(!c_info_man.loadCameraInfo (calibration)){
+		ROS_INFO_STREAM("Calibration file missing. Camera not calibrated");
+   	}
+   	else
+   	{
+   		c_info = c_info_man.getCameraInfo ();
+		ROS_INFO_STREAM("Camera successfully calibrated");
+	}
 
 	subscribeTopics();
 	advertiseTopics();
 }
 
-ImageRotator::~ImageRotator() {}
+CameraRotator::~CameraRotator() {}
 
-void ImageRotator::subscribeTopics() 
+void CameraRotator::subscribeTopics() 
 {                 	            	
 	image_sub = nh.subscribe<sensor_msgs::Image>(
-   					"image", 1000, 
-   					&ImageRotator::imageCB,this);
+   					camera + "/image_raw", 1000, 
+   					&CameraRotator::imageCB,this);
+   	camera_info_sub = nh.subscribe<sensor_msgs::CameraInfo>(
+   					camera + "/camera_info", 1000, 
+   					&CameraRotator::cameraInfoCB,this);
 }
 
-void ImageRotator::advertiseTopics() 
+void CameraRotator::advertiseTopics() 
 {
-	image_pub = nh.advertise<sensor_msgs::Image>("rotated/image", 1000);   
+	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/rotated/image", 1000); 
+	camera_info_pub = 
+    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/rotated/camera_info", 1); 
 }
 
-void ImageRotator::imageCB(
+void CameraRotator::imageCB(
     		const sensor_msgs::ImageConstPtr& msg)
 {
     try
@@ -78,7 +97,13 @@ void ImageRotator::imageCB(
     	sensor_msgs::ImagePtr rotated_msg = 
     		cv_bridge::CvImage(msg->header, "bgr8", 
     				rotated_image).toImageMsg();			
-    	image_pub.publish(rotated_msg);			
+    	image_pub.publish(rotated_msg);
+    	
+		c_info.header.seq = rotated_msg->header.seq;
+		c_info.header.stamp = rotated_msg->header.stamp;
+		c_info.header.frame_id = rotated_msg->header.frame_id;
+		camera_info_pub.publish(c_info);
+    				
     	
     }
     catch (cv_bridge::Exception& e)
@@ -86,6 +111,21 @@ void ImageRotator::imageCB(
       	ROS_ERROR("cv_bridge exception: %s", e.what());
       	return;
     }
+}
+
+void CameraRotator::cameraInfoCB(
+    		const sensor_msgs::CameraInfoConstPtr& msg)
+{
+	if (c_info.width <= 0)
+	{
+		c_info = *msg;
+		if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
+			|| angle_code == cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE)
+		{
+			c_info.width = msg -> height;
+			c_info.height = msg -> width;
+ 		}
+	}
 }
 
 
@@ -108,17 +148,23 @@ int main(int argc, char **argv)
 {
 	
 	// Initialize ros node
-    ros::init(argc, argv, "image_rotator");
+    ros::init(argc, argv, "camera_rotator");
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
 	
 	int angle;
 	priv_nh.getParam("angle", angle);
 	
+	std::string camera;
+	priv_nh.getParam("camera", camera);
+	
+	std::string calibration;
+	priv_nh.getParam("calibration", calibration);
+	
     
     // Start Vision server
   	try {
-    	ImageRotator rot(nh, angle);
+    	CameraRotator rot(nh, camera, calibration, angle);
     		
     	ros::spin();
     	

@@ -241,11 +241,8 @@ add_executable(vision_server_test_dummy
 add_executable(dummy_target_publisher 
 				src/irob_vision/dummy_target_publisher.cpp)
 				
-add_executable(image_rotator 
-				src/irob_vision/image_rotator.cpp)
-				
-add_executable(image_rotator_info 
-				src/irob_vision/image_rotator_info.cpp)
+add_executable(camera_rotator 
+				src/irob_vision/camera_rotator.cpp)
 				
 add_executable(stereo_sync
 				src/irob_vision/stereo_sync.cpp)
@@ -358,13 +355,7 @@ add_dependencies(vision_server_test_dummy irob_autosurg_generate_messages_cpp)
    irob_vision_lib
  )
  
-   target_link_libraries(image_rotator
-   ${catkin_LIBRARIES}
-   irob_utils_lib
-   irob_vision_lib
- )
- 
-   target_link_libraries(image_rotator_info
+   target_link_libraries(camera_rotator
    ${catkin_LIBRARIES}
    irob_utils_lib
    irob_vision_lib
