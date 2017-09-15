@@ -9,9 +9,9 @@ Support for computer vision used for surgical automation.
 # Usage with a pair of Raspberry Pi-es
 * Raspicam node: https://github.com/UbiquityRobotics/raspicam_node
 * ROS network setup:
-  .* fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
-  .* DNS: 8.8.4.4
-  .* /etc/hosts: 
+  - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
+  - DNS: 8.8.4.4
+  - /etc/hosts: 
   				192.168.1.104	master
 				192.168.1.105	left-pi
 				192.168.1.106	right-pi
