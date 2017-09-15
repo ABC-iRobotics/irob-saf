@@ -12,11 +12,11 @@ Support for computer vision used for surgical automation.
   - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
   - DNS: 8.8.4.4
   - /etc/hosts: 
-  				192.168.1.104	master
-				192.168.1.105	left-pi
-				192.168.1.106	right-pi
-  .* export ROS_HOSTNAME, ROS_IP, ROS_MASTER_URI
-  .* see http://elinux.org/RPi_Setting_up_a_static_IP_in_Debian
+  	- 192.168.1.104		master
+     	- 192.168.1.105		left-pi
+	- 192.168.1.106		right-pi
+  - export ROS_HOSTNAME, ROS_IP, ROS_MASTER_URI
+  - see http://elinux.org/RPi_Setting_up_a_static_IP_in_Debian
   
 # Camera calibration
 * stereo camera calibrations must be saved from separate files (elsehow the disparity will be extremely noisy)
