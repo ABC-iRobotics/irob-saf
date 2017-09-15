@@ -1,2 +1,2 @@
-# irob-utils
+# irob_utils
 Utilities for irob-autosurg, including pose, conversions and trajectory generation
