@@ -1,0 +1,31 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+	<group ns="ias">
+	
+		<arg name="arm_name" default="arm_1"/>
+		<arg name="rate" default="100"/>
+		
+  	
+			<node name="gesture_server" pkg="irob_autosurg" 
+			type="gesture_server" output="screen">
+  		
+				<param name="arm_name" 
+						type="string" value="$(arg arm_name)" />
+				<param name="rate" type="double" value="$(arg rate)" />
+					
+				<remap 
+				from="position_cartesian_current_in"
+				to="/robot/position_cartesian_current_cf" 
+				/>
+				
+				<remap 
+				from="position_cartesian_current_out"
+				to="gesture/position_cartesian_current_cf" 
+				/>
+				
+				
+				
+	</node>
+  	</group>
+</launch>

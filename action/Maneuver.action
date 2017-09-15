@@ -1,0 +1,28 @@
+# Define the goal
+# Action types
+int8 DISSECT=1
+int8 GRASP=2
+int8 MOVE_TO=3
+
+int8 action
+
+# Params
+string arm_name
+geometry_msgs/Pose target
+geometry_msgs/Pose[] waypoints
+
+float64 approach_dist
+float64 depth
+float64 closed_angle
+float64 open_angle
+
+
+---
+# Define the result
+ToolPose pose
+string info
+---
+# Define a feedback message
+ToolPose pose
+string info
+

@@ -1,0 +1,25 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+	<group ns="ias">
+	
+	
+  		<arg name="arm_typ" default="PSM1"/>
+		<arg name="arm_name" default="arm_1"/>
+		<arg name="camera_registration_file" 
+			default="$(find irob_autosurg)/config/registration_identity.cfg"/>
+	
+			<include file="$(find irob_autosurg)/config/dvrk_topic_names.xml" /> 
+  	
+			<node name="PSM1_interface" pkg="irob_autosurg" 
+			type="dvrk_interface" output="screen">
+  		
+  				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
+				<param name="arm_name" type="string" value="$(arg arm_name)" />
+				<param name="camera_registration_file" type="string" 	
+									value="$(arg camera_registration_file)" />
+				
+				
+	</node>
+  	</group>
+</launch>
