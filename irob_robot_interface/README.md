@@ -24,4 +24,4 @@ PSM workspace:
   - HW and simulator coordinate systems are compatible and matching
   
       
-![alt tag](docs/PSM_coordinates.png)
+![alt tag](../docs/PSM_coordinates.png)
