@@ -4,8 +4,8 @@
 	<group ns="ias">
 	
   	
-			<node name="retractor" pkg="irob_autosurg" 
-			type="retractor" output="screen">
+			<node name="test_task" pkg="irob_task" 
+			type="test_task" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
 					

@@ -47,8 +47,9 @@
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>irob_utils</build_depend>
-  <build_depend>irob_vision_support</build_depend>
   <build_depend>irob_motion</build_depend>
+  <build_depend>irob_vision_support</build_depend>
+
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -60,9 +61,9 @@
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>irob_utils</run_depend>
-  <run_depend>irob_vision_support</run_depend>
   <run_depend>irob_motion</run_depend>
-
+  <run_depend>irob_vision_support</run_depend>
+	
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->

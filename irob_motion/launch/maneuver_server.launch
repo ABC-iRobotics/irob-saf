@@ -4,7 +4,7 @@
 	<group ns="ias">
 	
   	
-			<node name="maneuver_server" pkg="irob_autosurg" 
+			<node name="maneuver_server" pkg="irob_motion" 
 			type="maneuver_server" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>

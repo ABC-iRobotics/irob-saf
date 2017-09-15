@@ -9,7 +9,7 @@
 	
 	<arg name="frame_id" default="PSM1_psm_base_link"/>
   	
-	<node name="dummy_target_publisher" pkg="irob_autosurg" 
+	<node name="dummy_target_publisher" pkg="irob_vision_support" 
 			type="dummy_target_publisher" output="screen" >
   		
 				<param name="rate" type="double" value="$(arg rate)" />

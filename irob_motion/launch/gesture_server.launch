@@ -7,7 +7,7 @@
 		<arg name="rate" default="100"/>
 		
   	
-			<node name="gesture_server" pkg="irob_autosurg" 
+			<node name="gesture_server_$(arg arm_name)" pkg="irob_motion" 
 			type="gesture_server" output="screen">
   		
 				<param name="arm_name" 
@@ -26,6 +26,6 @@
 				
 				
 				
-	</node>
+			</node>
   	</group>
 </launch>

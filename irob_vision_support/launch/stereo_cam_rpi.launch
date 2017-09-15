@@ -5,7 +5,7 @@
 	
 		<!-- Republish raw -->
 		<include 
-			file="$(find irob_autosurg)/launch/camera/republish_stereo_raw.launch">
+			file="$(find irob_vision_support)/launch/camera/republish_stereo_raw.launch">
 			<arg name="left_in" 
 					value="/ias/stereo/left/raspicam/image"/> 
 			<arg name="right_in" 
@@ -21,7 +21,7 @@
 		
 		<!-- Start USB stereo cam pair -->
 		<include 
-			file="$(find irob_autosurg)/launch/camera/usb_cam_pair_driver.launch"
+			file="$(find irob_vision_support)/launch/camera/usb_cam_pair_driver.launch"
 			pass_all_args="true">
 			
 			<arg name="left" value="left" />
@@ -31,31 +31,31 @@
 			
 		<!-- Rotate images and camera_info -->
 		<include 
-		file="$(find irob_autosurg)/launch/camera/rotate_cam.launch">
+		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
 			
 			<arg name="angle" value="-90"/> 
 			<arg name="camera" value="left"/> 
 			<!-- Use separate calibration files for the cameras -->
 			<arg name="calibration" 
-			value="file://$(find irob_autosurg)/config/camera_info/camera_logitech_left.yaml"/> 
+			value="file://$(find irob_vision_support)/config/camera_info/camera_logitech_left.yaml"/> 
 				
 		</include> 	
 		
 		<include 
-		file="$(find irob_autosurg)/launch/camera/rotate_cam.launch">
+		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
 			
 			<arg name="angle" value="90"/> 
 			<arg name="camera" value="right"/> 
 			<!-- Use separate calibration files for the cameras -->
 			<arg name="calibration" 
-			value="file://$(find irob_autosurg)/config/camera_info/camera_logitech_right.yaml"/> 
+			value="file://$(find irob_vision_support)/config/camera_info/camera_logitech_right.yaml"/> 
 			
 		</include> 	
 		
 		
 		<!-- Rectification and disparity calculation -->
 		<include 
-			file="$(find irob_autosurg)/launch/camera/stereo_img_proc.launch"
+			file="$(find irob_vision_support)/launch/camera/stereo_img_proc.launch"
 			pass_all_args="true">
 			
 			<arg name="left" value="left/rotated" />
