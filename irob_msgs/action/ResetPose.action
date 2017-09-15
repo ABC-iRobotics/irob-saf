@@ -1,0 +1,10 @@
+# Define the goal
+bool move_allowed
+---
+# Define the result
+string descript
+string info
+---
+# Define a feedback message
+string status
+string info
