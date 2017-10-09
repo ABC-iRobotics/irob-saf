@@ -17,4 +17,4 @@ TODO
 
 # Usage
 TODO
-![alt tag](docs/irob-autosurg-blockdiagram.png)
+![alt tag](docs/irob-autosurg-blockdiagram_v3.png)
