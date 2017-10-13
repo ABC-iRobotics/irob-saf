@@ -13,16 +13,14 @@ namespace ias {
 
 RobotClient::RobotClient(ros::NodeHandle nh, std::string arm_name, double dt): 
 			nh(nh), arm_name(arm_name), dt(dt),
-			init_arm_ac("robot/"+arm_name+"/init_arm", true),
-			reset_pose_ac("robot/"+arm_name+"/reset_pose", true),
-			follow_tr_ac("robot/"+arm_name+"/follow_trajectory", true)
+			ac("robot/"+arm_name+"/robot_action", true)
 {
 
 	// Subscribe and advertise topics
 	
 	subscribeTopics();
     advertiseTopics();
-    waitForActionServers();
+    waitForActionServer();
 }
 
 RobotClient::~RobotClient()
@@ -58,13 +56,11 @@ void RobotClient::advertiseTopics()
                         1000);   
 }
 
-void RobotClient::waitForActionServers() 
+void RobotClient::waitForActionServer() 
 {
-	ROS_INFO_STREAM("Wating for action servers...");
-	init_arm_ac.waitForServer();
-	reset_pose_ac.waitForServer();
-    follow_tr_ac.waitForServer();
-    ROS_INFO_STREAM("Action servers started");
+	ROS_INFO_STREAM("Wating for action server...");
+	ac.waitForServer();
+    ROS_INFO_STREAM("Action server started");
 }
 
 
@@ -86,34 +82,34 @@ std::string RobotClient::getName()
    	
 
 // Robot motions
-void RobotClient::initArm(bool move_allowed, bool reset_pose)
+void RobotClient::initArm(bool move_allowed)
 {
     // Send a goal to the action
-  	irob_msgs::InitArmGoal goal;
+  	irob_msgs::RobotGoal goal;
+  	goal.action = irob_msgs::RobotGoal::INIT_ARM;
  
   	goal.move_allowed = move_allowed;
-  	init_arm_ac.sendGoal(goal);
-  
-  	// Throw exception if no result is received 
-  	if(!init_arm_ac.waitForResult(ros::Duration(30.0)))
-  		throw std::runtime_error("Arm initialization has timed out");
-  	
-  	// Pose reset
-  	if (reset_pose)
-  		resetPose(move_allowed);
+  	ac.sendGoal(goal);  	
 }
 
 void RobotClient::resetPose(bool move_allowed)
 {
 	// Send a goal to the action
-  	irob_msgs::ResetPoseGoal goal;
+  	irob_msgs::RobotGoal goal;
+  	goal.action = irob_msgs::RobotGoal::RESET_POSE;
  
   	goal.move_allowed = move_allowed;
-  	reset_pose_ac.sendGoal(goal);
-  
-  	// Throw exception if no result is received 
-  	if(!reset_pose_ac.waitForResult(ros::Duration(30.0)))
-  		throw std::runtime_error("Arm pose reset has timed out");
+  	ac.sendGoal(goal);
+}
+
+void RobotClient::stop()
+{
+	// Send a goal to the action
+  	irob_msgs::RobotGoal goal;
+  	goal.action = irob_msgs::RobotGoal::STOP;
+ 
+  	goal.move_allowed = false;
+  	ac.sendGoal(goal);
 }
 
 /**
@@ -122,7 +118,7 @@ void RobotClient::resetPose(bool move_allowed)
  * @param angle angle of jaws in deg
  * @param speed opening speed in deg/s
  */	
-void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
+void RobotClient::moveJaws(double angle, double speed /*=10.0*/)
 {
 	Pose p1 = getPoseCurrent();
 	
@@ -138,21 +134,32 @@ void RobotClient::moveGripper(double angle, double speed /*=10.0*/)
    						p2,
    						speed_rad, speed_rad * 10.0, dt);					
    						
-   	irob_msgs::FollowTrajectoryGoal goal;
+   	irob_msgs::RobotGoal goal;
+  	goal.action = irob_msgs::RobotGoal::FOLLOW_TRAJECTORY;
+  	goal.move_allowed = true;
+  	
    	tr.copyToRosTrajectory(goal.trajectory);
    	
-  	follow_tr_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in followTrajectoryDoneCB
+  	// in actionDoneCB
 }
 
-void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
+/**
+ * 
+ */
+void RobotClient::moveTool(Pose target, double speed /* = 10.0 */,
 			std::vector<Pose> waypoints /* = empty vector */, 
 			InterpolationMethod interp_method /* = LINEAR */)
 {
 	Pose p1 = getPoseCurrent();
 	Trajectory<Pose> tr;
+	
+	// Jaw cannot be changed!
+	target.jaw = p1.jaw;
+	for (Pose p : waypoints)
+		p.jaw = p1.jaw;
 	
 	if (waypoints.empty()) {
 	// Go straight to target
@@ -179,22 +186,17 @@ void RobotClient::goTo(Pose target, double speed /* = 10.0 */,
 			"Trajectory through waypoints is not implemented yet");	
 	}
 	
-	irob_msgs::FollowTrajectoryGoal goal;
+	irob_msgs::RobotGoal goal;
+  	goal.action = irob_msgs::RobotGoal::FOLLOW_TRAJECTORY;
+  	goal.move_allowed = true;
    	tr.copyToRosTrajectory(goal.trajectory);
-  	follow_tr_ac.sendGoal(goal);
+  	ac.sendGoal(goal);
 
-}
-
-void RobotClient::moveRelative(Pose p, double speed, CoordFrame cf)
-{
-	// TODO
-	throw std::runtime_error(
-			"Relative movement by Pose is not implemented yet");	
 }
 
 /**
  * Move relative in TCPF or WCS
- */
+ 
 void RobotClient::moveRelative(Eigen::Vector3d v,  double speed, CoordFrame cf)
 {
 	Pose p1 = getPoseCurrent();
@@ -234,20 +236,11 @@ void RobotClient::moveRelative(Eigen::Quaternion<double> q,
 	throw std::runtime_error(
 			"Tool rotation is not implemented yet");	
 }
+*/
 
-bool RobotClient::isFollowTrajectoryDone()
+bool RobotClient::isActionDone()
 {
-	return follow_tr_ac.isDone();
-}
-
-bool RobotClient::isInitArmDone()
-{
-	return init_arm_ac.isDone();
-}
-
-bool RobotClient::isResetPoseDone()
-{
-	return reset_pose_ac.isDone();
+	return ac.isDone();
 }
 
 

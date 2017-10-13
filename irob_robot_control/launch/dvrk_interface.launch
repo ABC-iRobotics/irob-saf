@@ -1,4 +1,4 @@
-<!-- Launch file to move on a preprogrammed trajectory -->
+<!-- Launch the irob dVRK intermediate robot controller-->
 
 <launch>
 	<group ns="ias">
@@ -7,13 +7,13 @@
   		<arg name="arm_typ" default="PSM1"/>
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
-		default="$(find irob_robot_interface)/config/registration_identity.cfg"/>
+		default="$(find irob_robot_control)/config/registration_identity.cfg"/>
 	
 			<include 
-			file="$(find irob_robot_interface)/config/dvrk_topic_names.xml" /> 
+			file="$(find irob_robot_control)/config/dvrk_topic_names.xml" /> 
   	
-			<node name="dvrk_interface_$(arg arm_typ)" pkg="irob_robot_interface" 
-			type="irob_dvrk_interface" output="screen">
+			<node name="irob_dvrk_$(arg arm_typ)" pkg="irob_robot_control" 
+			type="irob_dvrk_controller" output="screen">
   		
   				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
 				<param name="arm_name" type="string" value="$(arg arm_name)" />

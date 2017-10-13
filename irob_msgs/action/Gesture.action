@@ -1,10 +1,14 @@
 # Define the goal
 # Action types
-int8 GO_TO=1
-int8 TOOL_CLOSE=2
-int8 TOOL_OPEN=3
-int8 IN_TCP_FORWARD=4
-int8 IN_TCP_BACKWARD=5
+int8 STOP=1
+int8 GO_TO=2
+int8 GRASP=3
+int8 CUT=4
+int8 RELESE=5
+int8 OPEN_JAWS=6
+int8 APPROACH=7
+int8 LEAVE=8
+
 
 int8 action
 
@@ -13,7 +17,7 @@ ToolPose target
 ToolPose[] waypoints
 
 float64 speed
-float64 distance
+geometry_msgs/Point movement
 float64 angle
 
 int8 INTERPOLATION_LINEAR=1

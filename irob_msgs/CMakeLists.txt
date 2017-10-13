@@ -67,12 +67,8 @@ find_package(catkin REQUIRED
  	action
    	FILES
    	
-   	FollowTrajectory.action
-   	InitArm.action
-   	ResetPose.action
-   	
+   	Robot.action
    	Gesture.action
-   	
 	Maneuver.action
  )
 

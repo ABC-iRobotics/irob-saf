@@ -87,12 +87,25 @@ std::string GestureClient::getName()
 
 // Robot motions
 
-void GestureClient::toolClose(double angle, double speed /* = 10.0 */)
+void GestureClient::stop()
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::TOOL_CLOSE;
+ 	goal.action = irob_msgs::GestureGoal::STOP;
+  	
+  	ac.sendGoal(goal);
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in gestureDoneCB
+}
+
+void GestureClient::grasp(double angle, double speed /* = 10.0 */)
+{
+    // Send a goal to the action
+  	irob_msgs::GestureGoal goal;
+ 
+ 	goal.action = irob_msgs::GestureGoal::GRASP;
  	
   	goal.angle = angle;
   	goal.speed = speed;
@@ -103,13 +116,14 @@ void GestureClient::toolClose(double angle, double speed /* = 10.0 */)
   	// in gestureDoneCB
 }
 
-void GestureClient::toolOpen(double angle, double speed /* = 10.0 */)
+
+void GestureClient::cut(double angle, double speed /* = 10.0 */)
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::TOOL_OPEN;
- 
+ 	goal.action = irob_msgs::GestureGoal::CUT;
+ 	
   	goal.angle = angle;
   	goal.speed = speed;
   	
@@ -120,14 +134,48 @@ void GestureClient::toolOpen(double angle, double speed /* = 10.0 */)
 }
 
 
-void GestureClient::inTCPforward(double distance, double speed /*=10.0*/)
+void GestureClient::release(double angle, double speed /* = 10.0 */)
+{
+    // Send a goal to the action
+  	irob_msgs::GestureGoal goal;
+ 
+ 	goal.action = irob_msgs::GestureGoal::RELEASE;
+ 	
+  	goal.angle = angle;
+  	goal.speed = speed;
+  	
+  	ac.sendGoal(goal);
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in gestureDoneCB
+}
+
+
+void GestureClient::openJaws(double angle, double speed /* = 10.0 */)
+{
+    // Send a goal to the action
+  	irob_msgs::GestureGoal goal;
+ 
+ 	goal.action = irob_msgs::GestureGoal::OPEN_JAWS;
+ 	
+  	goal.angle = angle;
+  	goal.speed = speed;
+  	
+  	ac.sendGoal(goal);
+  	
+  	// Not waiting for action finish here, a notification will be received
+  	// in gestureDoneCB
+}
+
+
+void GestureClient::approach(Eigen::Vector3d movement, double speed /*=10.0*/)
 {
 	// Send a goal to the action
 	irob_msgs::GestureGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::IN_TCP_FORWARD;
+ 	goal.action = irob_msgs::GestureGoal::APPROACH;
  
-  	goal.distance = distance;
+  	goal.movement = movement;
   	goal.speed = speed;
    	
   	ac.sendGoal(goal);
@@ -136,14 +184,15 @@ void GestureClient::inTCPforward(double distance, double speed /*=10.0*/)
   	// in gestureDoneCB
 }
 
-void GestureClient::inTCPbackward(double distance, double speed /*=10.0*/)
+
+void GestureClient::leave(Eigen::Vector3d movement, double speed /*=10.0*/)
 {
 	// Send a goal to the action
 	irob_msgs::GestureGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::IN_TCP_BACKWARD;
+ 	goal.action = irob_msgs::GestureGoal::LEAVE;
  
-  	goal.distance = distance;
+  	goal.movement = movement;
   	goal.speed = speed;
    	
   	ac.sendGoal(goal);
@@ -151,6 +200,7 @@ void GestureClient::inTCPbackward(double distance, double speed /*=10.0*/)
   	// Not waiting for action finish here, a notification will be received
   	// in gestureDoneCB
 }
+
 
 void GestureClient::goTo(Pose target, double speed /* = 10.0 */,
 			std::vector<Pose> waypoints /* = empty vector */, 

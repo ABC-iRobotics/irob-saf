@@ -36,9 +36,7 @@
 
 #include <irob_msgs/ToolPoseStamped.h>
 
-#include <irob_msgs/InitArmAction.h>
-#include <irob_msgs/ResetPoseAction.h>
-#include <irob_msgs/FollowTrajectoryAction.h>
+#include <irob_msgs/RobotAction.h>
 
 namespace ias {
 
@@ -56,12 +54,7 @@ private:
     double dt;
     
     // Action clients
-    IrobActionClient<irob_msgs::InitArmAction> 
-    									init_arm_ac;
-    IrobActionClient<irob_msgs::ResetPoseAction>
-    									reset_pose_ac;
-   	IrobActionClient<irob_msgs::FollowTrajectoryAction> 
-   										follow_tr_ac;
+    IrobActionClient<irob_msgs::RobotAction> ac;
    
 
     // States
@@ -77,8 +70,7 @@ private:
    	
     void subscribeTopics();
     void advertiseTopics();
-    void startActionClients();
-    void waitForActionServers();
+    void waitForActionServer();
     
 
 public:
@@ -94,19 +86,16 @@ public:
    	std::string getName();
    	
    	// Robot motions
-   	void initArm(bool, bool);	
+   	void initArm(bool);	
    	void resetPose(bool);
-	void moveGripper(double, double = 10.0);
-	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
+	void moveJaws(double, double = 10.0);
+	void moveTool(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
-	void moveRelative(Pose, double, CoordFrame);
-	void moveRelative(Eigen::Vector3d, double, CoordFrame);
-	void moveRelative(Eigen::Quaternion<double>, double, CoordFrame);
+	
+	void stop();
 	
 	
-	bool isFollowTrajectoryDone();
-	bool isInitArmDone();
-	bool isResetPoseDone();
+	bool isActionDone();
 	
 };
 

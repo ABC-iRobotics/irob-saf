@@ -19,7 +19,7 @@ find_package(catkin REQUIRED
                         actionlib
 						irob_msgs
 						irob_utils
-						irob_robot_interface
+						irob_robot_control
                         )
 
 

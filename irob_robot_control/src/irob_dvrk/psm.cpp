@@ -35,7 +35,7 @@ PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name,
    	advertiseTopics();
 }
 
-void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
+void PSM::initArm(bool move_allowed)
 {	
 	typedef enum init_action_type 
     	{CARTESIAN, JOINT, INSERT} 
@@ -51,8 +51,8 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
     int i = 0;
     Trajectory<double> insert_tr;
     
-    irob_msgs::InitArmFeedback feedback;
-    irob_msgs::InitArmResult result;
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
 
 
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
@@ -62,11 +62,11 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (init_as.isPreemptRequested() || !ros::ok())
+      	if (as.isPreemptRequested() || !ros::ok())
       	{
         	ROS_INFO_STREAM("InitArm: Preempted");
         	// Set the action state to preempted
-        	init_as.setPreempted();
+        	as.setPreempted();
         	success = false;
         	break;
       	}
@@ -75,16 +75,12 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
 			switch (to_do)
 			{
       			case CARTESIAN:
-      				feedback.status = "setting_cartesian";
-					feedback.info = arm_typ.name 
-						+ " attempting to start cartesian mode";
+      				feedback.info = "setting_cartesian";
       				success = setRobotState(STATE_POSITION_CARTESIAN);
       				break;
       				
       			case JOINT:
-      				feedback.status = "setting_joint";
-					feedback.info = arm_typ.name 
-						+ " attempting to start joint mode";
+      				feedback.info = "setting_joint";
       				in_joint_state = setRobotState(STATE_POSITION_JOINT);
       				if (!in_joint_state) {
       					to_do = JOINT;
@@ -102,9 +98,8 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
       				break;
  
       			case INSERT:
-      				feedback.status = "inserting_tool";
-					feedback.info = arm_typ.name 
-						+ " moving tool past the cannula";
+      				
+      				feedback.info = "inserting_tool";
       				moveJointAbsolute(INSERTION_JOINT_IDX, 
       								insert_tr[i], insert_tr.dt); 
       				i++;
@@ -124,7 +119,7 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
         	// then push tool in
         	if (found!=std::string::npos) 
         	{
-        		if (goal->move_allowed)
+        		if (move_allowed)
         		{
         			
         			to_do = JOINT;
@@ -136,6 +131,10 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
         			ROS_ERROR_STREAM(e.what());
         			ROS_ERROR_STREAM("Cannot move tool past the cannula," 
         							<<" tool movement is not allowed");
+        			result.pose = getPoseCurrent().toRosToolPose();
+      				result.info = "cannot enable cartesian,movement not allowed";
+      				// set the action state to succeeded
+      				as.setAborted(result);
         			success = false;
         			break;
         		}
@@ -148,7 +147,7 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
         	}
 		}
 		
-		init_as.publishFeedback(feedback);
+		as.publishFeedback(feedback);
 		if (to_do != INSERT)
       		loop_rate.sleep();
       	else
@@ -157,46 +156,47 @@ void PSM::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
 
     if(success)
     {
-      	result.descript = robot_state.data;
       	ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-		result.info = arm_typ.name + " initilaization succeeded";
+		result.info ="initilaization succeeded";
       	// set the action state to succeeded
-      	init_as.setSucceeded(result);
+      	as.setSucceeded(result);
     }
 }
 
 
-void PSM::resetPoseActionCB(const irob_msgs::ResetPoseGoalConstPtr &goal)
+void PSM::resetPose(bool move_allowed)
 {
     // helper variables
     bool success = false;
     
-    irob_msgs::ResetPoseFeedback feedback;
-    irob_msgs::ResetPoseResult result;
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
 
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " pose reset");
   
     	// Check that preempt has not been requested by the client
-    if (reset_pose_as.isPreemptRequested() || !ros::ok())
+    if (as.isPreemptRequested() || !ros::ok())
     {
         ROS_INFO_STREAM(arm_typ.name << " pose reset: Preempted");
         // Set the action state to preempted
-        reset_pose_as.setPreempted();
+        as.setPreempted();
         success = false;
     }
   	
   	ROS_INFO_STREAM(arm_typ.name << " pose reset not implemented");
   	success = true;	
   	// Send some feedback
-  	feedback.status = "done";
-    reset_pose_as.publishFeedback(feedback);
+  	feedback.info = "done";
+  	result.pose = getPoseCurrent().toRosToolPose();
+    as.publishFeedback(feedback);
 
     if(success)
     {
-      result.descript = "done";
+      result.info = "done";
+      result.pose = getPoseCurrent().toRosToolPose();
       ROS_INFO_STREAM(arm_typ.name << " pose reset succeded");
       // set the action state to succeeded
-      reset_pose_as.setSucceeded(result);
+      as.setSucceeded(result);
     }
 }
 
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
 {
 	
 	// Initialize ros node
-    ros::init(argc, argv, "dvrk_interface");
+    ros::init(argc, argv, "dvrk_il");
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
     

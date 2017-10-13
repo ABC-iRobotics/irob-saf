@@ -30,19 +30,15 @@ const std::string Arm::STATE_POSITION_CARTESIAN
 Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
 									std::string regfile, bool isActive): 
 			nh(nh), arm_typ(arm_typ), arm_name(arm_name),
-			init_as(nh, "robot/"+arm_name+"/init_arm", boost::bind(
-				&Arm::initArmActionCB, this, _1), false),
-			reset_pose_as(nh, "robot/"+arm_name+"/reset_pose", boost::bind(
-				&Arm::resetPoseActionCB, this, _1), false),
-			follow_tr_as(nh, "robot/"+arm_name+"/follow_trajectory",boost::bind(
-				&Arm::followTrajectoryActionCB, this, _1), false)
+			as(nh, "robot/"+arm_name+"/robot_action", boost::bind(
+				&Arm::robotActionCB, this, _1), false)
 {
 	loadRegistration(regfile);
 	// Subscribe and advertise topics
 	subscribeTopics();
     if (isActive == ACTIVE)
     	advertiseTopics();
-    startActionServers();
+    startActionServer();
 }
 
 Arm::~Arm()
@@ -53,14 +49,54 @@ Arm::~Arm()
 /*
  * Callbacks
  */
-void Arm::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
+void Arm::robotActionCB(const irob_msgs::RobotGoalConstPtr &goal)
+{
+    switch(goal -> action)
+    {
+    	case irob_msgs::RobotGoal::STOP:
+    	{
+    		stop();
+    		break;
+    	}	
+    		
+    	case  irob_msgs::RobotGoal::INIT_ARM:
+    	{
+    		initArm(goal -> move_allowed);
+    		break;
+    	}
+    	
+    	case  irob_msgs::RobotGoal::RESET_POSE:
+    	{
+    		resetPose(goal -> move_allowed);
+    		break;
+    	}	
+    		
+    	case  irob_msgs::RobotGoal::FOLLOW_TRAJECTORY:
+    	{
+    		followTrajectory(goal->trajectory);
+    		break;
+    	}
+    	default:
+    	{
+    		ROS_ERROR_STREAM(arm_name  << 
+    					": invalid robot action code received");
+    		irob_msgs::RobotResult result;
+    		result.pose = getPoseCurrent().toRosToolPose();
+			result.info = "invalid robot action code";
+      		as.setAborted(result);
+    		break;
+    	}    	
+    }	
+}
+ 
+void Arm::initArm(bool move_allowed)
 {
     // helper variables
     ros::Rate loop_rate(2);
     bool success = false;
 
-    irob_msgs::InitArmFeedback feedback;
-    irob_msgs::InitArmResult result;
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
 
 
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization");
@@ -69,11 +105,11 @@ void Arm::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (init_as.isPreemptRequested() || !ros::ok())
+      	if (as.isPreemptRequested() || !ros::ok())
       	{
         	ROS_INFO_STREAM(arm_typ.name << " initilaization: Preempted");
         	// Set the action state to preempted
-        	init_as.setPreempted();
+        	as.setPreempted();
         	success = false;
         	break;
       	}
@@ -86,71 +122,99 @@ void Arm::initArmActionCB(const irob_msgs::InitArmGoalConstPtr &goal)
         } 
   		
   		// Send some feedback
-  		feedback.status = "setting_cartesian";
-		feedback.info = arm_typ.name + " attempting to start cartesian mode";
-      	init_as.publishFeedback(feedback);
+		feedback.info = "setting cartesian";
+		feedback.pose = getPoseCurrent().toRosToolPose();
+      	as.publishFeedback(feedback);
       	// this sleep is not necessary
       	loop_rate.sleep();
     }
 
     if(success)
     {
-      	result.descript = robot_state.data;
-      	ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-		result.info = arm_typ.name + " initilaization succeeded";
+		result.info = "initilaization succeeded";
+		result.pose = getPoseCurrent().toRosToolPose();
       	// set the action state to succeeded
-      	init_as.setSucceeded(result);
+      	as.setSucceeded(result);
     }
 }
   
-void Arm::resetPoseActionCB(const irob_msgs::ResetPoseGoalConstPtr &goal)
+void Arm::resetPose(bool move_allowed)
 {
     // helper variables
     bool success = false;
     
-    irob_msgs::ResetPoseFeedback feedback;
-    irob_msgs::ResetPoseResult result;
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
 
 	ROS_INFO_STREAM("Starting " << arm_typ.name << " pose reset");
   
     	// Check that preempt has not been requested by the client
-    if (reset_pose_as.isPreemptRequested() || !ros::ok())
+    if (as.isPreemptRequested() || !ros::ok())
     {
         ROS_INFO_STREAM(arm_typ.name << " pose reset: Preempted");
         // Set the action state to preempted
-        reset_pose_as.setPreempted();
+        as.setPreempted();
         success = false;
     }
   	
   	ROS_INFO_STREAM(arm_typ.name << " pose reset not implemented");
   	success = true;	
   	// Send some feedback
-  	feedback.status = "done";
-    reset_pose_as.publishFeedback(feedback);
+  	feedback.info = "done";
+  	feedback.pose = getPoseCurrent().toRosToolPose();
+    as.publishFeedback(feedback);
 
     if(success)
     {
-      result.descript = "done";
+      result.info = "done";
+      result.pose = getPoseCurrent().toRosToolPose();
       ROS_INFO_STREAM(arm_typ.name << " pose reset succeeded");
       // set the action state to succeeded
-      reset_pose_as.setSucceeded(result);
+      as.setSucceeded(result);
+    }
+}
+
+void Arm::stop()
+{
+     // helper variables
+    bool success = false;
+    
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
+
+	ROS_INFO_STREAM("Stopping " << arm_typ.name);
+  
+   	// Do not check that preempt has not been requested by the client
+  	
+  	success = true;	
+  	// Send some feedback
+  	feedback.info = "stopped";
+  	feedback.pose = getPoseCurrent().toRosToolPose();
+    as.publishFeedback(feedback);
+
+    if(success)
+    {
+      result.info = "stopped";
+      result.pose = getPoseCurrent().toRosToolPose();
+      ROS_INFO_STREAM(arm_typ.name << " stopped");
+      // set the action state to succeeded
+      as.setSucceeded(result);
     }
 }
   
   
-void Arm::followTrajectoryActionCB(
-		const irob_msgs::FollowTrajectoryGoalConstPtr &goal)
+  
+void Arm::followTrajectory(Trajectory<Pose> tr)
   {
     // helper variables
     bool success = true;
-    irob_msgs::FollowTrajectoryFeedback feedback;
-    irob_msgs::FollowTrajectoryResult result;
+    irob_msgs::RobotFeedback feedback;
+    irob_msgs::RobotResult result;
 
 	ROS_INFO_STREAM("Starting trajectory follow action.");
 	
 	// Go to m-s from mm-s here
 	// Hande-eye calibration
-	Trajectory<Pose> tr(goal->trajectory);
 	tr.invTransform(R, t, 1000.0);
 	
 	
@@ -159,27 +223,40 @@ void Arm::followTrajectoryActionCB(
 	for (int i = 0; i < tr.size(); i++)
 	{
 		// check that preempt has not been requested by the client
-      	if (follow_tr_as.isPreemptRequested() || !ros::ok())
+      	if (as.isPreemptRequested() || !ros::ok())
       	{
         	ROS_INFO_STREAM("Follow trajectory: Preempted");
        	 	// set the action state to preempted
-        	follow_tr_as.setPreempted();
+        	as.setPreempted();
         	success = false;
         	break;
       	}
-		moveCartesianAbsolute(tr[i],tr.dt);
-		feedback.pose = tr[i].toRosToolPose();
-      	follow_tr_as.publishFeedback(feedback);
-		
+      	try {
+			moveCartesianAbsolute(tr[i],tr.dt);
+			feedback.info = "following trajectory, index: " + i;
+			feedback.pose = tr[i].toRosToolPose();
+      		as.publishFeedback(feedback);
+      	}catch (std::runtime_error e)
+  		{
+  			result.pose = getPoseCurrent().toRosToolPose();
+      		result.info = e.what();
+      		ROS_ERROR_STREAM(arm_typ.name << ": an error occured: " << e.what());
+      		// set the action state to succeeded
+      		as.setAborted(result);
+  			success = false;
+        	break;
+  		}
+  		
 		loop_rate.sleep();
 	}
 	
     if(success)
     {
       result.pose = getPoseCurrent().toRosToolPose();
+      result.info = "done";
       ROS_INFO_STREAM("Follow trajectory: Succeeded");
       // set the action state to succeeded
-      follow_tr_as.setSucceeded(result);
+      as.setSucceeded(result);
     }
   }
 
@@ -288,12 +365,9 @@ void Arm::advertiseTopics()
                         1000); 
 }
 
-void Arm::startActionServers() 
+void Arm::startActionServer() 
 {
-
-	init_as.start();
-	reset_pose_as.start();
-    follow_tr_as.start();
+	as.start();
 }
 
 

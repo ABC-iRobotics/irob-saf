@@ -5,7 +5,7 @@
  *	Created on: 2017-07-18
  *	
  *	Separated ROS node to support preempted actions.
- *	close gripper, penetrate, goto
+ *	grasp, release, cut, go_to, approach, leave...
  */
 
 #ifndef GESTURE_SERVER_HPP_
@@ -59,16 +59,21 @@ public:
     void gestureActionCB(
     		const irob_msgs::GestureGoalConstPtr &);
    
-   	void toolClose(double, double); 	
-    		
-   	void toolOpen(double, double);
-    		
-   	void inTCPforward(double, double);
+   	void grasp(double, double); 	
    	
-    void inTCPbackward(double, double);
+   	void cut(double, double); 
+    		
+   	void release(double, double);
+   	
+   	void openJaws(double, double);
+    		
+   	void approach(double, double);
+   	
+    void leave(double, double);
     		
    	void goTo(Pose, double,	std::vector<Pose>, InterpolationMethod);
     
+    void stop(); 
 
    	Pose getPoseCurrent();
    	std::string getArmName();	

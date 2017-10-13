@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>irob_robot_interface</name>
+  <name>irob_robot_control</name>
   <version>0.0.1</version>
   <description>IROB Automatic Surgeon System</description>
 

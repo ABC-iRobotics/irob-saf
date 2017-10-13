@@ -29,9 +29,7 @@
 #include <irob_utils/topic_name_loader.hpp>
 #include <actionlib/server/simple_action_server.h>
 #include <irob_msgs/ToolPoseStamped.h>
-#include <irob_msgs/InitArmAction.h>
-#include <irob_msgs/ResetPoseAction.h>
-#include <irob_msgs/FollowTrajectoryAction.h>
+#include <irob_msgs/RobotAction.h>
 
 namespace ias {
 
@@ -54,13 +52,8 @@ protected:
     ros::NodeHandle nh;
     
     // Action servers
-    actionlib::SimpleActionServer<irob_msgs::InitArmAction>
-    	 init_as;
-   	actionlib::SimpleActionServer<irob_msgs::ResetPoseAction>
-    	 reset_pose_as;
-    actionlib::SimpleActionServer<irob_msgs::FollowTrajectoryAction>
-    	 follow_tr_as;
-   	
+    actionlib::SimpleActionServer<irob_msgs::RobotAction> as;
+    	 
     // Hand-eye registration
     Eigen::Vector3d t;
     Eigen::Matrix3d R;
@@ -89,17 +82,18 @@ protected:
     
     void subscribeTopics();
     void advertiseTopics();
-    void startActionServers();
+    void startActionServer();
 
 public:
 	Arm(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
 	~Arm();
 
     // Callbacks
-    virtual void initArmActionCB(const irob_msgs::InitArmGoalConstPtr &);
-    virtual void resetPoseActionCB(const irob_msgs::ResetPoseGoalConstPtr &);
-    void followTrajectoryActionCB(
-    		const irob_msgs::FollowTrajectoryGoalConstPtr &);
+    virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr &);
+    virtual void initArm(bool);
+    virtual void resetPose(bool);
+    virtual void stop();
+    virtual void followTrajectory(Trajectory<Pose>);
     
     void robotStateCB(const std_msgs::String);
     void errorCB(const std_msgs::String);

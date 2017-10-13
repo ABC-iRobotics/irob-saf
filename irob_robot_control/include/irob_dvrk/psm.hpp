@@ -49,8 +49,8 @@ public:
     PSM(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
 	~PSM();	
 
-	void initArmActionCB(const irob_msgs::InitArmGoalConstPtr &);
-    void resetPoseActionCB(const irob_msgs::ResetPoseGoalConstPtr &);
+	void initArm(bool);
+    void resetPose(bool);
 
 	void positionCartesianCurrentCB(
 				const geometry_msgs::PoseStampedConstPtr&) ;    

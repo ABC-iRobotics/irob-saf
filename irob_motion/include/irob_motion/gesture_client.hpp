@@ -77,11 +77,14 @@ public:
    	Pose getPoseCurrent();
    	std::string getName();
    	
-   		// Robot motions
-   	void toolClose(double, double = 10.0);	
-   	void toolOpen(double, double = 10.0);
-	void inTCPforward(double, double = 10.0);
-	void inTCPbackward(double, double = 10.0);
+   	// Robot motions
+   	void stop();	
+   	void grasp(double, double = 10.0);	
+   	void cut(double, double = 10.0);
+   	void release(double, double = 10.0);
+   	void openJaws(double, double = 10.0);
+	void approach(Eigen::Vector3d, double = 10.0);
+	void leave(Eigen::Vector3d, double = 10.0);
 	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
 			InterpolationMethod = LINEAR);
 			

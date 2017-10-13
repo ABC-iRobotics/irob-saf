@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_robot_interface)
+project(irob_robot_control)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -143,7 +143,7 @@ set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(irob_dvrk_interface 
+add_executable(irob_dvrk_controller 
 				src/irob_dvrk/psm.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -167,7 +167,7 @@ add_executable(irob_dvrk_interface
  )
  
  
- target_link_libraries(irob_dvrk_interface
+ target_link_libraries(irob_dvrk_controller
    ${catkin_LIBRARIES}
    irob_dvrk_lib
  )
