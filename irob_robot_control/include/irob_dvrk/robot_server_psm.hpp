@@ -1,13 +1,13 @@
 /*
- * 	psm.hpp
+ * 	robot_server_psm.hpp
  *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2016-11-17
+ *	Created on: 2016-11-07
  *
  */
 
-#ifndef DVRK_PSM_HPP_
-#define DVRK_PSM_HPP_
+#ifndef ROBOT_SERVER_PSM_HPP_
+#define ROBOT_SERVER_PSM_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -22,7 +22,7 @@
 #include <Eigen/Geometry> 
 #include <cmath>
 #include <irob_utils/utils.hpp>
-#include <irob_dvrk/arm.hpp>
+#include <irob_dvrk/robot_server_dvrk.hpp>
 #include <irob_dvrk/arm_types.hpp>
 #include <irob_utils/topic_name_loader.hpp>
 #include <irob_utils/pose.hpp>
@@ -30,7 +30,7 @@
 
 namespace ias {
 
-class PSM: public Arm {
+class RobotServerPSM: public RobotServerDVRK {
 
 
 private:       
@@ -43,11 +43,11 @@ private:
 
     // Publishers
     ros::Publisher position_jaw_pub;
-    void advertiseTopics();
+    void advertiseLowLevelTopics();
 
 public:
-    PSM(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
-	~PSM();	
+    RobotServerPSM(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
+	~RobotServerPSM();	
 
 	void initArm(bool);
     void resetPose(bool);
@@ -64,4 +64,4 @@ public:
 };
 
 }
-#endif /* DVRK_PSM_HPP_ */
+#endif /* ROBOT_SERVER_PSM_HPP_ */

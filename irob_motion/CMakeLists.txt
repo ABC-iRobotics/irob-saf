@@ -134,11 +134,6 @@ set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(gesture_server src/gesture_server.cpp)
-add_executable(maneuver_server src/maneuver_server.cpp)
-
-
-add_executable(test_maneuver src/test_maneuver.cpp)
-
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -160,20 +155,7 @@ add_executable(test_maneuver src/test_maneuver.cpp)
  target_link_libraries(gesture_server
    ${catkin_LIBRARIES}
    irob_motion_lib
- )
- 
-  target_link_libraries(maneuver_server
-   ${catkin_LIBRARIES}
-   irob_motion_lib
- )
- 
-  target_link_libraries(test_maneuver
-   ${catkin_LIBRARIES}
-   irob_motion_lib
- )
- 
-
- 
+ ) 
 
 
 #############

@@ -40,6 +40,10 @@ namespace ias {
 
 class GestureClient {
 
+public:
+	static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
+	static const double DEFAULT_SPEED_JAW;		// deg/s
+
 protected:
 	const std::string arm_name;
     ros::NodeHandle nh;
@@ -79,16 +83,50 @@ public:
    	
    	// Robot motions
    	void stop();	
-   	void grasp(double, double = 10.0);	
-   	void cut(double, double = 10.0);
-   	void release(double, double = 10.0);
-   	void openJaws(double, double = 10.0);
-	void approach(Eigen::Vector3d, double = 10.0);
-	void leave(Eigen::Vector3d, double = 10.0);
-	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
-			InterpolationMethod = LINEAR);
+   	void standby(Pose, std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR,
+   					double = DEFAULT_SPEED_CARTESIAN);
+   	void grasp(Pose, Pose, double, double,	
+   					std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR,
+					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW);
+   	void cut(Pose, Pose,double, double,
+					std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR,
+					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW);
+   	void release(Pose,	double, 
+   					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW);
+	void place(Pose, Pose,
+				std::vector<Pose> = std::vector<Pose>(),
+   				InterpolationMethod = InterpolationMethod::LINEAR,
+				double = DEFAULT_SPEED_CARTESIAN);
+	void push(Pose, Pose, 
+				Eigen::Vector3d,
+				double,
+				std::vector<Pose> = std::vector<Pose>(),
+   				InterpolationMethod = InterpolationMethod::LINEAR,
+				double = DEFAULT_SPEED_CARTESIAN,
+				double = DEFAULT_SPEED_JAW);
+	void dissect(Pose, Pose, 
+			Eigen::Vector3d,
+			double, double,
+			std::vector<Pose> = std::vector<Pose>(),
+   			InterpolationMethod = InterpolationMethod::LINEAR,
+			double = DEFAULT_SPEED_CARTESIAN,
+			double = DEFAULT_SPEED_JAW);
 			
-	bool isGestureDone();
+	void manipulate(Eigen::Vector3d,
+			double = DEFAULT_SPEED_CARTESIAN);
+			
+	bool isGestureDone(bool = true);
+	actionlib::SimpleClientGoalState getState();
+	
+	irob_msgs::GestureFeedback getFeedback(bool = true);
+	irob_msgs::GestureResult getResult(bool = true);
+
 	
 };
 

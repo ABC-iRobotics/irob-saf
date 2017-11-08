@@ -238,11 +238,25 @@ void RobotClient::moveRelative(Eigen::Quaternion<double> q,
 }
 */
 
-bool RobotClient::isActionDone()
+bool RobotClient::isActionDone(bool spin /* = true */)
 {
-	return ac.isDone();
+	return ac.isDone(spin);
 }
 
+actionlib::SimpleClientGoalState RobotClient::getState()
+{
+	return ac.getState();
+}
+
+irob_msgs::RobotFeedback RobotClient::getFeedback(bool spin /* = true */)
+{
+	return ac.getFeedback(spin);
+}
+
+irob_msgs::RobotResult RobotClient::getResult(bool spin /* = true */)
+{
+	return ac.getResult(spin);
+}
 
 
 

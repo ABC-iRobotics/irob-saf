@@ -2,13 +2,16 @@
  *  gesture_server.cpp
  *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-07-18
+ *	Created on: 2017-11-06
  *  
  */
 
 #include <irob_motion/gesture_server.hpp>
 
 namespace ias {
+
+
+const double GestureServer::DEFAULT_LOOP_RATE = 50.0;				// Hz
 
 
 GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name, 
@@ -34,550 +37,626 @@ GestureServer::~GestureServer()
  */
 void GestureServer::gestureActionCB(
 				const irob_msgs::GestureGoalConstPtr &goal)
-{
-    switch(goal -> action)
-    {
-    	case irob_msgs::GestureGoal::GO_TO:
-    	{
-    		std::vector<Pose> waypoints;
-			for (irob_msgs::ToolPose p : goal->waypoints)
-				waypoints.push_back(Pose(p));
-			InterpolationMethod	interp_method;
-			if (goal -> interpolation == goal -> INTERPOLATION_LINEAR)
-				interp_method = InterpolationMethod::LINEAR;
-			else
-				interp_method = InterpolationMethod::BEZIER;
+{	
+	// Extract data from msg
+	InterpolationMethod	interp_method;
+	if (goal -> interpolation == goal -> INTERPOLATION_BEZIER)
+		interp_method = InterpolationMethod::BEZIER;
+	else
+		interp_method = InterpolationMethod::LINEAR;
+	
+	Pose target(goal -> target, 0.0);
+	Pose approach_pose(goal -> approach_pose, 0.0);
+	std::vector<Pose> waypoints;
+			for (geometry_msgs::Pose p : goal->waypoints)
+				waypoints.push_back(Pose(p, 0.0));
 				
-    		goTo(goal -> target, goal -> speed, waypoints, interp_method);
-    		break;
-    	}	
-    		
-    	case irob_msgs::GestureGoal::GRASP:
+	Eigen::Vector3d displacement(goal->displacement.x,
+										goal->displacement.y,
+										goal->displacement.z);
+										
+	try {									
+		// Do the action			
+    	switch(goal -> action)
     	{
-    		grasp(goal -> angle, goal -> speed);
-    		break;
-    	}
+    		// STOP
+    		case irob_msgs::GestureGoal::STOP:
+    		{
+    			stop();
+    			break;
+    		}	
     	
-    	case irob_msgs::GestureGoal::CUT:
-    	{
-    		cut(goal -> angle, goal -> speed);
-    		break;
-    	}	
-    		
-    	case irob_msgs::GestureGoal::RELEASE:
-    	{
-    		release(goal -> angle, goal -> speed);
-    		break;
-    	}
+    		// STANDBY
+    		case irob_msgs::GestureGoal::STANDBY:
+    		{
+    			standby(target, waypoints,
+    					interp_method, goal -> speed_cartesian);
+    			break;
+    		}
     	
-    	case irob_msgs::GestureGoal::OPEN_JAWS:
-    	{
-    		openJaws(goal -> angle, goal -> speed);
-    		break;
-    	}	
-    		
-    	case irob_msgs::GestureGoal::APPROACH:
-    	{
-    		approach(goal -> movement, goal -> speed);
-    		break;
-    	}	
-    		
-    	case irob_msgs::GestureGoal::LEAVE:
-    	{
-    		leave(goal -> movement, goal -> speed);
-    		break;
-    	}
+    		// GRASP
+    		case irob_msgs::GestureGoal::GRASP:
+    		{				
+  		  		grasp(target, approach_pose,
+						goal -> open_angle, goal -> closed_angle,
+						waypoints, interp_method,
+						goal -> speed_cartesian, goal -> speed_jaw);
+	    		break;
+	    	}
     	
-    	case irob_msgs::GestureGoal::STOP:
-    	{
-    		stop();
-    		break;
-    	}
-    	
+	    	// CUT
+	    	case irob_msgs::GestureGoal::CUT:
+	    	{
+	    		cut(target, approach_pose,
+						goal -> open_angle, goal -> closed_angle,
+						waypoints, interp_method,
+						goal -> speed_cartesian, goal -> speed_jaw);
+	    		break;
+	    	}
+	    	
+	    	// PUSH
+	    	case irob_msgs::GestureGoal::PUSH:
+	    	{
+	    		push(target, approach_pose, 
+					displacement, goal -> closed_angle,
+					waypoints, interp_method,
+					goal -> speed_cartesian, goal -> speed_jaw);
+	    		break;
+	    	}
+	    	
+	    	// DISSECT
+	    	case irob_msgs::GestureGoal::DISSECT:
+		    {
+	    		dissect(target, approach_pose, 
+					displacement, goal -> open_angle, goal -> closed_angle,
+					waypoints, interp_method,
+					goal -> speed_cartesian, goal -> speed_jaw);
+    			break;
+    		}
     		
-    	default:
-    	{
-    		ROS_ERROR_STREAM(arm.getName()  << 
-    					": invalid gesture action code received");
-    		irob_msgs::GestureResult result;
-    		result.pose = arm.getPoseCurrent().toRosToolPose();
-			result.info = arm.getName()  + 
-						": invalid gesture action code";
+    		// PLACE
+    		case irob_msgs::GestureGoal::PLACE:
+    		{
+    			place( target, approach_pose,
+					waypoints, interp_method, goal -> speed_cartesian);
+    			break;
+    		}
+    		
+    		// MANIPULATE
+    		case irob_msgs::GestureGoal::MANIPULATE:
+    		{
+    			manipulate(displacement, goal -> speed_cartesian);
+    			break;
+    		}
+    		
+    		// RELEASE
+    		case irob_msgs::GestureGoal::RELEASE:
+    		{
+    			release(approach_pose, goal -> open_angle,
+						goal -> speed_cartesian, goal -> speed_jaw);
+    			break;
+    		}	
+    		default:
+    		{
+    			ROS_ERROR_STREAM(arm.getName()  << 
+    						": invalid gesture action code received");
+    			irob_msgs::GestureResult result;
+    			result.pose = arm.getPoseCurrent().toRosToolPose();
+				result.info = arm.getName()  + 
+							": invalid gesture action code";
+    	  		as.setAborted(result);
+    			break;
+    		}    	
+    	}	
+    } catch (std::runtime_error e) {
+    	std::string str_abort = "abort";
+  		std::string str_err = e.what();
+  		if (str_err.find(str_abort) != std::string::npos)
+    		ROS_ERROR_STREAM(e.what());
+    	else
+    		throw e;
+    }
+}
+
+
+
+// Helper methods
+ 
+/**
+ *	Wait for actionDone()
+ */
+bool GestureServer::waitForActionDone(std::string stage)
+{
+	bool done = false;
+    ros::Rate loop_rate(DEFAULT_LOOP_RATE);
+
+    irob_msgs::GestureFeedback feedback;
+    
+	while(!done)
+    {
+    	// Check that preempt has not been requested by the client
+      	if (as.isPreemptRequested() || !ros::ok())
+      	{
+        	ROS_INFO_STREAM(arm.getName()  << ": " << stage << ": Preempted");
+        	// Set the action state to preempted
+        	as.setPreempted();
+        	break;
+      	}
+		
+		// Send some feedback
+		feedback.pose = arm.getPoseCurrent().toRosToolPose();
+		feedback.info = stage;
+    	as.publishFeedback(feedback);
+		
+		done = arm.isActionDone();
+		loop_rate.sleep();
+    }
+    
+    return done;
+}
+
+/**
+ *	Evaluate action state
+ */
+bool GestureServer::handleActionState(std::string stage, 
+										bool lastStage /* = false */ )
+{
+	irob_msgs::GestureResult result;
+    irob_msgs::GestureFeedback feedback;
+    
+   	switch (arm.getState().state_)	
+   	{
+   		case actionlib::SimpleClientGoalState::StateEnum::SUCCEEDED:
+   			ROS_INFO_STREAM(arm.getName()  << ": " << stage << " succeeded");
+   			feedback.pose = arm.getPoseCurrent().toRosToolPose();
+			feedback.info = stage + " succeeded";
+			as.publishFeedback(feedback);
+			
+			// Do not send succeeded if not the last stage,
+			// else the gesture continues
+			if (lastStage)
+			{
+     			result.pose = arm.getPoseCurrent().toRosToolPose();
+				result.info = stage + " succeeded";
+  				as.setSucceeded(result);
+  			}
+  				
+   			break;
+   		case actionlib::SimpleClientGoalState::StateEnum::ABORTED:
+      		// Send ABORTED to the upper level node
+      		// and throw an error to finish gesture execution
+      		ROS_ERROR_STREAM(arm.getName()  << ": " << stage << " aborted");
+      		result.pose = arm.getPoseCurrent().toRosToolPose();
+			result.info = stage + " aborted";
+				
       		as.setAborted(result);
-    		break;
-    	}    	
-    }	
+      			
+      		throw std::runtime_error(
+      				"Action aborted by node on a lower level.");
+      		break;
+      	default:
+      		// PREEMPTED or similar, do nothing
+      		break;
+    }
 }
 
 
 
 /**
+ * -----------------------------------------------------------------------------
  * Actions
+ * -----------------------------------------------------------------------------
  */
+ 
+ 
+/**
+ * Stop
+ */ 
 void GestureServer::stop()
 {
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureFeedback feedback;
-    irob_msgs::GestureResult result;
-	
-	// Start action
-	ROS_INFO_STREAM(arm.getName() << " stopping");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting stop action";
-    as.publishFeedback(feedback);
-    
-  	arm.stop();
-  	
-  	// Wait for action to be done
-    while(!success)
-    {
-    	// Stop cannot be preempted
-      	if (!ros::ok()) {
-      		
-        	success = false;
-        	break;
-      	}
-		
-		success = arm.isActionDone();
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "stopping in progress";
-    	as.publishFeedback(feedback);
-		
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": stop succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = "stop succeeded";
-      	
-      	as.setSucceeded(result);
-	}
-	
-}
- 
- 
-void GestureServer::grasp(double angle, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureFeedback feedback;
-    irob_msgs::GestureResult result;
-
-	Pose p = arm.getPoseCurrent();
-	double curr_angle = radToDeg(p.jaw);
-	
-	// Check if closing is possible
-	if (curr_angle < (angle - 0.1)) {
-		result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  
-      			<< ": grasp not possible, goal > current");
-		result.info = arm.getName()  
-				+ ": grasp not possible, goal > current";
-      	as.setAborted(result);
-      	return;
-    } 
-	
-	// Start action
-	ROS_INFO_STREAM(arm.getName() << " grasping with " << 
-						angle << " degrees");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting grasp";
-    as.publishFeedback(feedback);
-    
-  	arm.moveGripper(angle, speed);
-  	
-  	// Wait for action to be done
-    while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok()) {
-      		
-        	ROS_INFO_STREAM(arm.getName()  << ": grasp: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		success = arm.isActionDone();
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "grasp in progress";
-    	as.publishFeedback(feedback);
-		
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": grasp succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = "grasp succeeded";
-      	
-      	as.setSucceeded(result);
-	}
-	
-}
-
-
-void GestureServer::cut(double angle, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureFeedback feedback;
-    irob_msgs::GestureResult result;
-
-	Pose p = arm.getPoseCurrent();
-	double curr_angle = radToDeg(p.jaw);
-	
-	// Check if closing is possible
-	if (curr_angle < (angle - 0.1)) {
-		result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  
-      			<< ": cut not possible, goal > current");
-		result.info = arm.getName()  
-				+ ": cut not possible, goal > current";
-      	as.setAborted(result);
-      	return;
-    } 
-	
-	// Start action
-	ROS_INFO_STREAM(arm.getName() << " grasping with " << 
-						angle << " degrees");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting cut";
-    as.publishFeedback(feedback);
-    
-  	arm.moveGripper(angle, speed);
-  	
-  	// Wait for action to be done
-    while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok()) {
-      		
-        	ROS_INFO_STREAM(arm.getName()  << ": cut: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		success = arm.isActionDone();
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "cut in progress";
-    	as.publishFeedback(feedback);
-		
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": cut succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = "cut succeeded";
-      	
-      	as.setSucceeded(result);
-	}
-	
-}
-
-
-void GestureServer::release(double angle, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureFeedback feedback;
-    irob_msgs::GestureResult result;
-
-	Pose p = arm.getPoseCurrent();
-	double curr_angle = radToDeg(p.jaw);
-	
-	// Check if closing is possible
-	if (curr_angle > (angle + 0.1)) {
-		result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  
-      			<< ": release not possible, goal > current");
-		result.info = arm.getName()  
-				+ ": release not possible, goal > current";
-      	as.setAborted(result);
-      	return;
-    } 
-	
-	// Start action
-	ROS_INFO_STREAM(arm.getName() << " relese with " << 
-						angle << " degrees");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting release";
-    as.publishFeedback(feedback);
-    
-  	arm.moveGripper(angle, speed);
-  	
-  	// Wait for action to be done
-    while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok()) {
-      		
-        	ROS_INFO_STREAM(arm.getName()  << ": release: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		success = arm.isActionDone();
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "release in progress";
-    	as.publishFeedback(feedback);
-		
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": release succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = "release succeeded";
-      	
-      	as.setSucceeded(result);
-	}
-	
-}
-
-void GestureServer::openJaws(double angle, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureFeedback feedback;
-    irob_msgs::GestureResult result;
-
-	Pose p = arm.getPoseCurrent();
-	double curr_angle = radToDeg(p.jaw);
-	
-	// Check if closing is possible
-	if (curr_angle > (angle + 0.1)) {
-		result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  
-      			<< ": open jaws not possible, goal > current");
-		result.info = arm.getName()  
-				+ ": open jaws not possible, goal > current";
-      	as.setAborted(result);
-      	return;
-    } 
-	
-	// Start action
-	ROS_INFO_STREAM(arm.getName() << " open jaws with " << 
-						angle << " degrees");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting open jaws";
-    as.publishFeedback(feedback);
-    
-  	arm.moveGripper(angle, speed);
-  	
-  	// Wait for action to be done
-    while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok()) {
-      		
-        	ROS_INFO_STREAM(arm.getName()  << ": open jaws: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		success = arm.isActionDone();
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "open jaws in progress";
-    	as.publishFeedback(feedback);
-		
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": open jaws succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = "open jaws succeeded";
-      	
-      	as.setSucceeded(result);
-	}
-	
-}
-
-void GestureServer::approach(Eigen::Vector3d movement, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureResult result;
-    irob_msgs::GestureFeedback feedback;
-    
-    // Start action
-	ROS_INFO_STREAM(arm.getName() << " approach with " << 
-						movement << " mm");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting approach";
-    as.publishFeedback(feedback);
-
-	arm.moveTool(arm.getPoseCurrent() + movement, speed);
-	
-	while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok())
-      	{
-        	ROS_INFO_STREAM(arm.getName()  << ": approach: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "approach in progress";
-    	as.publishFeedback(feedback);
-		
-		success = arm.isActionDone();
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  << ": approach succeeded");
-		result.info = "approach succeeded";
-      	as.setSucceeded(result);
-    }
-}
-
-void GestureServer::leave(Eigen::Vector3d movement, double speed)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureResult result;
-    irob_msgs::GestureFeedback feedback;
-    
-    // Start action
-	ROS_INFO_STREAM(arm.getName() << " leave with " << 
-						movement << " mm");
-  	feedback.pose = arm.getPoseCurrent().toRosToolPose();
-	feedback.info = "starting leave";
-    as.publishFeedback(feedback);
-
-	arm.moveTool(arm.getPoseCurrent() + movement, speed);
-	
-	while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok())
-      	{
-        	ROS_INFO_STREAM(arm.getName()  << ": leave: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "leave in progress";
-    	as.publishFeedback(feedback);
-		
-		success = arm.isActionDone();
-  		loop_rate.sleep();
-    }
-
-	// Set the action state to succeeded
-    if(success)
-    {
-    	result.pose = arm.getPoseCurrent().toRosToolPose();
-      	ROS_INFO_STREAM(arm.getName()  << ": leave succeeded");
-		result.info = "leave succeeded";
-      	as.setSucceeded(result);
-    }
-}
-  
-  
-void GestureServer::goTo(Pose target, double speed, std::vector<Pose> waypoints, 
-							InterpolationMethod interp_method)
-{
-    // Helper variables
-    bool success = false;
-    ros::Rate loop_rate(50.0);
-
-    irob_msgs::GestureResult result;
-    irob_msgs::GestureFeedback feedback;
+     // Helper variables
+    bool done = false;
+    std::string stage = "stop";
 
  	// Start action
-	ROS_INFO_STREAM(arm.getName()  << ": go to position");
-  	arm.goTo(target, speed, waypoints, interp_method);
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.stop();
   	
-    while(!success)
-    {
-    	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok())
-      	{
-        	ROS_INFO_STREAM(arm.getName()  << ": go to: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
-        	success = false;
-        	break;
-      	}
-		
-		// Send some feedback
-		feedback.pose = arm.getPoseCurrent().toRosToolPose();
-		feedback.info = "go to in progress";
-    	as.publishFeedback(feedback);
-		
-		success = arm.isFollowTrajectoryDone();
-		// TODO what if ABORTED?
-  		loop_rate.sleep();
-    }
+    done = waitForActionDone(stage);
 
-	// Set the action state to succeeded
-    if(success)
-    {
-    	ROS_INFO_STREAM(arm.getName()  << ": go to succeeded");
-      	result.pose = arm.getPoseCurrent().toRosToolPose();
-		result.info = arm.getName()  + ": go to succeeded";
-      	as.setSucceeded(result);
-    }
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+	
 }
+
+/**
+ * Standby
+ */
+void GestureServer::standby(Pose target, std::vector<Pose> waypoints,
+			InterpolationMethod interp_method, double speed_cartesian)
+{
+
+	// Helper variables
+    bool done = false;
+    std::string stage = "standby";
+
+ 	// Start action
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveTool(target, speed_cartesian, waypoints, interp_method);
+  	
+    done = waitForActionDone(stage);
+
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+}
+ 
+/**
+ * Grasp
+ */ 
+void GestureServer::grasp(Pose target, Pose approach_pose,
+			double open_angle, double closed_angle,
+			std::vector<Pose> waypoints, InterpolationMethod interp_method,
+			double speed_cartesian, double speed_jaw)
+{
+   	// Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Navigate
+ 	stage = "navigate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+ 	
+ 	// Open tool 
+ 	stage = "open_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(open_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "approach";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(target, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Close tool 
+	stage = "close_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(closed_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+}
+
+/**
+ * Cut
+ */
+void GestureServer::cut(Pose target, Pose approach_pose,
+			double open_angle, double closed_angle,
+			std::vector<Pose> waypoints, InterpolationMethod interp_method,
+			double speed_cartesian, double speed_jaw)
+{
+	// Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Navigate
+ 	stage = "navigate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+ 	
+ 	// Open tool 
+ 	stage = "open_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(open_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "approach";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(target, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Close tool 
+	stage = "close_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(closed_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+}
+
+/**
+ * Release
+ */
+void GestureServer::release(Pose approach_pose,
+			double open_angle,
+			double speed_cartesian, double speed_jaw)
+{
+	// Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Open tool 
+ 	stage = "open_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(open_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "leave";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+	
+}
+
+/**
+ * Place
+ */
+void GestureServer::place(Pose target, Pose approach_pose,
+			std::vector<Pose> waypoints, InterpolationMethod interp_method,
+			double speed_cartesian)
+{
+   	// Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Navigate
+ 	stage = "navigate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "approach";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(target, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+	
+}
+
+/**
+ * Push
+ */
+void GestureServer::push(Pose target, Pose approach_pose, 
+			Eigen::Vector3d displacement, double closed_angle,
+			std::vector<Pose> waypoints, InterpolationMethod interp_method,
+			double speed_cartesian, double speed_jaw)
+{
+    // Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Navigate
+ 	stage = "navigate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+ 	
+ 	// Close tool 
+ 	stage = "close_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(closed_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "approach";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(target, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Push
+ 	stage = "push";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	Pose pushed_pose = arm.getPoseCurrent() + displacement;
+ 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+}
+
+/**
+ * Dissect
+ */
+void GestureServer::dissect(Pose target, Pose approach_pose, 
+			Eigen::Vector3d displacement,
+			double open_angle, double closed_angle,
+			std::vector<Pose> waypoints, InterpolationMethod interp_method,
+			double speed_cartesian, double speed_jaw)
+{
+    // Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+ 	
+ 	// Navigate
+ 	stage = "navigate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+ 	
+ 	// Close tool 
+ 	stage = "close_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(closed_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Approach
+ 	stage = "approach";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	arm.moveTool(target, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Penetrate
+ 	stage = "penetrate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	Pose pushed_pose = arm.getPoseCurrent() + displacement;
+ 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Close tool 
+ 	stage = "close_tool";	
+	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+  	arm.moveJaws(open_angle, speed_jaw);
+  	
+    done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, false);
+	else
+		return;
+		
+	// Pull
+ 	stage = "pull";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	pushed_pose = arm.getPoseCurrent() - displacement;
+ 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;		
+}
+  
+/**
+ * Maipulate
+ */  
+// TODO rotation?
+void GestureServer::manipulate(Eigen::Vector3d displacement,
+								double speed_cartesian)
+{
+    // Helper variables   	
+    bool done = false;
+    std::string stage = "";
+
+ 	// Start action
+		
+	// Manipulate
+ 	stage = "manipulate";
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+ 	Pose manipulated_pose = arm.getPoseCurrent() + displacement;
+ 	arm.moveTool(manipulated_pose, speed_cartesian);
+ 	
+ 	done = waitForActionDone(stage);
+	if (done)
+		handleActionState(stage, true);
+	else
+		return;
+		
+}  
+
 
 // Simple relay
 Pose GestureServer::getPoseCurrent()

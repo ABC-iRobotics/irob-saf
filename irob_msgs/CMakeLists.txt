@@ -70,7 +70,6 @@ find_package(catkin REQUIRED
    	
    	Robot.action
    	Gesture.action
-	Maneuver.action
  )
 
 ## Generate added messages and services with any dependencies listed here

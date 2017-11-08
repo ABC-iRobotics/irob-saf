@@ -1,35 +1,45 @@
 # Define the goal
 # Action types
-int8 STOP=1
-int8 GO_TO=2
-int8 GRASP=3
-int8 CUT=4
-int8 RELESE=5
-int8 OPEN_JAWS=6
-int8 APPROACH=7
-int8 LEAVE=8
+int8 STOP = 1
+int8 STANDBY = 2
+int8 GRASP = 3
+int8 CUT = 4
+int8 PUSH = 5
+int8 DISSECT = 6
+int8 PLACE = 7
+int8 MANIPULATE = 8		# Manipulate grasped soft tissue
+int8 RELEASE = 9
+
+# Interpolation methods
+int8 INTERPOLATION_LINEAR = 1
+int8 INTERPOLATION_BEZIER = 2
 
 
 int8 action
 
 # Params
-ToolPose target
-ToolPose[] waypoints
+# All params are in mm and deg
 
-float64 speed
-geometry_msgs/Point movement
-float64 angle
-
-int8 INTERPOLATION_LINEAR=1
-int8 INTERPOLATION_BEZIER=2
-
-int8 interpolation
+geometry_msgs/Pose	 target			# GRASP, CUT, PLACE, PUSH, DISSECT, STANDBY
+geometry_msgs/Pose[] waypoints		# GRASP, CUT, PLACE, PUSH, DISSECT, STANDBY
+int8 				 interpolation	# GRASP, CUT, PLACE, PUSH, DISSECT, STANDBY
+geometry_msgs/Pose	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
+float64 		 	 closed_angle	# GRASP, CUT, PUSH, DISSECT
+float64 			 open_angle		# GRASP, CUT, PLACE, RELEASE, DISSECT
+geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE
+float64				 speed_cartesian
+									# STANDBY, GRASP, CUT, PUSH, PLACE, 
+									# DISSECT, MANIPULATE
+float64				 speed_jaw 		# GRASP, CUT, DISSECT, PUSH, RELEASE
 
 ---
+
 # Define the result
 ToolPose pose
 string info
+
 ---
+
 # Define a feedback message
 ToolPose pose
 string info

@@ -1,13 +1,13 @@
 /*
- * 	arm.hpp
+ * 	robot_server_dvrk.hpp
  * 	
  *	Author(s): Tamas D. Nagy
- *	Created on: 2016-10-10
+ *	Created on: 2016-11-07
  *
  */
 
-#ifndef DVRK_ARM_HPP_
-#define DVRK_ARM_HPP_
+#ifndef ROBOT_SERVER_DVRK_HPP_
+#define ROBOT_SERVER_DVRK_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -23,40 +23,24 @@
 #include <Eigen/Geometry> 
 #include <cmath>
 #include <irob_dvrk/arm_types.hpp>
-#include <irob_utils/pose.hpp>
-#include <irob_utils/trajectory.hpp>
-#include <irob_utils/utils.hpp>
-#include <irob_utils/topic_name_loader.hpp>
-#include <actionlib/server/simple_action_server.h>
-#include <irob_msgs/ToolPoseStamped.h>
-#include <irob_msgs/RobotAction.h>
+#include <irob_general_robot/robot_server.hpp>
 
 namespace ias {
 
-class Arm {
+class RobotServerDVRK: public RobotServer {
 
 public:
+
     // Constants
     static const std::string HOME_CMD;
     static const std::string HOME_DONE;
     static const std::string STATE_POSITION_JOINT;
     static const std::string STATE_POSITION_CARTESIAN;
-    
-    static const bool ACTIVE = true;
-    static const bool PASSIVE = false;
    
 
 protected:
     const ArmTypes arm_typ;
-	const std::string arm_name;
-    ros::NodeHandle nh;
-    
-    // Action servers
-    actionlib::SimpleActionServer<irob_msgs::RobotAction> as;
-    	 
-    // Hand-eye registration
-    Eigen::Vector3d t;
-    Eigen::Matrix3d R;
+
 
     // States
     std_msgs::String robot_state;
@@ -77,29 +61,26 @@ protected:
     ros::Publisher robot_state_pub;
     ros::Publisher position_joint_pub;
     ros::Publisher position_cartesian_pub;
-
-	ros::Publisher position_cartesian_current_pub;
     
-    void subscribeTopics();
-    void advertiseTopics();
-    void startActionServer();
+    void subscribeLowLevelTopics();
+    void advertiseLowLevelTopics();
 
 public:
-	Arm(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
-	~Arm();
+	RobotServerDVRK(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
+	~RobotServerDVRK();
 
     // Callbacks
-    virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr &);
-    virtual void initArm(bool);
-    virtual void resetPose(bool);
-    virtual void stop();
-    virtual void followTrajectory(Trajectory<Pose>);
+    void initArm(bool);
+    void resetPose(bool);
+    void stop();
+    void followTrajectory(Trajectory<Pose>);
     
     void robotStateCB(const std_msgs::String);
     void errorCB(const std_msgs::String);
     void warningCB(const std_msgs::String);
     void stateJointCurrentCB(const sensor_msgs::JointStateConstPtr&);
-    virtual void positionCartesianCurrentCB(const geometry_msgs::PoseStampedConstPtr&);
+    virtual void positionCartesianCurrentCB(
+    	const geometry_msgs::PoseStampedConstPtr&);
 
    
     void loadRegistration(std::string);
@@ -108,7 +89,7 @@ public:
     std::vector<double> getJointStateCurrent();
     Eigen::Vector3d getPositionCartesianCurrent();
     Eigen::Quaternion<double> getOrientationCartesianCurrent();
-    virtual Pose getPoseCurrent();
+    Pose getPoseCurrent();
 
     //DVRK actions
     bool setRobotState(std::string);
@@ -133,4 +114,4 @@ public:
 };
 
 }
-#endif /* DVRK_ARM_HPP_ */
+#endif /* ROBOT_SERVER_DVRK_HPP_ */

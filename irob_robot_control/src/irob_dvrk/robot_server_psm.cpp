@@ -1,12 +1,12 @@
 /*
- *  psm.cpp
+ *  robot_server_psm.cpp
  *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2016-11-17
+ *	Created on: 2016-11-07
  *  
  */
 
-#include <irob_dvrk/psm.hpp>
+#include <irob_dvrk/robot_server_psm.hpp>
 #include <numeric>
 #include <chrono>
 #include <irob_utils/trajectory_factory.hpp>
@@ -14,28 +14,26 @@
 namespace ias {
 
                    
-const std::string PSM::ERROR_INSIDE_CANNULA
+const std::string RobotServerPSM::ERROR_INSIDE_CANNULA
                     ="make sure the tool is inserted past the cannula";
                     
-const double PSM::INSERTION_DEPTH = 0.055;
-const double PSM::INSERTION_SPEED = 0.05;
-const double PSM::INSERTION_DT = 0.01;
-const int PSM::INSERTION_JOINT_IDX = 2;
+const double RobotServerPSM::INSERTION_DEPTH = 0.055;
+const double RobotServerPSM::INSERTION_SPEED = 0.05;
+const double RobotServerPSM::INSERTION_DT = 0.01;
+const int RobotServerPSM::INSERTION_JOINT_IDX = 2;
 
 
-PSM::PSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
+RobotServerPSM::RobotServerPSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
 	std::string regfile, bool isActive): 
-		Arm(nh, arm_typ, arm_name, regfile, isActive)
+		RobotServerDVRK(nh, arm_typ, arm_name, regfile, isActive)
 {
 	if (!(arm_typ == ArmTypes::PSM1 || 
   							arm_typ == ArmTypes::PSM2))
   		throw std::runtime_error(
-  		"Tried to create PSM object for ECM or MTM arm type.");
-  			
-   	advertiseTopics();
+  		"Tried to create RobotServerPSM object for ECM or MTM arm type.");
 }
 
-void PSM::initArm(bool move_allowed)
+void RobotServerPSM::initArm(bool move_allowed)
 {	
 	typedef enum init_action_type 
     	{CARTESIAN, JOINT, INSERT} 
@@ -64,7 +62,7 @@ void PSM::initArm(bool move_allowed)
     	// Check that preempt has not been requested by the client
       	if (as.isPreemptRequested() || !ros::ok())
       	{
-        	ROS_INFO_STREAM("InitArm: Preempted");
+        	ROS_INFO_STREAM("InitRobotServerDVRK: Preempted");
         	// Set the action state to preempted
         	as.setPreempted();
         	success = false;
@@ -164,7 +162,7 @@ void PSM::initArm(bool move_allowed)
 }
 
 
-void PSM::resetPose(bool move_allowed)
+void RobotServerPSM::resetPose(bool move_allowed)
 {
     // helper variables
     bool success = false;
@@ -200,14 +198,16 @@ void PSM::resetPose(bool move_allowed)
     }
 }
 
-PSM::~PSM()
+RobotServerPSM::~RobotServerPSM()
 {
 	// TODO Auto-generated destructor stub
 }
 
 
-void PSM::advertiseTopics() 
+void RobotServerPSM::advertiseLowLevelTopics() 
 {
+	RobotServerDVRK::advertiseLowLevelTopics();
+	
 	position_jaw_pub = nh.advertise<std_msgs::Float32>(
                     	TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
@@ -217,7 +217,7 @@ void PSM::advertiseTopics()
 }
 
 
-void PSM::positionCartesianCurrentCB(
+void RobotServerPSM::positionCartesianCurrentCB(
 				const geometry_msgs::PoseStampedConstPtr& msg) 
 {
   	position_cartesian_current = *msg;
@@ -233,7 +233,7 @@ void PSM::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(fwd);
 }
 
-Pose PSM::getPoseCurrent()
+Pose RobotServerPSM::getPoseCurrent()
 {
  	ros::spinOnce();
  	Pose ret(position_cartesian_current, position_joint.position[6]);
@@ -243,7 +243,7 @@ Pose PSM::getPoseCurrent()
 /*
  * DVRK actions
  */
-void PSM::moveJawRelative(double movement, double dt)
+void RobotServerPSM::moveJawRelative(double movement, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -271,7 +271,7 @@ void PSM::moveJawRelative(double movement, double dt)
   	}
 }
 
-void PSM::moveJawAbsolute(double jaw, double dt)
+void RobotServerPSM::moveJawAbsolute(double jaw, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -299,7 +299,7 @@ void PSM::moveJawAbsolute(double jaw, double dt)
   	}
 }
 
-void PSM::moveCartesianAbsolute(Pose pose, double dt)
+void RobotServerPSM::moveCartesianAbsolute(Pose pose, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -334,7 +334,7 @@ void PSM::moveCartesianAbsolute(Pose pose, double dt)
 using namespace ias;
 
 /**
- * Main for PSM
+ * Main for RobotServerPSM
  */
 int main(int argc, char **argv)
 {
@@ -361,13 +361,15 @@ int main(int argc, char **argv)
     // Robot control
   	try {
   		if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
-    		PSM psm(nh, arm_type, 
-    			 arm_name, camera_registration_file, PSM::ACTIVE);
+    		RobotServerPSM psm(nh, arm_type, 
+    			 arm_name, camera_registration_file, RobotServerPSM::ACTIVE);
+    		psm.initRosCommunication();
     		ros::spin();
     	}
     	else {
-    		Arm arm(nh, arm_type, 
-    			arm_name, camera_registration_file, Arm::ACTIVE);
+    		RobotServerDVRK arm(nh, arm_type, 
+    			arm_name, camera_registration_file, RobotServerDVRK::ACTIVE);
+    		arm.initRosCommunication();
     		ros::spin();
     	}  	   		    	
     	

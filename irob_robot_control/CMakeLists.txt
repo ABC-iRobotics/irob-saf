@@ -144,7 +144,7 @@ set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(irob_dvrk_controller 
-				src/irob_dvrk/psm.cpp)
+				src/irob_dvrk/robot_server_psm.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 

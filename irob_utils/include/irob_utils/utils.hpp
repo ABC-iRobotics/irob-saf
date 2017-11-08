@@ -389,8 +389,83 @@ inline bool isnan(const geometry_msgs::Quaternion& d)
 			|| std::isnan(d.w));
 }
 
+// Unit vector + rotation to quat
+template<typename QuatT, typename VecT>
+inline QuatT vecToQuat(const VecT& vec, double angle);
+
+template <>
+inline Eigen::Quaternion<double> vecToQuat(const Eigen::Vector3d& vec,
+												double angle){
+	Eigen::Quaternion<double> quat_start(0.0, 0.707, 0.0, 0.707);
+	double angle_rad = (angle / 180.0) * M_PI;
+	Eigen::Matrix3d R1m;
+	R1m = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX())
+  		* Eigen::AngleAxisd(0.0,  Eigen::Vector3d::UnitY())
+  		* Eigen::AngleAxisd(angle_rad, Eigen::Vector3d::UnitZ());
+  	Eigen::Quaternion<double> R1(R1m);
+  	
+  	Eigen::Quaternion<double> ret = R1 * quat_start;
+	
+	Eigen::Vector3d vec_start(0.0, 0.0, 1.0);
+	Eigen::Quaternion<double> R2 = 
+		Eigen::Quaternion<double>::FromTwoVectors(vec_start, vec);
+	ret = R2 * ret;									
+	return ret;
+}
+
+// Quat to unit vector
+template<typename QuatT, typename VecT>
+inline VecT quatToVec(const QuatT& quat);
+
+template <>
+inline Eigen::Vector3d quatToVec(const Eigen::Quaternion<double>& quat){
+
+	Eigen::Quaternion<double> quat_start(0.0, 0.707, 0.0, 0.707);
+
+	Eigen::Quaternion<double> R = quat * quat_start.inverse();
+	
+	Eigen::Vector3d vec_start(0.0, 0.0, 1.0);
+	Eigen::Vector3d ret = R * vec_start;									
+	return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
 
 #endif /* DVRK_UTILS_HPP_ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
