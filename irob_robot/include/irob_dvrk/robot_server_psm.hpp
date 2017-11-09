@@ -46,7 +46,7 @@ private:
     void advertiseLowLevelTopics();
 
 public:
-    RobotServerPSM(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
+    RobotServerPSM(ros::NodeHandle, ros::NodeHandle, ArmTypes, std::string, bool);
 	~RobotServerPSM();	
 
 	void initArm(bool);

@@ -37,6 +37,8 @@
 #include <irob_msgs/ToolPoseStamped.h>
 
 #include <irob_msgs/RobotAction.h>
+#include <irob_msgs/InstrumentInfo.h>
+#include <irob_msgs/InstrumentJawPart.h>
 
 namespace ias {
 
@@ -59,14 +61,15 @@ private:
 
     // States
     irob_msgs::ToolPoseStamped position_cartesian_current;
+    irob_msgs::InstrumentInfo instrument_info;
 
     // Subscribers
     ros::Subscriber position_cartesian_current_sub;
-
-
+	ros::Subscriber instrument_info_sub;
 
     // Publishers
 	ros::Publisher position_cartesian_current_pub;
+	ros::Publisher instrument_info_pub;
    	
     void subscribeTopics();
     void advertiseTopics();
@@ -81,8 +84,12 @@ public:
 
     void positionCartesianCurrentCB(
     		const irob_msgs::ToolPoseStampedConstPtr&);
+    		
+    void instrumentInfoCB(
+    		const irob_msgs::InstrumentInfoConstPtr&);
 
    	Pose getPoseCurrent();
+   	irob_msgs::InstrumentInfo getInstrumentInfo();
    	std::string getName();
    	
    	// Robot motions

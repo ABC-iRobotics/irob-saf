@@ -16,6 +16,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <boost/thread/thread.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
@@ -32,6 +33,8 @@
 #include <actionlib/server/simple_action_server.h>
 #include <irob_msgs/ToolPoseStamped.h>
 #include <irob_msgs/RobotAction.h>
+#include <irob_msgs/InstrumentInfo.h>
+#include <irob_msgs/InstrumentJawPart.h>
 
 namespace ias {
 
@@ -41,6 +44,7 @@ public:
 	// Constants
 	static const bool ACTIVE = true;
     static const bool PASSIVE = false;
+    static constexpr const double INFO_PUB_RATE = 10.0;
 
 protected:
 
@@ -54,9 +58,13 @@ protected:
     // Hand-eye registration
     Eigen::Vector3d t;
     Eigen::Matrix3d R;
+    
+    // Surgical instrument information
+    irob_msgs::InstrumentInfo instrument_info;
 
 	// Publisher
 	ros::Publisher position_cartesian_current_pub;
+	ros::Publisher instrument_info_pub;
     
     virtual void subscribeLowLevelTopics() = 0;
     virtual void advertiseLowLevelTopics() = 0;
@@ -68,11 +76,25 @@ protected:
 				= nh.advertise<irob_msgs::ToolPoseStamped>(
                     	"robot/"+arm_name+"/position_cartesian_current_cf",
                         1000);
+        instrument_info_pub 
+				= nh.advertise<irob_msgs::InstrumentInfo>(
+                    	"robot/"+arm_name+"/instrument_info",
+                        1000);
     }
     
     void startActionServer()
     {
 		as.start();
+	}
+	
+	void publishInfo()
+	{
+		ros::Rate loop_rate(INFO_PUB_RATE);
+  		while (ros::ok())
+  		{
+    		instrument_info_pub.publish(instrument_info);
+    		loop_rate.sleep();
+  		}
 	}
 	
 	
@@ -87,35 +109,82 @@ public:
     		
 		advertiseHighLevelTopics();
 		startActionServer();
+		boost::thread thread(boost::bind(&RobotServer::publishInfo, this));
 	}
 	
-	void loadRegistration(std::string registration_file)
+	void loadRegistration(ros::NodeHandle priv_nh)
     {
-    	std::ifstream cfgfile(registration_file.c_str());
-    	if (!cfgfile.is_open())
-    		throw std::runtime_error(
-    			"Cannot open file " + registration_file);
-    	if (cfgfile.eof())
-    		throw std::runtime_error(
-    			"Cfgfile " + registration_file + " is empty.");
+    	std::vector<double> param_t;
+		priv_nh.getParam("t", param_t);
+		
+		std::vector<double> param_R;
+		priv_nh.getParam("R", param_R);
    	
-   		double x, y, z;
-   	
-    	cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
-    	t << x, y, z;
-    
-    	for (int i = 0; i < 3; i++)
-    	{
-    		cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
-    		R(i,0) = x;
-    		R(i,1) = y;
-    		R(i,2) = z;
-    	}
-    
-    	cfgfile.close();
+   		for (int i = 0; i < t.rows(); i++)
+    		t(i) = param_t[i];
+    		
+    	for (int i = 0; i < R.rows(); i++)
+    		for (int j = 0; j < R.cols(); j++)
+    			R(i, j) = param_R[(i * R.rows()) + j];
     
     	ROS_INFO_STREAM(
     		"Registration read: "<< std::endl << t << std::endl << R);
+    }
+    
+    void loadInstrumentInfo(ros::NodeHandle priv_nh)
+    {
+
+		priv_nh.getParam("instrument/name", instrument_info.name);
+		priv_nh.getParam("instrument/jaw_length", instrument_info.jaw_length);
+		
+		std::string basic_type;
+		priv_nh.getParam("instrument/basic_type", basic_type);
+		
+		if (basic_type == "GRIPPER")
+			instrument_info.basic_type = irob_msgs::InstrumentInfo::GRIPPER;
+		else if (basic_type == "SCISSORS")
+			instrument_info.basic_type = irob_msgs::InstrumentInfo::SCISSORS;
+		else
+			throw std::runtime_error(
+      				"Invalid basic_type read from instrument info file.");
+   	
+   		int i = 0;
+   		double probe;
+		while(priv_nh.getParam("instrument/jaw_parts/p" 
+				+ std::to_string(i) 
+				+ "/start", probe))
+		{
+			irob_msgs::InstrumentJawPart jaw_part;
+			priv_nh.getParam("instrument/jaw_parts/p" 
+									+ std::to_string(i) 
+									+ "/start", 
+									jaw_part.start);
+			priv_nh.getParam("instrument/jaw_parts/p" 
+									+ std::to_string(i) 
+									+ "/end", 
+									jaw_part.end);
+			std::string type;
+			priv_nh.getParam("instrument/jaw_parts/p" 
+									+ std::to_string(i) 
+									+ "/type", 
+									type);
+			if (type == "JOINT")
+				jaw_part.type = irob_msgs::InstrumentJawPart::JOINT;
+			else if (type == "GRIPPER")
+				jaw_part.type = irob_msgs::InstrumentJawPart::GRIPPER;
+			else if (type == "SCISSORS")
+				jaw_part.type = irob_msgs::InstrumentJawPart::SCISSORS;
+			else
+				throw std::runtime_error(
+      			 "Invalid instrument part type read from instrument info file.");
+      		
+      		instrument_info.jaw_parts.push_back(jaw_part);						
+			i++;
+		}
+		
+		ROS_INFO_STREAM(
+    		"Instrument info read: "<< std::endl << instrument_info);
+ 
     }
     
     
@@ -169,13 +238,14 @@ public:
     }
 	
 	// initRosCommunication must be called in child class or main function
-	RobotServer(ros::NodeHandle nh, std::string arm_name, std::string regfile,
-				bool isActive): 
+	RobotServer(ros::NodeHandle nh, ros::NodeHandle priv_nh, 
+		std::string arm_name, bool isActive): 
 		nh(nh), arm_name(arm_name), isActive(isActive),
 		as(nh, "robot/"+arm_name+"/robot_action",
 			boost::bind(&RobotServer::robotActionCB, this, _1), false)
 	{
-		loadRegistration(regfile);
+		loadRegistration(priv_nh);
+		loadInstrumentInfo(priv_nh);
 	}
 	
 	~RobotServer() {}

@@ -23,9 +23,10 @@ const double RobotServerPSM::INSERTION_DT = 0.01;
 const int RobotServerPSM::INSERTION_JOINT_IDX = 2;
 
 
-RobotServerPSM::RobotServerPSM(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
-	std::string regfile, bool isActive): 
-		RobotServerDVRK(nh, arm_typ, arm_name, regfile, isActive)
+RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
+						ArmTypes arm_typ, std::string arm_name, 
+						bool isActive): 
+		RobotServerDVRK(nh, priv_nh, arm_typ, arm_name, isActive)
 {
 	if (!(arm_typ == ArmTypes::PSM1 || 
   							arm_typ == ArmTypes::PSM2))
@@ -350,25 +351,19 @@ int main(int argc, char **argv)
 
 	std::string arm_name;
 	priv_nh.getParam("arm_name", arm_name);
-	
-	std::string camera_registration_file;
-	priv_nh.getParam("camera_registration_file", camera_registration_file);
-	
-
 
 	
-    
     // Robot control
   	try {
   		if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
-    		RobotServerPSM psm(nh, arm_type, 
-    			 arm_name, camera_registration_file, RobotServerPSM::ACTIVE);
+    		RobotServerPSM psm(nh, priv_nh, arm_type, 
+    			 arm_name, RobotServerPSM::ACTIVE);
     		psm.initRosCommunication();
     		ros::spin();
     	}
     	else {
-    		RobotServerDVRK arm(nh, arm_type, 
-    			arm_name, camera_registration_file, RobotServerDVRK::ACTIVE);
+    		RobotServerDVRK arm(nh, priv_nh, arm_type, 
+    			arm_name, RobotServerDVRK::ACTIVE);
     		arm.initRosCommunication();
     		ros::spin();
     	}  	   		    	

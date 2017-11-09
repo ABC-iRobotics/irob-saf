@@ -42,7 +42,7 @@ void PicknPlace::graspObject()
 	Pose approach_pose = p - (approach_dist *
 		 quatToVec<Eigen::Quaternion<double>,Eigen::Vector3d>(p.orientation));
 	
-	arms[0] -> grasp(p, approach_pose, 30.0, 0.0);
+	arms[0] -> grasp(p, approach_pose, 5.0);
 	while(!arms[0] -> isGestureDone() && ros::ok())
 	{
 		

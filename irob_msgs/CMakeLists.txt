@@ -53,6 +53,8 @@ find_package(catkin REQUIRED
    ToolPoseStamped.msg
    TrajectoryToolPose.msg
    VisionObject.msg
+   InstrumentJawPart.msg
+   InstrumentInfo.msg
  )
 
 ## Generate services in the 'srv' folder

@@ -24,8 +24,8 @@ geometry_msgs/Pose	 target			# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
 geometry_msgs/Pose[] waypoints		# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
 int8 				 interpolation	# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
 geometry_msgs/Pose	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
-float64 		 	 closed_angle	# GRASP, CUT, PUSH, DISSECT
-float64 			 open_angle		# GRASP, CUT, PLACE, RELEASE, DISSECT
+float64 		 	 target_diameter # GRASP, CUT, DISSECT,
+									 # PLACE, RELEASE, DISSECT
 geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE
 float64				 speed_cartesian
 									# NAV_TO_POS, GRASP, CUT, PUSH, PLACE, 

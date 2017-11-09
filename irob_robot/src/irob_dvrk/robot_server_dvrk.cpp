@@ -27,10 +27,11 @@ const std::string RobotServerDVRK::STATE_POSITION_CARTESIAN
 
 
 
-RobotServerDVRK::RobotServerDVRK(ros::NodeHandle nh, ArmTypes arm_typ,
+RobotServerDVRK::RobotServerDVRK(ros::NodeHandle nh, ros::NodeHandle priv_nh,
+									ArmTypes arm_typ,
 									std::string arm_name, 
-									std::string regfile, bool isActive): 
-			RobotServer(nh, arm_name, regfile, isActive), arm_typ(arm_typ){}
+									bool isActive): 
+			RobotServer(nh, priv_nh, arm_name, isActive), arm_typ(arm_typ){}
 
 RobotServerDVRK::~RobotServerDVRK() {}
 

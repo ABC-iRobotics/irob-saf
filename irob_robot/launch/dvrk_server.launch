@@ -7,7 +7,10 @@
   		<arg name="arm_typ" default="PSM1"/>
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
-		default="$(find irob_robot)/config/registration_identity.cfg"/>
+		default="$(find irob_robot)/config/registration_identity.yaml"/>
+		
+		<arg name="instrument_info_file" 
+		default="$(find irob_robot)/config/large_needle_driver.yaml"/>
 	
 			<include 
 			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 
@@ -17,8 +20,13 @@
   		
   				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
 				<param name="arm_name" type="string" value="$(arg arm_name)" />
-				<param name="camera_registration_file" type="string" 	
-									value="$(arg camera_registration_file)" />
+				<!-- <param name="camera_registration_file" type="string" 	
+									value="$(arg camera_registration_file)" /> -->
+				<rosparam command="load" 
+				file="$(arg camera_registration_file)"/>
+				
+				<rosparam command="load" 
+				file="$(arg instrument_info_file)"/>
 				
 				
 			</node>

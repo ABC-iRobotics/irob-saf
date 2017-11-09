@@ -54,7 +54,21 @@ void GestureServer::gestureActionCB(
 	Eigen::Vector3d displacement(goal->displacement.x,
 										goal->displacement.y,
 										goal->displacement.z);
-										
+	// Check tool	
+	if (!isAbleToDoGesture(goal -> action))
+	{
+		irob_msgs::GestureResult result;
+			
+		ROS_ERROR_STREAM(
+		"Current instrument cannot be used for the action, aborting gesture");
+      	result.pose = arm.getPoseCurrent().toRosToolPose();
+		result.info = "instrument issue";
+				
+      	as.setAborted(result);
+      	return;
+	}	
+	
+									
 	try {									
 		// Do the action			
     	switch(goal -> action)
@@ -66,7 +80,7 @@ void GestureServer::gestureActionCB(
     			break;
     		}	
     	
-    		// STANDBY
+    		// NAV_TO_POS
     		case irob_msgs::GestureGoal::NAV_TO_POS:
     		{
     			nav_to_pos(target, waypoints,
@@ -78,7 +92,7 @@ void GestureServer::gestureActionCB(
     		case irob_msgs::GestureGoal::GRASP:
     		{				
   		  		grasp(target, approach_pose,
-						goal -> open_angle, goal -> closed_angle,
+						goal -> target_diameter,
 						waypoints, interp_method,
 						goal -> speed_cartesian, goal -> speed_jaw);
 	    		break;
@@ -88,7 +102,7 @@ void GestureServer::gestureActionCB(
 	    	case irob_msgs::GestureGoal::CUT:
 	    	{
 	    		cut(target, approach_pose,
-						goal -> open_angle, goal -> closed_angle,
+						goal -> target_diameter,
 						waypoints, interp_method,
 						goal -> speed_cartesian, goal -> speed_jaw);
 	    		break;
@@ -98,7 +112,7 @@ void GestureServer::gestureActionCB(
 	    	case irob_msgs::GestureGoal::PUSH:
 	    	{
 	    		push(target, approach_pose, 
-					displacement, goal -> closed_angle,
+					displacement,
 					waypoints, interp_method,
 					goal -> speed_cartesian, goal -> speed_jaw);
 	    		break;
@@ -108,7 +122,7 @@ void GestureServer::gestureActionCB(
 	    	case irob_msgs::GestureGoal::DISSECT:
 		    {
 	    		dissect(target, approach_pose, 
-					displacement, goal -> open_angle, goal -> closed_angle,
+					displacement, goal -> target_diameter,
 					waypoints, interp_method,
 					goal -> speed_cartesian, goal -> speed_jaw);
     			break;
@@ -132,7 +146,7 @@ void GestureServer::gestureActionCB(
     		// RELEASE
     		case irob_msgs::GestureGoal::RELEASE:
     		{
-    			release(approach_pose, goal -> open_angle,
+    			release(approach_pose, goal -> target_diameter,
 						goal -> speed_cartesian, goal -> speed_jaw);
     			break;
     		}	
@@ -240,6 +254,134 @@ bool GestureServer::handleActionState(std::string stage,
     }
 }
 
+bool GestureServer::isAbleToDoGesture(int gesture_type)
+{
+	if (	gesture_type == irob_msgs::GestureGoal::STOP 
+		|| 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
+		||	gesture_type == irob_msgs::GestureGoal::PUSH
+		|| 	gesture_type == irob_msgs::GestureGoal::RELEASE)
+		return true;
+		
+	if (instrument_info.basic_type == irob_msgs::InstrumentInfo::GRIPPER
+			&& (	gesture_type == irob_msgs::GestureGoal::GRASP
+				||	gesture_type == irob_msgs::GestureGoal::DISSECT
+				||	gesture_type == irob_msgs::GestureGoal::PLACE
+				||	gesture_type == irob_msgs::GestureGoal::MANIPULATE))
+		return true;
+		
+	if (instrument_info.basic_type == irob_msgs::InstrumentInfo::SCISSORS
+			&& (	gesture_type == irob_msgs::GestureGoal::CUT))
+		return true;
+		
+	if(findInstrumentJawPartForGesture(gesture_type).type
+		 != irob_msgs::InstrumentJawPart::JOINT)
+		return true;
+		
+	return false;
+}
+
+irob_msgs::InstrumentJawPart GestureServer::findInstrumentJawPartForGesture(
+															int gesture_type)
+{
+	// Return a JOINT type instruemtJawPart if not found
+	irob_msgs::InstrumentJawPart ret;
+	ret.type = InstrumentJawPart::JOINT;
+	ret.start = 0.0;
+	ret.end = 0.0;
+	
+	for (irob_msgs::InstrumentJawPart p : arm.getInstrumentInfo().jaw_parts)
+	{
+		if (	gesture_type == irob_msgs::GestureGoal::STOP 
+			|| 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
+			||	gesture_type == irob_msgs::GestureGoal::PUSH
+			|| 	gesture_type == irob_msgs::GestureGoal::RELEASE)
+			ret = p;
+			
+		else if (p.type == irob_msgs::InstrumentJawPart::GRIPPER
+			&& (	gesture_type == irob_msgs::GestureGoal::GRASP
+				||	gesture_type == irob_msgs::GestureGoal::DISSECT
+				||	gesture_type == irob_msgs::GestureGoal::PLACE
+				||	gesture_type == irob_msgs::GestureGoal::MANIPULATE))
+			ret = p;
+			
+		else if (p.type == irob_msgs::InstrumentJawPart::SCISSORS
+			&& (	gesture_type == irob_msgs::GestureGoal::CUT))
+			ret = p;	
+	}
+	
+	return ret;
+}
+
+GestureServer::GestureSetting GestureServer::calcGestureSetting(
+							int gesture_type,
+					 		irob_msgs::InstrumentJawPart jaw_part,
+					 		double target_diameter)
+{
+	GestureSetting g;
+	g.jaw_open_angle = 0.0;
+	g.jaw_closed_angle = 0.0;
+	g.t = Vector3d(0.0, 0.0, 0.0);
+	
+	// Does not matters
+	if (	gesture_type == irob_msgs::GestureGoal::STOP 
+		|| 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
+		||	gesture_type == irob_msgs::GestureGoal::PUSH
+		||	gesture_type == irob_msgs::GestureGoal::MANIPULATE )
+	   return g;
+	
+	// Center of jaw part
+	if (	gesture_type == irob_msgs::GestureGoal::GRASP 
+		|| 	gesture_type == irob_msgs::GestureGoal::PLACE
+		||  gesture_type == irob_msgs::GestureGoal::RELEASE)
+	{
+		g.jaw_closed_angle = (2.0 * atan((jaw_part.end 
+						/ (target_diameter / 2.0)) - 1.0))
+							* (180.0 / M_PI);
+		double dist = (jaw_part.end * (target_diameter / 2.0)) 
+						/ (jaw_part.end - (target_diameter / 2.0));
+						
+		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
+						Eigen::Vector3d>(
+							arm.getPoseCurrent().orientation);
+		g.jaw_open_angle = g.jaw_closed_angle + 10.0;
+		return g;
+	}
+	
+	if (|| 	gesture_type == irob_msgs::GestureGoal::CUT)
+	{
+		g.jaw_open_angle = (2.0 * atan((jaw_part.end 
+						/ (target_diameter / 2.0)) - 1.0))
+							* (180.0 / M_PI);
+		double dist = (jaw_part.end * (target_diameter / 2.0)) 
+						/ (jaw_part.end - (target_diameter / 2.0));
+						
+		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
+						Eigen::Vector3d>(
+							arm.getPoseCurrent().orientation);
+		g.jaw_closed_angle = 0.0;
+		return g;
+	}	
+	
+	// End of jaw
+	if (	gesture_type == irob_msgs::GestureGoal::DISSECT)
+	{
+		g.jaw_open_angle = (2.0 * (target_diameter 
+						/ (2.0 * arm.getInstrumentInfo().jaw_length))) 
+							* (180.0 / M_PI);
+							
+		double dist = arm.getInstrumentInfo().jaw_length 
+						* cos(g.jaw_open_angle * (M_PI / 360.0));
+						
+		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
+						Eigen::Vector3d>(
+							arm.getPoseCurrent().orientation);
+		g.jaw_closed_angle =0.0;
+		return g;
+	}	
+	   
+	
+}
+
 
 
 /**
@@ -298,13 +440,25 @@ void GestureServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
  * Grasp
  */ 
 void GestureServer::grasp(Pose target, Pose approach_pose,
-			double open_angle, double closed_angle,
+			double target_diameter,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian, double speed_jaw)
 {
    	// Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+    irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::GRASP);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::GRASP, 
+    										jaw_part, target_diameter);
+
+	/**********
+	*
+	*	RESUME HERE TOMORROW!
+	*
+	*/
 
  	// Start action
  	
@@ -357,7 +511,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
  * Cut
  */
 void GestureServer::cut(Pose target, Pose approach_pose,
-			double open_angle, double closed_angle,
+			double target_diameter,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian, double speed_jaw)
 {
@@ -416,7 +570,7 @@ void GestureServer::cut(Pose target, Pose approach_pose,
  * Release
  */
 void GestureServer::release(Pose approach_pose,
-			double open_angle,
+			double target_diameter,
 			double speed_cartesian, double speed_jaw)
 {
 	// Helper variables   	
@@ -490,7 +644,7 @@ void GestureServer::place(Pose target, Pose approach_pose,
  * Push
  */
 void GestureServer::push(Pose target, Pose approach_pose, 
-			Eigen::Vector3d displacement, double closed_angle,
+			Eigen::Vector3d displacement,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian, double speed_jaw)
 {
@@ -551,7 +705,7 @@ void GestureServer::push(Pose target, Pose approach_pose,
  */
 void GestureServer::dissect(Pose target, Pose approach_pose, 
 			Eigen::Vector3d displacement,
-			double open_angle, double closed_angle,
+			double target_diameter,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian, double speed_jaw)
 {
@@ -667,6 +821,13 @@ Pose GestureServer::getPoseCurrent()
 std::string GestureServer::getArmName()
 {
 	return arm.getName();
+}
+
+std::ostream& operator<<(std::ostream& os, 
+						const GestureServer::GestureSetting& d)
+{
+   		return os << d.jaw_open_angle <<"\t" << d.jaw_open_angle <<"\t"
+   					<< d.t;
 }
 
 }

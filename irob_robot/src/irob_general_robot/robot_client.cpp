@@ -40,12 +40,24 @@ void RobotClient::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(msg);
 }
 
+void RobotClient::instrumentInfoCB(
+				const irob_msgs::InstrumentInfoConstPtr& msg) 
+{
+    instrument_info = *msg;
+    instrument_info_pub.publish(msg);
+}
+
 void RobotClient::subscribeTopics() 
 {                 	            	
    	position_cartesian_current_sub = 
    			nh.subscribe<irob_msgs::ToolPoseStamped>(
                         "robot/"+arm_name+"/position_cartesian_current_cf",
                        	1000, &RobotClient::positionCartesianCurrentCB,this);
+                       	
+    instrument_info_sub = 
+   			nh.subscribe<irob_msgs::InstrumentInfo>(
+                        "robot/"+arm_name+"/instrument_info",
+                       	1000, &RobotClient::instrumentInfoCB,this);
 }
 
 void RobotClient::advertiseTopics() 
@@ -53,6 +65,11 @@ void RobotClient::advertiseTopics()
 	position_cartesian_current_pub 
 				= nh.advertise<irob_msgs::ToolPoseStamped>(
                     	"gesture/"+arm_name+"/position_cartesian_current_cf",
+                        1000); 
+    
+    instrument_info_pub 
+				= nh.advertise<irob_msgs::InstrumentInfo>(
+                    	"gesture/"+arm_name+"/instrument_info",
                         1000);   
 }
 
@@ -72,6 +89,17 @@ Pose RobotClient::getPoseCurrent()
  		ros::Duration(0.05).sleep();
  	}
  	Pose ret(position_cartesian_current);
+ 	return ret;
+}
+
+irob_msgs::InstrumentInfo RobotClient::getInstrumentInfo()
+{
+	while (instrument_info.name.empty())
+	{
+ 		ros::spinOnce();
+ 		ros::Duration(0.05).sleep();
+ 	}
+ 	irob_msgs::InstrumentInfo ret(instrument_info);
  	return ret;
 }
 

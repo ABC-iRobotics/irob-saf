@@ -40,6 +40,13 @@ class GestureServer {
 
 public:
 
+	struct GestureSetting { 
+    	double jaw_open_angle;
+    	double jaw_closed_angle;
+    	Eigen::Vector3d t;	// translation
+    	
+    	friend std::ostream& operator<<(std::ostream&, const GestureSetting&);
+  	};
    
 
 protected:
@@ -73,19 +80,19 @@ protected:
 	  
 	void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double); 
 	 
-   	void grasp(Pose, Pose, double, double, std::vector<Pose>,
+   	void grasp(Pose, Pose, double, std::vector<Pose>,
    			InterpolationMethod, 
    			double, double);
    	
-   	void cut(Pose, Pose, double, double, std::vector<Pose>, 
+   	void cut(Pose, Pose, double, std::vector<Pose>, 
    			InterpolationMethod,
    			double, double);
    			
-   	void push(Pose, Pose, Eigen::Vector3d, double, std::vector<Pose>,
+   	void push(Pose, Pose, Eigen::Vector3d, std::vector<Pose>,
 	  		InterpolationMethod,
 	  		double, double);
     	
-    void dissect(Pose, Pose, Eigen::Vector3d,double, double, std::vector<Pose>,
+    void dissect(Pose, Pose, Eigen::Vector3d,double, std::vector<Pose>,
     		InterpolationMethod,
     		double, double); 
     		
@@ -100,6 +107,9 @@ protected:
    			
     bool waitForActionDone(std::string);	
 	bool handleActionState(std::string, bool = false);
+	bool isAbleToDoGesture(int);
+	irob_msgs::InstrumentJawPart findInstrumentJawPartForGesture(int);
+	GestureSetting calcGestureSetting(int, irob_msgs::InstrumentJawPart, double);
    	
 };
 

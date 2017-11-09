@@ -43,6 +43,13 @@ void GestureClient::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(msg);
 }
 
+void GestureClient::instrumentInfoCB(
+				const irob_msgs::InstrumentInfoConstPtr& msg) 
+{
+    instrument_info = *msg;
+    instrument_info_pub.publish(msg);
+}
+
 
 void GestureClient::subscribeTopics() 
 {                 	            	
@@ -50,6 +57,11 @@ void GestureClient::subscribeTopics()
    			nh.subscribe<irob_msgs::ToolPoseStamped>(
                         "gesture/"+arm_name+"/position_cartesian_current_cf",
                        	1000, &GestureClient::positionCartesianCurrentCB,this);
+                    
+    instrument_info_sub = 
+   			nh.subscribe<irob_msgs::InstrumentInfo>(
+                        "gesture/"+arm_name+"/instrument_info",
+                       	1000, &GestureClient::instrumentInfoCB,this);
 }
 
 
@@ -58,6 +70,11 @@ void GestureClient::advertiseTopics()
 	position_cartesian_current_pub 
 				= nh.advertise<irob_msgs::ToolPoseStamped>(
                     	"maneuver/"+arm_name+"/position_cartesian_current_cf",
+                        1000);   
+
+    instrument_info_pub 
+				= nh.advertise<irob_msgs::InstrumentInfo>(
+                    	"maneuver/"+arm_name+"/instrument_info",
                         1000);   
 }
 
@@ -80,6 +97,18 @@ Pose GestureClient::getPoseCurrent()
  	Pose ret(position_cartesian_current);
  	return ret;
 
+}
+
+
+irob_msgs::InstrumentInfo GestureClient::getInstrumentInfo()
+{
+	while (instrument_info.name.empty())
+	{
+ 		ros::spinOnce();
+ 		ros::Duration(0.05).sleep();
+ 	}
+ 	irob_msgs::InstrumentInfo ret(instrument_info);
+ 	return ret;
 }
 
 std::string GestureClient::getName()
@@ -132,7 +161,7 @@ void GestureClient::nav_to_pos(Pose target,
 }
 
 void GestureClient::grasp(Pose target, Pose approach_pose,
-					double open_angle, double closed_angle,
+					double target_diameter,
 					std::vector<Pose> waypoints /* = empty */, 
 					InterpolationMethod interp_method /* = LINEAR */,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -154,8 +183,7 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
     else
     	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
  	
-  	goal.open_angle = open_angle;
-  	goal.closed_angle = closed_angle;
+  	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	
@@ -167,7 +195,7 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
 
 
 void GestureClient::cut(Pose target, Pose approach_pose,
-					double open_angle, double closed_angle,
+					double target_diameter,
 					std::vector<Pose> waypoints /* = empty */, 
 					InterpolationMethod interp_method /* = LINEAR */,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -189,8 +217,7 @@ void GestureClient::cut(Pose target, Pose approach_pose,
     else
     	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
  	
-  	goal.open_angle = open_angle;
-  	goal.closed_angle = closed_angle;
+  	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	
@@ -201,7 +228,7 @@ void GestureClient::cut(Pose target, Pose approach_pose,
 }
 
 
-void GestureClient::release(Pose approach_pose,	double open_angle,
+void GestureClient::release(Pose approach_pose,	double target_diameter,
 			double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 			double speed_jaw /* = DEFAULT_SPEED_JAW */)
 {
@@ -213,7 +240,7 @@ void GestureClient::release(Pose approach_pose,	double open_angle,
 	goal.approach_pose = approach_pose.toRosPose();
 	
  
-  	goal.open_angle = open_angle;
+  	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	
@@ -256,7 +283,6 @@ void GestureClient::place(Pose target, Pose approach_pose,
 
 void GestureClient::push(Pose target, Pose approach_pose, 
 				Eigen::Vector3d displacement,
-				double closed_angle,
 				std::vector<Pose> waypoints /* = empty */, 
 				InterpolationMethod interp_method /* = LINEAR */,
 				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -284,7 +310,6 @@ void GestureClient::push(Pose target, Pose approach_pose,
     else
     	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
  	
-  	goal.closed_angle = closed_angle;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	
@@ -297,7 +322,7 @@ void GestureClient::push(Pose target, Pose approach_pose,
 
 void GestureClient::dissect(Pose target, Pose approach_pose, 
 			Eigen::Vector3d displacement,
-			double open_angle, double closed_angle,
+			double target_diameter,
 			std::vector<Pose> waypoints /* = empty */, 
 			InterpolationMethod interp_method /* = LINEAR */,
 			double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -325,8 +350,7 @@ void GestureClient::dissect(Pose target, Pose approach_pose,
     else
     	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
  	
- 	goal.open_angle = open_angle;
-  	goal.closed_angle = closed_angle;
+ 	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	

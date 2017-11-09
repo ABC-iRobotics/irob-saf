@@ -35,6 +35,8 @@
 #include <irob_msgs/ToolPoseStamped.h>
 
 #include <irob_msgs/GestureAction.h>
+#include <irob_msgs/InstrumentInfo.h>
+#include <irob_msgs/InstrumentJawPart.h>
 
 namespace ias {
 
@@ -54,12 +56,15 @@ protected:
 
     // States
     irob_msgs::ToolPoseStamped position_cartesian_current;
+    irob_msgs::InstrumentInfo instrument_info;
     
     // Subscribers
     ros::Subscriber position_cartesian_current_sub;
-
+	ros::Subscriber instrument_info_sub;
+	
     // Publishers
 	ros::Publisher position_cartesian_current_pub;
+	ros::Publisher instrument_info_pub;
    	
    	
     void subscribeTopics();
@@ -76,9 +81,11 @@ public:
     void positionCartesianCurrentCB(
     		const irob_msgs::ToolPoseStampedConstPtr&);
 
-
+	void instrumentInfoCB(
+    		const irob_msgs::InstrumentInfoConstPtr&);
 	
    	Pose getPoseCurrent();
+   	irob_msgs::InstrumentInfo getInstrumentInfo();
    	std::string getName();
    	
    	// Robot motions
@@ -86,12 +93,12 @@ public:
    	void nav_to_pos(Pose, std::vector<Pose> = std::vector<Pose>(),
    					InterpolationMethod = InterpolationMethod::LINEAR,
    					double = DEFAULT_SPEED_CARTESIAN);
-   	void grasp(Pose, Pose, double, double,	
+   	void grasp(Pose, Pose, double,	
    					std::vector<Pose> = std::vector<Pose>(),
    					InterpolationMethod = InterpolationMethod::LINEAR,
 					double = DEFAULT_SPEED_CARTESIAN,
 					double = DEFAULT_SPEED_JAW);
-   	void cut(Pose, Pose,double, double,
+   	void cut(Pose, Pose,double,
 					std::vector<Pose> = std::vector<Pose>(),
    					InterpolationMethod = InterpolationMethod::LINEAR,
 					double = DEFAULT_SPEED_CARTESIAN,
@@ -105,14 +112,13 @@ public:
 				double = DEFAULT_SPEED_CARTESIAN);
 	void push(Pose, Pose, 
 				Eigen::Vector3d,
-				double,
 				std::vector<Pose> = std::vector<Pose>(),
    				InterpolationMethod = InterpolationMethod::LINEAR,
 				double = DEFAULT_SPEED_CARTESIAN,
 				double = DEFAULT_SPEED_JAW);
 	void dissect(Pose, Pose, 
 			Eigen::Vector3d,
-			double, double,
+			double,
 			std::vector<Pose> = std::vector<Pose>(),
    			InterpolationMethod = InterpolationMethod::LINEAR,
 			double = DEFAULT_SPEED_CARTESIAN,

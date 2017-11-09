@@ -66,7 +66,7 @@ protected:
     void advertiseLowLevelTopics();
 
 public:
-	RobotServerDVRK(ros::NodeHandle, ArmTypes, std::string, std::string, bool);
+	RobotServerDVRK(ros::NodeHandle, ros::NodeHandle, ArmTypes, std::string, bool);
 	~RobotServerDVRK();
 
     // Callbacks
