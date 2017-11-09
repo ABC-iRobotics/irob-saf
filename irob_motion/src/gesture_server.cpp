@@ -67,9 +67,9 @@ void GestureServer::gestureActionCB(
     		}	
     	
     		// STANDBY
-    		case irob_msgs::GestureGoal::STANDBY:
+    		case irob_msgs::GestureGoal::NAV_TO_POS:
     		{
-    			standby(target, waypoints,
+    			nav_to_pos(target, waypoints,
     					interp_method, goal -> speed_cartesian);
     			break;
     		}
@@ -272,15 +272,15 @@ void GestureServer::stop()
 }
 
 /**
- * Standby
+ * Nav_to_pos
  */
-void GestureServer::standby(Pose target, std::vector<Pose> waypoints,
+void GestureServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
 			InterpolationMethod interp_method, double speed_cartesian)
 {
 
 	// Helper variables
     bool done = false;
-    std::string stage = "standby";
+    std::string stage = "navigate";
 
  	// Start action
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);

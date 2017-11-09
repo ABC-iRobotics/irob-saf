@@ -83,7 +83,7 @@ public:
    	
    	// Robot motions
    	void stop();	
-   	void standby(Pose, std::vector<Pose> = std::vector<Pose>(),
+   	void nav_to_pos(Pose, std::vector<Pose> = std::vector<Pose>(),
    					InterpolationMethod = InterpolationMethod::LINEAR,
    					double = DEFAULT_SPEED_CARTESIAN);
    	void grasp(Pose, Pose, double, double,	

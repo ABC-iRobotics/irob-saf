@@ -103,7 +103,7 @@ void GestureClient::stop()
   	// in gestureDoneCB
 }
 
-void GestureClient::standby(Pose target, 
+void GestureClient::nav_to_pos(Pose target, 
 					std::vector<Pose> waypoints /* = empty */, 
 					InterpolationMethod interp_method /* = LINEAR */,
 					double speed_cartesian/* = DEFAULT_SPEED_CARTESIAN */ )
@@ -111,7 +111,7 @@ void GestureClient::standby(Pose target,
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::STANDBY;
+ 	goal.action = irob_msgs::GestureGoal::NAV_TO_POS;
   	
   	for (Pose p : waypoints)
     	goal.waypoints.push_back(p.toRosPose());

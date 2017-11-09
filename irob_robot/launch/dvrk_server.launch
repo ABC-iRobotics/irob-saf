@@ -7,13 +7,13 @@
   		<arg name="arm_typ" default="PSM1"/>
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
-		default="$(find irob_robot_control)/config/registration_identity.cfg"/>
+		default="$(find irob_robot)/config/registration_identity.cfg"/>
 	
 			<include 
-			file="$(find irob_robot_control)/config/dvrk_topic_names.xml" /> 
+			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 
   	
-			<node name="irob_dvrk_$(arg arm_typ)" pkg="irob_robot_control" 
-			type="irob_dvrk_controller" output="screen">
+			<node name="robot_server_$(arg arm_typ)" pkg="irob_robot" 
+			type="robot_server_dvrk" output="screen">
   		
   				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
 				<param name="arm_name" type="string" value="$(arg arm_name)" />

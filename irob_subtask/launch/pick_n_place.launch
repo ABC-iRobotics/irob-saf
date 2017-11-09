@@ -4,12 +4,12 @@
 	<group ns="ias">
 	
   	
-			<node name="maneuver_server" pkg="irob_motion" 
-			type="maneuver_server" output="screen">
+			<node name="pick_n_place" pkg="irob_subtask" 
+			type="pick_n_place" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
 					
-		
+				<remap from="target" to="vision/target" />
 	</node>
   	</group>
 </launch>

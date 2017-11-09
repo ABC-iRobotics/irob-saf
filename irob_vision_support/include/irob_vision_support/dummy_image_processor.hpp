@@ -70,7 +70,7 @@ DummyImageProcessor::DummyImageProcessor(ros::NodeHandle nh):
 	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
 	grasp_orientation(
 		vecToQuat<Eigen::Quaternion<double>,Eigen::Vector3d>(
-			AbstractDirections<CoordinateFrame::CAMERA, Eigen::Vector3d>::DOWN,
+			AbstractDirections<CoordinateFrame::ROBOT, Eigen::Vector3d>::DOWN,
 			0.0))
 {
 	subscribeTopics();

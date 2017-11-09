@@ -19,7 +19,7 @@
 				
 				<rosparam param="centrum">[0.0, 0.0, -0.12]</rosparam>
 					
-				<remap from="dummy_target_marker" to="vison/dummy_target_marker" />
+				<remap from="dummy_target_marker" to="vision/dummy_target_marker" />
 				
 	</node>
   	</group>

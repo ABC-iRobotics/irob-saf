@@ -60,11 +60,11 @@ void RobotServerPSM::initArm(bool move_allowed)
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok())
+      	if (!ros::ok())
       	{
-        	ROS_INFO_STREAM("InitRobotServerDVRK: Preempted");
+        	ROS_INFO_STREAM("InitRobotServerDVRK: Aborted by user");
         	// Set the action state to preempted
-        	as.setPreempted();
+        	as.setAborted();
         	success = false;
         	break;
       	}
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
 {
 	
 	// Initialize ros node
-    ros::init(argc, argv, "dvrk_il");
+    ros::init(argc, argv, "robot_server_dvrk");
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
     

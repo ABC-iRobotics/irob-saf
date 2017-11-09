@@ -51,11 +51,10 @@ void RobotServerDVRK::initArm(bool move_allowed)
     while(!success)
     {
     	// Check that preempt has not been requested by the client
-      	if (as.isPreemptRequested() || !ros::ok())
+      	if (!ros::ok())
       	{
-        	ROS_INFO_STREAM(arm_typ.name << " initilaization: Preempted");
-        	// Set the action state to preempted
-        	as.setPreempted();
+        	ROS_INFO_STREAM(arm_typ.name << " initilaization: Aborted by user");
+        	as.setAborted();
         	success = false;
         	break;
       	}

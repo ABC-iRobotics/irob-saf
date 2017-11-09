@@ -71,7 +71,7 @@ protected:
 	// Methods for gesture execution
 	void stop(); 
 	  
-	void standby(Pose ,std::vector<Pose>, InterpolationMethod, double); 
+	void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double); 
 	 
    	void grasp(Pose, Pose, double, double, std::vector<Pose>,
    			InterpolationMethod, 

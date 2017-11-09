@@ -173,7 +173,7 @@ public:
 				bool isActive): 
 		nh(nh), arm_name(arm_name), isActive(isActive),
 		as(nh, "robot/"+arm_name+"/robot_action",
-			boost::bind(&RobotServer::robotActionCB, this, _1))
+			boost::bind(&RobotServer::robotActionCB, this, _1), false)
 	{
 		loadRegistration(regfile);
 	}
