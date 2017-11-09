@@ -18,7 +18,7 @@
 #include <Eigen/Geometry> 
 #include <sensor_msgs/Image.h>
 #include <stereo_msgs/DisparityImage.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
 
 
 #include <irob_vision_support/vision_server.hpp>
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     
     // Start Vision server
   	try {
-    	VisionServer<geometry_msgs::Point, DummyImageProcessor> td(nh, rate);
+    	VisionServer<geometry_msgs::Pose, DummyImageProcessor> td(nh, rate);
     		
     	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");

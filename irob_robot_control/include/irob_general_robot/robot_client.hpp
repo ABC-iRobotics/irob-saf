@@ -95,7 +95,11 @@ public:
 	void stop();
 	
 	
-	bool isActionDone();
+	bool isActionDone(bool = true);
+	actionlib::SimpleClientGoalState getState();
+	
+	irob_msgs::RobotFeedback getFeedback(bool = true);
+	irob_msgs::RobotResult getResult(bool = true);
 	
 };
 

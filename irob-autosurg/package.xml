@@ -43,7 +43,7 @@
   <run_depend>irob_robot_interface</run_depend>
   <run_depend>irob_motion</run_depend>
   <run_depend>irob_vision_support</run_depend>
-  <run_depend>irob_task</run_depend>
+  <run_depend>irob_subtask</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

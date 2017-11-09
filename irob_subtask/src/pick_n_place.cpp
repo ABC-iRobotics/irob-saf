@@ -1,37 +1,33 @@
 /*
- * 	test_task.cpp
+ * 	pick_n_place.cpp
  *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-08-30
+ *	Created on: 2017-11-08
  *  
  */
 
-#include <irob_task/test_task.hpp>
+#include <irob_subtask/pick_n_place.hpp>
 
 
 namespace ias {
 
 
-TestTask::TestTask(ros::NodeHandle nh, 
+PicknPlace::PicknPlace(ros::NodeHandle nh, 
 					std::vector<std::string> arm_names): 
-			nh(nh), arm_names(arm_names), maneuver(nh, arm_names), vision(nh)
-{
-
-	// Subscribe and advertise topics
-	
-	
+			AutosurgAgent(nh, arm_names), vision(nh)
+{	
+	// 
 }
 
-TestTask::~TestTask()
+PicknPlace::~PicknPlace()
 {
 	// TODO Auto-generated destructor stub
 }
 
 
-void TestTask::graspObject()
+void PicknPlace::graspObject()
 {
-	Eigen::Vector3d p = makeNaN<Eigen::Vector3d>();
-	Eigen::Vector3d old_p;
+	Pose p = makeNaN<Pose>();
 	while (isnan(p) 
 			&& ros::ok())
 	{
@@ -39,24 +35,24 @@ void TestTask::graspObject()
 		ros::Duration(0.1).sleep();
 	}
 	
-	ROS_INFO_STREAM("Object position received: " << p);
-	
-	Pose pose = maneuver.getPoseCurrent(arm_names[0]);
-	pose.position = p;
+	ROS_INFO_STREAM("Object pose received: " << p);
 	
 	ROS_INFO_STREAM("Start grasp maneuver...");
-	maneuver.grasp(arm_names[0], pose, 30, 0, 10.0);
-	old_p = p;
-	while(!maneuver.isManeuverDone() && ros::ok())
+	double approach_dist = 10.0;
+	Pose approach_pose = p - (approach_dist *
+		 quatToVec<Eigen::Quaternion<double>,Eigen::Vector3d>(p.orientation));
+	
+	arms[0] -> grasp(p, approach_pose, 30.0, 0.0);
+	while(!arms[0] -> isGestureDone() && ros::ok())
 	{
 		
 		p = vision.getResult();
-		if ((p - old_p).norm() > 10.0)
+		/*if ((p - old_p).norm() > 10.0)
 		{
 			ROS_INFO_STREAM("Initiating grasp preemt...");
 			maneuver.grasp(arm_names[0], pose, 30, 0, 10.0);
 			old_p = p;
-		}
+		}*/
 		ros::Duration(0.1).sleep();
 	}
 		
@@ -85,9 +81,9 @@ int main(int argc, char **argv)
     
     // StartGesture server
   	try {
-    	TestTask tt(nh, arm_names);
+    	PicknPlace pnp(nh, arm_names);
     	
-  	   	tt.graspObject();	    	
+  	   	pnp.graspObject();	    	
     	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
     	

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_task)
+project(irob_subtask)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -89,7 +89,7 @@ find_package(catkin REQUIRED
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   		INCLUDE_DIRS include
-  		LIBRARIES irob_task_lib
+  		LIBRARIES irob_subtask_lib
         CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
         	 message_runtime actionlib_msgs irob_utils
         #DEPENDS system_lib
@@ -107,16 +107,16 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 ## Declare a C++ library
 
-file(GLOB irob_task_lib_src
+file(GLOB irob_subtask_lib_src
     "src/*.cpp"
 )
 
 
-add_library( irob_task_lib STATIC
-       ${irob_task_lib_src}
+add_library( irob_subtask_lib STATIC
+       ${irob_subtask_lib_src}
        )
 
-set_target_properties( irob_task_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_subtask_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -133,9 +133,8 @@ set_target_properties( irob_task_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(test_task src/test_task.cpp)
+add_executable(pick_n_place src/pick_n_place.cpp)
 
-add_executable(retractor src/retractor.cpp)
 
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -150,19 +149,14 @@ add_executable(retractor src/retractor.cpp)
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_task_lib
+ target_link_libraries(irob_subtask_lib
  	${catkin_LIBRARIES}
  )
  
  
- target_link_libraries(test_task
+ target_link_libraries(pick_n_place
    ${catkin_LIBRARIES}
-   irob_task_lib
- )
- 
-  target_link_libraries(retractor
-   ${catkin_LIBRARIES}
-   irob_task_lib
+   irob_subtask_lib
  )
  
 

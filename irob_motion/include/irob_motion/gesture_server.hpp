@@ -2,7 +2,7 @@
  * 	gesture_server.hpp
  * 	
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-07-18
+ *	Created on: 2017-11-06
  *	
  *	Separated ROS node to support preempted actions.
  *	grasp, release, cut, go_to, approach, leave...
@@ -48,6 +48,10 @@ protected:
     
     // Action servers
     actionlib::SimpleActionServer<irob_msgs::GestureAction> as;
+    
+    static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
+    static const double DEFAULT_SPEED_JAW;			// deg/s
+    static const double DEFAULT_LOOP_RATE;					// Hz
 	
 
 public:
@@ -58,25 +62,45 @@ public:
 
     void gestureActionCB(
     		const irob_msgs::GestureGoalConstPtr &);
-   
-   	void grasp(double, double); 	
-   	
-   	void cut(double, double); 
     		
-   	void release(double, double);
-   	
-   	void openJaws(double, double);
-    		
-   	void approach(double, double);
-   	
-    void leave(double, double);
-    		
-   	void goTo(Pose, double,	std::vector<Pose>, InterpolationMethod);
-    
-    void stop(); 
-
-   	Pose getPoseCurrent();
+    Pose getPoseCurrent();
    	std::string getArmName();	
+    		
+protected:
+		
+	// Methods for gesture execution
+	void stop(); 
+	  
+	void standby(Pose ,std::vector<Pose>, InterpolationMethod, double); 
+	 
+   	void grasp(Pose, Pose, double, double, std::vector<Pose>,
+   			InterpolationMethod, 
+   			double, double);
+   	
+   	void cut(Pose, Pose, double, double, std::vector<Pose>, 
+   			InterpolationMethod,
+   			double, double);
+   			
+   	void push(Pose, Pose, Eigen::Vector3d, double, std::vector<Pose>,
+	  		InterpolationMethod,
+	  		double, double);
+    	
+    void dissect(Pose, Pose, Eigen::Vector3d,double, double, std::vector<Pose>,
+    		InterpolationMethod,
+    		double, double); 
+    		
+   	void release(Pose, double, 
+   			double, double);
+   	
+   	void place(Pose, Pose, std::vector<Pose>, InterpolationMethod,
+   			double);
+	
+   	void manipulate(Eigen::Vector3d,
+   			double);
+   			
+    bool waitForActionDone(std::string);	
+	bool handleActionState(std::string, bool = false);
+   	
 };
 
 }

@@ -1,95 +1,41 @@
 /*
- *  dvrk_arm.cpp
+ *  robot_server_dvrk.cpp
  *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2016-10-10
+ *	Created on: 2016-11-07
  *  
  */
 
-#include <irob_dvrk/arm.hpp>
+#include <irob_dvrk/robot_server_dvrk.hpp>
 #include <numeric>
 #include <chrono>
 
 namespace ias {
 
 
-const std::string Arm::HOME_CMD
+const std::string RobotServerDVRK::HOME_CMD
                     = "Home";
-const std::string Arm::HOME_DONE
+const std::string RobotServerDVRK::HOME_DONE
                     = "DVRK_READY";
-const std::string Arm::STATE_POSITION_JOINT
+const std::string RobotServerDVRK::STATE_POSITION_JOINT
                     = "DVRK_POSITION_JOINT";
                    // = "DVRK_POSITION_GOAL_JOINT";
-const std::string Arm::STATE_POSITION_CARTESIAN
+const std::string RobotServerDVRK::STATE_POSITION_CARTESIAN
                     ="DVRK_POSITION_CARTESIAN";
                    // ="DVRK_POSITION_GOAL_CARTESIAN";
                    
 
 
 
-Arm::Arm(ros::NodeHandle nh, ArmTypes arm_typ, std::string arm_name, 
+RobotServerDVRK::RobotServerDVRK(ros::NodeHandle nh, ArmTypes arm_typ,
+									std::string arm_name, 
 									std::string regfile, bool isActive): 
-			nh(nh), arm_typ(arm_typ), arm_name(arm_name),
-			as(nh, "robot/"+arm_name+"/robot_action", boost::bind(
-				&Arm::robotActionCB, this, _1), false)
-{
-	loadRegistration(regfile);
-	// Subscribe and advertise topics
-	subscribeTopics();
-    if (isActive == ACTIVE)
-    	advertiseTopics();
-    startActionServer();
-}
+			RobotServer(nh, arm_name, regfile, isActive), arm_typ(arm_typ){}
 
-Arm::~Arm()
-{
-	// TODO Auto-generated destructor stub
-}
+RobotServerDVRK::~RobotServerDVRK() {}
 
-/*
- * Callbacks
- */
-void Arm::robotActionCB(const irob_msgs::RobotGoalConstPtr &goal)
-{
-    switch(goal -> action)
-    {
-    	case irob_msgs::RobotGoal::STOP:
-    	{
-    		stop();
-    		break;
-    	}	
-    		
-    	case  irob_msgs::RobotGoal::INIT_ARM:
-    	{
-    		initArm(goal -> move_allowed);
-    		break;
-    	}
-    	
-    	case  irob_msgs::RobotGoal::RESET_POSE:
-    	{
-    		resetPose(goal -> move_allowed);
-    		break;
-    	}	
-    		
-    	case  irob_msgs::RobotGoal::FOLLOW_TRAJECTORY:
-    	{
-    		followTrajectory(goal->trajectory);
-    		break;
-    	}
-    	default:
-    	{
-    		ROS_ERROR_STREAM(arm_name  << 
-    					": invalid robot action code received");
-    		irob_msgs::RobotResult result;
-    		result.pose = getPoseCurrent().toRosToolPose();
-			result.info = "invalid robot action code";
-      		as.setAborted(result);
-    		break;
-    	}    	
-    }	
-}
  
-void Arm::initArm(bool move_allowed)
+void RobotServerDVRK::initArm(bool move_allowed)
 {
     // helper variables
     ros::Rate loop_rate(2);
@@ -138,7 +84,7 @@ void Arm::initArm(bool move_allowed)
     }
 }
   
-void Arm::resetPose(bool move_allowed)
+void RobotServerDVRK::resetPose(bool move_allowed)
 {
     // helper variables
     bool success = false;
@@ -174,7 +120,7 @@ void Arm::resetPose(bool move_allowed)
     }
 }
 
-void Arm::stop()
+void RobotServerDVRK::stop()
 {
      // helper variables
     bool success = false;
@@ -204,7 +150,7 @@ void Arm::stop()
   
   
   
-void Arm::followTrajectory(Trajectory<Pose> tr)
+void RobotServerDVRK::followTrajectory(Trajectory<Pose> tr)
   {
     // helper variables
     bool success = true;
@@ -262,17 +208,17 @@ void Arm::followTrajectory(Trajectory<Pose> tr)
 
 
  
-void Arm::robotStateCB(const std_msgs::String msg)
+void RobotServerDVRK::robotStateCB(const std_msgs::String msg)
 {
     robot_state = msg;
 }
 
-void Arm::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
+void RobotServerDVRK::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
 {
     position_joint = *msg;
 }
 
-void Arm::positionCartesianCurrentCB(
+void RobotServerDVRK::positionCartesianCurrentCB(
 				const geometry_msgs::PoseStampedConstPtr& msg) 
 {
     position_cartesian_current = *msg;
@@ -287,56 +233,56 @@ void Arm::positionCartesianCurrentCB(
     position_cartesian_current_pub.publish(fwd);
 }
 
-void Arm::errorCB(const std_msgs::String msg) 
+void RobotServerDVRK::errorCB(const std_msgs::String msg) 
 {
      error = msg;
 }
 
-void Arm::warningCB(const std_msgs::String msg) 
+void RobotServerDVRK::warningCB(const std_msgs::String msg) 
 {
      warning = msg;
 }
 
-void Arm::subscribeTopics() 
+void RobotServerDVRK::subscribeLowLevelTopics() 
 {
 	robot_state_sub = nh.subscribe<std_msgs::String>(
                         TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/robot_state"),
-                       	1000, &Arm::robotStateCB,this);
+                       	1000, &RobotServerDVRK::robotStateCB,this);
   
   	state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
                         TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/state_joint_current"),
-                       	1000, &Arm::stateJointCurrentCB,this);  
+                       	1000, &RobotServerDVRK::stateJointCurrentCB,this);  
                        	            	
    	position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
                         TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/position_cartesian_current"),
-                       	1000, &Arm::positionCartesianCurrentCB,this);
+                       	1000, &RobotServerDVRK::positionCartesianCurrentCB,this);
                        	
 	error_sub = nh.subscribe<std_msgs::String>(
                         TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/error"),
-                       	1000, &Arm::errorCB,this);
+                       	1000, &RobotServerDVRK::errorCB,this);
                        	
     warning_sub = nh.subscribe<std_msgs::String>(
                         TopicNameLoader::load(nh,
                         	"dvrk_topics/namespace",
                         	arm_typ.name,
                         	"dvrk_topics/warning"),
-                       	1000, &Arm::warningCB,this);
+                       	1000, &RobotServerDVRK::warningCB,this);
 
 }
 
-void Arm::advertiseTopics() 
+void RobotServerDVRK::advertiseLowLevelTopics() 
 {
 	// dVRK
 	robot_state_pub = nh.advertise<std_msgs::String>(
@@ -357,50 +303,13 @@ void Arm::advertiseTopics()
                         	arm_typ.name,
                         	"dvrk_topics/set_position_cartesian"),
                         1000);  
-
-	// robot interface
-	position_cartesian_current_pub 
-				= nh.advertise<irob_msgs::ToolPoseStamped>(
-                    	"robot/"+arm_name+"/position_cartesian_current_cf",
-                        1000); 
 }
 
-void Arm::startActionServer() 
-{
-	as.start();
-}
-
-
-void Arm::loadRegistration(std::string registration_file)
-{
-	std::ifstream cfgfile(registration_file.c_str());
-    if (!cfgfile.is_open())
-    	throw std::runtime_error("Cannot open file " + registration_file);
-    if (cfgfile.eof())
-    	throw std::runtime_error("Cfgfile " + registration_file + " is empty.");
-   	
-   	double x, y, z;
-   	
-    cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
-    t << x, y, z;
-    
-    for (int i = 0; i < 3; i++)
-    {
-    	cfgfile >> x >> std::ws >> y >> std::ws >> z >> std::ws;
-    	R(i,0) = x;
-    	R(i,1) = y;
-    	R(i,2) = z;
-    }
-    
-    cfgfile.close();
-    
-    ROS_INFO_STREAM("Registration read: "<< std::endl << t << std::endl << R);
-}
 
 /*
  * DVRK actions
  */
-double Arm::getJointStateCurrent(int index)
+double RobotServerDVRK::getJointStateCurrent(int index)
 {
 	ros::spinOnce();
 	if (index > ((int)position_joint.position.size())-1)
@@ -411,7 +320,7 @@ double Arm::getJointStateCurrent(int index)
  	return position_joint.position[index];
 }
 
-std::vector<double> Arm::getJointStateCurrent()
+std::vector<double> RobotServerDVRK::getJointStateCurrent()
 {
 	ros::spinOnce();
 	std::vector<double> ret(arm_typ.dof);
@@ -420,7 +329,7 @@ std::vector<double> Arm::getJointStateCurrent()
  	return ret;
 }
  
-Eigen::Vector3d Arm::getPositionCartesianCurrent()
+Eigen::Vector3d RobotServerDVRK::getPositionCartesianCurrent()
 {
  	ros::spinOnce();
  	Eigen::Vector3d ret(position_cartesian_current.pose.position.x,
@@ -429,7 +338,7 @@ Eigen::Vector3d Arm::getPositionCartesianCurrent()
     return ret;
 }
 
-Eigen::Quaternion<double> Arm::getOrientationCartesianCurrent()
+Eigen::Quaternion<double> RobotServerDVRK::getOrientationCartesianCurrent()
 {
 	ros::spinOnce();
  	Eigen::Quaternion<double> ret(position_cartesian_current.pose.orientation.x,
@@ -439,7 +348,7 @@ Eigen::Quaternion<double> Arm::getOrientationCartesianCurrent()
     return ret;
 }
 
-Pose Arm::getPoseCurrent()
+Pose RobotServerDVRK::getPoseCurrent()
 {
  	ros::spinOnce();
  	Pose ret(position_cartesian_current, 0.0);
@@ -448,7 +357,7 @@ Pose Arm::getPoseCurrent()
 }
 
 
-bool Arm::setRobotState(std::string state)
+bool RobotServerDVRK::setRobotState(std::string state)
 {
 	std_msgs::String msg;
     std::stringstream ss;
@@ -468,7 +377,7 @@ bool Arm::setRobotState(std::string state)
     return false;
 }
 
-void Arm::moveJointRelative(int joint_idx, double movement, double dt)
+void RobotServerDVRK::moveJointRelative(int joint_idx, double movement, double dt)
 {
    	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
@@ -496,7 +405,7 @@ void Arm::moveJointRelative(int joint_idx, double movement, double dt)
   	}
 }
 
-void Arm::moveJointAbsolute(int joint_idx, double pos, double dt)
+void RobotServerDVRK::moveJointAbsolute(int joint_idx, double pos, double dt)
 {
 	// Collect data
     std::vector<double> currJoint = getJointStateCurrent();
@@ -524,7 +433,7 @@ void Arm::moveJointAbsolute(int joint_idx, double pos, double dt)
   	}
 }
 
-void Arm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
+void RobotServerDVRK::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
@@ -555,7 +464,7 @@ void Arm::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 
 }
 
-void Arm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
+void RobotServerDVRK::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 {
     // Collect data
 	Pose currPose = getPoseCurrent();
@@ -586,7 +495,7 @@ void Arm::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 
 }
 
-void Arm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
+void RobotServerDVRK::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
 {
 	// Collect data
 	Pose currPose = getPoseCurrent();
@@ -615,7 +524,7 @@ void Arm::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt
   	}
 }
 
-void Arm::moveCartesianAbsolute(Pose pose, double dt)
+void RobotServerDVRK::moveCartesianAbsolute(Pose pose, double dt)
 {
 	// Collect data
     Pose currPose = getPoseCurrent();
@@ -641,7 +550,7 @@ void Arm::moveCartesianAbsolute(Pose pose, double dt)
   	}
 }
 
-void Arm::checkErrors()
+void RobotServerDVRK::checkErrors()
 {
 	if (!warning.data.empty())
     {
@@ -657,7 +566,7 @@ void Arm::checkErrors()
    	}
 }
 
-void Arm::checkVelCartesian(const Pose& pose, 
+void RobotServerDVRK::checkVelCartesian(const Pose& pose, 
 								const Pose& currPose, double dt)
 {
 	Pose::Distance d = currPose.dist(pose)/dt;
@@ -676,7 +585,7 @@ void Arm::checkVelCartesian(const Pose& pose,
 	}
 }
 
-void Arm::checkNaNCartesian(const Pose& pose)
+void RobotServerDVRK::checkNaNCartesian(const Pose& pose)
 {
     if (pose.isNaN())
     {
@@ -688,7 +597,7 @@ void Arm::checkNaNCartesian(const Pose& pose)
 	}
 }
 
-void Arm::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
+void RobotServerDVRK::checkVelJoint(const sensor_msgs::JointState& new_position_joint, 
 						const std::vector<double>& currJoint, double dt)
 {
 	std::vector<double> distance(arm_typ.dof);
@@ -720,7 +629,7 @@ void Arm::checkVelJoint(const sensor_msgs::JointState& new_position_joint,
 	}
 }
 
-void Arm::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)
+void RobotServerDVRK::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)
 {
 	bool foundNaN = false;
     for (int i = 0; i < arm_typ.dof; i++) {
@@ -738,7 +647,7 @@ void Arm::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)
 }
 
 
-void Arm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
+void RobotServerDVRK::recordTrajectory(Trajectory<Eigen::Vector3d>& tr) 
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
@@ -753,7 +662,7 @@ void Arm::recordTrajectory(Trajectory<Eigen::Vector3d>& tr)
 	}
 }
 
-void Arm::recordTrajectory(Trajectory<Pose>& tr) 
+void RobotServerDVRK::recordTrajectory(Trajectory<Pose>& tr) 
 {
 	ros::Rate loop_rate(1.0/tr.dt);
 	// Skip invalid points
@@ -769,9 +678,6 @@ void Arm::recordTrajectory(Trajectory<Pose>& tr)
 
 
 }
-
-
-
 
 }
 
