@@ -80,7 +80,7 @@ protected:
 	  
 	void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double); 
 	 
-   	void grasp(Pose, Pose, double, std::vector<Pose>,
+   	void grasp(Pose, Pose, double, double, std::vector<Pose>,
    			InterpolationMethod, 
    			double, double);
    	
@@ -99,7 +99,7 @@ protected:
    	void release(Pose, double, 
    			double, double);
    	
-   	void place(Pose, Pose, std::vector<Pose>, InterpolationMethod,
+   	void place(Pose, Pose, double, std::vector<Pose>, InterpolationMethod,
    			double);
 	
    	void manipulate(Eigen::Vector3d,
@@ -109,7 +109,8 @@ protected:
 	bool handleActionState(std::string, bool = false);
 	bool isAbleToDoGesture(int);
 	irob_msgs::InstrumentJawPart findInstrumentJawPartForGesture(int);
-	GestureSetting calcGestureSetting(int, irob_msgs::InstrumentJawPart, double);
+	GestureSetting calcGestureSetting(int, irob_msgs::InstrumentJawPart, 
+							Eigen::Quaternion<double>, double, double = 1.0);
    	
 };
 

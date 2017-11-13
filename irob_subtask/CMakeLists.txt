@@ -134,7 +134,7 @@ set_target_properties( irob_subtask_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(pick_n_place src/pick_n_place.cpp)
-
+add_executable(retractor src/retractor.cpp)
 
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -155,6 +155,11 @@ add_executable(pick_n_place src/pick_n_place.cpp)
  
  
  target_link_libraries(pick_n_place
+   ${catkin_LIBRARIES}
+   irob_subtask_lib
+ )
+ 
+  target_link_libraries(retractor
    ${catkin_LIBRARIES}
    irob_subtask_lib
  )

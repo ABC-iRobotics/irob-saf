@@ -93,6 +93,7 @@ void GestureServer::gestureActionCB(
     		{				
   		  		grasp(target, approach_pose,
 						goal -> target_diameter,
+						goal -> compression_rate,
 						waypoints, interp_method,
 						goal -> speed_cartesian, goal -> speed_jaw);
 	    		break;
@@ -131,7 +132,7 @@ void GestureServer::gestureActionCB(
     		// PLACE
     		case irob_msgs::GestureGoal::PLACE:
     		{
-    			place( target, approach_pose,
+    			place( target, approach_pose, goal -> target_diameter,
 					waypoints, interp_method, goal -> speed_cartesian);
     			break;
     		}
@@ -262,14 +263,14 @@ bool GestureServer::isAbleToDoGesture(int gesture_type)
 		|| 	gesture_type == irob_msgs::GestureGoal::RELEASE)
 		return true;
 		
-	if (instrument_info.basic_type == irob_msgs::InstrumentInfo::GRIPPER
+	if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::GRIPPER
 			&& (	gesture_type == irob_msgs::GestureGoal::GRASP
 				||	gesture_type == irob_msgs::GestureGoal::DISSECT
 				||	gesture_type == irob_msgs::GestureGoal::PLACE
 				||	gesture_type == irob_msgs::GestureGoal::MANIPULATE))
 		return true;
 		
-	if (instrument_info.basic_type == irob_msgs::InstrumentInfo::SCISSORS
+	if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::SCISSORS
 			&& (	gesture_type == irob_msgs::GestureGoal::CUT))
 		return true;
 		
@@ -285,7 +286,7 @@ irob_msgs::InstrumentJawPart GestureServer::findInstrumentJawPartForGesture(
 {
 	// Return a JOINT type instruemtJawPart if not found
 	irob_msgs::InstrumentJawPart ret;
-	ret.type = InstrumentJawPart::JOINT;
+	ret.type = irob_msgs::InstrumentJawPart::JOINT;
 	ret.start = 0.0;
 	ret.end = 0.0;
 	
@@ -315,17 +316,18 @@ irob_msgs::InstrumentJawPart GestureServer::findInstrumentJawPartForGesture(
 GestureServer::GestureSetting GestureServer::calcGestureSetting(
 							int gesture_type,
 					 		irob_msgs::InstrumentJawPart jaw_part,
-					 		double target_diameter)
+					 		Eigen::Quaternion<double> target_ori,
+					 		double target_diameter,
+					 		double compression_rate /* = 1.0 */)
 {
 	GestureSetting g;
 	g.jaw_open_angle = 0.0;
 	g.jaw_closed_angle = 0.0;
-	g.t = Vector3d(0.0, 0.0, 0.0);
+	g.t = Eigen::Vector3d(0.0, 0.0, 0.0);
 	
 	// Does not matters
 	if (	gesture_type == irob_msgs::GestureGoal::STOP 
 		|| 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
-		||	gesture_type == irob_msgs::GestureGoal::PUSH
 		||	gesture_type == irob_msgs::GestureGoal::MANIPULATE )
 	   return g;
 	
@@ -334,36 +336,41 @@ GestureServer::GestureSetting GestureServer::calcGestureSetting(
 		|| 	gesture_type == irob_msgs::GestureGoal::PLACE
 		||  gesture_type == irob_msgs::GestureGoal::RELEASE)
 	{
-		g.jaw_closed_angle = (2.0 * atan((jaw_part.end 
-						/ (target_diameter / 2.0)) - 1.0))
-							* (180.0 / M_PI);
-		double dist = (jaw_part.end * (target_diameter / 2.0)) 
-						/ (jaw_part.end - (target_diameter / 2.0));
-						
+		
+		double dist = jaw_part.end - (target_diameter / 2.0);
+		
 		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
-						Eigen::Vector3d>(
-							arm.getPoseCurrent().orientation);
-		g.jaw_open_angle = g.jaw_closed_angle + 10.0;
+						Eigen::Vector3d>(target_ori);
+				
+		g.jaw_closed_angle = (2.0 * atan(((target_diameter / 2.0) 
+							* compression_rate) / dist))
+							* (180.0 / M_PI);
+			
+		g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0) 
+							* 1.2) / dist))
+							* (180.0 / M_PI);
+						
 		return g;
 	}
 	
-	if (|| 	gesture_type == irob_msgs::GestureGoal::CUT)
+	if (gesture_type == irob_msgs::GestureGoal::CUT)
 	{
-		g.jaw_open_angle = (2.0 * atan((jaw_part.end 
-						/ (target_diameter / 2.0)) - 1.0))
-							* (180.0 / M_PI);
-		double dist = (jaw_part.end * (target_diameter / 2.0)) 
-						/ (jaw_part.end - (target_diameter / 2.0));
-						
+		double dist = jaw_part.end - (target_diameter / 2.0);
+		
 		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
-						Eigen::Vector3d>(
-							arm.getPoseCurrent().orientation);
+						Eigen::Vector3d>(target_ori);
+				
+		g.jaw_open_angle = (2.0 * atan((target_diameter / 2.0) / dist))
+							* (180.0 / M_PI);
+							
 		g.jaw_closed_angle = 0.0;
 		return g;
 	}	
 	
 	// End of jaw
-	if (	gesture_type == irob_msgs::GestureGoal::DISSECT)
+	// TODO check
+	if (	gesture_type == irob_msgs::GestureGoal::DISSECT
+		||	gesture_type == irob_msgs::GestureGoal::PUSH)
 	{
 		g.jaw_open_angle = (2.0 * (target_diameter 
 						/ (2.0 * arm.getInstrumentInfo().jaw_length))) 
@@ -373,9 +380,8 @@ GestureServer::GestureSetting GestureServer::calcGestureSetting(
 						* cos(g.jaw_open_angle * (M_PI / 360.0));
 						
 		g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
-						Eigen::Vector3d>(
-							arm.getPoseCurrent().orientation);
-		g.jaw_closed_angle =0.0;
+						Eigen::Vector3d>(target_ori);
+		g.jaw_closed_angle = 0.0;
 		return g;
 	}	
 	   
@@ -441,6 +447,7 @@ void GestureServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
  */ 
 void GestureServer::grasp(Pose target, Pose approach_pose,
 			double target_diameter,
+			double compression_rate,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian, double speed_jaw)
 {
@@ -452,20 +459,19 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
     	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::GRASP);
     	
     GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::GRASP, 
-    										jaw_part, target_diameter);
-
-	/**********
-	*
-	*	RESUME HERE TOMORROW!
-	*
-	*/
+    										jaw_part, 
+    										target.orientation, 
+    										target_diameter,
+    										compression_rate);
+    										
 
  	// Start action
  	
  	// Navigate
  	stage = "navigate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	arm.moveTool(approach_pose + gs.t,
+ 				speed_cartesian, waypoints, interp_method);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -476,7 +482,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
  	// Open tool 
  	stage = "open_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(open_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_open_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -487,7 +493,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
 	// Approach
  	stage = "approach";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(target, speed_cartesian);
+ 	arm.moveTool(target + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -498,7 +504,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
 	// Close tool 
 	stage = "close_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(closed_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_closed_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -518,13 +524,20 @@ void GestureServer::cut(Pose target, Pose approach_pose,
 	// Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+    irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::CUT);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::CUT, 
+    										jaw_part, target.orientation, 
+    										target_diameter);
 
  	// Start action
  	
  	// Navigate
  	stage = "navigate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	arm.moveTool(approach_pose + gs.t, speed_cartesian, waypoints, interp_method);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -535,7 +548,7 @@ void GestureServer::cut(Pose target, Pose approach_pose,
  	// Open tool 
  	stage = "open_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(open_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_open_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -546,7 +559,7 @@ void GestureServer::cut(Pose target, Pose approach_pose,
 	// Approach
  	stage = "approach";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(target, speed_cartesian);
+ 	arm.moveTool(target + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -557,7 +570,7 @@ void GestureServer::cut(Pose target, Pose approach_pose,
 	// Close tool 
 	stage = "close_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(closed_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_closed_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -576,13 +589,20 @@ void GestureServer::release(Pose approach_pose,
 	// Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+    irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::RELEASE);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::RELEASE, 
+    										jaw_part, approach_pose.orientation, 
+    										target_diameter);
 
  	// Start action
  	
  	// Open tool 
  	stage = "open_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(open_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_open_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -593,7 +613,7 @@ void GestureServer::release(Pose approach_pose,
 	// Approach
  	stage = "leave";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian);
+ 	arm.moveTool(approach_pose + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -607,19 +627,28 @@ void GestureServer::release(Pose approach_pose,
  * Place
  */
 void GestureServer::place(Pose target, Pose approach_pose,
+			double target_diameter,
 			std::vector<Pose> waypoints, InterpolationMethod interp_method,
 			double speed_cartesian)
 {
    	// Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+    irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::PLACE);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::PLACE, 
+    										jaw_part, target.orientation, 
+    										target_diameter);
 
  	// Start action
  	
  	// Navigate
  	stage = "navigate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	arm.moveTool(approach_pose + gs.t, 
+ 					speed_cartesian, waypoints, interp_method);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -630,7 +659,7 @@ void GestureServer::place(Pose target, Pose approach_pose,
 	// Approach
  	stage = "approach";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(target, speed_cartesian);
+ 	arm.moveTool(target + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -651,13 +680,21 @@ void GestureServer::push(Pose target, Pose approach_pose,
     // Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+   	irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::PUSH);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::PUSH, 
+    										jaw_part, target.orientation, 
+    										0.0);
 
  	// Start action
  	
  	// Navigate
  	stage = "navigate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	arm.moveTool(approach_pose + gs.t,
+ 		speed_cartesian, waypoints, interp_method);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -668,7 +705,7 @@ void GestureServer::push(Pose target, Pose approach_pose,
  	// Close tool 
  	stage = "close_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(closed_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_closed_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -679,7 +716,7 @@ void GestureServer::push(Pose target, Pose approach_pose,
 	// Approach
  	stage = "approach";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(target, speed_cartesian);
+ 	arm.moveTool(target + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -691,7 +728,7 @@ void GestureServer::push(Pose target, Pose approach_pose,
  	stage = "push";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
  	Pose pushed_pose = arm.getPoseCurrent() + displacement;
- 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	arm.moveTool(pushed_pose + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -712,13 +749,21 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
     // Helper variables   	
     bool done = false;
     std::string stage = "";
+    
+    irob_msgs::InstrumentJawPart jaw_part =
+    	findInstrumentJawPartForGesture(irob_msgs::GestureGoal::DISSECT);
+    	
+    GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::DISSECT, 
+    										jaw_part, target.orientation, 
+    										target_diameter);
 
  	// Start action
  	
  	// Navigate
  	stage = "navigate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(approach_pose, speed_cartesian, waypoints, interp_method);
+ 	arm.moveTool(approach_pose + gs.t,
+ 			speed_cartesian, waypoints, interp_method);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -729,7 +774,7 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
  	// Close tool 
  	stage = "close_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(closed_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_closed_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -740,7 +785,7 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
 	// Approach
  	stage = "approach";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
- 	arm.moveTool(target, speed_cartesian);
+ 	arm.moveTool(target + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -752,7 +797,7 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
  	stage = "penetrate";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
  	Pose pushed_pose = arm.getPoseCurrent() + displacement;
- 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	arm.moveTool(pushed_pose + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)
@@ -760,10 +805,10 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
 	else
 		return;
 		
-	// Close tool 
- 	stage = "close_tool";	
+	// Open tool 
+ 	stage = "open_tool";	
 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  	arm.moveJaws(open_angle, speed_jaw);
+  	arm.moveJaws(gs.jaw_open_angle, speed_jaw);
   	
     done = waitForActionDone(stage);
 	if (done)
@@ -775,7 +820,7 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
  	stage = "pull";
  	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
  	pushed_pose = arm.getPoseCurrent() - displacement;
- 	arm.moveTool(pushed_pose, speed_cartesian);
+ 	arm.moveTool(pushed_pose + gs.t, speed_cartesian);
  	
  	done = waitForActionDone(stage);
 	if (done)

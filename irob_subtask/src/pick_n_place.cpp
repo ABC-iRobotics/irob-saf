@@ -40,19 +40,21 @@ void PicknPlace::graspObject()
 	ROS_INFO_STREAM("Start grasp maneuver...");
 	double approach_dist = 10.0;
 	Pose approach_pose = p - (approach_dist *
-		 quatToVec<Eigen::Quaternion<double>,Eigen::Vector3d>(p.orientation));
+			AbstractDirections<CoordinateFrame::ROBOT,
+			Eigen::Vector3d>::DOWN);
 	
-	arms[0] -> grasp(p, approach_pose, 5.0);
+	arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
+	Pose old_p = p;
 	while(!arms[0] -> isGestureDone() && ros::ok())
 	{
 		
 		p = vision.getResult();
-		/*if ((p - old_p).norm() > 10.0)
+		if ((p.position - old_p.position).norm() > 10.0)
 		{
 			ROS_INFO_STREAM("Initiating grasp preemt...");
-			maneuver.grasp(arm_names[0], pose, 30, 0, 10.0);
+			arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
 			old_p = p;
-		}*/
+		}
 		ros::Duration(0.1).sleep();
 	}
 		

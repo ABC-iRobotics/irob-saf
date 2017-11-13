@@ -132,10 +132,10 @@ void GestureClient::stop()
   	// in gestureDoneCB
 }
 
-void GestureClient::nav_to_pos(Pose target, 
+void GestureClient::nav_to_pos(Pose target,
+					double speed_cartesian/* = DEFAULT_SPEED_CARTESIAN */,
 					std::vector<Pose> waypoints /* = empty */, 
-					InterpolationMethod interp_method /* = LINEAR */,
-					double speed_cartesian/* = DEFAULT_SPEED_CARTESIAN */ )
+					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
@@ -162,10 +162,11 @@ void GestureClient::nav_to_pos(Pose target,
 
 void GestureClient::grasp(Pose target, Pose approach_pose,
 					double target_diameter,
-					std::vector<Pose> waypoints /* = empty */, 
-					InterpolationMethod interp_method /* = LINEAR */,
+					double compression_rate,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-					double speed_jaw /* = DEFAULT_SPEED_JAW */)
+					double speed_jaw /* = DEFAULT_SPEED_JAW */,
+					std::vector<Pose> waypoints /* = empty */, 
+					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
@@ -184,6 +185,7 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
     	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
  	
   	goal.target_diameter = target_diameter;
+  	goal.compression_rate = compression_rate;
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
   	
@@ -196,10 +198,10 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
 
 void GestureClient::cut(Pose target, Pose approach_pose,
 					double target_diameter,
-					std::vector<Pose> waypoints /* = empty */, 
-					InterpolationMethod interp_method /* = LINEAR */,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-					double speed_jaw /* = DEFAULT_SPEED_JAW */)
+					double speed_jaw /* = DEFAULT_SPEED_JAW */,
+					std::vector<Pose> waypoints /* = empty */, 
+					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
@@ -252,9 +254,9 @@ void GestureClient::release(Pose approach_pose,	double target_diameter,
 
 
 void GestureClient::place(Pose target, Pose approach_pose,
+				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 				std::vector<Pose> waypoints /* = empty */, 
-				InterpolationMethod interp_method /* = LINEAR */,
-				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */)
+				InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
   	irob_msgs::GestureGoal goal;
@@ -283,10 +285,10 @@ void GestureClient::place(Pose target, Pose approach_pose,
 
 void GestureClient::push(Pose target, Pose approach_pose, 
 				Eigen::Vector3d displacement,
-				std::vector<Pose> waypoints /* = empty */, 
-				InterpolationMethod interp_method /* = LINEAR */,
 				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-				double speed_jaw /* = DEFAULT_SPEED_JAW */)
+				double speed_jaw /* = DEFAULT_SPEED_JAW */,
+				std::vector<Pose> waypoints /* = empty */, 
+				InterpolationMethod interp_method /* = LINEAR */)
 {
 	// Send a goal to the action
 	irob_msgs::GestureGoal goal;
@@ -323,10 +325,10 @@ void GestureClient::push(Pose target, Pose approach_pose,
 void GestureClient::dissect(Pose target, Pose approach_pose, 
 			Eigen::Vector3d displacement,
 			double target_diameter,
-			std::vector<Pose> waypoints /* = empty */, 
-			InterpolationMethod interp_method /* = LINEAR */,
 			double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-			double speed_jaw /* = DEFAULT_SPEED_JAW */)
+			double speed_jaw /* = DEFAULT_SPEED_JAW */,
+			std::vector<Pose> waypoints /* = empty */, 
+			InterpolationMethod interp_method /* = LINEAR */)
 {
 	// Send a goal to the action
 	irob_msgs::GestureGoal goal;

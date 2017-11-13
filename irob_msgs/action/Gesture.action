@@ -26,6 +26,7 @@ int8 				 interpolation	# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
 geometry_msgs/Pose	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
 float64 		 	 target_diameter # GRASP, CUT, DISSECT,
 									 # PLACE, RELEASE, DISSECT
+float64 		 	 compression_rate # GRASP
 geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE
 float64				 speed_cartesian
 									# NAV_TO_POS, GRASP, CUT, PUSH, PLACE, 
