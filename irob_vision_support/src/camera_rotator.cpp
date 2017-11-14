@@ -1,5 +1,5 @@
 /*
- * 	image_rotator.cpp
+ * 	camera_rotator.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-09-06
@@ -27,12 +27,15 @@ namespace ias {
 CameraRotator::CameraRotator(ros::NodeHandle nh, 
 					std::string camera, std::string calibration, int angle):
 					nh(nh), camera(camera),
-					c_info_man(ros::NodeHandle(nh, camera + "/rotated")
-						, camera + "/rotated"
+					c_info_man(ros::NodeHandle(nh, camera + "/calibrated")
+						, camera + "/calibrated"
 						, calibration)
 {
 	switch (angle)
 	{
+		case 0: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;
 		case 90: 
 			angle_code = cv::RotateFlags::ROTATE_90_CLOCKWISE;	// 0
 			break;
@@ -46,7 +49,7 @@ CameraRotator::CameraRotator(ros::NodeHandle nh,
 			angle_code = cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE;	// 2
 			break;
 		default: 
-			angle_code = cv::RotateFlags::ROTATE_90_CLOCKWISE;	// 0
+			angle_code = -1;	// -1 NO ROTATION
 			break;	
 	}
 	
@@ -77,9 +80,9 @@ void CameraRotator::subscribeTopics()
 
 void CameraRotator::advertiseTopics() 
 {
-	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/rotated/image", 1000); 
+	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/calibrated/image", 1000); 
 	camera_info_pub = 
-    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/rotated/camera_info", 1); 
+    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/calibrated/camera_info", 1); 
 }
 
 void CameraRotator::imageCB(
@@ -92,7 +95,10 @@ void CameraRotator::imageCB(
 	
     	cv::Mat rotated_image;
 
-    	cv::rotate(image_ptr->image, rotated_image, angle_code);
+		if (angle_code >= 0)
+    		cv::rotate(image_ptr->image, rotated_image, angle_code);
+    	else
+    		image_ptr->image.copyTo(rotated_image);
 
     	sensor_msgs::ImagePtr rotated_msg = 
     		cv_bridge::CvImage(msg->header, "bgr8", 

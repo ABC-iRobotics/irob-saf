@@ -19,9 +19,9 @@ Support for computer vision used for surgical automation.
   - see http://elinux.org/RPi_Setting_up_a_static_IP_in_Debian
   
 # Camera calibration
-* stereo camera calibrations must be saved from separate files (elsehow the disparity will be extremely noisy)
+* stereo camera calibrations must be saved to separate files (elsehow the disparity will be extremely noisy)
 * use the calibration app with option --approximate=0.1
-* example: rosrun camera_calibration cameracalibrator.py --size 8x6 --square 0.108 right:=/ias/stereo/right/rotated/image left:=/ias/stereo/left/rotated/image right_camera:=/ias/stereo/right/rotated left_camera:=/ias/stereo/left/rotated --no-service-check --approximate=0.1
+* example: rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/calibrated/image left:=/ias/stereo/left/calibrated/image right_camera:=/ias/stereo/right/calibrated left_camera:=/ias/stereo/left/calibrated --approximate=0.1
 
 # Useful links
 * http://wiki.ros.org/cv_camera
