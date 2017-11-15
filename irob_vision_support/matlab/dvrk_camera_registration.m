@@ -3,7 +3,7 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = 'registration_psm1.cfg';
+cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
 
 posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
@@ -114,10 +114,7 @@ hold off
 
 fileID = fopen(cfgfilename,'w');
 
-fprintf(fileID,'%f\t%f\t%f\n', t(1), t(2), t(3));
-for i = 1:3
-    fprintf(fileID,'%f\t%f\t%f\n', R(i,1), R(i,2), R(i,3));
-end
-
+fprintf(fileID,'t: [%f, %f, %f]\n', t(1), t(2), t(3));
+fprintf(fileID,'R: [%f, %f, %f, %f, %f, %f, %f, %f, %f]', R(1,1), R(1,2), R(1,3), R(2,1), R(2,2), R(2,3), R(3,1), R(3,2), R(3,3));
 fclose(fileID);
 disp('Registration saved to file.');

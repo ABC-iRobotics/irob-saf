@@ -40,7 +40,7 @@ void PicknPlace::graspObject()
 	ROS_INFO_STREAM("Start grasp maneuver...");
 	double approach_dist = 10.0;
 	Pose approach_pose = p - (approach_dist *
-			AbstractDirections<CoordinateFrame::ROBOT,
+			AbstractDirections<CoordinateFrame::CAMERA,
 			Eigen::Vector3d>::DOWN);
 	
 	arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
