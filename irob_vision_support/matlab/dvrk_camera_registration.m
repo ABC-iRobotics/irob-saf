@@ -23,7 +23,6 @@ right_cam_info = receive(right_cam_info_sub);
 disp('Camera info received:');
 left_p = reshape(left_cam_info.P, 4, 3)
 right_p = reshape(right_cam_info.P, 4, 3)
-pause(2) % Wait to ensure publisher is registered
 
 marker_3d = double(zeros(0,3));
 robot_3d = double(zeros(0,3));
