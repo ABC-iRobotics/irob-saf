@@ -31,6 +31,29 @@ CameraRotator::CameraRotator(ros::NodeHandle nh,
 						, camera + "/calibrated"
 						, calibration)
 {
+	#if CV_MAJOR_VERSION == 2
+	switch (angle)
+	{
+		case 0: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;
+		case 90: 
+			angle_code = 0;	// 0
+			break;
+		case 180: 
+			angle_code = 1;	// 1
+			break;
+		case 270: 
+			angle_code = 2;	// 2
+			break;
+		case -90: 
+			angle_code = 3;	// 2
+			break;
+		default: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;	
+	}	// do opencv 2 code
+	#elif CV_MAJOR_VERSION == 3
 	switch (angle)
 	{
 		case 0: 
@@ -52,6 +75,8 @@ CameraRotator::CameraRotator(ros::NodeHandle nh,
 			angle_code = -1;	// -1 NO ROTATION
 			break;	
 	}
+	#endif
+	
 	
 	if(!c_info_man.loadCameraInfo (calibration)){
 		ROS_INFO_STREAM("Calibration file missing. Camera not calibrated");
@@ -95,11 +120,27 @@ void CameraRotator::imageCB(
 	
     	cv::Mat rotated_image;
 
-		if (angle_code >= 0)
-    		cv::rotate(image_ptr->image, rotated_image, angle_code);
+		if (angle_code < 0)
+			image_ptr->image.copyTo(rotated_image);
     	else
-    		image_ptr->image.copyTo(rotated_image);
-
+    	{
+    		#if CV_MAJOR_VERSION == 2
+    			switch(angle_code)
+    			{
+				  case 1:
+                	cv::flip(image_ptr->image.t(), image, 1);
+                	break;
+            	case 2:
+                	cv::flip(image_ptr->image, image, -1);
+                	break;
+            	case 3:
+                	cv::flip(image_ptr->image.t(), image, 0);
+                	break;
+                }
+			#elif CV_MAJOR_VERSION == 3
+				cv::rotate(image_ptr->image, rotated_image, angle_code);
+			#endif
+		}
     	sensor_msgs::ImagePtr rotated_msg = 
     		cv_bridge::CvImage(msg->header, "bgr8", 
     				rotated_image).toImageMsg();			
