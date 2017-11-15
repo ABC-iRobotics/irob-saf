@@ -2,7 +2,7 @@
 Support for computer vision used for surgical automation.
 
 # Usage with USB webcam pair
-* sudo apt-get install ros-kinetic-cv-camera
+* sudo apt-get installros-kinetic-cv-camera
 * sudo apt-get install ros-kinetic-camera-calibration
 * device ID is based on the connection order of the cameras
 

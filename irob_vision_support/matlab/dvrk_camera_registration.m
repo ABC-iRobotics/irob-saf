@@ -53,7 +53,7 @@ while i < (n+1)
             im_coord_R =  mean(imagePoints(:,:,1,2), 1);
             
             new_marker = triangulate(im_coord_L, im_coord_R, left_p, right_p);
-            marker_3d = cat(1,marker_3d, (new_marker / 1000.0));
+            marker_3d = cat(1,marker_3d, (new_marker));
             disp(marker_3d);
             robot_3d = cat(1,robot_3d, [robot_pose_msg.Pose.Position.X, robot_pose_msg.Pose.Position.Y, robot_pose_msg.Pose.Position.Z]);
             i = i + 1;
