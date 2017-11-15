@@ -167,19 +167,19 @@ void CameraRotator::cameraInfoCB(
 	{
 		c_info = *msg;
 		#if CV_MAJOR_VERSION == 2
-    		if (angle_code == 0 || angle_code == 2)
-			{
-				c_info.width = msg -> height;
-				c_info.height = msg -> width;
- 			}
-		#elif CV_MAJOR_VERSION == 3
-			if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
-			|| angle_code == cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE)
-			{
-				c_info.width = msg -> height;
-				c_info.height = msg -> width;
- 			}
-		#endif
+    			if (angle_code == 0 || angle_code == 2)
+				{
+					c_info.width = msg -> height;
+					c_info.height = msg -> width;
+ 				}
+			#elif CV_MAJOR_VERSION == 3
+				if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
+				|| angle_code == cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE)
+				{
+					c_info.width = msg -> height;
+					c_info.height = msg -> width;
+ 				}
+			#endif
 		
 	}
 }
