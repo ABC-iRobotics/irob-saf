@@ -57,7 +57,7 @@ public:
 	
 	void tragetCB(const visualization_msgs::MarkerConstPtr&);
 	
-	geometry_msgs::Pose processImages( const cv_bridge::CvImagePtr, 
+	geometry_msgs::Point processImages( const cv_bridge::CvImagePtr, 
 										const cv_bridge::CvImagePtr,
 										const cv_bridge::CvImagePtr,
 										const cv_bridge::CvImagePtr,
@@ -70,7 +70,7 @@ DummyImageProcessor::DummyImageProcessor(ros::NodeHandle nh):
 	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
 	grasp_orientation(
 		vecToQuat<Eigen::Quaternion<double>,Eigen::Vector3d>(
-			AbstractDirections<CoordinateFrame::CAMERA,
+			BaseDirections<CoordinateFrame::CAMERA,
 			Eigen::Vector3d>::BACKWARD,
 			180.0))
 {
@@ -95,7 +95,7 @@ void DummyImageProcessor::tragetCB(const visualization_msgs::MarkerConstPtr& msg
     dummy_location.z() = msg->pose.position.z * 1000.0;
 }
 
-geometry_msgs::Pose DummyImageProcessor::processImages(
+geometry_msgs::Point DummyImageProcessor::processImages(
 			const  cv_bridge::CvImagePtr image_left_ptr,
     		const cv_bridge::CvImagePtr image_right_ptr,
     		const cv_bridge::CvImagePtr color_image_left_ptr,
@@ -104,14 +104,14 @@ geometry_msgs::Pose DummyImageProcessor::processImages(
 {
 	ros::spinOnce();
 	
-	geometry_msgs::Pose grasp_pose;
-	grasp_pose.position = 
+	geometry_msgs::Point grasp_pos;
+	grasp_pos = 
 		wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
-	grasp_pose.orientation = 
-		wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
-				>(grasp_orientation);
+	//grasp_pose.orientation = 
+	//	wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
+	//			>(grasp_orientation);
 		
-	return grasp_pose;
+	return grasp_pos;
 } 
 
 

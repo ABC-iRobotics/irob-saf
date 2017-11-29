@@ -17,4 +17,8 @@ TODO
 
 # Usage
 TODO
+
+Start simulation: 
+* roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/<USERNAME>/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console-PSM1_KIN_SIMULATED.json
+
 ![alt tag](docs/irob-autosurg-blockdiagram_v3.png)

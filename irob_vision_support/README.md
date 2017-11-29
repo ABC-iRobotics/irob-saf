@@ -12,7 +12,7 @@ Support for computer vision used for surgical automation.
   - fix ip: 192.168.1.104 255.255.255.0 192.168.1.1
   - DNS: 8.8.4.4
   - /etc/hosts: 
-  	- 192.168.1.104		maste
+  	- 192.168.1.104		master
 	- 192.168.1.105		left-pi
 	- 192.168.1.106		right-pi
   - export ROS_HOSTNAME, ROS_IP, ROS_MASTER_URI
@@ -28,4 +28,12 @@ Support for computer vision used for surgical automation.
 * http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration
 * http://wiki.ros.org/stereo_image_proc
 * https://github.com/UbiquityRobotics/raspicam_node
+
+# Matlab custom message generation
+* Install add-on "Robotics System Toolbox Interface for ROS Custom Messages" (use sudo matlab)
+* Type in Matlab console:
+  - folderpath = fullfile('catkin_ws','src', 'irob-autosurg')
+  - rosgenmsg(folderpath)
+* Follow the instructions suggested by rosgenmsg (savepath works only in sudo mode)
+* For a more detailed guide see https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html
 

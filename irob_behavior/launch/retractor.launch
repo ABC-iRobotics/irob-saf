@@ -1,0 +1,15 @@
+<!-- Launch file to move on a preprogrammed trajectory -->
+
+<launch>
+	<group ns="ias">
+	
+  	
+			<node name="retractor" pkg="irob_behavior" 
+			type="retractor" output="screen">
+  		
+				<rosparam param="arm_names">["arm_1"]</rosparam>
+					
+				<remap from="target" to="vision/target" />
+	</node>
+  	</group>
+</launch>

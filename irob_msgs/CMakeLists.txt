@@ -55,12 +55,13 @@ find_package(catkin REQUIRED
    VisionObject.msg
    InstrumentJawPart.msg
    InstrumentInfo.msg
+   FloatArray.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   TargetPose.srv
+   GetControlVariables.srv
    BoolQuery.srv
  )
 
