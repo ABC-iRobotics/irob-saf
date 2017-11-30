@@ -1,10 +1,16 @@
 
 classdef RetractionControl < handle
     
+    properties (Constant)
+        FUZZY = 1;
+        HMM = 2;
+    end
     
     properties
         
         crtl_srv;
+        fis;
+        method;
         
     end
     
@@ -15,6 +21,10 @@ classdef RetractionControl < handle
             
             rosshutdown;
             rosinit;
+            
+            obj.method = RetractionControl.FUZZY;
+            
+            obj.fis = readfis('retract_1.fis');
             
             obj.crtl_srv = rossvcserver(...
                 '/ias/behavior/retract_crtl_srv',...
@@ -33,9 +43,26 @@ classdef RetractionControl < handle
             response = defaultrespmsg;
             
             % Build the response message here
+            % [angle, tension, visible_size]
             
-            response.Output(1) = reqmsg.Input(1) * 2.0;
-            response.Output(2) = reqmsg.Input(2) * 2.0;
+            angle =  reqmsg.Input(1);
+            tension =  reqmsg.Input(2);
+            visible_size =  reqmsg.Input(3);
+            
+            displacement = zeros (2,1);
+            
+            if obj.method == RetractionControl.FUZZY
+                
+                displacement = evalfis([angle, tension, visible_size],obj.fis);
+                
+            elseif obj.method == RetractionControl.HMM
+                
+                % TODO
+                
+            end
+
+            response.Output(1) = displacement(1);   % y
+            response.Output(2) = displacement(2);   % z
             
         end
         
