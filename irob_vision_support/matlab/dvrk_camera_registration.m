@@ -5,7 +5,7 @@ rosinit;
 
 cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
 
-posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
+posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
 left_img_sub = rossubscriber('/ias/stereo/left/image_rect', 'sensor_msgs/Image');
 right_img_sub = rossubscriber('/ias/stereo/right/image_rect', 'sensor_msgs/Image');
@@ -48,7 +48,7 @@ while i < (n+1)
         
         
         
-        if and(boardSize(1) == 4,  boardSize(2) == 6)
+        if and(boardSize(1) == 5,  boardSize(2) == 7)
             im_coord_L =  mean(imagePoints(:,:,1,1), 1);
             im_coord_R =  mean(imagePoints(:,:,1,2), 1);
             

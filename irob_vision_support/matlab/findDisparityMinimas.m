@@ -21,12 +21,12 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
 %     disp('disp map size');
 %     disp(size(disparityMap));
     
-    for i = 1:size(prev_im_coord_L, 1)
+    for i = 1:size(prev_im_coord_L, 2)
         %disp(i);
         %disp(prev_im_coord_L(i,2));
         %disp(prev_im_coord_L(i,2));
         %disp((prev_im_coord_L(i,2)-top_margin): (prev_im_coord_L(i,2)+bottom_margin));
-        data = disparityMap((uint32(prev_im_coord_L(i,2)-top_margin)): uint32((prev_im_coord_L(i,2)+bottom_margin)), uint32(prev_im_coord_L(i,1))); 
+        data = disparityMap((uint32(prev_im_coord_L(2, i)-top_margin)): uint32((prev_im_coord_L(2,i)+bottom_margin)), uint32(prev_im_coord_L(1,i))); 
         data = double(data);
         data = smooth(data, 'moving');
         subplot(1,2,1), plot(data)
@@ -36,14 +36,14 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
     
         if  isfinite(MinIdx)
         
-            minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
-            minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin) + MinIdx)];
+            minimaArrayX = [minimaArrayX, double(prev_im_coord_L(1,i))];
+            minimaArrayY = [minimaArrayY, double((prev_im_coord_L(2,i)-top_margin) + MinIdx)];
             %minimaValues = [minimaValues, double(Minima)];
     
         else 
             disp('The value was inf.');
-            minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
-            minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin))];
+            minimaArrayX = [minimaArrayX, double(prev_im_coord_L(1,i))];
+            minimaArrayY = [minimaArrayY, double((prev_im_coord_L(2,i)-top_margin))];
             %minimaArrayY = [minimaArrayY, double(prev_im_coord_L(i,2))];
            % minimaValues = [minimaValues, -disparityMap(prev_im_coord_L(i,2), prev_im_coord_L(i,1))];
         end

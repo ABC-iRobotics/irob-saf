@@ -56,7 +56,7 @@ while true
         [BW, IR_masked, IR_centroid] = detectGrabLocation(IR);
         
         if store_grab_location
-            prev_im_coord_L = IL_centroid;
+            prev_im_coord_L = IL_centroid';
             store_grab_location = false;
         end
         
@@ -72,7 +72,7 @@ while true
         imshow([IL_masked, IR_masked]);
         
         [ angle, tension, visible_size, im_coord_L ] = ...
-           getRetractionAngles( disparityMap,  P_l, P_r, prev_im_coord_L );
+           getRetractionAngles( disparityMap,  left_p, right_p, prev_im_coord_L );
 
         retr_obs_msg = rosmessage(retract_observation_pub);
         retr_obs_msg.data(1) = angle;
