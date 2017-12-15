@@ -1,4 +1,5 @@
-function [ y, z ] = retractonCtrlHMM( angles, tensions, visible_sizes )
+function [ y, z ] = retractonCtrlHMM( angles, tensions, visible_sizes, ...
+                                p, angle_des, tension_des)
 
 % Parameters
 
@@ -70,25 +71,29 @@ end
 
 % Emissions - Angle
 
-EMISSIONS_angle = start_angle:((end_angle - start_angle) / (N_E-1)):end_angle;
+EMISSIONS_angle = start_angle:((end_angle - start_angle) / ...
+    (N_E-1)):end_angle;
 
 E_angle = double(zeros(N,N_E));
 
 for i = 1:N
     
-    E_angle(i, :) = gaussmf(EMISSIONS_angle,[emission_sigma_angle STATES_angle(i)]);
+    E_angle(i, :) = gaussmf(EMISSIONS_angle, ...
+        [emission_sigma_angle STATES_angle(i)]);
     %plot(EMISSIONS,E(i,:)); hold on;
 end
 
 % Emissions - Tension
 
-EMISSIONS_tension = start_tension:((end_tension - start_tension) / (N_E-1)):end_tension;
+EMISSIONS_tension = start_tension:((end_tension - start_tension) / ...
+    (N_E-1)):end_tension;
 
 E_tension = double(zeros(N,N_E));
 
 for i = 1:N
     
-    E_tension(i, :) = gaussmf(EMISSIONS_tension,[emission_sigms_tension STATES_tension(i)]);
+    E_tension(i, :) = gaussmf(EMISSIONS_tension,...
+        [emission_sigms_tension STATES_tension(i)]);
     %plot(EMISSIONS,E(i,:)); hold on;
 end
 
@@ -100,6 +105,9 @@ end
 likelystates_angle = hmmviterbi(angles, T_angle, E_angle);
 
 likelystates_tension = hmmviterbi(tensions, T_tension, E_tension);
+
+[ y, z ] = retractonCtrlProportional(p, angle_des, tension_des, ...
+    likelystates_angle, likelystates_tension);
 
 %plot(likelystates)
 
