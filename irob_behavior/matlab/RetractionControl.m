@@ -4,6 +4,7 @@ classdef RetractionControl < handle
     properties (Constant)
         FUZZY = 1;
         HMM = 2;
+        STRAIGHT = 3;
     end
     
     properties
@@ -12,6 +13,10 @@ classdef RetractionControl < handle
         fis;
         method;
         
+        angles;
+        tensions;
+        visible_sizes;
+                
     end
     
     methods
@@ -21,6 +26,11 @@ classdef RetractionControl < handle
             
             rosshutdown;
             rosinit;
+            
+            obj.angles = double(zeros(0));
+            obj.tensions = double(zeros(0));
+            obj.visible_sizes = double(zeros(0));
+           
             
             obj.method = RetractionControl.FUZZY;
             
@@ -45,24 +55,30 @@ classdef RetractionControl < handle
             % Build the response message here
             % [angle, tension, visible_size]
             
-            angle =  reqmsg.Input(1);
-            tension =  reqmsg.Input(2);
-            visible_size =  reqmsg.Input(3);
+            obj.angles =  [obj.angles reqmsg.Input(1)];
+            obj.tensions =   [obj.tensions reqmsg.Input(2)];
+            obj.visible_sizes =  [obj.visible_sizes reqmsg.Input(3)];
             
             displacement = zeros (2,1);
             
             if obj.method == RetractionControl.FUZZY
                 
-                displacement = evalfis([angle, tension, visible_size],obj.fis);
+                [ y, z ] = retractonCtrlFuzzy(obj.fis, ...
+                       obj.angles(end), ...
+                       obj.tensions(end), obj.visible_sizes(end));
                 
             elseif obj.method == RetractionControl.HMM
                 
-                % TODO
+                [ y, z ] = retractonCtrlHMM( obj.angles, obj.tensions, obj.visible_sizes );
+
+            elseif obj.method == RetractionControl.STRAIGHT
                 
+                % TODO
+                    
             end
 
-            response.Output(1) = displacement(1);   % y
-            response.Output(2) = displacement(2);   % z
+            response.Output(1) = y;   % y
+            response.Output(2) = z;   % z
             
         end
         
