@@ -36,7 +36,7 @@ right_p = reshape(right_cam_info.P, 4, 3)
 
 % -------------------------------------------------------------------------
 
-prev_im_coord_L = zeros(2,1);
+prev_im_coord_L = zeros(1,2);
 store_grab_location = true;
 
 while true
