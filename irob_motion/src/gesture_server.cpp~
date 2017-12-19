@@ -469,7 +469,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
  	
  	// Navigate
  	stage = "navigate";
- 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage << " at "<< target);
+ 	ROS_INFO_STREAM(arm.getName()  << ": starting " << stage << " at "<< approach_pose);
  	arm.moveTool(approach_pose + gs.t,
  				speed_cartesian, waypoints, interp_method);
  	

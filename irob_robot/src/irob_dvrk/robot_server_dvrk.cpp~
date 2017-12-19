@@ -161,7 +161,7 @@ void RobotServerDVRK::followTrajectory(Trajectory<Pose> tr)
 	ROS_INFO_STREAM("Goal untransformed:" << tr[tr.size() - 1]);
 	// Go to m-s from mm-s here
 	// Hande-eye calibration
-	tr.transform(R, t, 0.001);
+	tr.invTransform(R, t, 0.001);
 	ROS_INFO_STREAM("Goal transformed:" << tr[tr.size() - 1]);
 	
 	ros::Rate loop_rate(1.0/tr.dt);
@@ -229,7 +229,7 @@ void RobotServerDVRK::positionCartesianCurrentCB(
 
 	// Hand-eye calibration
 	// Convert from m-s to mm-s
-	fwd.pose = tmp.invTransform(R, t, 0.001).toRosToolPose();
+	fwd.pose = tmp.transform(R, t, 0.001).toRosToolPose();
     position_cartesian_current_pub.publish(fwd);
 }
 

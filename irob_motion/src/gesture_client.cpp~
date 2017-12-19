@@ -10,7 +10,7 @@
 
 namespace ias {
 
-const double GestureClient::DEFAULT_SPEED_CARTESIAN = 5.0;	// mm/s
+const double GestureClient::DEFAULT_SPEED_CARTESIAN = 10.0;	// mm/s
 const double GestureClient::DEFAULT_SPEED_JAW = 10.0;		// deg/s
 
 

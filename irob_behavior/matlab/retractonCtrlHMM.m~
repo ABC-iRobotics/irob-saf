@@ -57,9 +57,9 @@ for i = 1:N
     b1 = STATES_tension(i) - transition_max_d_tension;
     c1 = STATES_tension(i) - (transition_max_d_tension - transition_slope_tension);
     
-    a2 = STATES_tension(i) + (transition_max_d_tension - transition_slope_tension);
-    b2 = STATES_tension(i) + transition_max_d_tension;
-    c2 = STATES_tension(i) + (transition_max_d_tension + transition_slope_tension);
+    a2 = STATES(i) + (transition_max_d_tension - transition_slope_tension);
+    b2 = STATES(i) + transition_max_d_tension;
+    c2 = STATES(i) + (transition_max_d_tension + transition_slope_tension);
     
     
     y = trimf(STATES_tension,[a1 b1 c1]) + trimf(STATES_tension,[a2 b2 c2]);
@@ -93,7 +93,7 @@ E_tension = double(zeros(N,N_E));
 for i = 1:N
     
     E_tension(i, :) = gaussmf(EMISSIONS_tension,...
-        [emission_sigma_tension STATES_tension(i)]);
+        [emission_sigms_tension STATES_tension(i)]);
     %plot(EMISSIONS,E(i,:)); hold on;
 end
 
@@ -102,12 +102,12 @@ end
 
 %seq = 1:30:190;
 
-likelystates_angle = hmmviterbi(uint32(angles), T_angle, E_angle)
+likelystates_angle = hmmviterbi(angles, T_angle, E_angle);
 
-likelystates_tension = hmmviterbi(uint32(tensions), T_tension, E_tension)
+likelystates_tension = hmmviterbi(tensions, T_tension, E_tension);
 
 [ y, z ] = retractonCtrlProportional(p, angle_des, tension_des, ...
-    likelystates_angle(end), likelystates_tension(end));
+    likelystates_angle, likelystates_tension);
 
 %plot(likelystates)
 

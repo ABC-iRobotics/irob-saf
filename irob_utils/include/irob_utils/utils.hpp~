@@ -259,7 +259,7 @@ inline std_msgs::Float32 makeNaN(){
 template <>
 inline irob_msgs::FloatArray makeNaN(){
 	irob_msgs::FloatArray msg;
-   	msg.data.push_back(std::numeric_limits<double>::quiet_NaN());
+   	msg.data.push_back(std::numeric_limits<double>::quiet_NaN();
 	return msg;
 }
 

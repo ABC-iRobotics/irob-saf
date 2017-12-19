@@ -64,7 +64,7 @@ public:
 
 
 template <class MsgT, class DataT>
-VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh, std::string topic_name): nh(nh), topic_name(topic_name)
+VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh): nh(nh)
 {
 	result_msg = makeNaN<MsgT>();
 	subscribeTopics();

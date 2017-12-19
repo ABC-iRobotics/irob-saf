@@ -14,7 +14,7 @@ namespace ias {
 
 PicknPlace::PicknPlace(ros::NodeHandle nh, 
 					std::vector<std::string> arm_names): 
-			AutosurgAgent(nh, arm_names), vision(nh, "target")
+			AutosurgAgent(nh, arm_names), vision(nh)
 {	
 	// 
 }

@@ -7,10 +7,10 @@
   		<arg name="arm_typ" default="PSM1"/>
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
-		default="$(find irob_robot)/config/registration_psm1.yaml"/>
+		default="$(find irob_robot)/config/registration_identity.yaml"/>
 		
 		<arg name="instrument_info_file" 
-		default="$(find irob_robot)/config/prograsp_forceps.yaml"/>
+		default="$(find irob_robot)/config/large_needle_driver.yaml"/>
 	
 			<include 
 			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 

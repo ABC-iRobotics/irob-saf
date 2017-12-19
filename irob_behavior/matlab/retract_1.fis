@@ -29,11 +29,11 @@ MF3='large':'trapmf',[180 220 380 490]
 
 [Input3]
 Name='size'
-Range=[0 100]
+Range=[0 600]
 NumMFs=3
-MF1='closed':'trapmf',[-35 -5 5 35]
-MF2='small':'trapmf',[15 35 45 65]
-MF3='large':'trapmf',[45 70 130 155]
+MF1='closed':'trapmf',[-157.5 3.012 82.95 262.5]
+MF2='small':'trapmf',[102.071084337349 222.071084337349 282.071084337349 402.071084337349]
+MF3='large':'trapmf',[270 420 780 930]
 
 [Output1]
 Name='pull_y'

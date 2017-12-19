@@ -44,7 +44,7 @@ protected:
 
     VisionClient<geometry_msgs::Point, Eigen::Vector3d> grasp_vision;
     
-    VisionClient<irob_msgs::FloatArray, std::vector<double>> manipulate_vision;
+    VisionClient<irob_msgs::FloatArray, vector<double>> manipulate_vision;
     
     ros::ServiceClient ctrl_client;
     

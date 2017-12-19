@@ -71,6 +71,10 @@ void Retractor::graspObject()
 	ROS_INFO_STREAM("Grasping succeeded");
 	
 
+  	if (ctrl_client.call(srv))
+  		ROS_INFO_STREAM("Service respond received: " << srv.response);
+  	else
+		ROS_INFO_STREAM("Service not responding");
 		
 	double diff = 100.0;
 	double threshold = 2.0;

@@ -6,13 +6,15 @@ function [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( dis
     visible_size = abs(y_bottom - y_top);
     
     prev_y_mean = mean(prev_im_coord_L(:,2));
-    top_margin = abs(y_top - prev_y_mean) * 0.2; 
-    bottom_margin = abs(y_bottom - prev_y_mean) * 0.2;
+    %top_margin = abs(y_top - prev_y_mean) * 0.2; 
+    %bottom_margin = abs(y_bottom - prev_y_mean) * 0.4;
     
+    top_margin = 60; 
+    bottom_margin = 60;
 
     [ minimaArrayX, minimaArrayY, minimaValues ] = ...
         findDisparityMinimas(disparityMap, prev_im_coord_L, top_margin, bottom_margin );
-    
+   
 %    subplot(1,2,2), imshow(ILrect, [])
  %   hold on
   %  plot(minimaArrayX, minimaArrayY, 'r.'); %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -7 :D
@@ -27,8 +29,16 @@ function [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( dis
     y_mean = mean(im_coord_L(:,2));
     
 
-    angle  = getAngle( disparityMap,  P_l, P_r,  im_coord_L, -(double(abs(y_top - y_mean)) * 0.5), 0, -(double(abs(y_bottom - y_mean)) * 0.5) );
+    angle  = getAngle( disparityMap,  P_l, P_r, ...
+        im_coord_L,...
+        -(double(abs(y_top - y_mean)) * 0.3), ...
+        0, ...
+        (double(abs(y_bottom - y_mean)) * 0.3) );
     
-    tension = getAngle( disparityMap,  P_l, P_r, im_coord_L, -(double(abs(y_top - y_mean)) * 0.8), -(double(abs(y_top - y_mean)) * 0.5), 0 );
+    tension = getAngle( disparityMap,  P_l, P_r,...
+        im_coord_L, ....
+        -(double(abs(y_top - y_mean)) * 0.6),...
+        -(double(abs(y_top - y_mean)) * 0.3),...
+        0 );
 end
 

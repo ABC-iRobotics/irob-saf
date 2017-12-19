@@ -18,7 +18,7 @@ right_cam_info_sub = rossubscriber(...
 
 target_pub = rospublisher('/ias/vision/target', 'geometry_msgs/Point');
 
-retract_observation_pub = rospublisher('/ias/vision/retract_observation', 'irob_msgs/FloatArray');
+retract_observation_pub = rospublisher('/ias/vision/angles', 'irob_msgs/FloatArray');
 
 pause(2) % Wait to ensure publisher is registered
 
@@ -58,27 +58,28 @@ while true
         [BW, IL_masked, IL_centroid] = detectGrabLocation(IL);
         [BW, IR_masked, IR_centroid] = detectGrabLocation(IR);
         
-        if not(isempty(IL_centroid)) & not(isempty(IR_centroid))
+        
             
             if store_grab_location
                 [ x_left, x_right ] = phantomSegmentationHorizontal( disparityMap, IL_centroid);
                 x_arr = uint32(x_left):uint32(x_right);
-                prev_im_coord_L = [x_arr ; uint32(ones(size(x_arr))) * IL_centroid(1,2)]';
+                prev_im_coord_L = [x_arr ; uint32(ones(size(x_arr))) * 280]';
                 store_grab_location = false;
             end
-            
+            if not(isempty(IL_centroid)) & not(isempty(IR_centroid))
             grab_pos = ...
                 triangulate(IL_centroid,IR_centroid,left_p,right_p) * 1000.0             % in mm
             
+            grab_pos = grab_pos + [-10.0, 5.0, -20.0];
             tgt_msg = rosmessage(target_pub);
             tgt_msg.X = grab_pos(1);
             tgt_msg.Y = grab_pos(2);
             tgt_msg.Z = grab_pos(3);
             send(target_pub,tgt_msg);
-        end
-        subplot(2,2,1)
-        imshow(IL_masked)
-        hold on
+            end
+%         subplot(2,2,1)
+%         imshow(IL_masked)
+%         hold on
 
         subplot(2,2,2)
         imshow(IR_masked)

@@ -29,7 +29,7 @@ function [ grab_location, im_coord_L ] = getGrabLocation( IL, IR, disparityMap, 
     grab_profile = getReconstructedPositions( im_coord_L, disparityMap, P_l, P_r);
     grab_location = mean(grab_profile)
     
-    im_coord_L(:,2) = im_coord_L(:,2) - 230;
+    im_coord_L(:,2) = 280;
  
 end
 

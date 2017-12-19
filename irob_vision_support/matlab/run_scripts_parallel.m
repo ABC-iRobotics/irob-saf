@@ -1,7 +1,5 @@
-parpool(4)
-parfor K = 1 : 4
-  if K == 1; Pump1; end
-  if K == 2; Pump2; end
-  if K == 3; Pump3; end
-  if K == 4; Pump4; end
+parpool(2)
+parfor K = 1 : 2
+  if K == 1; vision_node_retraction; end
+  if K == 2; RetractionControl; end
 end
