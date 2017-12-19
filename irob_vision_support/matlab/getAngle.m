@@ -40,5 +40,12 @@ angle = angle * (180.0/pi);
 
 mean_angle = mean(angle);
 
+
+subplot(2,2,4)
+plot(im_coord_L_bottom(:,1),im_coord_L_bottom(:,2),'r.' )
+plot(im_coord_L_center(:,1),im_coord_L_center(:,2),'r.' )
+plot(im_coord_L_top(:,1),im_coord_L_top(:,2),'r.' )
+
+
 end
 

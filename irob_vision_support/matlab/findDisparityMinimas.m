@@ -44,8 +44,8 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
         data = disparityMap((uint32(prev_im_coord_L(i,2)-top_margin)): uint32((prev_im_coord_L(i,2)+bottom_margin)), uint32(prev_im_coord_L(i,1))); 
         data = double(data);
         data = smooth(data, 'moving');
-        subplot(1,2,1), plot(data)
-        hold on
+        %subplot(1,2,1), plot(data)
+       % hold on
         dataM = cat(2,dataM, data);
         [Minima,MinIdx] = findpeaks(-data, 'Npeaks', 1);
     

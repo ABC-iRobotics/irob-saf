@@ -26,8 +26,9 @@ function [ angle, tension, visible_size, im_coord_L ] = getRetractionAngles( dis
     im_coord_L = transpose([minimaArrayX; minimaArrayY ]);
     y_mean = mean(im_coord_L(:,2));
     
+
     angle  = getAngle( disparityMap,  P_l, P_r,  im_coord_L, -(double(abs(y_top - y_mean)) * 0.5), 0, -(double(abs(y_bottom - y_mean)) * 0.5) );
     
-    tension = getAngle( disparityMap,  P_l, P_r, im_coord_L, -(double(abs(y_top - y_mean)) * 0.8), -(double(abs(y_top - y_mean)) * 0.4), 0 );
+    tension = getAngle( disparityMap,  P_l, P_r, im_coord_L, -(double(abs(y_top - y_mean)) * 0.8), -(double(abs(y_top - y_mean)) * 0.5), 0 );
 end
 

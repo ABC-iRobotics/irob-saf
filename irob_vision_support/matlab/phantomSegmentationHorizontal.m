@@ -48,7 +48,7 @@ if isnan(x_right)
 end
 
 if isnan(x_left)
-     x_right = 300;
+     x_left = 300;
 end
 if (x_left < 1)
     x_left = 1;

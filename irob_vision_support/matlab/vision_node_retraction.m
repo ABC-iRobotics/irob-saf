@@ -48,40 +48,64 @@ while true
     if (and(size(left_img_msg) > 0, size(right_img_msg) > 0))
         IL = readImage(left_img_msg);
         IR = readImage(right_img_msg);
-        disparityMap = readImage(disparity_msg.Image);
-        
-        %imshow([IL, IR])
+        disparityMap = interpolateDisparityMap(readImage(disparity_msg.Image), 63);
+        subplot(2,2,1)
+        imshow(IL)
+
+       % subplot(2,2,2)
+       % imshow(IR)
         
         [BW, IL_masked, IL_centroid] = detectGrabLocation(IL);
         [BW, IR_masked, IR_centroid] = detectGrabLocation(IR);
         
-        if store_grab_location
-            [ x_left, x_right ] = phantomSegmentationHorizontal( disparityMap, IL_centroid);
-            x_arr = uint32(x_left):uint32(x_right);
-            prev_im_coord_L = [x_arr ; uint32(ones(size(x_arr))) * IL_centroid(1,2)]';
-            store_grab_location = false;
+        if not(isempty(IL_centroid)) & not(isempty(IR_centroid))
+            
+            if store_grab_location
+                [ x_left, x_right ] = phantomSegmentationHorizontal( disparityMap, IL_centroid);
+                x_arr = uint32(x_left):uint32(x_right);
+                prev_im_coord_L = [x_arr ; uint32(ones(size(x_arr))) * IL_centroid(1,2)]';
+                store_grab_location = false;
+            end
+            
+            grab_pos = ...
+                triangulate(IL_centroid,IR_centroid,left_p,right_p) * 1000.0             % in mm
+            
+            tgt_msg = rosmessage(target_pub);
+            tgt_msg.X = grab_pos(1);
+            tgt_msg.Y = grab_pos(2);
+            tgt_msg.Z = grab_pos(3);
+            send(target_pub,tgt_msg);
         end
-        
-        grab_pos = ...
-            triangulate(IL_centroid,IR_centroid,left_p,right_p) * 1000.0             % in mm
-        
-        tgt_msg = rosmessage(target_pub);
-        tgt_msg.X = grab_pos(1);
-        tgt_msg.Y = grab_pos(2);
-        tgt_msg.Z = grab_pos(3);
-        send(target_pub,tgt_msg);
-        
-        imshow([IL_masked, IR_masked]);
-        
-        [ angle, tension, visible_size, im_coord_L ] = ...
-           getRetractionAngles( disparityMap,  left_p, right_p, prev_im_coord_L );
+        subplot(2,2,1)
+        imshow(IL_masked)
+        hold on
 
-        retr_obs_msg = rosmessage(retract_observation_pub);
-        retr_obs_msg.Data(1) = angle;
-        retr_obs_msg.Data(2) = tension;
-        retr_obs_msg.Data(3) = visible_size;
-        send(retract_observation_pub,retr_obs_msg);
+        subplot(2,2,2)
+        imshow(IR_masked)
+        hold on
+
+        subplot(2,2,3)
+        imshow(IL)
+        hold on
+
+        subplot(2,2,4)
+        disparityRange = [63 192];
+        imshow(disparityMap,disparityRange)
+        colormap(gca,jet) 
+        hold on
         
+        if not(isempty(prev_im_coord_L))
+            
+            [ angle, tension, visible_size, im_coord_L ] = ...
+                getRetractionAngles( disparityMap,  left_p, right_p, prev_im_coord_L );
+            
+            retr_obs_msg = rosmessage(retract_observation_pub);
+            retr_obs_msg.Data(1) = angle;
+            retr_obs_msg.Data(2) = tension;
+            retr_obs_msg.Data(3) = visible_size;
+            send(retract_observation_pub,retr_obs_msg);
+        end
+        hold off
         pause(0.5);
         
     else
