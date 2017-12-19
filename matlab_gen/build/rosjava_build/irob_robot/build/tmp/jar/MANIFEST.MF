@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-Version: 0.0.1
 Tool: Bnd-2.1.0.20130426-122213
 Bundle-Name: irob_robot
-Bnd-LastModified: 1513356413000
+Bnd-LastModified: 1513676236000
 Created-By: 1.7.0_60 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.ros.rosjava_messages.irob_robot

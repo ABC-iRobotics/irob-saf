@@ -2,15 +2,15 @@ function [ mean_angle ] = getAngle( disparityMap,  P_l, P_r, im_coord_L, offset_
 
 im_coord_L_top = im_coord_L;
 im_coord_L_top(:,2) = im_coord_L_top(:,2) + double(offset_top);
-points_top = getReconstructedPositions( disparityMap, P_l, P_r, im_coord_L_top);
+points_top = getReconstructedPositions( disparityMap, P_l, P_r, uint32(im_coord_L_top));
 
 im_coord_L_center = im_coord_L;
 im_coord_L_center(:,2) = im_coord_L_center(:,2) + double(offset_center);
-points_center = getReconstructedPositions( disparityMap,  P_l, P_r, im_coord_L_center);
+points_center = getReconstructedPositions( disparityMap,  P_l, P_r, uint32(im_coord_L_center));
 
 im_coord_L_bottom = im_coord_L;
 im_coord_L_bottom(:,2) = im_coord_L_bottom(:,2) + double(offset_bottom);
-points_bottom = getReconstructedPositions( disparityMap,  P_l, P_r, im_coord_L_bottom);
+points_bottom = getReconstructedPositions( disparityMap,  P_l, P_r, uint32(im_coord_L_bottom));
 
 anglesArray = double(zeros(0));
 
