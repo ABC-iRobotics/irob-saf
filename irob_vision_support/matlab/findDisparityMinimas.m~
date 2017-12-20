@@ -61,7 +61,7 @@ function [ minimaArrayX, minimaArrayY, minimaValues ] = findDisparityMinimas(dis
             %minimaValues = [minimaValues, double(Minima)];
     
         else 
-            %disp('The value was inf.');
+            disp('The value was inf.');
             minimaArrayX = [minimaArrayX, double(prev_im_coord_L(i,1))];
             minimaArrayY = [minimaArrayY, double((prev_im_coord_L(i,2)-top_margin))];
             %minimaArrayY = [minimaArrayY, double(prev_im_coord_L(i,2))];

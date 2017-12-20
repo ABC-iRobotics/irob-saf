@@ -75,8 +75,15 @@ void Retractor::graspObject()
 	double diff = 100.0;
 	double threshold = 2.0;
 	
-	while (diff > threshold && ros::ok())
+	while (diff >= threshold && ros::ok())
 	{
+		
+		/*for (int i = 20; i > 0; i--)
+		{
+			ROS_INFO_STREAM(i);
+			ros::Duration(1).sleep();
+		}
+		ROS_INFO_STREAM("START");*/
 		std::vector<double> angles(manipulate_vision.getResult());
 	
 		irob_msgs::GetControlVariables srv;
@@ -99,6 +106,7 @@ void Retractor::graspObject()
 		
 			ros::Duration(0.1).sleep();
 		}	
+		//ROS_INFO_STREAM("DONE");
 
 	}
 	

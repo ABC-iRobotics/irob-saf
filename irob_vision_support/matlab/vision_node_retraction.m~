@@ -89,11 +89,11 @@ while true
      %   imshow(IL)
      %   hold on
 
-       subplot(2,2,4)
-       disparityRange = [63 192];
-        imshow(disparityMap,disparityRange)
-        colormap(gca,jet) 
-        hold on
+    %   subplot(2,2,4)
+      %  disparityRange = [63 192];
+       % imshow(disparityMap,disparityRange)
+       % colormap(gca,jet) 
+        %hold on
         
         if not(isempty(prev_im_coord_L))
             

@@ -46,7 +46,7 @@ classdef RetractionControl < handle
             obj.tension_des = 170.0;
             
             
-            obj.method = RetractionControl.FUZZY;
+            obj.method = RetractionControl.HMM;
             
             obj.fis = readfis('retract_2.fis');
             
@@ -95,7 +95,7 @@ classdef RetractionControl < handle
                     
                     [ y, z ] = retractonCtrlFuzzy(obj.fis, ...
                         obj.angles(end), ...
-                        obj.tensions(end));
+                        obj.tensions(end), obj.visible_sizes(end));
                     
                 elseif obj.method == RetractionControl.HMM
                     
@@ -105,10 +105,7 @@ classdef RetractionControl < handle
                     obj.angles_HMM =  [obj.angles_HMM angle_HMM];
                     obj.tensions_HMM =   [obj.tensions_HMM tension_HMM];
                     
-                   % obj.angles
-                   % obj.tensions
-                   % obj.angles_HMM
-                    %obj.tensions_HMM
+                    
                     
                 elseif obj.method == RetractionControl.STRAIGHT
                     

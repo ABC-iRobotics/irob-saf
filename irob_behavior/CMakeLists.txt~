@@ -15,7 +15,6 @@ find_package(catkin REQUIRED
                         sensor_msgs
                         stereo_msgs
                         sensor_msgs
-                        cv_bridge
                         actionlib
                         actionlib_msgs
 						irob_utils

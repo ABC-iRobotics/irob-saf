@@ -18,6 +18,10 @@
 #include <ros/package.h>
 #include <cmath>
 #include <limits>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 

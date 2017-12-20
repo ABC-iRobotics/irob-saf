@@ -1,4 +1,4 @@
-function [ y, z ] = retractonCtrlHMM( angles, tensions, visible_sizes, ...
+function [ y, z, angle, tension ] = retractonCtrlHMM( angles, tensions, visible_sizes, ...
                                 p, angle_des, tension_des)
 
 % Parameters
@@ -13,13 +13,13 @@ start_tension = 0;
 end_tension = 180;
 
 transition_slope_angle = 40;
-transition_max_d_angle = 30;
+transition_max_d_angle = 10;
 
 transition_slope_tension = 40;
-transition_max_d_tension = 30;
+transition_max_d_tension = 10;
 
-emission_sigma_angle = 30;
-emission_sigma_tension = 30;
+emission_sigma_angle = 5;
+emission_sigma_tension = 40;
 
 % States
 
@@ -45,7 +45,7 @@ for i = 1:N
     
     %T(i,:) = y / sum(y);
     T_angle(i,:) = y / 2;
-    %plot(STATES,T(i,:)); hold on;
+    %plot(STATES_angle,T_angle(i,:)); hold on;
 end
 
 % Transitions -Tension
@@ -80,7 +80,7 @@ for i = 1:N
     
     E_angle(i, :) = gaussmf(EMISSIONS_angle, ...
         [emission_sigma_angle STATES_angle(i)]);
-    %plot(EMISSIONS,E(i,:)); hold on;
+    %plot(EMISSIONS_angle,E_angle(i,:)); hold on;
 end
 
 % Emissions - Tension
@@ -101,13 +101,17 @@ end
 % Calculate hidden states
 
 %seq = 1:30:190;
-
-likelystates_angle = hmmviterbi(uint32(angles), T_angle, E_angle)
-
-likelystates_tension = hmmviterbi(uint32(tensions), T_tension, E_tension)
-
+likelystates_angle = hmmviterbi(uint32(angles), T_angle, E_angle);
+likelystates_tension = hmmviterbi(uint32(tensions), T_tension, E_tension);
+ 
+ STATES_angle(likelystates_angle);
+  STATES_tension(likelystates_tension);
+  
+  angle = STATES_angle(likelystates_angle(end));
+  tension = STATES_tension(likelystates_tension(end));
+  
 [ y, z ] = retractonCtrlProportional(p, angle_des, tension_des, ...
-    likelystates_angle(end), likelystates_tension(end));
+    STATES_angle(likelystates_angle(end)), STATES_tension(likelystates_tension(end)));
 
 %plot(likelystates)
 
