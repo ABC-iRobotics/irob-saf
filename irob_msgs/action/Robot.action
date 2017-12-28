@@ -1,0 +1,22 @@
+# Define the goal
+# Action types
+int8 STOP=1
+int8 INIT_ARM=2
+int8 RESET_POSE=3
+int8 FOLLOW_TRAJECTORY=4
+
+int8 action
+
+# Params
+bool move_allowed
+TrajectoryToolPose trajectory
+
+---
+# Define the result
+ToolPose pose
+string info
+---
+# Define a feedback message
+ToolPose pose
+string info
+

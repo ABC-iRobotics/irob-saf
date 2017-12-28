@@ -7,5 +7,6 @@ TODO:
 	- High level nodes should know if the low level ones are failed 
 		(while waiting for isDone())
 	- Feedbacks
+	- MTM gripper angle has own topic, state_joint_current[7] is wrong
 		
 	rosrun camera_calibration cameracalibrator.py --size 8x6 --square 0.108 right:=/ias/stereo/right/rotated/image left:=/ias/stereo/left/rotated/image right_camera:=/ias/stereo/right/rotated left_camera:=/ias/stereo/left/rotated --no-service-check --approximate=0.1

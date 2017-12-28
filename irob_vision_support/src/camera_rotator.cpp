@@ -1,5 +1,5 @@
 /*
- * 	image_rotator.cpp
+ * 	camera_rotator.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-09-06
@@ -27,12 +27,38 @@ namespace ias {
 CameraRotator::CameraRotator(ros::NodeHandle nh, 
 					std::string camera, std::string calibration, int angle):
 					nh(nh), camera(camera),
-					c_info_man(ros::NodeHandle(nh, camera + "/rotated")
-						, camera + "/rotated"
+					c_info_man(ros::NodeHandle(nh, camera + "/calibrated")
+						, camera + "/calibrated"
 						, calibration)
 {
+	#if CV_MAJOR_VERSION == 2
 	switch (angle)
 	{
+		case 0: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;
+		case 90: 
+			angle_code = 0;	// 0
+			break;
+		case 180: 
+			angle_code = 1;	// 1
+			break;
+		case 270: 
+			angle_code = 2;	// 2
+			break;
+		case -90: 
+			angle_code = 3;	// 2
+			break;
+		default: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;	
+	}	// do opencv 2 code
+	#elif CV_MAJOR_VERSION == 3
+	switch (angle)
+	{
+		case 0: 
+			angle_code = -1;	// -1 NO ROTATION
+			break;
 		case 90: 
 			angle_code = cv::RotateFlags::ROTATE_90_CLOCKWISE;	// 0
 			break;
@@ -46,9 +72,11 @@ CameraRotator::CameraRotator(ros::NodeHandle nh,
 			angle_code = cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE;	// 2
 			break;
 		default: 
-			angle_code = cv::RotateFlags::ROTATE_90_CLOCKWISE;	// 0
+			angle_code = -1;	// -1 NO ROTATION
 			break;	
 	}
+	#endif
+	
 	
 	if(!c_info_man.loadCameraInfo (calibration)){
 		ROS_INFO_STREAM("Calibration file missing. Camera not calibrated");
@@ -77,9 +105,9 @@ void CameraRotator::subscribeTopics()
 
 void CameraRotator::advertiseTopics() 
 {
-	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/rotated/image", 1000); 
+	image_pub = nh.advertise<sensor_msgs::Image>(camera + "/calibrated/image", 1000); 
 	camera_info_pub = 
-    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/rotated/camera_info", 1); 
+    	nh.advertise<sensor_msgs::CameraInfo>(camera + "/calibrated/camera_info", 1); 
 }
 
 void CameraRotator::imageCB(
@@ -92,8 +120,27 @@ void CameraRotator::imageCB(
 	
     	cv::Mat rotated_image;
 
-    	cv::rotate(image_ptr->image, rotated_image, angle_code);
-
+		if (angle_code < 0)
+			image_ptr->image.copyTo(rotated_image);
+    	else
+    	{
+    		#if CV_MAJOR_VERSION == 2
+    			switch(angle_code)
+    			{
+				  case 0:
+                	cv::flip(image_ptr->image.t(), rotated_image, 1);
+                	break;
+            	case 1:
+                	cv::flip(image_ptr->image, rotated_image, -1);
+                	break;
+            	case 2:
+                	cv::flip(image_ptr->image.t(), rotated_image, 0);
+                	break;
+                }
+			#elif CV_MAJOR_VERSION == 3
+				cv::rotate(image_ptr->image, rotated_image, angle_code);
+			#endif
+		}
     	sensor_msgs::ImagePtr rotated_msg = 
     		cv_bridge::CvImage(msg->header, "bgr8", 
     				rotated_image).toImageMsg();			
@@ -119,12 +166,21 @@ void CameraRotator::cameraInfoCB(
 	if (c_info.width <= 0)
 	{
 		c_info = *msg;
-		if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
+		#if CV_MAJOR_VERSION == 2
+    		if (angle_code == 0 || angle_code == 2)
+			{
+				c_info.width = msg -> height;
+				c_info.height = msg -> width;
+ 			}
+		#elif CV_MAJOR_VERSION == 3
+			if (angle_code == cv::RotateFlags::ROTATE_90_CLOCKWISE 
 			|| angle_code == cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE)
-		{
-			c_info.width = msg -> height;
-			c_info.height = msg -> width;
- 		}
+			{
+				c_info.width = msg -> height;
+				c_info.height = msg -> width;
+ 			}
+		#endif
+		
 	}
 }
 

@@ -22,6 +22,9 @@
 
 namespace ias {
 
+typedef enum ActionState 
+    	{ACTIVE, DONE} ActionState;  
+
 template <class ActionSpec>
 class IrobActionClient: public actionlib::SimpleActionClient<ActionSpec> {
 	public:
@@ -124,6 +127,9 @@ void IrobActionClient<ActionSpec>::feedbackCB(
 template <class ActionSpec>
 bool IrobActionClient<ActionSpec>::isDone(bool ros_spin /* = true */)
 {
+	// actionlib::SimpleClientGoalState: 
+	// True if in RECALLED, REJECTED, PREEMPTED, ABORTED, 
+	// SUCCEEDED, or LOST. False if ACTIVE or PENDING 
 	if (ros_spin)
 		ros::spinOnce();
 	return done;
@@ -137,13 +143,14 @@ bool IrobActionClient<ActionSpec>::isActive(bool ros_spin /* = true */)
 	return active;
 }
 
+
 template <class ActionSpec>
 typename IrobActionClient<ActionSpec>::Feedback
 IrobActionClient<ActionSpec>::getFeedback(bool ros_spin /* = true */)
 {
 	if (ros_spin)
 		ros::spinOnce();
-	return feedback;
+	return *feedback;
 }
 
 template <class ActionSpec>

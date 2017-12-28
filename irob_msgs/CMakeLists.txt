@@ -52,12 +52,16 @@ find_package(catkin REQUIRED
    ToolPose.msg
    ToolPoseStamped.msg
    TrajectoryToolPose.msg
+   VisionObject.msg
+   InstrumentJawPart.msg
+   InstrumentInfo.msg
+   FloatArray.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   TargetPose.srv
+   GetControlVariables.srv
    BoolQuery.srv
  )
 
@@ -67,13 +71,8 @@ find_package(catkin REQUIRED
  	action
    	FILES
    	
-   	FollowTrajectory.action
-   	InitArm.action
-   	ResetPose.action
-   	
+   	Robot.action
    	Gesture.action
-   	
-	Maneuver.action
  )
 
 ## Generate added messages and services with any dependencies listed here

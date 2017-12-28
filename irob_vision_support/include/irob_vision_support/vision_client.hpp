@@ -41,6 +41,8 @@ public:
 
 protected:
     ros::NodeHandle nh;
+    
+    std::string topic_name;
 
    	// States
    	MsgT result_msg;
@@ -50,7 +52,7 @@ protected:
     void subscribeTopics();
 
 public:
-	VisionClient(ros::NodeHandle);
+	VisionClient(ros::NodeHandle, std::string);
 	~VisionClient();
 
     // Callbacks 
@@ -62,7 +64,7 @@ public:
 
 
 template <class MsgT, class DataT>
-VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh): nh(nh)
+VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh, std::string topic_name): nh(nh), topic_name(topic_name)
 {
 	result_msg = makeNaN<MsgT>();
 	subscribeTopics();
@@ -78,7 +80,7 @@ template <class MsgT, class DataT>
 void VisionClient<MsgT, DataT>::subscribeTopics() 
 {                 	            						
    	result_sub = nh.subscribe<MsgT>(
-   					"target", 1000, 
+   					topic_name, 1000, 
    					&VisionClient<MsgT, DataT>::resultCB,this);
 }
 

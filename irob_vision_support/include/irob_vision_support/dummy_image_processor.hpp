@@ -19,7 +19,9 @@
 #include <Eigen/Geometry> 
 #include <sensor_msgs/Image.h>
 #include <stereo_msgs/DisparityImage.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
 #include "visualization_msgs/Marker.h"
 
 
@@ -31,6 +33,7 @@
 
 #include "irob_utils/pose.hpp"
 #include "irob_utils/utils.hpp"
+#include "irob_utils/abstract_directions.hpp"
 
 
 namespace ias {
@@ -42,6 +45,7 @@ private:
 	ros::NodeHandle nh;
 	
 	Eigen::Vector3d dummy_location;
+	Eigen::Quaternion<double> grasp_orientation;
    	
    	ros::Subscriber result_sub;
 	
@@ -63,7 +67,12 @@ public:
 };
 
 DummyImageProcessor::DummyImageProcessor(ros::NodeHandle nh): 
-	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()) 
+	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
+	grasp_orientation(
+		vecToQuat<Eigen::Quaternion<double>,Eigen::Vector3d>(
+			BaseDirections<CoordinateFrame::CAMERA,
+			Eigen::Vector3d>::BACKWARD,
+			180.0))
 {
 	subscribeTopics();
 }
@@ -94,9 +103,42 @@ geometry_msgs::Point DummyImageProcessor::processImages(
    			const cv_bridge::CvImagePtr disparity_ptr)
 {
 	ros::spinOnce();
-	return wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
+	
+	geometry_msgs::Point grasp_pos;
+	grasp_pos = 
+		wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
+	//grasp_pose.orientation = 
+	//	wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
+	//			>(grasp_orientation);
+		
+	return grasp_pos;
 } 
 
 
 }
 #endif /* DUMMY_IMAGE_PROCESSOR_HPP_ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,38 +2,47 @@
 
 <launch>
 	<group ns="ias"><group ns="stereo">
-		
+	
+		<arg name="device_id_left" default="1"/>
+		<arg name="device_id_right" default="2"/> 
+		<arg name="calib_file_left" default="camera_default_left.yaml"/> 
+		<arg name="calib_file_right" default="camera_default_right.yaml"/>
+		<arg name="angle_left" default="0"/> 
+		<arg name="angle_right" default="0"/> 
 		
 		<!-- Start USB stereo cam pair -->
 		<include 
 			file="$(find irob_vision_support)/launch/camera/usb_cam_pair_driver.launch"
-			pass_all_args="true">
+			pass_all_args="false">
 			
 			<arg name="left" value="left" />
 			<arg name="right" value="right" />
+			<arg name="device_id_left" value="$(arg device_id_left)"/>
+			<arg name="device_id_right" value="$(arg device_id_right)"/> 
 		</include> 
 		
 			
-		<!-- Rotate images and camera_info -->
+		<!-- Rotate images AND load camera_info -->
 		<include 
-		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
+		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch"
+		pass_all_args="false">
 			
-			<arg name="angle" value="-90"/> 
+			<arg name="angle" value="$(arg angle_left)"/> 
 			<arg name="camera" value="left"/> 
 			<!-- Use separate calibration files for the cameras -->
 			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/camera_logitech_left.yaml"/> 
+			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_left)"/> 
 				
 		</include> 	
 		
 		<include 
 		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
 			
-			<arg name="angle" value="90"/> 
+			<arg name="angle" value="$(arg angle_right)"/> 
 			<arg name="camera" value="right"/> 
 			<!-- Use separate calibration files for the cameras -->
 			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/camera_logitech_right.yaml"/> 
+			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_right)"/> 
 			
 		</include> 	
 		
@@ -41,10 +50,10 @@
 		<!-- Rectification and disparity calculation -->
 		<include 
 			file="$(find irob_vision_support)/launch/camera/stereo_img_proc.launch"
-			pass_all_args="true">
+			pass_all_args="false">
 			
-			<arg name="left" value="left/rotated" />
-			<arg name="right" value="right/rotated" />
+			<arg name="left" value="left/calibrated" />
+			<arg name="right" value="right/calibrated" />
 		</include>					
 		
   	</group>

@@ -2,10 +2,10 @@
  * 	gesture_server.hpp
  * 	
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-07-18
+ *	Created on: 2017-11-06
  *	
  *	Separated ROS node to support preempted actions.
- *	close gripper, penetrate, goto
+ *	grasp, release, cut, go_to, approach, leave...
  */
 
 #ifndef GESTURE_SERVER_HPP_
@@ -40,6 +40,13 @@ class GestureServer {
 
 public:
 
+	struct GestureSetting { 
+    	double jaw_open_angle;
+    	double jaw_closed_angle;
+    	Eigen::Vector3d t;	// translation
+    	
+    	friend std::ostream& operator<<(std::ostream&, const GestureSetting&);
+  	};
    
 
 protected:
@@ -48,6 +55,10 @@ protected:
     
     // Action servers
     actionlib::SimpleActionServer<irob_msgs::GestureAction> as;
+    
+    static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
+    static const double DEFAULT_SPEED_JAW;			// deg/s
+    static const double DEFAULT_LOOP_RATE;					// Hz
 	
 
 public:
@@ -58,20 +69,49 @@ public:
 
     void gestureActionCB(
     		const irob_msgs::GestureGoalConstPtr &);
-   
-   	void toolClose(double, double); 	
     		
-   	void toolOpen(double, double);
-    		
-   	void inTCPforward(double, double);
-   	
-    void inTCPbackward(double, double);
-    		
-   	void goTo(Pose, double,	std::vector<Pose>, InterpolationMethod);
-    
-
-   	Pose getPoseCurrent();
+    Pose getPoseCurrent();
    	std::string getArmName();	
+    		
+protected:
+		
+	// Methods for gesture execution
+	void stop(); 
+	  
+	void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double); 
+	 
+   	void grasp(Pose, Pose, double, double, std::vector<Pose>,
+   			InterpolationMethod, 
+   			double, double);
+   	
+   	void cut(Pose, Pose, double, std::vector<Pose>, 
+   			InterpolationMethod,
+   			double, double);
+   			
+   	void push(Pose, Pose, Eigen::Vector3d, std::vector<Pose>,
+	  		InterpolationMethod,
+	  		double, double);
+    	
+    void dissect(Pose, Pose, Eigen::Vector3d,double, std::vector<Pose>,
+    		InterpolationMethod,
+    		double, double); 
+    		
+   	void release(Pose, double, 
+   			double, double);
+   	
+   	void place(Pose, Pose, double, std::vector<Pose>, InterpolationMethod,
+   			double);
+	
+   	void manipulate(Eigen::Vector3d,
+   			double);
+   			
+    bool waitForActionDone(std::string);	
+	bool handleActionState(std::string, bool = false);
+	bool isAbleToDoGesture(int);
+	irob_msgs::InstrumentJawPart findInstrumentJawPartForGesture(int);
+	GestureSetting calcGestureSetting(int, irob_msgs::InstrumentJawPart, 
+							Eigen::Quaternion<double>, double, double = 1.0);
+   	
 };
 
 }

@@ -18,7 +18,7 @@
 #include <Eigen/Geometry> 
 #include <sensor_msgs/Image.h>
 #include <stereo_msgs/DisparityImage.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
 
 
 #include <irob_vision_support/vision_server.hpp>

@@ -35,10 +35,16 @@
 #include <irob_msgs/ToolPoseStamped.h>
 
 #include <irob_msgs/GestureAction.h>
+#include <irob_msgs/InstrumentInfo.h>
+#include <irob_msgs/InstrumentJawPart.h>
 
 namespace ias {
 
 class GestureClient {
+
+public:
+	static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
+	static const double DEFAULT_SPEED_JAW;		// deg/s
 
 protected:
 	const std::string arm_name;
@@ -50,12 +56,15 @@ protected:
 
     // States
     irob_msgs::ToolPoseStamped position_cartesian_current;
+    irob_msgs::InstrumentInfo instrument_info;
     
     // Subscribers
     ros::Subscriber position_cartesian_current_sub;
-
+	ros::Subscriber instrument_info_sub;
+	
     // Publishers
 	ros::Publisher position_cartesian_current_pub;
+	ros::Publisher instrument_info_pub;
    	
    	
     void subscribeTopics();
@@ -72,20 +81,59 @@ public:
     void positionCartesianCurrentCB(
     		const irob_msgs::ToolPoseStampedConstPtr&);
 
-
+	void instrumentInfoCB(
+    		const irob_msgs::InstrumentInfoConstPtr&);
 	
    	Pose getPoseCurrent();
+   	irob_msgs::InstrumentInfo getInstrumentInfo();
    	std::string getName();
    	
-   		// Robot motions
-   	void toolClose(double, double = 10.0);	
-   	void toolOpen(double, double = 10.0);
-	void inTCPforward(double, double = 10.0);
-	void inTCPbackward(double, double = 10.0);
-	void goTo(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
-			InterpolationMethod = LINEAR);
+   	// Robot motions
+   	void stop();	
+   	void nav_to_pos(Pose,
+   					double = DEFAULT_SPEED_CARTESIAN,
+   					std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR);
+   	void grasp(Pose, Pose, double,	double,
+   					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW,
+					std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR);
+   	void cut(Pose, Pose,double,
+					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW,
+					std::vector<Pose> = std::vector<Pose>(),
+   					InterpolationMethod = InterpolationMethod::LINEAR);
+   	void release(Pose,	double, 
+   					double = DEFAULT_SPEED_CARTESIAN,
+					double = DEFAULT_SPEED_JAW);
+	void place(Pose, Pose,
+				double = DEFAULT_SPEED_CARTESIAN,
+				std::vector<Pose> = std::vector<Pose>(),
+   				InterpolationMethod = InterpolationMethod::LINEAR);
+	void push(Pose, Pose, 
+				Eigen::Vector3d,
+				double = DEFAULT_SPEED_CARTESIAN,
+				double = DEFAULT_SPEED_JAW,
+				std::vector<Pose> = std::vector<Pose>(),
+   				InterpolationMethod = InterpolationMethod::LINEAR);
+	void dissect(Pose, Pose, 
+			Eigen::Vector3d,
+			double,
+			double = DEFAULT_SPEED_CARTESIAN,
+			double = DEFAULT_SPEED_JAW,
+			std::vector<Pose> = std::vector<Pose>(),
+   			InterpolationMethod = InterpolationMethod::LINEAR);
 			
-	bool isGestureDone();
+	void manipulate(Eigen::Vector3d,
+			double = DEFAULT_SPEED_CARTESIAN);
+			
+	bool isGestureDone(bool = true);
+	actionlib::SimpleClientGoalState getState();
+	
+	irob_msgs::GestureFeedback getFeedback(bool = true);
+	irob_msgs::GestureResult getResult(bool = true);
+
 	
 };
 

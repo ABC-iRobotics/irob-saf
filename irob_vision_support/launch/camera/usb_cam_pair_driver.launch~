@@ -1,0 +1,27 @@
+<!-- Launch file for left and right camera nodes using cv-camera -->
+
+<launch>
+
+	<arg name="left" default="left"/> 
+	<arg name="right" default="right"/>
+	<arg name="device_id_left" default="1"/>
+	<arg name="device_id_right" default="2"/> 
+	
+	<node name="left" pkg="cv_camera" 
+			type="cv_camera_node" output="screen">
+  		
+		<rosparam param="device_id">2</rosparam>
+		<remap from="left/image_raw" to="$(arg left)/image_raw"/>
+		<remap from="left/camera_info" to="$(arg left)/camera_info"/>
+		
+	</node>
+				
+	<node name="right" pkg="cv_camera" 
+			type="cv_camera_node" output="screen">
+  		
+		<rosparam param="device_id">1</rosparam>	
+		<remap from="right/image_raw" to="$(arg right)/image_raw"/>
+		<remap from="right/camera_info" to="$(arg right)/camera_info"/>
+	</node>
+
+</launch>
