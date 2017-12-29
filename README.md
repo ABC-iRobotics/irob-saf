@@ -10,7 +10,7 @@ IROB Subtask Automation Library fom Minimally Invasive Surgery
 * irob_task
 
 # Dependencies
-The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages.
+The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit v1.4](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages.
 
 # Install
 TODO
