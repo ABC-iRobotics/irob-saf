@@ -16,7 +16,7 @@ namespace ias {
 const std::string RobotServerDVRK::HOME_CMD
                     = "Home";
 const std::string RobotServerDVRK::HOME_DONE
-                    = "DVRK_READY";
+                    = "READY";
 const std::string RobotServerDVRK::STATE_POSITION_JOINT
                     = "DVRK_POSITION_JOINT";
                    // = "DVRK_POSITION_GOAL_JOINT";
@@ -60,7 +60,7 @@ void RobotServerDVRK::initArm(bool move_allowed)
         	break;
       	}
 		
-		try {
+      try {
       		success	= setRobotState(STATE_POSITION_CARTESIAN);
         } catch (std::runtime_error e) { 
         	// Unknown error occured, stop action and throw it
