@@ -3,7 +3,7 @@
 <launch>
 	<group ns="ias">
 	
-		<arg name="rate" default="100"/>
+		<arg name="rate" default="10"/>
   	
 			<node name="dummy_vision" pkg="irob_vision_support" 
 			type="vision_server_test_dummy" output="screen">

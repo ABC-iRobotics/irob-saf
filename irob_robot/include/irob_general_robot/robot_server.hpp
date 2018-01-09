@@ -189,7 +189,7 @@ public:
     
     
     
-    virtual void initArm(bool) = 0;
+    virtual void initArm() = 0;
     virtual void resetPose(bool) = 0;
     virtual void stop() = 0;
     virtual void followTrajectory(Trajectory<Pose>) = 0;
@@ -209,7 +209,7 @@ public:
     		
     		case  irob_msgs::RobotGoal::INIT_ARM:
     		{
-    			initArm(goal -> move_allowed);
+          initArm();
     			break;
     		}
     	

@@ -43,7 +43,7 @@ void PicknPlace::graspObject()
 			BaseDirections<CoordinateFrame::CAMERA,
 			Eigen::Vector3d>::DOWN);
 	
-	arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
+  arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
 	Pose old_p = p;
 	while(!arms[0] -> isGestureDone() && ros::ok())
 	{
@@ -52,7 +52,7 @@ void PicknPlace::graspObject()
 		if ((p.position - old_p.position).norm() > 10.0)
 		{
 			ROS_INFO_STREAM("Initiating grasp preemt...");
-			arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
+      arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
 			old_p = p;
 		}
 		ros::Duration(0.1).sleep();

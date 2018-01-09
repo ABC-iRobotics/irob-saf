@@ -13,6 +13,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Float32.h>
+#include <sensor_msgs/JointState.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
@@ -77,7 +78,7 @@ class Pose {
    	
     irob_msgs::ToolPose toRosToolPose() const;
    	geometry_msgs::Pose toRosPose() const;
-    std_msgs::Float32 toRosJaw() const;
+    sensor_msgs::JointState toRosJaw() const;
    	
    	/*
    	double length() const;

@@ -156,10 +156,10 @@ namespace ias {
    		return ret;
    	}
    	
-   	std_msgs::Float32 Pose::toRosJaw() const
+    sensor_msgs::JointState Pose::toRosJaw() const
    	{
-   	 	std_msgs::Float32 ret;
-   	 	ret.data = jaw;
+      sensor_msgs::JointState ret;
+      ret.position.push_back(jaw);
    	 	return ret;
    	}
    	
