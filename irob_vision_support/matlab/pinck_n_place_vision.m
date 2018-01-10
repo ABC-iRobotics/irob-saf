@@ -43,9 +43,11 @@ while true
     right_img_msg = right_img_sub.LatestMessage;
     %disparity_msg = disparity_sub.LatestMessage;
     
-    if (and(size(left_img_msg) > 0, size(right_img_msg) > 0))
+    if ((size(left_img_msg, 1) > 0 && size(right_img_msg, 1) > 0))
         IL = readImage(left_img_msg);
         IR = readImage(right_img_msg);
+        
+        % Green plate
         
         [corners_L, lines_L, im_foreground_L] = detect_green_plate(IL);
         [corners_R, lines_R, im_foreground_R] = detect_green_plate(IR);
@@ -64,8 +66,10 @@ while true
         %         tgt_msg.Z = grab_pos(3);
         %         send(target_pub,tgt_msg);
         
-        if (size(corners_L) > 0 &  size(corners_R) > 0)
-            subplot(1,2,1), imshow(im_foreground_L)
+        if ((size(corners_L, 1) > 3) &&  (size(corners_R, 1) > 3))
+            
+            % Plot lines
+            subplot(3,2,1), imshow(im_foreground_L)
             hold on
             for i = 1:length(lines_L)
                 xy = [lines_L(i).point1; lines_L(i).point2];
@@ -74,7 +78,7 @@ while true
             plot(corners_L(:,1),corners_L(:,2),'r.');
             hold off
             
-            subplot(1,2,2), imshow(im_foreground_R)
+            subplot(3,2,2), imshow(im_foreground_R)
             hold on
             for i = 1:length(lines_R)
                 xy = [lines_R(i).point1; lines_R(i).point2];
@@ -83,7 +87,22 @@ while true
             end
             plot(corners_R(:,1),corners_R(:,2),'r.');
             hold off
+            
+            % Find purple marker
+            
+            [centroid_pm_L, im_purple_marker_L] = detect_purple_marker(im_foreground_L);
+            
+            if (size(centroid_pm_L) > 0)
+                subplot(3,2,5), ...
+                    imshow(im_purple_marker_L)
+                hold on
+                plot(centroid_pm_L(1),centroid_pm_L(2),'g.');
+                hold off
+            end
+            
         end
+        
+        
         
         pause(0.5);
         

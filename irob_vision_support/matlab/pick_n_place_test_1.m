@@ -1,64 +1,52 @@
-im_L = imread('pnp_test_right.png');
+IL = imread('pnp_test_right.png');
+
+[corners_L, lines_L, im_foreground_L] = detect_green_plate(IL);
+
+%disparityMap = readImage(disparity_msg.Image);
+
+%imshow([IL, IR])
 
 
-mask_bs = create_mask_bluesheet(im_L);
-mask_bs3 = cat(3, mask_bs, mask_bs, mask_bs);
+%grab_pos = ...
+%    triangulate(IL_centroid,IR_centroid,left_p,right_p) * 1000.0             % in mm
 
-im_L(mask_bs3) = 0;
-mask_gp = create_mask_greenplate(im_L);
-mask_gp = imcomplement(mask_gp);
+%         tgt_msg = rosmessage(target_pub);
+%         tgt_msg.X = grab_pos(1);
+%         tgt_msg.Y = grab_pos(2);
+%         tgt_msg.Z = grab_pos(3);
+%         send(target_pub,tgt_msg);
 
-
-
-
-
-se = strel('disk',5);
-mask_gp = imopen(mask_gp,se);
-
-mask_gp = imcomplement(bwareafilt(imcomplement(mask_gp),1));
-
-
-edge_gp = edge(mask_gp,'canny');
-
-
-[H,theta,rho] = hough(edge_gp);
-
-P = houghpeaks(H,4,'threshold',ceil(0.3*max(H(:))));
-lines = houghlines(edge_gp,theta,rho,P,'FillGap',80,'MinLength',80);
-figure, imshow(im_L), hold on
-max_len = 0;
-for k = 1:length(lines)
-   xy = [lines(k).point1; lines(k).point2];
-   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
-
-   % Plot beginnings and ends of lines
-   %plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
-   %plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
-
-   % Determine the endpoints of the longest line segment
-   len = norm(lines(k).point1 - lines(k).point2);
-   if ( len > max_len)
-      max_len = len;
-      xy_long = xy;
-   end
-end
-
-corners = [];
-s = size(im_L);
-for k = 1:(length(lines) - 1)
-    for l = (k + 1) : length(lines)
-        l_intersect_mat = [lines(k).point1; lines(k).point2;...
-            lines(l).point1; lines(l).point2];
-        p_intersect = linlinintersect(l_intersect_mat);
-        
-        if (p_intersect(1) > 0) & (p_intersect(2) > 0) &...
-                (p_intersect(1) < s(2)) & (p_intersect(2) < s(1))
-            corners = [corners; p_intersect];
-        end
-        
+if (size(corners_L) > 0)
+    
+    s = size(IL);
+    plate_poly_mask_L = imcomplement(poly2mask(corners_L(:,1), corners_L(:,2), s(1), s(2)));
+    
+    plate_poly_mask_L3 = cat(3, plate_poly_mask_L, plate_poly_mask_L, plate_poly_mask_L);
+    im_foreground_L(plate_poly_mask_L3) = 0;
+    [centroid, im_white_object] = detect_white_obj(IL);
+    
+    subplot(1,2,2), ...
+    imshow(im_white_object)
+    hold on
+    plot(centroid(1),centroid(2),'g.');
+    hold off
+   
+    subplot(1,2,1), ...
+    imshow(im_foreground_L)
+    hold on
+  
+    for i = 1:length(lines_L)
+        xy = [lines_L(i).point1; lines_L(i).point2];
+        plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
     end
+    plot(corners_L(:,1),corners_L(:,2),'r.');
+    hold on
+    
+    [centroid, im_white_object] = detect_white_obj(IL);
+
+    plot(centroid(1),centroid(2),'g.');
 end
 
-plot(corners(:,1),corners(:,2),'r.');
 
 
+    
