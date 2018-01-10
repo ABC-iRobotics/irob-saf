@@ -56,6 +56,8 @@ find_package(catkin REQUIRED
    InstrumentJawPart.msg
    InstrumentInfo.msg
    FloatArray.msg
+   GraspObject.msg
+   Environment.msg
  )
 
 ## Generate services in the 'srv' folder

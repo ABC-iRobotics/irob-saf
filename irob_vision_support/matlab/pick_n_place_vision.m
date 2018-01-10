@@ -36,6 +36,7 @@ P_r = reshape(right_cam_info.P, 4, 3)
 
 % -------------------------------------------------------------------------
 
+load('pnp_phantom_model.mat');
 
 while true
     
@@ -69,7 +70,7 @@ while true
         if ((size(corners_L, 1) > 3) &&  (size(corners_R, 1) > 3))
             
             % Plot lines
-            subplot(2,2,1), imshow(im_foreground_L)
+            subplot(2,3,1), imshow(im_foreground_L)
             hold on
             for i = 1:length(lines_L)
                 xy = [lines_L(i).point1; lines_L(i).point2];
@@ -78,7 +79,7 @@ while true
             plot(corners_L(:,1),corners_L(:,2),'r.');
             hold off
             
-            subplot(2,2,2), imshow(im_foreground_R)
+            subplot(2,3,2), imshow(im_foreground_R)
             hold on
             for i = 1:length(lines_R)
                 xy = [lines_R(i).point1; lines_R(i).point2];
@@ -95,33 +96,64 @@ while true
             [centroid_pm_R, im_purple_marker_R] = detect_purple_marker(im_foreground_R);
             
             if (size(centroid_pm_L,1) > 0) && (size(centroid_pm_R,1) > 0)
-                subplot(2,2,3), ...
+                subplot(2,3,4), ...
                     imshow(im_purple_marker_L)
                 hold on
                 plot(centroid_pm_L(1),centroid_pm_L(2),'g.');
                 hold off
-           
-                subplot(2,2,4), ...
+                
+                subplot(2,3,5), ...
                     imshow(im_purple_marker_R)
                 hold on
                 plot(centroid_pm_R(1),centroid_pm_R(2),'g.');
                 hold off
-          
-            
+                
+                
                 % Find first corner
                 [corners_L] = orderPolyVertices(corners_L,centroid_pm_L);
                 [corners_R] = orderPolyVertices(corners_R,centroid_pm_R);
-            
+                
                 % Triangulate corners
                 corners_3d = triangulate(uint32(corners_L), uint32(corners_R), P_l, P_r);
-            
-                % Registrate phantom
                 
-            
+                % Register phantom
+                [R, t] = rigid_transform_3D(model_3d_corners, corners_3d)
+                
+                model_3d_transf = (R*model_3d_corners') + repmat(t, 1, n);
+                model_3d_transf = model_3d_transf';
+                
+                subplot(2,3,3);
+                scatter3(model_3d_corners(:,1), model_3d_corners(:,2), model_3d_corners(:,3), 'MarkerEdgeColor','b',...
+                    'MarkerFaceColor','b')
+                hold on
+                scatter3(corners_3d(:,1), corners_3d(:,2), corners_3d(:,3), 'MarkerEdgeColor','r',...
+                    'MarkerFaceColor','r')
+                hold off
+                
+                subplot(2,3,6);
+                scatter3(model_3d_transf(:,1), model_3d_transf(:,2), model_3d_transf(:,3), 'MarkerEdgeColor','b',...
+                    'MarkerFaceColor','b')
+                hold on
+                scatter3(corners_3d(:,1), corners_3d(:,2), corners_3d(:,3), 'MarkerEdgeColor','r',...
+                    'MarkerFaceColor','r')
+                hold off
+                
+                % Transform environment
+                model_3d_targets_transformed = (R*model_3d_targets') + repmat(t, 1, size(model_3d_targets,1));
+                model_3d_targets_transformed = model_3d_targets_transformed';
+                
+                model_3d_approaches_transformed = (R*model_3d_approaches') + repmat(t, 1, size(model_3d_approaches,1));
+                model_3d_approaches_transformed = model_3d_approaches_transformed';
+                
+                model_3d_grasps_transformed = (R*model_3d_grasps') + repmat(t, 1, size(model_3d_grasps,1));
+                model_3d_grasps_transformed = model_3d_grasps_transformed';
+                
+                % Send ROS msg
+                
             end
         end
         
-        
+        % If error occured, send ERR msg in ROS
         
         pause(0.5);
         
