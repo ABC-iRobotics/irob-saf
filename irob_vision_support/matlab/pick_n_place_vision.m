@@ -31,8 +31,8 @@ left_cam_info = left_cam_info_sub.LatestMessage;
 right_cam_info = right_cam_info_sub.LatestMessage;
 
 disp('Camera info received:');
-left_p = reshape(left_cam_info.P, 4, 3)
-right_p = reshape(right_cam_info.P, 4, 3)
+P_l = reshape(left_cam_info.P, 4, 3)
+P_r = reshape(right_cam_info.P, 4, 3)
 
 % -------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ while true
         if ((size(corners_L, 1) > 3) &&  (size(corners_R, 1) > 3))
             
             % Plot lines
-            subplot(3,2,1), imshow(im_foreground_L)
+            subplot(2,2,1), imshow(im_foreground_L)
             hold on
             for i = 1:length(lines_L)
                 xy = [lines_L(i).point1; lines_L(i).point2];
@@ -78,7 +78,7 @@ while true
             plot(corners_L(:,1),corners_L(:,2),'r.');
             hold off
             
-            subplot(3,2,2), imshow(im_foreground_R)
+            subplot(2,2,2), imshow(im_foreground_R)
             hold on
             for i = 1:length(lines_R)
                 xy = [lines_R(i).point1; lines_R(i).point2];
@@ -92,14 +92,33 @@ while true
             
             [centroid_pm_L, im_purple_marker_L] = detect_purple_marker(im_foreground_L);
             
-            if (size(centroid_pm_L) > 0)
-                subplot(3,2,5), ...
+            [centroid_pm_R, im_purple_marker_R] = detect_purple_marker(im_foreground_R);
+            
+            if (size(centroid_pm_L,1) > 0) && (size(centroid_pm_R,1) > 0)
+                subplot(2,2,3), ...
                     imshow(im_purple_marker_L)
                 hold on
                 plot(centroid_pm_L(1),centroid_pm_L(2),'g.');
                 hold off
-            end
+           
+                subplot(2,2,4), ...
+                    imshow(im_purple_marker_R)
+                hold on
+                plot(centroid_pm_R(1),centroid_pm_R(2),'g.');
+                hold off
+          
             
+                % Find first corner
+                [corners_L] = orderPolyVertices(corners_L,centroid_pm_L);
+                [corners_R] = orderPolyVertices(corners_R,centroid_pm_R);
+            
+                % Triangulate corners
+                corners_3d = triangulate(uint32(corners_L), uint32(corners_R), P_l, P_r);
+            
+                % Registrate phantom
+                
+            
+            end
         end
         
         
