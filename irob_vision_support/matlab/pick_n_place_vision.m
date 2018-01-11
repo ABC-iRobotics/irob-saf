@@ -16,7 +16,7 @@ left_cam_info_sub = rossubscriber(...
 right_cam_info_sub = rossubscriber(...
     '/ias/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
 
-%target_pub = rospublisher('/ias/vision/target', 'geometry_msgs/Point');
+target_pub = rospublisher('/ias/vision/target', 'irob_msgs/Environment');
 
 %retract_observation_pub = rospublisher('/ias/vision/retract_observation', 'irob_msgs/FloatArray');
 
@@ -39,6 +39,8 @@ P_r = reshape(right_cam_info.P, 4, 3)
 load('pnp_phantom_model.mat');
 
 while true
+    
+    valid = false;
     
     left_img_msg = left_img_sub.LatestMessage;
     right_img_msg = right_img_sub.LatestMessage;
@@ -114,13 +116,15 @@ while true
                 [corners_R] = orderPolyVertices(corners_R,centroid_pm_R);
                 
                 % Triangulate corners
-                corners_3d = triangulate(uint32(corners_L), uint32(corners_R), P_l, P_r);
+                corners_3d = triangulate(uint32(corners_L), uint32(corners_R), ...
+                    P_l, P_r) * 1000.0; % m -> mm
                 
                 % Register phantom
                 [R, t] = rigid_transform_3D(model_3d_corners, corners_3d)
                 
-                model_3d_transf = (R*model_3d_corners') + repmat(t, 1, n);
+                model_3d_transf = (R*model_3d_corners') + repmat(t, 1, size(model_3d_corners,1));
                 model_3d_transf = model_3d_transf';
+                
                 
                 subplot(2,3,3);
                 scatter3(model_3d_corners(:,1), model_3d_corners(:,2), model_3d_corners(:,3), 'MarkerEdgeColor','b',...
@@ -136,11 +140,14 @@ while true
                 hold on
                 scatter3(corners_3d(:,1), corners_3d(:,2), corners_3d(:,3), 'MarkerEdgeColor','r',...
                     'MarkerFaceColor','r')
-                hold off
+                hold on
                 
                 % Transform environment
                 model_3d_targets_transformed = (R*model_3d_targets') + repmat(t, 1, size(model_3d_targets,1));
                 model_3d_targets_transformed = model_3d_targets_transformed';
+                scatter3(model_3d_targets_transformed(:,1), model_3d_targets_transformed(:,2), model_3d_targets_transformed(:,3), 'MarkerEdgeColor','b', ...
+                    'MarkerFaceColor','b')
+                hold off
                 
                 model_3d_approaches_transformed = (R*model_3d_approaches') + repmat(t, 1, size(model_3d_approaches,1));
                 model_3d_approaches_transformed = model_3d_approaches_transformed';
@@ -150,10 +157,49 @@ while true
                 
                 % Send ROS msg
                 
+                if  mean(sum(abs(model_3d_transf - corners_3d), 2)) < 20.0
+                    disp('Vision valid')
+                    valid = true;
+                    
+                    tgt_msg = rosmessage(target_pub);
+                    tgt_msg.Valid = 1;
+                    
+                    tgt_msg.Objects = arrayfun(@(~) rosmessage('irob_msgs/GraspObject'), ...
+                        zeros(1,size(model_3d_targets,1)));
+                    
+                    for i = 1:size(model_3d_targets,1)
+                    
+                        tgt_msg.Objects(i).Id = i;
+                        
+                        tgt_msg.Objects(i).Position.X = model_3d_targets_transformed(i,1);
+                        tgt_msg.Objects(i).Position.Y = model_3d_targets_transformed(i,2);
+                        tgt_msg.Objects(i).Position.Z = model_3d_targets_transformed(i,3);
+                        
+                        tgt_msg.Objects(i).GraspPosition.X = model_3d_grasps_transformed(i,1);
+                        tgt_msg.Objects(i).GraspPosition.Y = model_3d_grasps_transformed(i,2);
+                        tgt_msg.Objects(i).GraspPosition.Z = model_3d_grasps_transformed(i,3);
+                        
+                        tgt_msg.Objects(i).ApproachPosition.X = model_3d_approaches_transformed(i,1);
+                        tgt_msg.Objects(i).ApproachPosition.Y = model_3d_approaches_transformed(i,2);
+                        tgt_msg.Objects(i).ApproachPosition.Z = model_3d_approaches_transformed(i,3);
+                        
+                        tgt_msg.Objects(i).GraspDiameter= target_d;
+                        
+                    end
+                    send(target_pub,tgt_msg);
+                    
+                end
+                
             end
         end
         
         % If error occured, send ERR msg in ROS
+        if not(valid)
+            disp('Vision invalid')
+            tgt_msg = rosmessage(target_pub);
+            tgt_msg.Valid = 2;
+            send(target_pub,tgt_msg);
+        end
         
         pause(0.5);
         
