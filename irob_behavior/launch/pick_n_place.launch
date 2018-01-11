@@ -8,7 +8,11 @@
 			type="pick_n_place" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
-					
+				<!-- [w, x, y, z] -->
+				<rosparam param="ori">[0, 0.707, 0.707, 0]</rosparam>
+
+				<rosparam param="dp">[0.0, 0.0, -115.0]</rosparam>
+
 				<remap from="target" to="vision/target" />
 	</node>
   	</group>

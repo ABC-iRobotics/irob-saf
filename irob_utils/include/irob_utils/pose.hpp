@@ -52,6 +52,7 @@ class Pose {
 	Pose(const geometry_msgs::Pose&, double jaw);
 	Pose(const geometry_msgs::PoseStamped&, double jaw);
    	Pose(const Eigen::Vector3d&, const Eigen::Quaternion<double>&, double);
+    Pose(const geometry_msgs::Point&, const Eigen::Quaternion<double>&, double);
    	
    	void swap(Pose&);
    	Pose operator=(const Pose&);

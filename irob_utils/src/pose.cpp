@@ -46,10 +46,15 @@ namespace ias {
 		position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x,
 		msg.pose.orientation.y, msg.pose.orientation.z), 
 		jaw(jaw){}	
-		
-	Pose::Pose(const Eigen::Vector3d& position, 
-	 			const Eigen::Quaternion<double>& orientation, double jaw):	
-		position(position), 
+
+  Pose::Pose(const  Eigen::Vector3d& position,
+        const Eigen::Quaternion<double>& orientation, double jaw):
+    position(position),
+      orientation(orientation), jaw(jaw){}
+
+  Pose::Pose(const geometry_msgs::Point& position,
+        const Eigen::Quaternion<double>& orientation, double jaw):
+    position(position.x, position.y, position.z),
    		orientation(orientation), jaw(jaw){}
    		
    		

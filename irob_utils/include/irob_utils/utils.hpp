@@ -26,6 +26,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <irob_msgs/ToolPose.h>
 #include <irob_msgs/ToolPoseStamped.h>
+#include <irob_msgs/Environment.h>
 
 namespace ias {
 
@@ -103,6 +104,10 @@ inline double distanceEuler(const Eigen::Vector3d& x1,
 template<typename MsgT, typename DataT>
 inline DataT unwrapMsg(const MsgT& msg);
 
+template <>
+inline irob_msgs::Environment unwrapMsg(const irob_msgs::Environment& msg){
+  return msg;
+}
 
 template <>
 inline double unwrapMsg(const std_msgs::Float32& msg){
@@ -273,6 +278,13 @@ template <>
 inline irob_msgs::ToolPose makeNaN(){
 	Pose nanp = makeNaN<Pose>();
 	return nanp.toRosToolPose();
+}
+
+template <>
+inline irob_msgs::Environment makeNaN(){
+  irob_msgs::Environment nanp;
+  nanp.valid = irob_msgs::Environment::INVALID;
+  return nanp;
 }
 
 template <>

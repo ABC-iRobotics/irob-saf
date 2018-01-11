@@ -1,6 +1,13 @@
-#ifndef PICK_N_PLACE_HPP
-#define PICK_N_PLACE_HPP
+/*
+ * 	pick_n_place.hpp
+ * 	
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2017-11-08
+ *
+ */
 
+#ifndef GRASP_HPP_
+#define GRASP_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -13,14 +20,12 @@
 #include <limits>
 
 #include <Eigen/Dense>
-#include <Eigen/Geometry>
+#include <Eigen/Geometry> 
 
 #include <geometry_msgs/Point.h>
 
 #include <irob_utils/pose.hpp>
 #include <irob_utils/utils.hpp>
-#include <irob_msgs/Environment.h>
-#include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/gesture_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
@@ -30,24 +35,20 @@
 
 namespace ias {
 
-class PicknPlace : public AutosurgAgent {
+class Grasp : public AutosurgAgent {
 
 
 protected:
 
-  VisionClient<irob_msgs::Environment, irob_msgs::Environment> vision;
-
-  Eigen::Quaternion<double> ori;
-  Eigen::Vector3d dp;
-
+    VisionClient<geometry_msgs::Pose, Pose> vision;
+    
 
 public:
-  PicknPlace(ros::NodeHandle, std::vector<std::string>, Eigen::Quaternion<double>, Eigen::Vector3d);
-  ~PicknPlace();
-  void doPnP();
-
+  Grasp(ros::NodeHandle, std::vector<std::string>);
+  ~Grasp();
+	 void graspObject();
+	
 };
 
 }
-
-#endif // PICK_N_PLACE_HPP
+#endif /* GRASP_HPP_ */
