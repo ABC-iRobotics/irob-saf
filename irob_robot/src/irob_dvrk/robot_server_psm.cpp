@@ -105,7 +105,7 @@ void RobotServerPSM::positionCartesianCurrentCB(
 
   }
   Pose tmp(position_cartesian_current, position_jaw.position[0]);
-
+  //ROS_INFO_STREAM(tmp);
   // Hand-eye calibration
   // Convert from m-s to mm-s
   fwd.pose = tmp.invTransform(R, t, 0.001).toRosToolPose();
@@ -121,7 +121,7 @@ void RobotServerPSM::positionJawCurrentCB(
 Pose RobotServerPSM::getPoseCurrent()
 {
   ros::spinOnce();
-  Pose ret(position_cartesian_current, position_joint.position[6]);
+  Pose ret(position_cartesian_current, position_jaw.position[0]);
   return ret;
 }
 

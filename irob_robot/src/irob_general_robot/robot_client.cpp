@@ -186,7 +186,7 @@ void RobotClient::moveTool(Pose target, double speed /* = 10.0 */,
 	
 	// Jaw cannot be changed!
 	target.jaw = p1.jaw;
-	for (Pose p : waypoints)
+  for (Pose &p : waypoints)
 		p.jaw = p1.jaw;
 	
 	if (waypoints.empty()) {

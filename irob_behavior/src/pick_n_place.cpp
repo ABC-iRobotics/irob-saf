@@ -29,12 +29,32 @@ void PicknPlace::doPnP()
 {
 
   Pose dist_pose(dp, ori, 0.0);
-  double compress_rate = 0.9;
+  double compress_rate = 0.705;
 
   ROS_INFO_STREAM("Starting Pick-and-Place behaviour...");
 
-  int tube_idx_on = 0;
-  int tube_idx_to = 1;
+  int tube_idx_on = 6;
+  int tube_idx_to = 7;
+  int increment = 1;
+
+  // Go to distant position
+  ROS_INFO_STREAM("Go to distant position...");
+  arms[0] -> nav_to_pos(dist_pose);
+  while(!arms[0] -> isGestureDone() && ros::ok())
+  {
+    ros::Duration(0.1).sleep();
+  }
+
+  // Read environment data
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  irob_msgs::Environment e = makeNaN<irob_msgs::Environment>();
+  while (e.valid != irob_msgs::Environment::VALID
+         && ros::ok())
+  {
+    e = vision.getResult();
+    ros::Duration(0.1).sleep();
+  }
+
 
 
 
@@ -69,7 +89,7 @@ void PicknPlace::doPnP()
     Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, ori, 0.0);
     Pose approach_pose_on(e.objects[tube_idx_on].approach_position, ori, 0.0);
     double d = e.objects[tube_idx_on].grasp_diameter;
-    arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate, 10.0, 10.0);
+    arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
     while(!arms[0] -> isGestureDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -92,6 +112,7 @@ void PicknPlace::doPnP()
     // Release
     arms[0] -> release(approach_pose_to, d);
     ROS_INFO_STREAM("Release object...");
+    while(!arms[0] -> isGestureDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
@@ -100,9 +121,11 @@ void PicknPlace::doPnP()
 
     // Set new traget
     tube_idx_on = tube_idx_to;
-    tube_idx_to++;
-    if (tube_idx_to >= e.objects.size())
-      tube_idx_to = 0;
+    tube_idx_to+=increment;
+    if (tube_idx_to == 12) {
+      tube_idx_on = 6;
+      tube_idx_to  = 7;
+    }
 
   }
 

@@ -18,6 +18,11 @@ TODO
 # Usage
 TODO
 
+
+## Acknowledgement
+We acknowledge the financial support of this work by the Hungarian State and the European Union under the  EFOP-3.6.1-16-2016-00010 project.
+
+
 Start simulation: 
 * roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/<USERNAME>/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console-PSM1_KIN_SIMULATED.json
 

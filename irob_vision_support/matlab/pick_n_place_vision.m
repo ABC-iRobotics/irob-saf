@@ -38,6 +38,8 @@ P_r = reshape(right_cam_info.P, 4, 3)
 
 load('pnp_phantom_model.mat');
 
+offset = [-3, 3, 0];
+
 while true
     
     valid = false;
@@ -97,7 +99,7 @@ while true
             
             [centroid_pm_R, im_purple_marker_R] = detect_purple_marker(im_foreground_R);
             
-            if (size(centroid_pm_L,1) > 0) && (size(centroid_pm_R,1) > 0)
+            if (size(centroid_pm_L,2) > 0) && (size(centroid_pm_R,2) > 0)
                 subplot(2,3,4), ...
                     imshow(im_purple_marker_L)
                 hold on
@@ -120,7 +122,10 @@ while true
                     P_l, P_r) * 1000.0; % m -> mm
                 
                 % Register phantom
-                [R, t] = rigid_transform_3D(model_3d_corners, corners_3d)
+                [R, t] = rigid_transform_3D(model_3d_corners, corners_3d);
+                
+                offset_t = (R*offset');
+                offset_t = offset_t';
                 
                 model_3d_transf = (R*model_3d_corners') + repmat(t, 1, size(model_3d_corners,1));
                 model_3d_transf = model_3d_transf';
@@ -156,8 +161,8 @@ while true
                 model_3d_grasps_transformed = model_3d_grasps_transformed';
                 
                 % Send ROS msg
-                
-                if  mean(sum(abs(model_3d_transf - corners_3d), 2)) < 20.0
+                disp(mean(sum(abs(model_3d_transf - corners_3d), 2)));
+                if  mean(sum(abs(model_3d_transf - corners_3d), 2)) < 15.0
                     disp('Vision valid')
                     valid = true;
                     
@@ -171,17 +176,17 @@ while true
                     
                         tgt_msg.Objects(i).Id = i;
                         
-                        tgt_msg.Objects(i).Position.X = model_3d_targets_transformed(i,1);
-                        tgt_msg.Objects(i).Position.Y = model_3d_targets_transformed(i,2);
-                        tgt_msg.Objects(i).Position.Z = model_3d_targets_transformed(i,3);
+                        tgt_msg.Objects(i).Position.X = model_3d_targets_transformed(i,1) + offset_t(1);
+                        tgt_msg.Objects(i).Position.Y = model_3d_targets_transformed(i,2) + offset_t(2);
+                        tgt_msg.Objects(i).Position.Z = model_3d_targets_transformed(i,3) + offset_t(3);
                         
-                        tgt_msg.Objects(i).GraspPosition.X = model_3d_grasps_transformed(i,1);
-                        tgt_msg.Objects(i).GraspPosition.Y = model_3d_grasps_transformed(i,2);
-                        tgt_msg.Objects(i).GraspPosition.Z = model_3d_grasps_transformed(i,3);
+                        tgt_msg.Objects(i).GraspPosition.X = model_3d_grasps_transformed(i,1) + offset_t(1);
+                        tgt_msg.Objects(i).GraspPosition.Y = model_3d_grasps_transformed(i,2) + offset_t(2);
+                        tgt_msg.Objects(i).GraspPosition.Z = model_3d_grasps_transformed(i,3) + offset_t(3);
                         
-                        tgt_msg.Objects(i).ApproachPosition.X = model_3d_approaches_transformed(i,1);
-                        tgt_msg.Objects(i).ApproachPosition.Y = model_3d_approaches_transformed(i,2);
-                        tgt_msg.Objects(i).ApproachPosition.Z = model_3d_approaches_transformed(i,3);
+                        tgt_msg.Objects(i).ApproachPosition.X = model_3d_approaches_transformed(i,1) + offset_t(1);
+                        tgt_msg.Objects(i).ApproachPosition.Y = model_3d_approaches_transformed(i,2) + offset_t(2);
+                        tgt_msg.Objects(i).ApproachPosition.Z = model_3d_approaches_transformed(i,3) + offset_t(3);
                         
                         tgt_msg.Objects(i).GraspDiameter= target_d;
                         
@@ -201,7 +206,7 @@ while true
             send(target_pub,tgt_msg);
         end
         
-        pause(0.5);
+        pause(1.0);
         
     else
         disp('No images received');
