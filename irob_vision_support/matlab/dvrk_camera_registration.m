@@ -3,7 +3,7 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = '../../irob_robot/config/registration_psm5.yaml';
+cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
 
 posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
