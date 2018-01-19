@@ -2,7 +2,7 @@ function [corners,lines, im_foreground] = detect_green_plate(im)
 
 % Returns the corners of the green plate in clockwise order
 
-mask_gp = create_mask_greenplate_3(im);
+mask_gp = create_mask_greenplate_5(im);
 mask_gp = imcomplement(mask_gp);
 
 
