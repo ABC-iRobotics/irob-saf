@@ -38,7 +38,7 @@ P_r = reshape(right_cam_info.P, 4, 3)
 
 load('pnp_phantom_model.mat');
 
-offset = [-1, 1, 0];
+offset = [-1.5, 0, 0];
 
 while true
     
