@@ -1,10 +1,10 @@
 function [corners,lines, im_foreground] = detect_green_plate(im)
 
 % Returns the corners of the green plate in clockwise order
-
-mask_gp = create_mask_greenplate_5(im);
+%im = imgaussfilt(im,2);
+mask_gp = create_mask_greenplate_6(im);
 mask_gp = imcomplement(mask_gp);
-
+%mask_gp = imfilter(mask_gp,fspecial('gaussian'));
 
 se = strel('disk',5);
 mask_gp = imopen(mask_gp,se);
@@ -17,8 +17,12 @@ im_foreground = im;
 
 im_foreground(mask_gp3) = 0;
 
+%c = corner(mask_gp);
+
 edge_gp = edge(mask_gp,'canny');
 
+%edge_gp = imdilate(edge_gp,strel('disk',2));
+%edge_gp = bwmorph(edge_gp,'thin',inf);
 
 
 [H,theta,rho] = hough(edge_gp);

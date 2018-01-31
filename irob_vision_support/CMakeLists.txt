@@ -144,6 +144,7 @@ add_executable(camera_rotator
 				
 add_executable(stereo_sync
 				src/stereo_sync.cpp)
+				
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 

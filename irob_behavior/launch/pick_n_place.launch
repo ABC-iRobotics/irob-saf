@@ -9,8 +9,10 @@
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
 				<!-- [w, x, y, z] -->
-				<rosparam param="ori">[0.855153853946, -0.279563175808, -0.361454119877, 0.244759391302]</rosparam>
-				<rosparam param="dp">[108.487732515,-68.4878110079, 382.091213049]</rosparam>
+
+				<rosparam param="ori">[-0.186908015973, -0.34532493419, 0.227064046675, 0.891211546868]</rosparam>
+
+				<rosparam param="dp">[96.8461748503,-45.8478770763, 342.055658972]</rosparam>
 
 				<remap from="target" to="vision/target" />
 	</node>

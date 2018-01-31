@@ -38,3 +38,7 @@ Support for computer vision used for surgical automation.
 * Follow the instructions suggested by rosgenmsg (savepath works only in sudo mode)
 * For a more detailed guide see https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html
 
+# Black magic guide
+
+TODO
+

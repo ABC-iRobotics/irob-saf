@@ -14,11 +14,11 @@
 			 <!-- No point cloud calculated in case of stereo_algorithm=1 -->
 			 	
 			 	
-			 <rosparam param="min_disparity">64</rosparam>
+			 <rosparam param="min_disparity">-96</rosparam>
 			 	
 			 <rosparam param="disparity_range">128</rosparam>
 			 	
-			 <rosparam param="correlation_window_size">25</rosparam>
+			 <rosparam param="correlation_window_size">17</rosparam>
 			 	
 			 <rosparam param="uniqueness_ratio">0</rosparam>
 			 <rosparam param="texture_threshold">5</rosparam>
