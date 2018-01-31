@@ -1,4 +1,4 @@
-function [BW,maskedRGBImage] = create_mask_purple_marker(RGB)
+function [BW,maskedRGBImage] = create_mask_greenlate_6(RGB)
 %createMask  Threshold RGB image using auto-generated code from colorThresholder app.
 %  [BW,MASKEDRGBIMAGE] = createMask(RGB) thresholds image RGB using
 %  auto-generated code from the colorThresholder app. The colorspace and
@@ -14,8 +14,8 @@ function [BW,maskedRGBImage] = create_mask_purple_marker(RGB)
 I = rgb2hsv(RGB);
 
 % Define thresholds for channel 1 based on histogram settings
-channel1Min = 0.674;
-channel1Max = 0.950;
+channel1Min = 0.047;
+channel1Max = 0.377;
 
 % Define thresholds for channel 2 based on histogram settings
 channel2Min = 0.000;
