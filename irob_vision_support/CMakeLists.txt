@@ -139,8 +139,12 @@ add_executable(vision_server_test_dummy
 add_executable(dummy_target_publisher 
 				src/dummy_target_publisher.cpp)
 				
-add_executable(camera_rotator 
-				src/camera_rotator.cpp)
+add_executable(camera_info_publisher
+				src/camera_info_publisher.cpp)
+
+
+add_executable(camera_preprocessor
+					src/camera_preprocessor.cpp)
 				
 add_executable(stereo_sync
 				src/stereo_sync.cpp)
@@ -173,7 +177,13 @@ add_executable(stereo_sync
    irob_vision_support_lib
  )
  
-   target_link_libraries(camera_rotator
+target_link_libraries(camera_info_publisher
+${catkin_LIBRARIES}
+irob_vision_support_lib
+)
+
+
+   target_link_libraries(camera_preprocessor
    ${catkin_LIBRARIES}
    irob_vision_support_lib
  )

@@ -1,13 +1,18 @@
 /*
- * 	camera_rotator.hpp
- * 	
+ * 	camera_info_publisher.hpp
+ *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-09-06
+ *	Created on: 2018-03-13
+ *
+ * This node loads the camera calibration file and
+ * publishes the camera info topic. Necessary since the
+ * camera driver will not always load the camera info
+ * itself. Insert between the preprocessing and the stereo vision node.
  *
  */
 
-#ifndef CAMERA_ROTATOR_HPP_
-#define CAMERA_ROTATOR_HPP_
+#ifndef CAMERA_INFO_PUBLISHER_HPP
+#define CAMERA_INFO_PUBLISHER_HPP
 
 #include <iostream>
 #include <sstream>
@@ -18,14 +23,6 @@
 #include <ros/package.h>
 #include <sensor_msgs/Image.h>
 
-
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/version.hpp>
-
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/SetCameraInfo.h"
 #include "camera_info_manager/camera_info_manager.h"
@@ -33,47 +30,45 @@
 
 namespace ias {
 
-class CameraRotator {
+class CameraInfoPublisher {
 public:
-  
+
 
 private:
-	
+
     ros::NodeHandle nh;
-    int angle_code;
     std::string camera;
-    
+
     sensor_msgs::CameraInfo c_info;
     camera_info_manager::CameraInfoManager c_info_man;
-    
-    sensor_msgs::CameraInfo pre_rot_c_info;
-   	
+
+
     // Subscribers
     ros::Subscriber image_sub;
- 	ros::Subscriber camera_info_sub;
+  ros::Subscriber camera_info_sub;
 
     // Publishers
     ros::Publisher image_pub;
     ros::Publisher camera_info_pub;
-    
+
     void subscribeTopics();
     void advertiseTopics();
 
 public:
-	CameraRotator(ros::NodeHandle, std::string, std::string, int);
-	~CameraRotator();
-	
+  CameraInfoPublisher(ros::NodeHandle, std::string, std::string);
+  ~CameraInfoPublisher();
+
 
 
     // Callbacks
     void imageCB(
-    		const sensor_msgs::ImageConstPtr &);
-    		
+        const sensor_msgs::ImageConstPtr &);
+
     void cameraInfoCB(
-    		const sensor_msgs::CameraInfoConstPtr &);
-    
-    		
-	
+        const sensor_msgs::CameraInfoConstPtr &);
+
+
+
 };
 
 
@@ -81,4 +76,6 @@ public:
 
 
 }
-#endif /* CAMERA_ROTATOR_HPP_ */
+
+
+#endif // CAMERA_INFO_PUBLISHER_HPP

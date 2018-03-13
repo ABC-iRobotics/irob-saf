@@ -13,10 +13,10 @@ start_tension = 0;
 end_tension = 180;
 
 transition_slope_angle = 40;
-transition_max_d_angle = 10;
+transition_max_d_angle = 30;
 
 transition_slope_tension = 40;
-transition_max_d_tension = 10;
+transition_max_d_tension = 40;
 
 emission_sigma_angle = 5;
 emission_sigma_tension = 40;
@@ -42,9 +42,9 @@ for i = 1:N
     
     
     y = trimf(STATES_angle,[a1 b1 c1]) + trimf(STATES_angle,[a2 b2 c2]);
-    
+      s = sum(y);
     %T(i,:) = y / sum(y);
-    T_angle(i,:) = y / 2;
+    T_angle(i,:) = y / s;
     %plot(STATES_angle,T_angle(i,:)); hold on;
 end
 
@@ -63,9 +63,11 @@ for i = 1:N
     
     
     y = trimf(STATES_tension,[a1 b1 c1]) + trimf(STATES_tension,[a2 b2 c2]);
+      s = sum(y);
+   
     
     %T(i,:) = y / sum(y);
-    T_tension(i,:) = y / 2;
+    T_tension(i,:) = y /s;
     %plot(STATES,T(i,:)); hold on;
 end
 
@@ -80,6 +82,12 @@ for i = 1:N
     
     E_angle(i, :) = gaussmf(EMISSIONS_angle, ...
         [emission_sigma_angle STATES_angle(i)]);
+        s = sum(E_angle(i, :));
+    E_angle(i, :) = E_angle(i, :) / s;
+    
+    if EMISSIONS_angle(i) == 90
+    plot(EMISSIONS_angle,E_angle(i,:)); hold on;
+    end
     %plot(EMISSIONS_angle,E_angle(i,:)); hold on;
 end
 
@@ -94,7 +102,10 @@ for i = 1:N
     
     E_tension(i, :) = gaussmf(EMISSIONS_tension,...
         [emission_sigma_tension STATES_tension(i)]);
-    %plot(EMISSIONS,E(i,:)); hold on;
+    s = sum(E_tension(i, :));
+    E_tension(i, :) = E_tension(i, :) / s;
+    
+    %plot(EMISSIONS_tension,E_tension(i,:)); hold on;
 end
 
 
