@@ -39,6 +39,7 @@ public:
 private:
 
     typedef enum Command {
+      NONE,
       AVG_ADJACENT
     } Command;
 
@@ -48,9 +49,14 @@ private:
     cv::Mat prev_image;
 
 
+    sensor_msgs::CameraInfo c_info;
+
+    camera_info_manager::CameraInfoManager c_info_man;
+
+
     // Subscribers
     ros::Subscriber image_sub;
-  ros::Subscriber camera_info_sub;
+    ros::Subscriber camera_info_sub;
 
     // Publishers
     ros::Publisher image_pub;
@@ -72,6 +78,7 @@ public:
     void cameraInfoCB(
         const sensor_msgs::CameraInfoConstPtr &);
 
+    bool setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response);
 
 
 };

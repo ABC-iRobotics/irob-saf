@@ -26,16 +26,24 @@ namespace ias {
 
 CameraPreprocessor::CameraPreprocessor(ros::NodeHandle nh,
                                        std::string camera, std::string calibration, std::string command):
-  nh(nh), camera(camera)
+  nh(nh), camera(camera),
+  c_info_man(ros::NodeHandle(nh, camera + "/preprocessed")
+                                     , camera + "/preprocessed"
+                         , calibration)
 {
 
-  if (!command.compare("avg_adjacent"))
+  if (!command.compare("none"))
+  {
+    this->command = Command::NONE;
+  }
+  else if (!command.compare("avg_adjacent"))
   {
     this->command = Command::AVG_ADJACENT;
   }
 
   subscribeTopics();
   advertiseTopics();
+  nh.advertiseService(camera +"/preprocessed/set_camera_info", &CameraPreprocessor::setCameraInfoCB, this);
 }
 
 CameraPreprocessor::~CameraPreprocessor() {}
@@ -46,15 +54,16 @@ void CameraPreprocessor::subscribeTopics()
         camera + "/image_raw", 1000,
         &CameraPreprocessor::imageCB,this);
   camera_info_sub = nh.subscribe<sensor_msgs::CameraInfo>(
-        camera + "/camera_info", 1000,
-        &CameraPreprocessor::cameraInfoCB,this);
+            camera + "/camera_info", 1000,
+&CameraPreprocessor::cameraInfoCB,this);
 }
 
 void CameraPreprocessor::advertiseTopics()
 {
-  image_pub = nh.advertise<sensor_msgs::Image>(camera + "/preprocessed/image", 1000);
+  image_pub = nh.advertise<sensor_msgs::Image>(camera + "/preprocessed/image_raw", 1000);
   camera_info_pub =
-      nh.advertise<sensor_msgs::CameraInfo>(camera + "/preprocessed/camera_info", 1);
+ nh.advertise<sensor_msgs::CameraInfo>(camera + "/preprocessed/camera_info", 1);
+
 }
 
 void CameraPreprocessor::imageCB(
@@ -70,6 +79,8 @@ void CameraPreprocessor::imageCB(
 
     switch(command)
     {
+    case Command::NONE:
+      break;
     case Command::AVG_ADJACENT:
       if(!prev_image.empty())
         processed_image = (processed_image + prev_image) / 2.0;
@@ -91,13 +102,29 @@ void CameraPreprocessor::imageCB(
 }
 
 void CameraPreprocessor::cameraInfoCB(
-    const sensor_msgs::CameraInfoConstPtr& msg)
+        const sensor_msgs::CameraInfoConstPtr& msg)
 {
   camera_info_pub.publish(*msg);
 }
 
+bool CameraPreprocessor::setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response)
+{
+  ros::ServiceClient client = nh.serviceClient<sensor_msgs::SetCameraInfo>(camera +"set_camera_info");
 
+  sensor_msgs::SetCameraInfo srv;
 
+  srv.request = request;
+  srv.response = response;
+
+  if (client.call(srv))
+  {
+    response = srv.response;
+    return true;
+  }
+
+  response = srv.response;
+  return false;
+}
 
 
 

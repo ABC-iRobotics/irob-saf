@@ -7,10 +7,9 @@
 		<arg name="device_number_right" default="1"/> 
 		<arg name="calib_file_left" default="camera_dvrk_left.yaml"/> 
 		<arg name="calib_file_right" default="camera_dvrk_right.yaml"/>
-		<arg name="angle_left" default="0"/> 
-		<arg name="angle_right" default="0"/> 
+		<arg name="command_preprocessor" default="avg_adjacent"/>
 		
-		<!-- Start USB stereo cam pair -->
+		<!-- Start Decklink stereo cam pair -->
 		<include 
 			file="$(find irob_vision_support)/launch/camera/decklink_cam_pair_driver.launch"
 			pass_all_args="false">
@@ -20,31 +19,26 @@
 			<arg name="DEVICE_NUMBER_LEFT" value="$(arg device_number_left)"/>
 			<arg name="DEVICE_NUMBER_RIGHT" value="$(arg device_number_right)"/> 
 		</include> 
-		
-			
-		<!-- Rotate images AND load camera_info -->
-		<include 
-		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch"
+
+
+		<!-- Pre-process video stream -->
+		<include
+		file="$(find irob_vision_support)/launch/camera/camera_preprocessor.launch"
 		pass_all_args="false">
-			
-			<arg name="angle" value="$(arg angle_left)"/> 
-			<arg name="camera" value="left"/> 
-			<!-- Use separate calibration files for the cameras -->
-			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_left)"/> 
-				
-		</include> 	
+
+			<arg name="command" value="$(arg command_preprocessor)"/>
+			<arg name="camera" value="left"/>
+
+		</include>
+
+		<include
+		file="$(find irob_vision_support)/launch/camera/camera_preprocessor.launch">
+
+			<arg name="command" value="$(arg command_preprocessor)"/>
+			<arg name="camera" value="right"/>
+
+		</include>
 		
-		<include 
-		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
-			
-			<arg name="angle" value="$(arg angle_right)"/> 
-			<arg name="camera" value="right"/> 
-			<!-- Use separate calibration files for the cameras -->
-			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_right)"/> 
-			
-		</include> 	
 		
 		
 		<!-- Rectification and disparity calculation -->
@@ -52,8 +46,9 @@
 			file="$(find irob_vision_support)/launch/camera/stereo_img_proc.launch"
 			pass_all_args="false">
 			
-			<arg name="left" value="left/calibrated" />
-			<arg name="right" value="right/calibrated" />
+			<arg name="left" value="left" />
+			<arg name="right" value="right" />
+			<arg name="image_postfix" value="_preprocessed"/>
 		</include>					
 		
   	</group>

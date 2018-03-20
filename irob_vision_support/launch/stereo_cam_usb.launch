@@ -1,14 +1,23 @@
-<!-- Launch file for left and right camera nodes using cv-camera -->
+<!--	Launch file for left and right camera nodes using cv-camera
+		The initiated ROS image pipeline will be like something like:
+
+		/ias/stereo/left/image_raw
+
+					|
+					V
+
+		/ias/stereo/left/image_raw
+
+-->
 
 <launch>
 	<group ns="ias"><group ns="stereo">
 	
-		<arg name="device_id_left" default="0"/>
-		<arg name="device_id_right" default="1"/> 
+		<arg name="device_id_left" default="1"/>
+		<arg name="device_id_right" default="2"/>
 		<arg name="calib_file_left" default="camera_default_left.yaml"/> 
 		<arg name="calib_file_right" default="camera_default_right.yaml"/>
-		<arg name="angle_left" default="0"/> 
-		<arg name="angle_right" default="0"/> 
+		<arg name="command_preprocessor" default="avg_adjacent"/>
 		
 		<!-- Start USB stereo cam pair -->
 		<include 
@@ -19,42 +28,41 @@
 			<arg name="right" value="right" />
 			<arg name="device_id_left" value="$(arg device_id_left)"/>
 			<arg name="device_id_right" value="$(arg device_id_right)"/> 
+			<arg name="calib_file_left" value="$(arg calib_file_left)"/>
+			<arg name="calib_file_right" value="$(arg calib_file_right)"/>
 		</include> 
-		
-			
-		<!-- Rotate images AND load camera_info -->
-		<include 
-		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch"
-		pass_all_args="false">
-			
-			<arg name="angle" value="$(arg angle_left)"/> 
-			<arg name="camera" value="left"/> 
-			<!-- Use separate calibration files for the cameras -->
-			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_left)"/> 
-				
-		</include> 	
-		
-		<include 
-		file="$(find irob_vision_support)/launch/camera/rotate_cam.launch">
-			
-			<arg name="angle" value="$(arg angle_right)"/> 
-			<arg name="camera" value="right"/> 
-			<!-- Use separate calibration files for the cameras -->
-			<arg name="calibration" 
-			value="file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_right)"/> 
-			
-		</include> 	
-		
-		
-		<!-- Rectification and disparity calculation -->
-		<include 
-			file="$(find irob_vision_support)/launch/camera/stereo_img_proc.launch"
-			pass_all_args="false">
-			
-			<arg name="left" value="left/calibrated" />
-			<arg name="right" value="right/calibrated" />
-		</include>					
+
+
+
+<!-- Pre-process video stream -->
+<include
+file="$(find irob_vision_support)/launch/camera/camera_preprocessor.launch"
+pass_all_args="false">
+
+	<arg name="command" value="$(arg command_preprocessor)"/>
+	<arg name="camera" value="left"/>
+
+</include>
+
+<include
+file="$(find irob_vision_support)/launch/camera/camera_preprocessor.launch">
+
+	<arg name="command" value="$(arg command_preprocessor)"/>
+	<arg name="camera" value="right"/>
+
+</include>
+
+
+
+<!-- Rectification and disparity calculation -->
+<include
+	file="$(find irob_vision_support)/launch/camera/stereo_img_proc.launch"
+	pass_all_args="false">
+
+	<arg name="left" value="left" />
+	<arg name="right" value="right" />
+</include>
+
 		
   	</group>
   	</group>
