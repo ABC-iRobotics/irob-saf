@@ -8,6 +8,8 @@ left_img_sub = rossubscriber(...
     '/ias/stereo/left/image_rect_color', 'sensor_msgs/Image');
 right_img_sub = rossubscriber(...
     '/ias/stereo/right/image_rect_color', 'sensor_msgs/Image');
+
+disparity_sub = rossubscriber('/ias/stereo/disparity', 'stereo_msgs/DisparityImage');
 %disparity_sub = rossubscriber(...
 %'/ias/stereo/disparity', 'stereo_msgs/DisparityImage');
 
@@ -46,12 +48,19 @@ while true
     
     left_img_msg = left_img_sub.LatestMessage;
     right_img_msg = right_img_sub.LatestMessage;
-    %disparity_msg = disparity_sub.LatestMessage;
+    disparity_msg = disparity_sub.LatestMessage;
     
-    if ((size(left_img_msg, 1) > 0 && size(right_img_msg, 1) > 0))
+    if ((size(left_img_msg, 1) > 0 && size(right_img_msg, 1) > 0) && size(disparity_msg.Image, 1) > 0)
         IL = readImage(left_img_msg);
         IR = readImage(right_img_msg);
+        disparityMap = readImage(disparity_msg.Image);
         
+        disparityMap(disparityMap == -97) = nan;
+        
+        %imshow(disparityMap, []);
+        
+        %disparityMap = inpaintn(disparityMap, 10);
+        %imshow(disparityMap, []);
         % Green plate
         
         [corners_L, lines_L, im_foreground_L] = detect_green_plate(IL);
@@ -61,15 +70,13 @@ while true
         
         %imshow([IL, IR])
         
-        
-        %grab_pos = ...
-        %    triangulate(IL_centroid,IR_centroid,left_p,right_p) * 1000.0             % in mm
-        
-        %         tgt_msg = rosmessage(target_pub);
-        %         tgt_msg.X = grab_pos(1);
-        %         tgt_msg.Y = grab_pos(2);
-        %         tgt_msg.Z = grab_pos(3);
-        %         send(target_pub,tgt_msg);
+%         corners_L_int = uint32(round(corners_L));
+%         
+%         corners_R = zeros(4,2);
+%         
+%         for i = 1:size(corners_L_int, 1)
+%             corners_R(i,:) = [corners_L(i,1) - disparityMap(corners_L_int(i,2), corners_L_int(i,1)), corners_L(i,2)];
+%         end
         
         if ((size(corners_L, 1) > 3) &&  (size(corners_R, 1) > 3))
             
@@ -85,11 +92,11 @@ while true
             
             subplot(2,3,2), imshow(im_foreground_R)
             hold on
-            for i = 1:length(lines_R)
-                xy = [lines_R(i).point1; lines_R(i).point2];
-                plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
-                hold on
-            end
+             for i = 1:length(lines_R)
+                 xy = [lines_R(i).point1; lines_R(i).point2];
+                 plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+                 hold on
+             end
             plot(corners_R(:,1),corners_R(:,2),'r.');
             hold off
             
@@ -162,6 +169,7 @@ while true
                 
                 % Send ROS msg
                 disp(mean(sum(abs(model_3d_transf - corners_3d), 2)));
+                valid = true;
                 if  mean(sum(abs(model_3d_transf - corners_3d), 2)) < 15.0
                     disp('Vision valid')
                     valid = true;

@@ -2,7 +2,7 @@ function [corners,lines, im_foreground] = detect_green_plate(im)
 
 % Returns the corners of the green plate in clockwise order
 %im = imgaussfilt(im,2);
-mask_gp = create_mask_greenplate_6(im);
+mask_gp = create_mask_whiteplate_2(im);
 mask_gp = imcomplement(mask_gp);
 %mask_gp = imfilter(mask_gp,fspecial('gaussian'));
 
