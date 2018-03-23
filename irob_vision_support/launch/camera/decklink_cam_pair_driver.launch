@@ -1,4 +1,4 @@
-<!-- Launch file for left and right camera nodes using cv-camera -->
+<!-- Launch file for left and right camera nodes using decklink blackmagick frame grabber for stereo vision -->
 
 <launch>
 

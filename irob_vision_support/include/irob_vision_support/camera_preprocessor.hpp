@@ -1,13 +1,13 @@
 /*
- * 	camera_rotator.hpp
- * 	
+ * 	camera_preprocessor.hpp
+ *
  *	Author(s): Tamas D. Nagy
- *	Created on: 2017-09-06
+ *	Created on: 2087-03-13
  *
  */
 
-#ifndef CAMERA_ROTATOR_HPP_
-#define CAMERA_ROTATOR_HPP_
+#ifndef CAMERA_PREPROCESSOR_HPP_
+#define CAMERA_PREPROCESSOR_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -33,47 +33,51 @@
 
 namespace ias {
 
-class CameraRotator {
+class CameraPreprocessor {
 public:
-  
 
 private:
-	
+
+    typedef enum Command {
+      NONE,
+      AVG_ADJACENT
+    } Command;
+
     ros::NodeHandle nh;
-    int angle_code;
     std::string camera;
-    
-    sensor_msgs::CameraInfo c_info;
-    camera_info_manager::CameraInfoManager c_info_man;
-    
-    sensor_msgs::CameraInfo pre_rot_c_info;
-   	
+    Command command;
+    cv::Mat prev_image;
+
+
     // Subscribers
     ros::Subscriber image_sub;
- 	ros::Subscriber camera_info_sub;
+    ros::Subscriber camera_info_sub;
 
     // Publishers
     ros::Publisher image_pub;
     ros::Publisher camera_info_pub;
-    
+
+    ros::ServiceServer cam_info_service;
+
     void subscribeTopics();
     void advertiseTopics();
 
 public:
-	CameraRotator(ros::NodeHandle, std::string, std::string, int);
-	~CameraRotator();
-	
+  CameraPreprocessor(ros::NodeHandle, std::string, std::string);
+  ~CameraPreprocessor();
+
 
 
     // Callbacks
     void imageCB(
-    		const sensor_msgs::ImageConstPtr &);
-    		
+        const sensor_msgs::ImageConstPtr &);
+
     void cameraInfoCB(
-    		const sensor_msgs::CameraInfoConstPtr &);
-    
-    		
-	
+        const sensor_msgs::CameraInfoConstPtr &);
+
+    bool setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response);
+
+
 };
 
 
@@ -81,4 +85,4 @@ public:
 
 
 }
-#endif /* CAMERA_ROTATOR_HPP_ */
+#endif /* CAMERA_PREPROCESSOR_HPP_ */
