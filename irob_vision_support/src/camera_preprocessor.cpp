@@ -25,11 +25,9 @@
 namespace ias {
 
 CameraPreprocessor::CameraPreprocessor(ros::NodeHandle nh,
-                                       std::string camera, std::string calibration, std::string command):
-  nh(nh), camera(camera),
-  c_info_man(ros::NodeHandle(nh, camera + "/preprocessed")
-                                     , camera + "/preprocessed"
-                         , calibration)
+                                       std::string camera, std::string command):
+  nh(nh), camera(camera)
+
 {
 
   if (!command.compare("none"))
@@ -43,7 +41,7 @@ CameraPreprocessor::CameraPreprocessor(ros::NodeHandle nh,
 
   subscribeTopics();
   advertiseTopics();
-  nh.advertiseService(camera +"/preprocessed/set_camera_info", &CameraPreprocessor::setCameraInfoCB, this);
+  cam_info_service = nh.advertiseService("preprocessed/" + camera + "/set_camera_info", &CameraPreprocessor::setCameraInfoCB, this);
 }
 
 CameraPreprocessor::~CameraPreprocessor() {}
@@ -60,9 +58,9 @@ void CameraPreprocessor::subscribeTopics()
 
 void CameraPreprocessor::advertiseTopics()
 {
-  image_pub = nh.advertise<sensor_msgs::Image>(camera + "/preprocessed/image_raw", 1000);
+  image_pub = nh.advertise<sensor_msgs::Image>("preprocessed/" + camera + "/image_raw", 1000);
   camera_info_pub =
- nh.advertise<sensor_msgs::CameraInfo>(camera + "/preprocessed/camera_info", 1);
+ nh.advertise<sensor_msgs::CameraInfo>("preprocessed/" + camera + "/camera_info", 1);
 
 }
 
@@ -109,7 +107,7 @@ void CameraPreprocessor::cameraInfoCB(
 
 bool CameraPreprocessor::setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response)
 {
-  ros::ServiceClient client = nh.serviceClient<sensor_msgs::SetCameraInfo>(camera +"set_camera_info");
+  ros::ServiceClient client = nh.serviceClient<sensor_msgs::SetCameraInfo>(camera +"/set_camera_info");
 
   sensor_msgs::SetCameraInfo srv;
 
@@ -159,7 +157,7 @@ int main(int argc, char **argv)
 
   // Start Vision server
   try {
-    CameraPreprocessor prep(nh, camera, calibration, command);
+    CameraPreprocessor prep(nh, camera, command);
 
     ros::spin();
 

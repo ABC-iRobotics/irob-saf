@@ -49,11 +49,6 @@ private:
     cv::Mat prev_image;
 
 
-    sensor_msgs::CameraInfo c_info;
-
-    camera_info_manager::CameraInfoManager c_info_man;
-
-
     // Subscribers
     ros::Subscriber image_sub;
     ros::Subscriber camera_info_sub;
@@ -62,11 +57,13 @@ private:
     ros::Publisher image_pub;
     ros::Publisher camera_info_pub;
 
+    ros::ServiceServer cam_info_service;
+
     void subscribeTopics();
     void advertiseTopics();
 
 public:
-  CameraPreprocessor(ros::NodeHandle, std::string, std::string, std::string);
+  CameraPreprocessor(ros::NodeHandle, std::string, std::string);
   ~CameraPreprocessor();
 
 

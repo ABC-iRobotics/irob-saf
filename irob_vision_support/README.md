@@ -23,6 +23,14 @@ Support for computer vision used for surgical automation.
 * use the calibration app with option --approximate=0.1
 * example: rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/calibrated/image left:=/ias/stereo/left/calibrated/image right_camera:=/ias/stereo/right/calibrated left_camera:=/ias/stereo/left/calibrated --approximate=0.1
 * ROS Jade and earlier are having issues with calibration!
+* stereo_cam_usb_raw.launch:
+   
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
+    
+* stereo_cam_usb:
+
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/preprocessed/right/image_raw left:=/ias/stereo/preprocessed/left/image_raw right_camera:=/ias/stereo/preprocessed/right left_camera:=/ias/stereo/preprocessed/left --approximate=0.1
+
 
 # Useful links
 * http://wiki.ros.org/cv_camera

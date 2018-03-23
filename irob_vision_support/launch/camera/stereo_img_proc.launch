@@ -2,8 +2,8 @@
 
 <launch>	
 
-	<arg name="left" default="left/calibrated"/> 
-	<arg name="right" default="right/calibrated"/> 
+	<arg name="left" default="left"/>
+	<arg name="right" default="right"/>
 
 
 	<node name="stereo_image_proc" pkg="stereo_image_proc" 
@@ -30,10 +30,10 @@
 			 <rosparam param="prefilter_cap ">15</rosparam>
 			 <rosparam param="prefilter_size ">5</rosparam>
   		
-			<remap from="left/image$(arg image_postfix)" to="$(arg left)/image_raw"/>
+			<remap from="left/image" to="$(arg left)/image_raw"/>
   			<remap from="left/camera_info" to="$(arg left)/camera_info"/>
   			
-			<remap from="right/image$(arg image_postfix)" to="$(arg right)/image_raw"/>
+			<remap from="right/image" to="$(arg right)/image_raw"/>
   			<remap from="right/camera_info" to="$(arg right)/camera_info"/>
 					
 	</node>
