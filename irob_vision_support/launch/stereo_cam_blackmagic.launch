@@ -38,6 +38,8 @@
 			<arg name="right" value="right" />
 			<arg name="DEVICE_NUMBER_LEFT" value="$(arg device_number_left)"/>
 			<arg name="DEVICE_NUMBER_RIGHT" value="$(arg device_number_right)"/> 
+                        <arg name="calib_file_left" value="$(arg calib_file_left)"/>
+                        <arg name="calib_file_right" value="$(arg calib_file_right)"/>
 		</include> 
 
 

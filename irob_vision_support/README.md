@@ -27,7 +27,7 @@ Support for computer vision used for surgical automation.
    
     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
     
-* stereo_cam_usb:
+* stereo_cam_usb and stereo_cam_blackmagic:
 
     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/preprocessed/right/image_raw left:=/ias/stereo/preprocessed/left/image_raw right_camera:=/ias/stereo/preprocessed/right left_camera:=/ias/stereo/preprocessed/left --approximate=0.1
 
