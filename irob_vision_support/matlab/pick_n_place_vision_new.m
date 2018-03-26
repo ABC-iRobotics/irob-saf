@@ -58,19 +58,36 @@ while true
         
         disparityMap(disparityMap == -97) = nan;
         IL_eq = histeq(IL);
-        subplot(1,3,1), imshow(IL), title('Raw image');
+       % subplot(2,3,1), imshow(IL), title('Raw image');
         
         %Histogram equalization
-        subplot(1,3,2), imshow(IL_eq), title('Histeq');
+        subplot(2,3,1), imshow(IL_eq), title('Histeq');
         
         sobel_IL_eq = edge(IL_eq,'sobel');
-        subplot(1,3,3), imshow(sobel_IL_eq), title('Histeq with sobel'), hold on;
+        sobel_IL_eq = bwmorph(sobel_IL_eq,'skel', Inf);
+        subplot(2,3,2), imshow(sobel_IL_eq), title('Histeq with sobel');
         
         
-        [H,theta,rho] = hough(sobel_IL_eq);
+        closed = imclose(sobel_IL_eq, strel('disk', 5));
+        
+        %Fill
+        If = imfill(closed, 'holes');
+        % subplot(2,3,5), imshow(If), title('Fill holes');
+        
+        %Filled
+        holes = If - closed;
+        subplot(2,3,3), imshow(holes), title('Filled holes');
+        
+        holes_sobel = bwmorph(holes,'remove');
+        subplot(2,3,4), imshow(holes_sobel), title('Holes sobel');
+        
+        subplot(2,3,5), imshow(disparityMap, []), title('Disparity'), hold on;
+        
+        
+        [H,theta,rho] = hough(holes_sobel);
         
         P = houghpeaks(H,4,'threshold',ceil(0.3*max(H(:))));
-        lines = houghlines(sobel_IL_eq,theta,rho,P,'FillGap',80,'MinLength',80);
+        lines = houghlines(holes_sobel,theta,rho,P,'FillGap',200,'MinLength',40);
         %figure, imshow(im), hold on
         
         
@@ -90,12 +107,14 @@ while true
             end
         end
         
-          for i = 1:length(lines)
-                xy = [lines(i).point1; lines(i).point2];
-                plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
-           end
-           plot(corners(:,1),corners(:,2),'r.');
-           hold off
+        for i = 1:length(lines)
+            xy = [lines(i).point1; lines(i).point2];
+            plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+        end
+        if size(corners, 1) > 0
+         plot(corners(:,1),corners(:,2),'r.');
+        end
+        hold off
         
         
         
@@ -109,19 +128,6 @@ while true
         
         
         
-        %         closed = imclose(sobel_IL_eq, strel('disk', 3));
-        %         subplot(2,3,4), imshow(closed), title('Closed');
-        %
-        %         %Fill
-        %         If = imfill(closed, 'holes');
-        %        % subplot(2,3,5), imshow(If), title('Fill holes');
-        %
-        %         %Filled
-        %         holes = logical(imopen(If - closed, strel('disk', 11)));
-        %         subplot(2,3,5), imshow(holes), title('Filled holes');
-        %
-        %         plate = bwareafilt(holes, 1);
-        %         subplot(2,3,6), imshow(plate), title('BWareafilt');
         
         
         

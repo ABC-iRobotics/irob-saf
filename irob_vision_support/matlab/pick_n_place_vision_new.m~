@@ -58,27 +58,74 @@ while true
         
         disparityMap(disparityMap == -97) = nan;
         IL_eq = histeq(IL);
-        subplot(2,3,1), imshow(IL), title('Raw image');
+       % subplot(2,3,1), imshow(IL), title('Raw image');
         
         %Histogram equalization
-        subplot(2,3,2), imshow(IL_eq), title('Histeq');
+        subplot(2,3,1), imshow(IL_eq), title('Histeq');
         
         sobel_IL_eq = edge(IL_eq,'sobel');
-        subplot(2,3,3), imshow(sobel_IL_eq), title('Histeq with sobel');
+        subplot(2,3,2), imshow(sobel_IL_eq), title('Histeq with sobel');
         
         
-        %Dilation
-        id = bwareafilt(sobel_IL_eq,[4,5000])
-        subplot(2,3,4), imshow(Id), title('bwareafilt');
-        
+        closed = imclose(sobel_IL_eq, strel('disk', 3));
         
         %Fill
-        If = imfill(Id, 'holes');
-        subplot(2,3,5), imshow(If), title('Fill holes');
+        If = imfill(closed, 'holes');
+        % subplot(2,3,5), imshow(If), title('Fill holes');
         
-        %Find Plate
-        [lab, n] = bwlabel(If);
-        subplot(2,3,6), imshow(lab), title('Labels');
+        %Filled
+        holes = logical(imopen(If - closed, strel('disk', 11)));
+        subplot(2,3,3), imshow(holes), title('Filled holes');
+        
+        holes_sobel = edge(holes,'sobel');
+        subplot(2,3,4), imshow(holes_sobel), title('Histeq with sobel'), hold on;
+        
+        
+        [H,theta,rho] = hough(sobel_IL_eq);
+        
+        P = houghpeaks(H,4,'threshold',ceil(0.3*max(H(:))));
+        lines = houghlines(sobel_IL_eq,theta,rho,P,'FillGap',80,'MinLength',80);
+        %figure, imshow(im), hold on
+        
+        
+        corners = [];
+        s = size(IL);
+        for k = 1:(length(lines) - 1)
+            for l = (k + 1) : length(lines)
+                l_intersect_mat = [lines(k).point1; lines(k).point2;...
+                    lines(l).point1; lines(l).point2];
+                p_intersect = linlinintersect(l_intersect_mat);
+                
+                if (p_intersect(1) > 0) & (p_intersect(2) > 0) &...
+                        (p_intersect(1) < s(2)) & (p_intersect(2) < s(1))
+                    corners = [corners; p_intersect];
+                end
+                
+            end
+        end
+        
+        for i = 1:length(lines)
+            xy = [lines(i).point1; lines(i).point2];
+            plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+        end
+        plot(corners(:,1),corners(:,2),'r.');
+        hold off
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         pause(0.1);
         
