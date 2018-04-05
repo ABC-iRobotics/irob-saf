@@ -1,10 +1,28 @@
 # irob_vision_support
-Support for computer vision used for surgical automation.
+This package supports for stereo vision used for surgical automation. See the yet interfaced devices, and hints for those usage and camera calibration below. Before interfacing the cameras, the *irob_autosurg* package should be compiled, see [here](https://github.com/ABC-iRobotics/irob-autosurg/blob/master/README.md).
 
-# Usage with USB webcam pair
-* sudo apt-get install ros-kinetic-cv-camera
-* sudo apt-get install ros-kinetic-camera-calibration
-* device ID is based on the connection order of the cameras
+## Usage with USB webcam pair
+
+Stereo cameras, consists of a pair of USB webcameras can be interfaced this way using the package:
+
+- Install packages *ros-kinetic-cv-camera* and *ros-kinetic-camera-calibration*
+
+    sudo apt install ros-kinetic-cv-camera
+    sudo apt install ros-kinetic-camera-calibration
+    
+- The video feed can be started by the launch file *stereo_cam_usb_raw* (device ID is based on the connection order of the cameras), for example:
+    
+    roslaunch irob_vision_support stereo_cam_usb_raw device_id_left:=0 device_id_right:=1
+    
+- Before usage the stereo camera pair should be calibrated by the following command:
+
+     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
+    
+  
+
+## Black magic guide
+
+TODO
 
 # Usage with a pair of Raspberry Pi-es
 * Raspicam node: https://github.com/UbiquityRobotics/raspicam_node
