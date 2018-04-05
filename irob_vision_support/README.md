@@ -16,7 +16,9 @@ Stereo cameras, consists of a pair of USB webcameras can be interfaced this way 
     
 - Before usage the stereo camera pair should be calibrated by the following command:
 
-     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
+'''
+rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
+'''
     
   
 
