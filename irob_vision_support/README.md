@@ -35,7 +35,7 @@ To be able to use the frame grabber, download and install the following packages
 
 After installation, launch Blackmagic Desktop Video Setup and set all connectors to PAL and single. Then Media Express can be launched to view or capture video.
 
-# Acquire video stream in ROS
+### Acquire video stream in ROS
 
 The video stream can be interfaced into ROS using the ROS package [gscam](https://github.com/ros-drivers/gscam). This package can also be installed using apt, but this version supports gstreamer 0.10. The Black magic card requires the the subset *plugins-bad*, whom 0.10 version cannot be installed on Ubuntu 16.04 LTS. So, the best workaround is to clone the gscam package from GitHub and build it with the flag for gstreamer 1.0 turned on.
 
