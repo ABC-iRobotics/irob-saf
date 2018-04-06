@@ -1,26 +1,26 @@
 /*
- *  gesture_server.cpp
+ *  surgeme_server.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-11-06
  *
  */
 
-#include <irob_motion/gesture_server.hpp>
+#include <irob_motion/surgeme_server.hpp>
 
 namespace ias {
 
 
-const double GestureServer::DEFAULT_LOOP_RATE = 10.0;				// Hz
-const double  GestureServer::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
-const double GestureServer::DEFAULT_SPEED_JAW = 1.0;			// deg/s
+const double SurgemeServer::DEFAULT_LOOP_RATE = 10.0;				// Hz
+const double  SurgemeServer::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
+const double SurgemeServer::DEFAULT_SPEED_JAW = 1.0;			// deg/s
 
 
-GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name, 
+SurgemeServer::SurgemeServer(ros::NodeHandle nh, std::string arm_name, 
                              double dt):
   nh(nh), arm(nh, arm_name, dt),
-  as(nh, "gesture/"+arm_name, boost::bind(
-       &GestureServer::gestureActionCB, this, _1), false)
+  as(nh, "surgeme/"+arm_name, boost::bind(
+       &SurgemeServer::surgemeActionCB, this, _1), false)
 {
 
   // Subscribe and advertise topics
@@ -29,7 +29,7 @@ GestureServer::GestureServer(ros::NodeHandle nh, std::string arm_name,
   arm.initArm(true);
 }
 
-GestureServer::~GestureServer()
+SurgemeServer::~SurgemeServer()
 {
   // TODO Auto-generated destructor stub
 }
@@ -37,8 +37,8 @@ GestureServer::~GestureServer()
 /*
  * Callbacks
  */
-void GestureServer::gestureActionCB(
-    const irob_msgs::GestureGoalConstPtr &goal)
+void SurgemeServer::surgemeActionCB(
+    const irob_msgs::SurgemeGoalConstPtr &goal)
 {	
   // Extract data from msg
   InterpolationMethod	interp_method;
@@ -57,12 +57,12 @@ void GestureServer::gestureActionCB(
                                goal->displacement.y,
                                goal->displacement.z);
   // Check tool
-  if (!isAbleToDoGesture(goal -> action))
+  if (!isAbleToDoSurgeme(goal -> action))
   {
-    irob_msgs::GestureResult result;
+    irob_msgs::SurgemeResult result;
 
     ROS_ERROR_STREAM(
-          "Current instrument cannot be used for the action, aborting gesture");
+          "Current instrument cannot be used for the action, aborting surgeme");
     result.pose = arm.getPoseCurrent().toRosToolPose();
     result.info = "instrument issue";
 
@@ -76,14 +76,14 @@ void GestureServer::gestureActionCB(
     switch(goal -> action)
     {
     // STOP
-    case irob_msgs::GestureGoal::STOP:
+    case irob_msgs::SurgemeGoal::STOP:
     {
       stop();
       break;
     }
 
       // NAV_TO_POS
-    case irob_msgs::GestureGoal::NAV_TO_POS:
+    case irob_msgs::SurgemeGoal::NAV_TO_POS:
     {
       nav_to_pos(target, waypoints,
                  interp_method, goal -> speed_cartesian);
@@ -91,7 +91,7 @@ void GestureServer::gestureActionCB(
     }
 
       // GRASP
-    case irob_msgs::GestureGoal::GRASP:
+    case irob_msgs::SurgemeGoal::GRASP:
     {
       grasp(target, approach_pose,
             goal -> target_diameter,
@@ -102,7 +102,7 @@ void GestureServer::gestureActionCB(
     }
 
       // CUT
-    case irob_msgs::GestureGoal::CUT:
+    case irob_msgs::SurgemeGoal::CUT:
     {
       cut(target, approach_pose,
           goal -> target_diameter,
@@ -112,7 +112,7 @@ void GestureServer::gestureActionCB(
     }
 
       // PUSH
-    case irob_msgs::GestureGoal::PUSH:
+    case irob_msgs::SurgemeGoal::PUSH:
     {
       push(target, approach_pose,
            displacement,
@@ -122,7 +122,7 @@ void GestureServer::gestureActionCB(
     }
 
       // DISSECT
-    case irob_msgs::GestureGoal::DISSECT:
+    case irob_msgs::SurgemeGoal::DISSECT:
     {
       dissect(target, approach_pose,
               displacement, goal -> target_diameter,
@@ -132,7 +132,7 @@ void GestureServer::gestureActionCB(
     }
 
       // PLACE
-    case irob_msgs::GestureGoal::PLACE:
+    case irob_msgs::SurgemeGoal::PLACE:
     {
       place( target, approach_pose, goal -> target_diameter,
              waypoints, interp_method, goal -> speed_cartesian);
@@ -140,14 +140,14 @@ void GestureServer::gestureActionCB(
     }
 
       // MANIPULATE
-    case irob_msgs::GestureGoal::MANIPULATE:
+    case irob_msgs::SurgemeGoal::MANIPULATE:
     {
       manipulate(displacement, goal -> speed_cartesian);
       break;
     }
 
       // RELEASE
-    case irob_msgs::GestureGoal::RELEASE:
+    case irob_msgs::SurgemeGoal::RELEASE:
     {
       release(approach_pose, goal -> target_diameter,
               goal -> speed_cartesian, goal -> speed_jaw);
@@ -156,11 +156,11 @@ void GestureServer::gestureActionCB(
     default:
     {
       ROS_ERROR_STREAM(arm.getName()  <<
-                       ": invalid gesture action code received");
-      irob_msgs::GestureResult result;
+                       ": invalid surgeme action code received");
+      irob_msgs::SurgemeResult result;
       result.pose = arm.getPoseCurrent().toRosToolPose();
       result.info = arm.getName()  +
-          ": invalid gesture action code";
+          ": invalid surgeme action code";
       as.setAborted(result);
       break;
     }
@@ -182,12 +182,12 @@ void GestureServer::gestureActionCB(
 /**
  *	Wait for actionDone()
  */
-bool GestureServer::waitForActionDone(std::string stage)
+bool SurgemeServer::waitForActionDone(std::string stage)
 {
   bool done = false;
   ros::Rate loop_rate(DEFAULT_LOOP_RATE);
 
-  irob_msgs::GestureFeedback feedback;
+  irob_msgs::SurgemeFeedback feedback;
 
   while(!done)
   {
@@ -215,11 +215,11 @@ bool GestureServer::waitForActionDone(std::string stage)
 /**
  *	Evaluate action state
  */
-bool GestureServer::handleActionState(std::string stage, 
+bool SurgemeServer::handleActionState(std::string stage, 
                                       bool lastStage /* = false */ )
 {
-  irob_msgs::GestureResult result;
-  irob_msgs::GestureFeedback feedback;
+  irob_msgs::SurgemeResult result;
+  irob_msgs::SurgemeFeedback feedback;
 
   switch (arm.getState().state_)
   {
@@ -230,7 +230,7 @@ bool GestureServer::handleActionState(std::string stage,
     as.publishFeedback(feedback);
 
     // Do not send succeeded if not the last stage,
-    // else the gesture continues
+    // else the surgeme continues
     if (lastStage)
     {
       result.pose = arm.getPoseCurrent().toRosToolPose();
@@ -241,7 +241,7 @@ bool GestureServer::handleActionState(std::string stage,
     break;
   case actionlib::SimpleClientGoalState::StateEnum::ABORTED:
     // Send ABORTED to the upper level node
-    // and throw an error to finish gesture execution
+    // and throw an error to finish surgeme execution
     ROS_ERROR_STREAM(arm.getName()  << ": " << stage << " aborted");
     result.pose = arm.getPoseCurrent().toRosToolPose();
     result.info = stage + " aborted";
@@ -257,34 +257,34 @@ bool GestureServer::handleActionState(std::string stage,
   }
 }
 
-bool GestureServer::isAbleToDoGesture(int gesture_type)
+bool SurgemeServer::isAbleToDoSurgeme(int surgeme_type)
 {
-  if (	gesture_type == irob_msgs::GestureGoal::STOP
-        || 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
-        ||	gesture_type == irob_msgs::GestureGoal::PUSH
-        || 	gesture_type == irob_msgs::GestureGoal::RELEASE)
+  if (	surgeme_type == irob_msgs::SurgemeGoal::STOP
+        || 	surgeme_type == irob_msgs::SurgemeGoal::NAV_TO_POS
+        ||	surgeme_type == irob_msgs::SurgemeGoal::PUSH
+        || 	surgeme_type == irob_msgs::SurgemeGoal::RELEASE)
     return true;
 
   if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::GRIPPER
-      && (	gesture_type == irob_msgs::GestureGoal::GRASP
-            ||	gesture_type == irob_msgs::GestureGoal::DISSECT
-            ||	gesture_type == irob_msgs::GestureGoal::PLACE
-            ||	gesture_type == irob_msgs::GestureGoal::MANIPULATE))
+      && (	surgeme_type == irob_msgs::SurgemeGoal::GRASP
+            ||	surgeme_type == irob_msgs::SurgemeGoal::DISSECT
+            ||	surgeme_type == irob_msgs::SurgemeGoal::PLACE
+            ||	surgeme_type == irob_msgs::SurgemeGoal::MANIPULATE))
     return true;
 
   if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::SCISSORS
-      && (	gesture_type == irob_msgs::GestureGoal::CUT))
+      && (	surgeme_type == irob_msgs::SurgemeGoal::CUT))
     return true;
 
-  if(findInstrumentJawPartForGesture(gesture_type).type
+  if(findInstrumentJawPartForSurgeme(surgeme_type).type
      != irob_msgs::InstrumentJawPart::JOINT)
     return true;
 
   return false;
 }
 
-irob_msgs::InstrumentJawPart GestureServer::findInstrumentJawPartForGesture(
-    int gesture_type)
+irob_msgs::InstrumentJawPart SurgemeServer::findInstrumentJawPartForSurgeme(
+    int surgeme_type)
 {
   // Return a JOINT type instruemtJawPart if not found
   irob_msgs::InstrumentJawPart ret;
@@ -294,49 +294,49 @@ irob_msgs::InstrumentJawPart GestureServer::findInstrumentJawPartForGesture(
 
   for (irob_msgs::InstrumentJawPart p : arm.getInstrumentInfo().jaw_parts)
   {
-    if (	gesture_type == irob_msgs::GestureGoal::STOP
-          || 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
-          ||	gesture_type == irob_msgs::GestureGoal::PUSH
-          || 	gesture_type == irob_msgs::GestureGoal::RELEASE)
+    if (	surgeme_type == irob_msgs::SurgemeGoal::STOP
+          || 	surgeme_type == irob_msgs::SurgemeGoal::NAV_TO_POS
+          ||	surgeme_type == irob_msgs::SurgemeGoal::PUSH
+          || 	surgeme_type == irob_msgs::SurgemeGoal::RELEASE)
       ret = p;
 
     else if (p.type == irob_msgs::InstrumentJawPart::GRIPPER
-             && (	gesture_type == irob_msgs::GestureGoal::GRASP
-                  ||	gesture_type == irob_msgs::GestureGoal::DISSECT
-                  ||	gesture_type == irob_msgs::GestureGoal::PLACE
-                  ||	gesture_type == irob_msgs::GestureGoal::MANIPULATE))
+             && (	surgeme_type == irob_msgs::SurgemeGoal::GRASP
+                  ||	surgeme_type == irob_msgs::SurgemeGoal::DISSECT
+                  ||	surgeme_type == irob_msgs::SurgemeGoal::PLACE
+                  ||	surgeme_type == irob_msgs::SurgemeGoal::MANIPULATE))
       ret = p;
 
     else if (p.type == irob_msgs::InstrumentJawPart::SCISSORS
-             && (	gesture_type == irob_msgs::GestureGoal::CUT))
+             && (	surgeme_type == irob_msgs::SurgemeGoal::CUT))
       ret = p;
   }
 
   return ret;
 }
 
-GestureServer::GestureSetting GestureServer::calcGestureSetting(
-    int gesture_type,
+SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
+    int surgeme_type,
     irob_msgs::InstrumentJawPart jaw_part,
     Eigen::Quaternion<double> target_ori,
     double target_diameter,
     double compression_rate /* = 1.0 */)
 {
-  GestureSetting g;
+  SurgemeSetting g;
   g.jaw_open_angle = 0.0;
   g.jaw_closed_angle = 0.0;
   g.t = Eigen::Vector3d(0.0, 0.0, 0.0);
 
   // Does not matters
-  if (	gesture_type == irob_msgs::GestureGoal::STOP
-        || 	gesture_type == irob_msgs::GestureGoal::NAV_TO_POS
-        ||	gesture_type == irob_msgs::GestureGoal::MANIPULATE )
+  if (	surgeme_type == irob_msgs::SurgemeGoal::STOP
+        || 	surgeme_type == irob_msgs::SurgemeGoal::NAV_TO_POS
+        ||	surgeme_type == irob_msgs::SurgemeGoal::MANIPULATE )
     return g;
 
   // Center of jaw part
-  if (	gesture_type == irob_msgs::GestureGoal::GRASP
-        || 	gesture_type == irob_msgs::GestureGoal::PLACE
-        ||  gesture_type == irob_msgs::GestureGoal::RELEASE)
+  if (	surgeme_type == irob_msgs::SurgemeGoal::GRASP
+        || 	surgeme_type == irob_msgs::SurgemeGoal::PLACE
+        ||  surgeme_type == irob_msgs::SurgemeGoal::RELEASE)
   {
 
     double dist = jaw_part.end - (target_diameter / 2.0);
@@ -356,7 +356,7 @@ GestureServer::GestureSetting GestureServer::calcGestureSetting(
     return g;
   }
 
-  if (gesture_type == irob_msgs::GestureGoal::CUT)
+  if (surgeme_type == irob_msgs::SurgemeGoal::CUT)
   {
     double dist = jaw_part.end - (target_diameter / 2.0);
 
@@ -372,8 +372,8 @@ GestureServer::GestureSetting GestureServer::calcGestureSetting(
 
   // End of jaw
   // TODO check
-  if (	gesture_type == irob_msgs::GestureGoal::DISSECT
-        ||	gesture_type == irob_msgs::GestureGoal::PUSH)
+  if (	surgeme_type == irob_msgs::SurgemeGoal::DISSECT
+        ||	surgeme_type == irob_msgs::SurgemeGoal::PUSH)
   {
     g.jaw_open_angle = (2.0 * (target_diameter
                                / (2.0 * arm.getInstrumentInfo().jaw_length)))
@@ -403,7 +403,7 @@ GestureServer::GestureSetting GestureServer::calcGestureSetting(
 /**
  * Stop
  */
-void GestureServer::stop()
+void SurgemeServer::stop()
 {
   // Helper variables
   bool done = false;
@@ -425,7 +425,7 @@ void GestureServer::stop()
 /**
  * Nav_to_pos
  */
-void GestureServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
+void SurgemeServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
                                InterpolationMethod interp_method, double speed_cartesian)
 {
 
@@ -448,7 +448,7 @@ void GestureServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
 /**
  * Grasp
  */
-void GestureServer::grasp(Pose target, Pose approach_pose,
+void SurgemeServer::grasp(Pose target, Pose approach_pose,
                           double target_diameter,
                           double compression_rate,
                           std::vector<Pose> waypoints, InterpolationMethod interp_method,
@@ -459,9 +459,9 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
   std::string stage = "";
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::GRASP);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::GRASP);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::GRASP,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::GRASP,
                                          jaw_part,
                                          target.orientation,
                                          target_diameter,
@@ -519,7 +519,7 @@ void GestureServer::grasp(Pose target, Pose approach_pose,
 /**
  * Cut
  */
-void GestureServer::cut(Pose target, Pose approach_pose,
+void SurgemeServer::cut(Pose target, Pose approach_pose,
                         double target_diameter,
                         std::vector<Pose> waypoints, InterpolationMethod interp_method,
                         double speed_cartesian, double speed_jaw)
@@ -529,9 +529,9 @@ void GestureServer::cut(Pose target, Pose approach_pose,
   std::string stage = "";
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::CUT);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::CUT);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::CUT,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::CUT,
                                          jaw_part, target.orientation,
                                          target_diameter);
 
@@ -585,7 +585,7 @@ void GestureServer::cut(Pose target, Pose approach_pose,
 /**
  * Release
  */
-void GestureServer::release(Pose approach_pose,
+void SurgemeServer::release(Pose approach_pose,
                             double target_diameter,
                             double speed_cartesian, double speed_jaw)
 {
@@ -594,9 +594,9 @@ void GestureServer::release(Pose approach_pose,
   std::string stage = "";
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::RELEASE);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::RELEASE);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::RELEASE,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::RELEASE,
                                          jaw_part, approach_pose.orientation,
                                          target_diameter);
 
@@ -629,7 +629,7 @@ void GestureServer::release(Pose approach_pose,
 /**
  * Place
  */
-void GestureServer::place(Pose target, Pose approach_pose,
+void SurgemeServer::place(Pose target, Pose approach_pose,
                           double target_diameter,
                           std::vector<Pose> waypoints, InterpolationMethod interp_method,
                           double speed_cartesian)
@@ -640,9 +640,9 @@ void GestureServer::place(Pose target, Pose approach_pose,
 
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::PLACE);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::PLACE);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::PLACE,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::PLACE,
                                          jaw_part, target.orientation,
                                          target_diameter);
 
@@ -679,7 +679,7 @@ void GestureServer::place(Pose target, Pose approach_pose,
 /**
  * Push
  */
-void GestureServer::push(Pose target, Pose approach_pose, 
+void SurgemeServer::push(Pose target, Pose approach_pose, 
                          Eigen::Vector3d displacement,
                          std::vector<Pose> waypoints, InterpolationMethod interp_method,
                          double speed_cartesian, double speed_jaw)
@@ -689,9 +689,9 @@ void GestureServer::push(Pose target, Pose approach_pose,
   std::string stage = "";
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::PUSH);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::PUSH);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::PUSH,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::PUSH,
                                          jaw_part, target.orientation,
                                          0.0);
 
@@ -747,7 +747,7 @@ void GestureServer::push(Pose target, Pose approach_pose,
 /**
  * Dissect
  */
-void GestureServer::dissect(Pose target, Pose approach_pose, 
+void SurgemeServer::dissect(Pose target, Pose approach_pose, 
                             Eigen::Vector3d displacement,
                             double target_diameter,
                             std::vector<Pose> waypoints, InterpolationMethod interp_method,
@@ -758,9 +758,9 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
   std::string stage = "";
 
   irob_msgs::InstrumentJawPart jaw_part =
-      findInstrumentJawPartForGesture(irob_msgs::GestureGoal::DISSECT);
+      findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::DISSECT);
 
-  GestureSetting gs = calcGestureSetting(irob_msgs::GestureGoal::DISSECT,
+  SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::DISSECT,
                                          jaw_part, target.orientation,
                                          target_diameter);
 
@@ -840,7 +840,7 @@ void GestureServer::dissect(Pose target, Pose approach_pose,
  * Maipulate
  */
 // TODO rotation?
-void GestureServer::manipulate(Eigen::Vector3d displacement,
+void SurgemeServer::manipulate(Eigen::Vector3d displacement,
                                double speed_cartesian)
 {
   // Helper variables
@@ -865,18 +865,18 @@ void GestureServer::manipulate(Eigen::Vector3d displacement,
 
 
 // Simple relay
-Pose GestureServer::getPoseCurrent()
+Pose SurgemeServer::getPoseCurrent()
 {
   return arm.getPoseCurrent();
 }
 
-std::string GestureServer::getArmName()
+std::string SurgemeServer::getArmName()
 {
   return arm.getName();
 }
 
 std::ostream& operator<<(std::ostream& os, 
-                         const GestureServer::GestureSetting& d)
+                         const SurgemeServer::SurgemeSetting& d)
 {
   return os << d.jaw_open_angle <<"\t" << d.jaw_open_angle <<"\t"
             << d.t;
@@ -888,13 +888,13 @@ using namespace ias;
 
 
 /**
- * Gesture server main
+ * Surgeme server main
  */
 int main(int argc, char **argv)
 {
 
   // Initialize ros node
-  ros::init(argc, argv, "gesture_server");
+  ros::init(argc, argv, "surgeme_server");
   ros::NodeHandle nh;
   ros::NodeHandle priv_nh("~");
 
@@ -905,9 +905,9 @@ int main(int argc, char **argv)
   priv_nh.getParam("rate", rate_command);
 
 
-  // StartGesture server
+  // StartSurgeme server
   try {
-    GestureServer gesture(nh, arm_name, 1.0/rate_command);
+    SurgemeServer surgeme(nh, arm_name, 1.0/rate_command);
 
     ros::spin();
 

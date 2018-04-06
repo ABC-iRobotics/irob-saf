@@ -61,7 +61,7 @@ void Retractor::graspObject()
 	arms[0] -> grasp(grasp_pose, approach_pose, 8.0, 0.05, 20.0, 20.0);
 	
 	
-	while(!arms[0] -> isGestureDone() && ros::ok())
+  while(!arms[0] -> issurgemeDone() && ros::ok())
 	{
 		
 		ros::Duration(0.1).sleep();
@@ -101,7 +101,7 @@ void Retractor::graspObject()
 		
 		arms[0] -> manipulate(movement);
 		
-		while(!arms[0] -> isGestureDone() && ros::ok())
+    while(!arms[0] -> issurgemeDone() && ros::ok())
 		{
 		
 			ros::Duration(0.1).sleep();
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 	
 	
     
-    // StartGesture server
+    // Startsurgeme server
   	try {
     	Retractor retr(nh, arm_names);
     	

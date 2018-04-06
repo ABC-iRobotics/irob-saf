@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_behavior)
+project(irob_subtask_logic)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -108,16 +108,16 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 ## Declare a C++ library
 
-file(GLOB irob_behavior_lib_src
+file(GLOB irob_subtask_logic_lib_src
     "src/*.cpp"
 )
 
 
-add_library( irob_behavior_lib STATIC
-       ${irob_behavior_lib_src}
+add_library( irob_subtask_logic_lib STATIC
+       ${irob_subtask_logic_lib_src}
        )
 
-set_target_properties( irob_behavior_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -150,19 +150,19 @@ add_executable(retractor src/retractor.cpp)
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_behavior_lib
+ target_link_libraries(irob_subtask_logic_lib
  	${catkin_LIBRARIES}
  )
  
  
  target_link_libraries(pick_n_place
    ${catkin_LIBRARIES}
-   irob_behavior_lib
+   irob_subtask_logic_lib
  )
  
   target_link_libraries(retractor
    ${catkin_LIBRARIES}
-   irob_behavior_lib
+   irob_subtask_logic_lib
  )
  
 

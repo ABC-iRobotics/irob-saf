@@ -25,7 +25,7 @@
 #include <geometry_msgs/Point.h>
 
 #include <irob_utils/pose.hpp>
-#include <irob_motion/gesture_client.hpp>
+#include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
 
 
@@ -36,7 +36,7 @@ class AutosurgAgent {
 protected:
     ros::NodeHandle nh;
     
-    std::vector<GestureClient*> arms;
+    std::vector<surgemeClient*> arms;
     
     // Inherited classes should countain 1 or more
     // VisionClient, e. g.:
@@ -48,12 +48,12 @@ public:
 	AutosurgAgent(ros::NodeHandle nh, std::vector<std::string> arm_names): nh(nh)
 	{
 		for (std::string name : arm_names)
-			arms.push_back(new GestureClient(nh, name));
+      arms.push_back(new surgemeClient(nh, name));
 	}
 	
 	~AutosurgAgent() 
 	{
-		for (GestureClient* gc : arms)
+    for (surgemeClient* gc : arms)
 			delete(gc);
 	}
 	

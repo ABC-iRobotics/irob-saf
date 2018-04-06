@@ -9,8 +9,8 @@
  *	TODO Handle tool types, allow gestures etc?
  */
 
-#ifndef GESTURE_CLIENT_HPP_
-#define GESTURE_CLIENT_HPP_
+#ifndef SURGEME_CLIENT_HPP_
+#define SURGEME_CLIENT_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -34,13 +34,13 @@
 
 #include <irob_msgs/ToolPoseStamped.h>
 
-#include <irob_msgs/GestureAction.h>
+#include <irob_msgs/SurgemeAction.h>
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
 
 namespace ias {
 
-class GestureClient {
+class SurgemeClient {
 
 public:
 	static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
@@ -51,7 +51,7 @@ protected:
     ros::NodeHandle nh;
     
     // Action clients
-    IrobActionClient<irob_msgs::GestureAction> ac;
+    IrobActionClient<irob_msgs::SurgemeAction> ac;
    
 
     // States
@@ -73,8 +73,8 @@ protected:
     void waitForActionServer();
 
 public:
-	GestureClient(ros::NodeHandle, std::string);
-	~GestureClient();
+  SurgemeClient(ros::NodeHandle, std::string);
+  ~SurgemeClient();
 
     // Callbacks    
 
@@ -128,14 +128,14 @@ public:
 	void manipulate(Eigen::Vector3d,
 			double = DEFAULT_SPEED_CARTESIAN);
 			
-	bool isGestureDone(bool = true);
+  bool isSurgemeDone(bool = true);
 	actionlib::SimpleClientGoalState getState();
 	
-	irob_msgs::GestureFeedback getFeedback(bool = true);
-	irob_msgs::GestureResult getResult(bool = true);
+  irob_msgs::SurgemeFeedback getFeedback(bool = true);
+  irob_msgs::SurgemeResult getResult(bool = true);
 
 	
 };
 
 }
-#endif /* GESTURE_SERVER_HPP_ */
+#endif /* SURGEME_SERVER_HPP_ */

@@ -142,9 +142,6 @@ add_executable(dummy_target_publisher
 add_executable(camera_preprocessor
 					src/camera_preprocessor.cpp)
 				
-add_executable(stereo_sync
-				src/stereo_sync.cpp)
-				
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -178,13 +175,6 @@ add_executable(stereo_sync
    ${catkin_LIBRARIES}
    irob_vision_support_lib
  )
- 
-    target_link_libraries(stereo_sync
-   ${catkin_LIBRARIES}
-   irob_vision_support_lib
- )
- 
- 
 
  
 

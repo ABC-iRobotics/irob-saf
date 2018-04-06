@@ -133,7 +133,7 @@ set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(gesture_server src/gesture_server.cpp)
+add_executable(surgeme_server src/surgeme_server.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -152,7 +152,7 @@ add_executable(gesture_server src/gesture_server.cpp)
  )
  
  
- target_link_libraries(gesture_server
+ target_link_libraries(surgeme_server
    ${catkin_LIBRARIES}
    irob_motion_lib
  ) 

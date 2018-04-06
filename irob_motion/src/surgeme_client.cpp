@@ -1,22 +1,22 @@
 /*
- * 	gesture_client.cpp
+ * 	surgeme_client.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-07-24
  *  
  */
 
-#include <irob_motion/gesture_client.hpp>
+#include <irob_motion/surgeme_client.hpp>
 
 namespace ias {
 
-const double GestureClient::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
-const double GestureClient::DEFAULT_SPEED_JAW = 10.0;		// deg/s
+const double SurgemeClient::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
+const double SurgemeClient::DEFAULT_SPEED_JAW = 10.0;		// deg/s
 
 
-GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name): 
+SurgemeClient::SurgemeClient(ros::NodeHandle nh, std::string arm_name):
 			nh(nh), arm_name(arm_name),
-			ac("gesture/"+arm_name, true)
+      ac("surgeme/"+arm_name, true)
 {
 
 	// Subscribe and advertise topics
@@ -26,7 +26,7 @@ GestureClient::GestureClient(ros::NodeHandle nh, std::string arm_name):
     waitForActionServer();
 }
 
-GestureClient::~GestureClient()
+SurgemeClient::~SurgemeClient()
 {
 	// TODO Auto-generated destructor stub
 }
@@ -36,14 +36,14 @@ GestureClient::~GestureClient()
  */
 
 // Read pos 
-void GestureClient::positionCartesianCurrentCB(
+void SurgemeClient::positionCartesianCurrentCB(
 				const irob_msgs::ToolPoseStampedConstPtr& msg) 
 {
     position_cartesian_current = *msg;
     position_cartesian_current_pub.publish(msg);
 }
 
-void GestureClient::instrumentInfoCB(
+void SurgemeClient::instrumentInfoCB(
 				const irob_msgs::InstrumentInfoConstPtr& msg) 
 {
     instrument_info = *msg;
@@ -51,21 +51,21 @@ void GestureClient::instrumentInfoCB(
 }
 
 
-void GestureClient::subscribeTopics() 
+void SurgemeClient::subscribeTopics()
 {                 	            	
    	position_cartesian_current_sub = 
    			nh.subscribe<irob_msgs::ToolPoseStamped>(
-                        "gesture/"+arm_name+"/position_cartesian_current_cf",
-                       	1000, &GestureClient::positionCartesianCurrentCB,this);
+                        "surgeme/"+arm_name+"/position_cartesian_current_cf",
+                        1000, &SurgemeClient::positionCartesianCurrentCB,this);
                     
     instrument_info_sub = 
    			nh.subscribe<irob_msgs::InstrumentInfo>(
-                        "gesture/"+arm_name+"/instrument_info",
-                       	1000, &GestureClient::instrumentInfoCB,this);
+                        "surgeme/"+arm_name+"/instrument_info",
+                        1000, &SurgemeClient::instrumentInfoCB,this);
 }
 
 
-void GestureClient::advertiseTopics() 
+void SurgemeClient::advertiseTopics()
 {
 	position_cartesian_current_pub 
 				= nh.advertise<irob_msgs::ToolPoseStamped>(
@@ -79,7 +79,7 @@ void GestureClient::advertiseTopics()
 }
 
 
-void GestureClient::waitForActionServer() 
+void SurgemeClient::waitForActionServer()
 {
 	ROS_INFO_STREAM("Wating for action server...");
 	ac.waitForServer();
@@ -87,7 +87,7 @@ void GestureClient::waitForActionServer()
 }
 
 
-Pose GestureClient::getPoseCurrent()
+Pose SurgemeClient::getPoseCurrent()
 {
  	while (position_cartesian_current.header.seq == 0)
 	{
@@ -100,7 +100,7 @@ Pose GestureClient::getPoseCurrent()
 }
 
 
-irob_msgs::InstrumentInfo GestureClient::getInstrumentInfo()
+irob_msgs::InstrumentInfo SurgemeClient::getInstrumentInfo()
 {
 	while (instrument_info.name.empty())
 	{
@@ -111,7 +111,7 @@ irob_msgs::InstrumentInfo GestureClient::getInstrumentInfo()
  	return ret;
 }
 
-std::string GestureClient::getName()
+std::string SurgemeClient::getName()
 {
 	return arm_name;
 }
@@ -119,36 +119,36 @@ std::string GestureClient::getName()
 
 // Robot motions
 
-void GestureClient::stop()
+void SurgemeClient::stop()
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::STOP;
+  goal.action = irob_msgs::SurgemeGoal::STOP;
   	
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
-void GestureClient::nav_to_pos(Pose target,
+void SurgemeClient::nav_to_pos(Pose target,
 					double speed_cartesian/* = DEFAULT_SPEED_CARTESIAN */,
 					std::vector<Pose> waypoints /* = empty */, 
 					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::NAV_TO_POS;
+  goal.action = irob_msgs::SurgemeGoal::NAV_TO_POS;
   	
   	for (Pose p : waypoints)
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
  	goal.target = target.toRosPose();
  	
@@ -157,10 +157,10 @@ void GestureClient::nav_to_pos(Pose target,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
-void GestureClient::grasp(Pose target, Pose approach_pose,
+void SurgemeClient::grasp(Pose target, Pose approach_pose,
 					double target_diameter,
 					double compression_rate,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -169,9 +169,9 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
 					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::GRASP;
+  goal.action = irob_msgs::SurgemeGoal::GRASP;
  	
  	goal.target = target.toRosPose();
 	goal.approach_pose = approach_pose.toRosPose();
@@ -180,9 +180,9 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
   	goal.target_diameter = target_diameter;
   	goal.compression_rate = compression_rate;
@@ -192,11 +192,11 @@ void GestureClient::grasp(Pose target, Pose approach_pose,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::cut(Pose target, Pose approach_pose,
+void SurgemeClient::cut(Pose target, Pose approach_pose,
 					double target_diameter,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 					double speed_jaw /* = DEFAULT_SPEED_JAW */,
@@ -204,9 +204,9 @@ void GestureClient::cut(Pose target, Pose approach_pose,
 					InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::CUT;
+  goal.action = irob_msgs::SurgemeGoal::CUT;
  	
   	goal.target = target.toRosPose();
 	goal.approach_pose = approach_pose.toRosPose();
@@ -215,9 +215,9 @@ void GestureClient::cut(Pose target, Pose approach_pose,
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
   	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
@@ -226,18 +226,18 @@ void GestureClient::cut(Pose target, Pose approach_pose,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::release(Pose approach_pose,	double target_diameter,
+void SurgemeClient::release(Pose approach_pose,	double target_diameter,
 			double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 			double speed_jaw /* = DEFAULT_SPEED_JAW */)
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::RELEASE;
+  goal.action = irob_msgs::SurgemeGoal::RELEASE;
  	
 	goal.approach_pose = approach_pose.toRosPose();
 	
@@ -249,19 +249,19 @@ void GestureClient::release(Pose approach_pose,	double target_diameter,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::place(Pose target, Pose approach_pose,
+void SurgemeClient::place(Pose target, Pose approach_pose,
 				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 				std::vector<Pose> waypoints /* = empty */, 
 				InterpolationMethod interp_method /* = LINEAR */)
 {
     // Send a goal to the action
-  	irob_msgs::GestureGoal goal;
+    irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::PLACE;
+  goal.action = irob_msgs::SurgemeGoal::PLACE;
  	
    	goal.target = target.toRosPose();
 	goal.approach_pose = approach_pose.toRosPose();
@@ -270,20 +270,20 @@ void GestureClient::place(Pose target, Pose approach_pose,
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
   	goal.speed_cartesian = speed_cartesian;
   	
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::push(Pose target, Pose approach_pose, 
+void SurgemeClient::push(Pose target, Pose approach_pose,
 				Eigen::Vector3d displacement,
 				double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
 				double speed_jaw /* = DEFAULT_SPEED_JAW */,
@@ -291,9 +291,9 @@ void GestureClient::push(Pose target, Pose approach_pose,
 				InterpolationMethod interp_method /* = LINEAR */)
 {
 	// Send a goal to the action
-	irob_msgs::GestureGoal goal;
+  irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::PUSH;
+  goal.action = irob_msgs::SurgemeGoal::PUSH;
  
   	goal.target = target.toRosPose();
 	goal.approach_pose = approach_pose.toRosPose();
@@ -308,9 +308,9 @@ void GestureClient::push(Pose target, Pose approach_pose,
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
   	goal.speed_cartesian = speed_cartesian;
   	goal.speed_jaw = speed_jaw;
@@ -318,11 +318,11 @@ void GestureClient::push(Pose target, Pose approach_pose,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::dissect(Pose target, Pose approach_pose, 
+void SurgemeClient::dissect(Pose target, Pose approach_pose,
 			Eigen::Vector3d displacement,
 			double target_diameter,
 			double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
@@ -331,9 +331,9 @@ void GestureClient::dissect(Pose target, Pose approach_pose,
 			InterpolationMethod interp_method /* = LINEAR */)
 {
 	// Send a goal to the action
-	irob_msgs::GestureGoal goal;
+  irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::DISSECT;
+  goal.action = irob_msgs::SurgemeGoal::DISSECT;
  
   	goal.target = target.toRosPose();
 	goal.approach_pose = approach_pose.toRosPose();
@@ -348,9 +348,9 @@ void GestureClient::dissect(Pose target, Pose approach_pose,
     	goal.waypoints.push_back(p.toRosPose());
     
     if (interp_method == InterpolationMethod::BEZIER)
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_BEZIER;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
     else
-    	goal.interpolation = irob_msgs::GestureGoal::INTERPOLATION_LINEAR;
+      goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
  	
  	goal.target_diameter = target_diameter;
   	goal.speed_cartesian = speed_cartesian;
@@ -359,17 +359,17 @@ void GestureClient::dissect(Pose target, Pose approach_pose,
   	ac.sendGoal(goal);
   	
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-void GestureClient::manipulate(Eigen::Vector3d displacement,
+void SurgemeClient::manipulate(Eigen::Vector3d displacement,
 					double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */)
 {
 	// Send a goal to the action
-	irob_msgs::GestureGoal goal;
+  irob_msgs::SurgemeGoal goal;
  
- 	goal.action = irob_msgs::GestureGoal::MANIPULATE;
+  goal.action = irob_msgs::SurgemeGoal::MANIPULATE;
 	
 	geometry_msgs::Point displacement_ros;
    	displacement_ros.x = displacement.x();
@@ -381,26 +381,26 @@ void GestureClient::manipulate(Eigen::Vector3d displacement,
   	
   	ac.sendGoal(goal);
   	// Not waiting for action finish here, a notification will be received
-  	// in gestureDoneCB
+    // in surgemeDoneCB
 }
 
 
-bool GestureClient::isGestureDone(bool spin /* = true */)
+bool SurgemeClient::isSurgemeDone(bool spin /* = true */)
 {
 	return ac.isDone(spin);
 }
 
-actionlib::SimpleClientGoalState GestureClient::getState()
+actionlib::SimpleClientGoalState SurgemeClient::getState()
 {
 	return ac.getState();
 }
 
-irob_msgs::GestureFeedback GestureClient::getFeedback(bool spin /* = true */)
+irob_msgs::SurgemeFeedback SurgemeClient::getFeedback(bool spin /* = true */)
 {
 	return ac.getFeedback(spin);
 }
 
-irob_msgs::GestureResult GestureClient::getResult(bool spin /* = true */)
+irob_msgs::SurgemeResult SurgemeClient::getResult(bool spin /* = true */)
 {
 	return ac.getResult(spin);
 }

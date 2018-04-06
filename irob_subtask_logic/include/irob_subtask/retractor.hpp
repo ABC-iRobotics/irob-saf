@@ -31,7 +31,7 @@
 #include <irob_utils/pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/abstract_directions.hpp>
-#include <irob_motion/gesture_client.hpp>
+#include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
 
 #include <irob_subtask/autosurg_agent.hpp>

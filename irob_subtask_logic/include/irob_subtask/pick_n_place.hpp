@@ -22,7 +22,7 @@
 #include <irob_msgs/Environment.h>
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
-#include <irob_motion/gesture_client.hpp>
+#include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
 
 #include <irob_subtask/autosurg_agent.hpp>

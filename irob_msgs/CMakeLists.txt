@@ -74,7 +74,7 @@ find_package(catkin REQUIRED
    	FILES
    	
    	Robot.action
-   	Gesture.action
+	Surgeme.action
  )
 
 ## Generate added messages and services with any dependencies listed here

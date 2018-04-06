@@ -1,5 +1,5 @@
 /*
- * 	gesture_server.hpp
+ * 	surgeme_server.hpp
  * 	
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-11-06
@@ -8,8 +8,8 @@
  *	grasp, release, cut, go_to, approach, leave...
  */
 
-#ifndef GESTURE_SERVER_HPP_
-#define GESTURE_SERVER_HPP_
+#ifndef SURGAME_SERVER_HPP_
+#define SURGAME_SERVER_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -31,21 +31,21 @@
 #include <actionlib/client/terminal_state.h>
 #include <irob_msgs/ToolPoseStamped.h>
 
-#include <irob_msgs/GestureAction.h>
+#include <irob_msgs/SurgemeAction.h>
 
 
 namespace ias {
 
-class GestureServer {
+class SurgemeServer {
 
 public:
 
-	struct GestureSetting { 
+  struct SurgemeSetting {
     	double jaw_open_angle;
     	double jaw_closed_angle;
     	Eigen::Vector3d t;	// translation
     	
-    	friend std::ostream& operator<<(std::ostream&, const GestureSetting&);
+      friend std::ostream& operator<<(std::ostream&, const SurgemeSetting&);
   	};
    
 
@@ -54,7 +54,7 @@ protected:
     ros::NodeHandle nh;
     
     // Action servers
-    actionlib::SimpleActionServer<irob_msgs::GestureAction> as;
+    actionlib::SimpleActionServer<irob_msgs::SurgemeAction> as;
     
     static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
     static const double DEFAULT_SPEED_JAW;			// deg/s
@@ -62,20 +62,20 @@ protected:
 	
 
 public:
-	GestureServer(ros::NodeHandle, std::string, double);		// dt
-	~GestureServer();
+  SurgemeServer(ros::NodeHandle, std::string, double);		// dt
+  ~SurgemeServer();
 
     // Callbacks
 
-    void gestureActionCB(
-    		const irob_msgs::GestureGoalConstPtr &);
+    void surgemeActionCB(
+        const irob_msgs::SurgemeGoalConstPtr &);
     		
     Pose getPoseCurrent();
    	std::string getArmName();	
     		
 protected:
 		
-	// Methods for gesture execution
+  // Methods for surgeme execution
 	void stop(); 
 	  
 	void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double); 
@@ -107,12 +107,12 @@ protected:
    			
     bool waitForActionDone(std::string);	
 	bool handleActionState(std::string, bool = false);
-	bool isAbleToDoGesture(int);
-	irob_msgs::InstrumentJawPart findInstrumentJawPartForGesture(int);
-	GestureSetting calcGestureSetting(int, irob_msgs::InstrumentJawPart, 
+  bool isAbleToDoSurgeme(int);
+  irob_msgs::InstrumentJawPart findInstrumentJawPartForSurgeme(int);
+  SurgemeSetting calcSurgemeSetting(int, irob_msgs::InstrumentJawPart,
 							Eigen::Quaternion<double>, double, double = 1.0);
    	
 };
 
 }
-#endif /* GESTURE_SERVER_HPP_ */
+#endif /* SURGAME_SERVER_HPP_ */
