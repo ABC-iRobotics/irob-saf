@@ -2,7 +2,7 @@
 <package>
   <name>irob_subtask_logic</name>
   <version>0.0.1</version>
-  <description>IROB Automatic Surgeon System</description>
+  <description>iRob Automated Surgery</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 

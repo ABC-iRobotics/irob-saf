@@ -2,7 +2,7 @@
 <package>
   <name>irob_motion</name>
   <version>0.0.1</version>
-  <description>IROB Automatic Surgeon System</description>
+  <description>iRob Automated Surgery---Implementation of surgeme level</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 
