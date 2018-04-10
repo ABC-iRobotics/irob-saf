@@ -3,6 +3,9 @@
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-27
+ *
+ *  Class to store and make calculations on a robot arm,
+ *  including the angle of the grippers.
  *  
  */
 
