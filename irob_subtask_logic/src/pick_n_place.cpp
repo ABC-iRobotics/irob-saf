@@ -40,7 +40,7 @@ void PicknPlace::doPnP()
   // Go to distant position
   ROS_INFO_STREAM("Go to distant position...");
   arms[0] -> nav_to_pos(dist_pose);
-  while(!arms[0] -> issurgemeDone() && ros::ok())
+  while(!arms[0] -> isSurgemeDone() && ros::ok())
   {
     ros::Duration(0.1).sleep();
   }
@@ -64,7 +64,7 @@ void PicknPlace::doPnP()
     // Go to distant position
     ROS_INFO_STREAM("Go to distant position...");
     arms[0] -> nav_to_pos(dist_pose);
-    while(!arms[0] -> issurgemeDone() && ros::ok())
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
@@ -90,7 +90,7 @@ void PicknPlace::doPnP()
     Pose approach_pose_on(e.objects[tube_idx_on].approach_position, ori, 0.0);
     double d = e.objects[tube_idx_on].grasp_diameter;
     arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
-    while(!arms[0] -> issurgemeDone() && ros::ok())
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
@@ -103,7 +103,7 @@ void PicknPlace::doPnP()
     waypoints.push_back(approach_pose_on);
     //waypoints.push_back(dist_pose);
     arms[0] -> place(grasp_pose_to, approach_pose_to, d, waypoints);
-    while(!arms[0] -> issurgemeDone() && ros::ok())
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
@@ -112,7 +112,7 @@ void PicknPlace::doPnP()
     // Release
     arms[0] -> release(approach_pose_to, d);
     ROS_INFO_STREAM("Release object...");
-    while(!arms[0] -> issurgemeDone() && ros::ok())
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }

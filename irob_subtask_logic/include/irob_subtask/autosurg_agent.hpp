@@ -36,7 +36,7 @@ class AutosurgAgent {
 protected:
     ros::NodeHandle nh;
     
-    std::vector<surgemeClient*> arms;
+    std::vector<SurgemeClient*> arms;
     
     // Inherited classes should countain 1 or more
     // VisionClient, e. g.:
@@ -48,12 +48,12 @@ public:
 	AutosurgAgent(ros::NodeHandle nh, std::vector<std::string> arm_names): nh(nh)
 	{
 		for (std::string name : arm_names)
-      arms.push_back(new surgemeClient(nh, name));
+      arms.push_back(new SurgemeClient(nh, name));
 	}
 	
 	~AutosurgAgent() 
 	{
-    for (surgemeClient* gc : arms)
+    for (SurgemeClient* gc : arms)
 			delete(gc);
 	}
 	

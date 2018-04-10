@@ -101,7 +101,7 @@ void Retractor::graspObject()
 		
 		arms[0] -> manipulate(movement);
 		
-    while(!arms[0] -> issurgemeDone() && ros::ok())
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
 		{
 		
 			ros::Duration(0.1).sleep();

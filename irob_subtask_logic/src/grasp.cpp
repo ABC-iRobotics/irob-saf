@@ -45,7 +45,7 @@ void Grasp::graspObject()
 	
   arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
 	Pose old_p = p;
-  while(!arms[0] -> issurgemeDone() && ros::ok())
+  while(!arms[0] -> isSurgemeDone() && ros::ok())
 	{
 		
 		p = vision.getResult();
