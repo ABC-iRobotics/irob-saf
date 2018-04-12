@@ -8,7 +8,7 @@
 
 #include <irob_motion/surgeme_server.hpp>
 
-namespace ias {
+namespace saf {
 
 
 const double SurgemeServer::DEFAULT_LOOP_RATE = 10.0;				// Hz
@@ -343,16 +343,17 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
 
     g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
         Eigen::Vector3d>(target_ori);
-    g.t *= 1.2;
+    //g.t *= 1.0;
 
     g.jaw_closed_angle = (2.0 * atan(((target_diameter / 2.0)
                                       * compression_rate) / dist))
-        * (180.0 / M_PI);
+                                      * (180.0 / M_PI);
 
     g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0)
-                                    * 1.8) / dist))
-        * (180.0 / M_PI);
+                                    * 1.5) / dist))
+                                    * (180.0 / M_PI);
 
+    ROS_INFO_STREAM("g.t: " << g.t);
     return g;
   }
 
@@ -496,6 +497,7 @@ void SurgemeServer::grasp(Pose target, Pose approach_pose,
   // Approach
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
+
   arm.moveTool(target + gs.t, speed_cartesian);
 
   done = waitForActionDone(stage);
@@ -884,7 +886,7 @@ std::ostream& operator<<(std::ostream& os,
 
 }
 
-using namespace ias;
+using namespace saf;
 
 
 /**

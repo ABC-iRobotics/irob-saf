@@ -1,11 +1,11 @@
-<!-- Launch file to move on a preprogrammed trajectory -->
+<!-- Launch file for peg-transfer training -->
 
 <launch>
-	<group ns="ias">
+	<group ns="saf">
 	
   	
-			<node name="pick_n_place" pkg="irob_behavior" 
-			type="pick_n_place" output="screen">
+			<node name="peg_transfer" pkg="irob_subtask_logic" 
+			type="irob_subtask_logic" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
 				<!-- [w, x, y, z] -->

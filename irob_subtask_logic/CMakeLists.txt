@@ -135,8 +135,8 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(pick_n_place src/pick_n_place.cpp)
-add_executable(retractor src/retractor.cpp)
+add_executable(peg_transfer src/peg_transfer.cpp)
+add_executable(grasp src/grasp.cpp)
 
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -156,12 +156,12 @@ add_executable(retractor src/retractor.cpp)
  )
  
  
- target_link_libraries(pick_n_place
+ target_link_libraries(peg_transfer
    ${catkin_LIBRARIES}
    irob_subtask_logic_lib
  )
  
-  target_link_libraries(retractor
+  target_link_libraries(grasp
    ${catkin_LIBRARIES}
    irob_subtask_logic_lib
  )

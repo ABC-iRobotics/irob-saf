@@ -6,26 +6,26 @@
  *
  */
 
-#include <irob_subtask/pick_n_place.hpp>
+#include <irob_subtask/peg_transfer.hpp>
 
 
-namespace ias {
+namespace saf {
 
 
-PicknPlace::PicknPlace(ros::NodeHandle nh,
+PegTransfer::PegTransfer(ros::NodeHandle nh,
                        std::vector<std::string> arm_names, Eigen::Quaternion<double> ori, Eigen::Vector3d dp):
   AutosurgAgent(nh, arm_names), vision(nh, "target"), ori(ori), dp(dp)
 {
   //
 }
 
-PicknPlace::~PicknPlace()
+PegTransfer::~PegTransfer()
 {
   // TODO Auto-generated destructor stub
 }
 
 
-void PicknPlace::doPnP()
+void PegTransfer::doPegTransfer()
 {
 
   Pose dist_pose(dp, ori, 0.0);
@@ -132,7 +132,7 @@ void PicknPlace::doPnP()
 }
 }
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Maneuver server main
@@ -160,9 +160,9 @@ int main(int argc, char **argv)
 
   // Startsurgeme server
   try {
-    PicknPlace pnp(nh, arm_names, quat_ori, vec_dp);
+    PegTransfer pnp(nh, arm_names, quat_ori, vec_dp);
 
-    pnp.doPnP();
+    pnp.doPegTransfer();
 
     ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
 

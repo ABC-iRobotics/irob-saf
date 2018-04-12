@@ -5,18 +5,18 @@ rosshutdown;
 rosinit;
 
 left_img_sub = rossubscriber(...
-    '/ias/stereo/left/image_rect_color', 'sensor_msgs/Image');
+    '/saf/stereo/left/image_rect_color', 'sensor_msgs/Image');
 right_img_sub = rossubscriber(...
-    '/ias/stereo/right/image_rect_color', 'sensor_msgs/Image');
+    '/saf/stereo/right/image_rect_color', 'sensor_msgs/Image');
 disparity_sub = rossubscriber(...
-    '/ias/stereo/disparity', 'stereo_msgs/DisparityImage');
+    '/saf/stereo/disparity', 'stereo_msgs/DisparityImage');
 
 left_cam_info_sub = rossubscriber(...
-    '/ias/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+    '/saf/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
 right_cam_info_sub = rossubscriber(...
-    '/ias/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+    '/saf/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
 
-target_pub = rospublisher('/ias/vision/target', 'geometry_msgs/Point');
+target_pub = rospublisher('/saf/vision/target', 'geometry_msgs/Point');
 
 pause(2) % Wait to ensure publisher is registered
 

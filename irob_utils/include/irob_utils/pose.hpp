@@ -24,7 +24,7 @@
 #include <irob_msgs/ToolPoseStamped.h>
 
 
-namespace ias {
+namespace saf {
 
 class Pose {
  

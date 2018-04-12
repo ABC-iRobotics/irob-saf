@@ -8,7 +8,7 @@
 
 #include <irob_general_robot/robot_client.hpp>
 
-namespace ias {
+namespace saf {
 
 
 RobotClient::RobotClient(ros::NodeHandle nh, std::string arm_name, double dt): 

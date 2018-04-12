@@ -9,7 +9,7 @@
 #include <irob_subtask/grasp.hpp>
 
 
-namespace ias {
+namespace saf {
 
 
 Grasp::Grasp(ros::NodeHandle nh, 
@@ -41,9 +41,9 @@ void Grasp::graspObject()
 	double approach_dist = 10.0;
 	Pose approach_pose = p - (approach_dist *
 			BaseDirections<CoordinateFrame::CAMERA,
-			Eigen::Vector3d>::DOWN);
-	
-  arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
+      Eigen::Vector3d>::BACKWARD);
+
+  arms[0] -> grasp(p, approach_pose, 5.0, 0.95, 20.0, 20.0);
 	Pose old_p = p;
   while(!arms[0] -> isSurgemeDone() && ros::ok())
 	{
@@ -52,7 +52,7 @@ void Grasp::graspObject()
 		if ((p.position - old_p.position).norm() > 10.0)
 		{
 			ROS_INFO_STREAM("Initiating grasp preemt...");
-      arms[0] -> grasp(p, approach_pose, 5.0, 0.5, 40.0, 40.0);
+      arms[0] -> grasp(p, approach_pose, 5.0, 0.95, 20.0, 20.0);
 			old_p = p;
 		}
 		ros::Duration(0.1).sleep();
@@ -63,7 +63,7 @@ void Grasp::graspObject()
 
 }
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Maneuver server main 
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 {
 	
 	// Initialize ros node
-    ros::init(argc, argv, "test_task");
+    ros::init(argc, argv, "dummy_grasp");
     ros::NodeHandle nh;
     ros::NodeHandle priv_nh("~");
 

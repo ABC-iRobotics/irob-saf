@@ -36,7 +36,7 @@
 #include "irob_utils/abstract_directions.hpp"
 
 
-namespace ias {
+namespace saf {
 
 class DummyImageProcessor {
 
@@ -69,10 +69,8 @@ public:
 DummyImageProcessor::DummyImageProcessor(ros::NodeHandle nh): 
 	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
 	grasp_orientation(
-		vecToQuat<Eigen::Quaternion<double>,Eigen::Vector3d>(
-			BaseDirections<CoordinateFrame::CAMERA,
-			Eigen::Vector3d>::BACKWARD,
-			180.0))
+            BaseOrientations<CoordinateFrame::ROBOT,
+           Eigen::Quaternion<double>>::DOWN_SIDEWAYS)
 {
 	subscribeTopics();
 }

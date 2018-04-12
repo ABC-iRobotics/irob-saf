@@ -11,7 +11,7 @@
 #include <chrono>
 #include <irob_utils/trajectory_factory.hpp>
 
-namespace ias {
+namespace saf {
 
 
 RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
@@ -216,7 +216,7 @@ void RobotServerPSM::moveCartesianAbsolute(Pose pose, double dt)
 
 }
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Main for RobotServerPSM

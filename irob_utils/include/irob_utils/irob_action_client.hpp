@@ -22,7 +22,7 @@
 #include <actionlib/action_definition.h>	
 
 
-namespace ias {
+namespace saf {
 
 typedef enum ActionState 
 {ACTIVE, DONE} ActionState;

@@ -24,7 +24,7 @@
 #include <irob_vision_support/vision_server.hpp>
 #include <irob_vision_support/dummy_image_processor.hpp>
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Vision server main 

@@ -1,20 +1,20 @@
 <!-- Launch file for left and right camera nodes using cv-camera -->
 
 <launch>
-	<group ns="ias"><group ns="stereo">
+	<group ns="saf"><group ns="stereo">
 	
 		<!-- Republish raw -->
 		<include 
 			file="$(find irob_vision_support)/launch/camera/republish_stereo_raw.launch">
 			<arg name="left_in" 
-					value="/ias/stereo/left/raspicam/image"/> 
+					value="/saf/stereo/left/raspicam/image"/> 
 			<arg name="right_in" 
-					value="/ias/stereo/right/raspicam/image"/> 
+					value="/saf/stereo/right/raspicam/image"/> 
 		
 			<arg name="left_out" 
-					value="/ias/stereo/left/raspicam/image/image_raw"/> 
+					value="/saf/stereo/left/raspicam/image/image_raw"/> 
 			<arg name="right_out" 
-					value="/ias/stereo/right/raspicam/image/image_raw"/> 
+					value="/saf/stereo/right/raspicam/image/image_raw"/> 
 		</include> 
 		
 		<!-- TODO set up topics -->
@@ -67,14 +67,14 @@
 		<include 
 			file="$(find irob_autosurg)/launch/camera/republish_stereo_raw.launch">
 			<arg name="left_in" 
-					value="/ias/stereo/left/raspicam/image"/> 
+					value="/saf/stereo/left/raspicam/image"/> 
 			<arg name="right_in" 
-					value="/ias/stereo/right/raspicam/image"/> 
+					value="/saf/stereo/right/raspicam/image"/> 
 		
 			<arg name="left_out" 
-					value="/ias/stereo/left/raspicam/image/image_raw"/> 
+					value="/saf/stereo/left/raspicam/image/image_raw"/> 
 			<arg name="right_out" 
-					value="/ias/stereo/right/raspicam/image/image_raw"/> 
+					value="/saf/stereo/right/raspicam/image/image_raw"/> 
 		</include> 
 		
 		<include 

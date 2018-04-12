@@ -22,7 +22,7 @@
 #include <irob_vision_support/camera_preprocessor.hpp>
 
 
-namespace ias {
+namespace saf {
 
 CameraPreprocessor::CameraPreprocessor(ros::NodeHandle nh,
                                        std::string camera, std::string command):
@@ -132,7 +132,7 @@ bool CameraPreprocessor::setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& re
 
 
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Image preprocessor main

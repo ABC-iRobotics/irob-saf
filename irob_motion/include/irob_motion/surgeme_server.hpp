@@ -34,7 +34,7 @@
 #include <irob_msgs/SurgemeAction.h>
 
 
-namespace ias {
+namespace saf {
 
 class SurgemeServer {
 

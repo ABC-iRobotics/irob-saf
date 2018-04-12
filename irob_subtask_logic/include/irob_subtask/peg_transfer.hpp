@@ -1,5 +1,5 @@
-#ifndef PICK_N_PLACE_HPP
-#define PICK_N_PLACE_HPP
+#ifndef PEG_TRASNFER_HPP
+#define PEG_TRASNFER_HPP
 
 
 #include <iostream>
@@ -28,9 +28,9 @@
 #include <irob_subtask/autosurg_agent.hpp>
 
 
-namespace ias {
+namespace saf {
 
-class PicknPlace : public AutosurgAgent {
+class PegTransfer : public AutosurgAgent {
 
 
 protected:
@@ -42,12 +42,12 @@ protected:
 
 
 public:
-  PicknPlace(ros::NodeHandle, std::vector<std::string>, Eigen::Quaternion<double>, Eigen::Vector3d);
-  ~PicknPlace();
-  void doPnP();
+  PegTransfer(ros::NodeHandle, std::vector<std::string>, Eigen::Quaternion<double>, Eigen::Vector3d);
+  ~PegTransfer();
+  void doPegTransfer();
 
 };
 
 }
 
-#endif // PICK_N_PLACE_HPP
+#endif // PEG_TRASNFER_HPP

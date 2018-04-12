@@ -1,7 +1,7 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
-	<group ns="ias">
+	<group ns="saf">
 	
 		<arg name="rate" default="10"/>
   	

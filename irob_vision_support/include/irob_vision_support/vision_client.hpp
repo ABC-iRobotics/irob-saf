@@ -26,7 +26,7 @@
 
 
 
-namespace ias {
+namespace saf {
 
 /* 
  * template<MsgT, DataT> 

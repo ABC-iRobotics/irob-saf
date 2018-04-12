@@ -4,7 +4,7 @@
 
 				camera driver
 
-					|	/ias/stereo
+					|	/saf/stereo
 					V
 
 				stereo_img_proc
@@ -16,7 +16,7 @@ See the command for camera calibration in the README. Always give the calibratio
 -->
 
 <launch>
-	<group ns="ias"><group ns="stereo">
+	<group ns="saf"><group ns="stereo">
 
 <!-- Set args-->
 

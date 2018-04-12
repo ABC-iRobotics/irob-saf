@@ -29,7 +29,7 @@
 #include <irob_vision_support/vision_client.hpp>
 
 
-namespace ias {
+namespace saf {
 
 class AutosurgAgent {
 

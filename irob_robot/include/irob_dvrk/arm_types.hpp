@@ -14,7 +14,7 @@
 #include <vector>
 #include <irob_utils/pose.hpp>
 
-namespace ias {
+namespace saf {
 
 class ArmTypes {
   public:

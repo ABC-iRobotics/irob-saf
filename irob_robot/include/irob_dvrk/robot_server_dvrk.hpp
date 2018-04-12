@@ -25,7 +25,7 @@
 #include <irob_dvrk/arm_types.hpp>
 #include <irob_general_robot/robot_server.hpp>
 
-namespace ias {
+namespace saf {
 
 class RobotServerDVRK: public RobotServer {
 

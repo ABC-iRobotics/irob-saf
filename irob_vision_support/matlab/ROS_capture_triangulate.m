@@ -3,11 +3,11 @@
 rosshutdown;
 rosinit;
 
-left_img_sub = rossubscriber('/ias/stereo/left/image_rect', 'sensor_msgs/Image');
-right_img_sub = rossubscriber('/ias/stereo/right/image_rect', 'sensor_msgs/Image');
+left_img_sub = rossubscriber('/saf/stereo/left/image_rect', 'sensor_msgs/Image');
+right_img_sub = rossubscriber('/saf/stereo/right/image_rect', 'sensor_msgs/Image');
 
-left_cam_info_sub = rossubscriber('/ias/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
-right_cam_info_sub = rossubscriber('/ias/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+left_cam_info_sub = rossubscriber('/saf/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+right_cam_info_sub = rossubscriber('/saf/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
 
 pause(2) % Wait to ensure publisher is registered
 

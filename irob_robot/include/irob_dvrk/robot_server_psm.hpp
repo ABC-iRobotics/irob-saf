@@ -28,7 +28,7 @@
 #include <irob_utils/pose.hpp>
 #include <irob_utils/trajectory.hpp>
 
-namespace ias {
+namespace saf {
 
 class RobotServerPSM: public RobotServerDVRK {
 

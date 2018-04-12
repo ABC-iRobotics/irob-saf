@@ -22,7 +22,7 @@
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/trajectory_factory.hpp>
 
-using namespace ias;
+using namespace saf;
 
 
 int main(int argc, char **argv)

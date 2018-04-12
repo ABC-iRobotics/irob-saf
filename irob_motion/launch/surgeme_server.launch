@@ -1,14 +1,14 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
-	<group ns="ias">
+	<group ns="saf">
 	
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="rate" default="100"/>
 		
   	
-			<node name="gesture_server_$(arg arm_name)" pkg="irob_motion" 
-			type="gesture_server" output="screen">
+			<node name="surgeme_server_$(arg arm_name)" pkg="irob_motion" 
+			type="surgeme_server" output="screen">
   		
 				<param name="arm_name" 
 						type="string" value="$(arg arm_name)" />
@@ -21,7 +21,7 @@
 				
 				<remap 
 				from="position_cartesian_current_out"
-				to="gesture/position_cartesian_current_cf" 
+				to="surgeme/position_cartesian_current_cf" 
 				/>
 				
 				

@@ -32,7 +32,7 @@
 
 
 
-namespace ias {
+namespace saf {
 
 template <class MsgT, class ImageProcessor>
 class VisionServer {

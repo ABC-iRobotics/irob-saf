@@ -16,7 +16,7 @@ The video feed can be started by the launch file *stereo_cam_usb_raw.launch* (de
     
 Before usage the stereo camera pair should be calibrated by the following command:
 
-    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/right/image_raw left:=/ias/stereo/left/image_raw right_camera:=/ias/stereo/right left_camera:=/ias/stereo/left --approximate=0.1
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/irob-saf/stereo/right/image_raw left:=/irob-saf/stereo/left/image_raw right_camera:=/irob-saf/stereo/right left_camera:=/irob-saf/stereo/left --approximate=0.1
 
 Read on in section **Calibration**
   
@@ -70,7 +70,7 @@ The video feed can be started by the launch file *stereo_cam_blackmagic.launch*,
     
 This launch file includes a pair of preprocessing nodes, those are simply averaging two successive frames to reduce noise. Before usage the stereo camera pair should be calibrated by the following command:
 
-    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/ias/stereo/preprocessed/right/image_raw left:=/ias/stereo/preprocessed/left/image_raw right_camera:=/ias/stereo/preprocessed/right left_camera:=/ias/stereo/preprocessed/left --approximate=0.1
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/irob-saf/stereo/preprocessed/right/image_raw left:=/irob-saf/stereo/preprocessed/left/image_raw right_camera:=/irob-saf/stereo/preprocessed/right left_camera:=/irob-saf/stereo/preprocessed/left --approximate=0.1
 
 Useful commands for debug if something goes wrong:
 
@@ -113,7 +113,7 @@ The launch files *stereo_cam_blackmagic.launch* will launch a [stereo_image_proc
     
 The disparity image can be seen using a node [disparity_view](http://wiki.ros.org/image_view), for example:
 
-    rosrun image_view disparity_view image:=/ias/stereo/disparity
+    rosrun image_view disparity_view image:=/irob-saf/stereo/disparity
 
 
 ## Useful links

@@ -11,7 +11,7 @@
 #include <ros/ros.h>
 #include <irob_utils/pose.hpp>
 
-namespace ias {
+namespace saf {
 
  	Pose::Pose(): position(0.0, 0.0, 0.0), 
  			orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}

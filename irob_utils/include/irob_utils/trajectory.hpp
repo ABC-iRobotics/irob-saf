@@ -24,7 +24,7 @@
 #include "pose.hpp"
 #include <irob_msgs/TrajectoryToolPose.h>
 
-namespace ias { 
+namespace saf { 
 
 template <class T>
 class Trajectory 

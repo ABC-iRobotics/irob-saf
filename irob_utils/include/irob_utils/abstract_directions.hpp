@@ -18,7 +18,7 @@
 #include <irob_utils/utils.hpp>
 
 
-namespace ias {
+namespace saf {
 
 typedef enum CoordinateFrame {WORLD, CAMERA, ROBOT} CoordinateFrame;
 
@@ -115,7 +115,7 @@ const geometry_msgs::Point
 			RIGHT);
 
 /*
- *	CAMERA
+ *	ROBOT
  */			
 			
 // Eigen::Vector3d

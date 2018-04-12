@@ -40,7 +40,7 @@
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
 
-namespace ias {
+namespace saf {
 
 class RobotClient {
 

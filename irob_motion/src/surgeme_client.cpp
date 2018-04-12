@@ -8,7 +8,7 @@
 
 #include <irob_motion/surgeme_client.hpp>
 
-namespace ias {
+namespace saf {
 
 const double SurgemeClient::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
 const double SurgemeClient::DEFAULT_SPEED_JAW = 10.0;		// deg/s
@@ -174,6 +174,7 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
   goal.action = irob_msgs::SurgemeGoal::GRASP;
  	
  	goal.target = target.toRosPose();
+
 	goal.approach_pose = approach_pose.toRosPose();
 	
     for (Pose p : waypoints)

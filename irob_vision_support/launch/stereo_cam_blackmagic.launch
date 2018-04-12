@@ -4,12 +4,12 @@
 
 				decklink source
 
-					|	/ias/stereo
+					|	/saf/stereo
 					V
 
 				preprocessor node
 
-					|	/ias/stereo/preprocessed
+					|	/saf/stereo/preprocessed
 					V
 				stereo_img_proc
 
@@ -19,7 +19,7 @@
 -->
 
 <launch>
-	<group ns="ias"><group ns="stereo">
+	<group ns="saf"><group ns="stereo">
 
 <!-- Set args -->
 	

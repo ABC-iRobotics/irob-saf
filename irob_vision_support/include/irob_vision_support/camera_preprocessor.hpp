@@ -31,7 +31,7 @@
 #include "camera_info_manager/camera_info_manager.h"
 
 
-namespace ias {
+namespace saf {
 
 class CameraPreprocessor {
 public:

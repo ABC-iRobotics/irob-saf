@@ -28,7 +28,7 @@
 #include <irob_msgs/ToolPoseStamped.h>
 #include <irob_msgs/Environment.h>
 
-namespace ias {
+namespace saf {
 
 typedef enum InterpolationMethod 
 {LINEAR, BEZIER} InterpolationMethod;
