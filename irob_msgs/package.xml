@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>irob_msgs</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>iRob Surgical Automation Framework---ROS messages and actions</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
