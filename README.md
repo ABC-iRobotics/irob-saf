@@ -89,7 +89,7 @@ In your have installed dVRK, you should already have a catkin_ws directory set-u
     cd ~/catkin_ws
     catkin init
     
-If you alread have a catkin_ws, just download the sources by forking or cloning the repository:
+If you alread have a catkin_ws, just download the sources:
 
     cd ~/catkin_ws/src
     git clone https://github.com/ABC-iRobotics/irob-saf
