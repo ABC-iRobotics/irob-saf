@@ -4,6 +4,8 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-11-07
  *
+ *  Robot server for dVRK PSMs.
+ *
  */
 
 #ifndef ROBOT_SERVER_PSM_HPP_
@@ -28,39 +30,44 @@
 #include <irob_utils/pose.hpp>
 #include <irob_utils/trajectory.hpp>
 
-namespace ias {
+namespace saf {
 
 class RobotServerPSM: public RobotServerDVRK {
 
 
-private:       
-    static const std::string ERROR_INSIDE_CANNULA;
-    static const double INSERTION_DEPTH;
-    static const double INSERTION_SPEED;
-    static const double INSERTION_DT;
-    static const int INSERTION_JOINT_IDX;
-    
+private:           
 
-    // Publishers
-    ros::Publisher position_jaw_pub;
-    void advertiseLowLevelTopics();
+  // Publishers
+  ros::Publisher position_jaw_pub;
+
+  // Subscribers
+  ros::Publisher position_jaw_sub;
+
+  // States
+  sensor_msgs::JointState position_jaw;
+
+  void advertiseLowLevelTopics();
+  void subscribeLowLevelTopics();
 
 public:
-    RobotServerPSM(ros::NodeHandle, ros::NodeHandle, ArmTypes, std::string, bool);
-	~RobotServerPSM();	
+  RobotServerPSM(ros::NodeHandle, ros::NodeHandle, ArmTypes, std::string, bool);
+  ~RobotServerPSM();
 
-	void initArm(bool);
-    void resetPose(bool);
+  void resetPose(bool);
 
-	void positionCartesianCurrentCB(
-				const geometry_msgs::PoseStampedConstPtr&) ;    
+  void positionCartesianCurrentCB(
+      const geometry_msgs::PoseStampedConstPtr&) ;
 
-    Pose getPoseCurrent();
-    
-    void moveCartesianAbsolute(Pose, double = 0.01);
-    void moveJawRelative(double, double = 0.01);
-    void moveJawAbsolute(double, double = 0.01);
-	
+  void positionJawCurrentCB(
+      const sensor_msgs::JointStateConstPtr&) ;
+
+
+  Pose getPoseCurrent();
+
+  void moveCartesianAbsolute(Pose, double = 0.01);
+  void moveJawRelative(double, double = 0.01);
+  void moveJawAbsolute(double, double = 0.01);
+
 };
 
 }

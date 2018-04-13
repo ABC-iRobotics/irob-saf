@@ -1,2 +1,3 @@
 # irob_utils
-Utilities for irob-autosurg, including pose, conversions and trajectory generation
+
+Utilities for `irob-saf`, including pose, conversions and trajectory generation. This package the [Eigen C++ library](http://eigen.tuxfamily.org/index.php?title=Main_Page).

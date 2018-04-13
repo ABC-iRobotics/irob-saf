@@ -2,16 +2,15 @@
 <launch>
 	<group ns="dvrk_topics">
 	<param name="namespace" type="string" value="dvrk" />
-	
-	<param name="set_robot_state" type="string" value="set_robot_state" />
-	<param name="robot_state" type="string" value="robot_state" />
+		<param name="current_state" type="string" value="current_state" />
 	<param name="set_position_joint" type="string" value="set_position_joint" />
 	<param name="state_joint_current" type="string" value="state_joint_current" />
 	<param name="set_position_cartesian" type="string"
 									 value="set_position_cartesian" />
 	<param name="position_cartesian_current" type="string"
 								 value="position_cartesian_current" />
-	<param name="set_jaw_position" type="string" value="set_jaw_position" />
+	<param name="set_position_jaw" type="string" value="set_position_jaw" />
+	<param name="state_jaw_current" type="string" value="state_jaw_current" />
 	<param name="error" type="string" value="error" />
 	<param name="warning" type="string" value="warning" />
 	

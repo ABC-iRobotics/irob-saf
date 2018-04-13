@@ -2,11 +2,11 @@
 
 <launch>
 
-		<arg name="left_in" default="/ias/stereo/raspicam_left/image"/> 
-		<arg name="right_in" default="/ias/stereo/raspicam_right/image"/> 
+		<arg name="left_in" default="/saf/stereo/raspicam_left/image"/> 
+		<arg name="right_in" default="/saf/stereo/raspicam_right/image"/> 
 		
-		<arg name="left_out" default="/ias/stereo/raspicam_left/image_raw"/> 
-		<arg name="right_out" default="/ias/stereo/raspicam_right/image_raw"/> 
+		<arg name="left_out" default="/saf/stereo/raspicam_left/image_raw"/> 
+		<arg name="right_out" default="/saf/stereo/raspicam_right/image_raw"/> 
 	
 	
 		<node name="image_republish_left" pkg="image_transport" 

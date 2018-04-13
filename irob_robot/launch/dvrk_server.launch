@@ -1,16 +1,16 @@
-<!-- Launch the irob dVRK intermediate robot controller-->
+<!-- Launch the irob dVRK high-level robot controller. After start, it will wait for irob_msgs/Robot actions -->
 
 <launch>
-	<group ns="ias">
+	<group ns="saf">
 	
 	
-  		<arg name="arm_typ" default="PSM1"/>
+  		<arg name="arm_typ" default="PSM2"/>
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
-		default="$(find irob_robot)/config/registration_psm1.yaml"/>
+		default="registration_psm2.yaml"/>
 		
 		<arg name="instrument_info_file" 
-		default="$(find irob_robot)/config/prograsp_forceps.yaml"/>
+		default="prograsp_forceps.yaml"/>
 	
 			<include 
 			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 
@@ -23,10 +23,10 @@
 				<!-- <param name="camera_registration_file" type="string" 	
 									value="$(arg camera_registration_file)" /> -->
 				<rosparam command="load" 
-				file="$(arg camera_registration_file)"/>
+				file="$(find irob_robot)/config/$(arg camera_registration_file)"/>
 				
 				<rosparam command="load" 
-				file="$(arg instrument_info_file)"/>
+				file="$(find irob_robot)/config/$(arg instrument_info_file)"/>
 				
 				
 			</node>

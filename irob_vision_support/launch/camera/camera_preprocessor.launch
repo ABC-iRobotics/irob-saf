@@ -1,0 +1,21 @@
+<!-- Launch file-->
+
+<launch>
+
+		<arg name="command" default="avg_adjacent"/>
+		<arg name="camera" default="left"/>
+
+
+		<node name="camera_preprocessor_$(arg camera)" pkg="irob_vision_support"
+			type="camera_preprocessor" output="screen">
+
+			<param name="command" type="string" value="$(arg command)" />
+			<param name="camera" type="string" value="$(arg camera)"/>
+
+			<remap from="camera/image_raw" to="$(arg camera)/image_raw"/>
+
+		</node>
+
+
+
+</launch>

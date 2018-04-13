@@ -3,8 +3,8 @@
 rosshutdown;
 rosinit;
 
-left_img_sub = rossubscriber('/ias/stereo/left/final/image', 'sensor_msgs/Image');
-right_img_sub = rossubscriber('/ias/stereo/right/final/image', 'sensor_msgs/Image');
+left_img_sub = rossubscriber('/saf/stereo/left/final/image', 'sensor_msgs/Image');
+right_img_sub = rossubscriber('/saf/stereo/right/final/image', 'sensor_msgs/Image');
 
 pause(2) % Wait to ensure publisher is registered
            

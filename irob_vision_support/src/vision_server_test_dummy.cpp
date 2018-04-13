@@ -4,6 +4,11 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-08-30
  *  
+ *  Example for the usage of the generic class
+ *  VisionServer. The vision server is specified
+ *  by the command:
+ *     VisionServer<geometry_msgs::Pose, DummyImageProcessor> td(nh, rate);
+ *
  */
 
 
@@ -24,7 +29,7 @@
 #include <irob_vision_support/vision_server.hpp>
 #include <irob_vision_support/dummy_image_processor.hpp>
 
-using namespace ias;
+using namespace saf;
 
 /**
  * Vision server main 
@@ -43,7 +48,7 @@ int main(int argc, char **argv)
     
     // Start Vision server
   	try {
-    	VisionServer<geometry_msgs::Point, DummyImageProcessor> td(nh, rate);
+      VisionServer<geometry_msgs::Pose, DummyImageProcessor> td(nh, rate);
     		
     	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");

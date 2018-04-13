@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
   <name>irob_utils</name>
-  <version>0.0.1</version>
-  <description>IROB Automatic Surgeon System</description>
+  <version>1.0.0</version>
+  <description>iRob Surgical Automation Framework---Utils</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 
@@ -10,7 +10,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>BSD</license>
+  <license>MIT</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
