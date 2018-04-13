@@ -1,0 +1,31 @@
+<!-- Launch file to start surgeme server. After start, waits for irob_msgs/Surgeme actions -->
+
+<launch>
+	<group ns="saf">
+	
+		<arg name="arm_name" default="arm_1"/>
+		<arg name="rate" default="100"/>
+		
+  	
+			<node name="surgeme_server_$(arg arm_name)" pkg="irob_motion" 
+			type="surgeme_server" output="screen">
+  		
+				<param name="arm_name" 
+						type="string" value="$(arg arm_name)" />
+				<param name="rate" type="double" value="$(arg rate)" />
+					
+				<remap 
+				from="position_cartesian_current_in"
+				to="/robot/position_cartesian_current_cf" 
+				/>
+				
+				<remap 
+				from="position_cartesian_current_out"
+				to="surgeme/position_cartesian_current_cf" 
+				/>
+				
+				
+				
+			</node>
+  	</group>
+</launch>

@@ -1,9 +1,9 @@
 <!-- Launch file to move on a preprogrammed trajectory -->
 
 <launch>
-	<group ns="ias">
+	<group ns="saf">
 	
-		<arg name="rate" default="100"/>
+		<arg name="rate" default="10"/>
   	
 			<node name="dummy_vision" pkg="irob_vision_support" 
 			type="vision_server_test_dummy" output="screen">

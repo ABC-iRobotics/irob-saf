@@ -1,4 +1,4 @@
-<!-- Launch file for left and right camera nodes using cv-camera -->
+<!-- Launch file for left and right camera nodes using cv-camera for stereo vision-->
 
 <launch>
 
@@ -6,12 +6,17 @@
 	<arg name="right" default="right"/>
 	<arg name="device_id_left" default="1"/>
 	<arg name="device_id_right" default="2"/> 
+	<arg name="calib_file_left"
+		default="camera_default_left.yaml"/>
+	<arg name="calib_file_right"
+		default="camera_default_right.yaml"/>
 	
 	<node name="left" pkg="cv_camera" 
 			type="cv_camera_node" output="screen">
   		
 		<rosparam param="device_id" subst_value="true">$(arg device_id_left)</rosparam>
-		<remap from="left/image_raw" to="$(arg left)/image_raw"/>
+		<rosparam param="camera_info_url" subst_value="true">file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_left)</rosparam>
+		<remap from="left/image" to="$(arg left)/image"/>
 		<remap from="left/camera_info" to="$(arg left)/camera_info"/>
 		
 	</node>
@@ -19,8 +24,9 @@
 	<node name="right" pkg="cv_camera" 
 			type="cv_camera_node" output="screen">
   		
-		<rosparam param="device_id" subst_value="true">$(arg device_id_right)</rosparam>	
-		<remap from="right/image_raw" to="$(arg right)/image_raw"/>
+		<rosparam param="device_id" subst_value="true">$(arg device_id_right)</rosparam>
+		<rosparam param="camera_info_url" subst_value="true">file://$(find irob_vision_support)/config/camera_info/$(arg calib_file_right)</rosparam>
+		<remap from="right/image" to="$(arg right)/image"/>
 		<remap from="right/camera_info" to="$(arg right)/camera_info"/>
 	</node>
 

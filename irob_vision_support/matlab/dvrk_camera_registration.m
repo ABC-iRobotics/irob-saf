@@ -3,15 +3,15 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = '../../irob_robot/config/registration_psm1.yaml';
+cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
 
-posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
+posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
-left_img_sub = rossubscriber('/ias/stereo/left/image_rect', 'sensor_msgs/Image');
-right_img_sub = rossubscriber('/ias/stereo/right/image_rect', 'sensor_msgs/Image');
+left_img_sub = rossubscriber('/saf/stereo/left/image_rect', 'sensor_msgs/Image');
+right_img_sub = rossubscriber('/saf/stereo/right/image_rect', 'sensor_msgs/Image');
 
-left_cam_info_sub = rossubscriber('/ias/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
-right_cam_info_sub = rossubscriber('/ias/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+left_cam_info_sub = rossubscriber('/saf/stereo/left/calibrated/camera_info', 'sensor_msgs/CameraInfo');
+right_cam_info_sub = rossubscriber('/saf/stereo/right/calibrated/camera_info', 'sensor_msgs/CameraInfo');
 
 pause(2) % Wait to ensure publisher is registered
 
@@ -46,7 +46,7 @@ while i < (n+1)
         [imagePoints,boardSize] = detectCheckerboardPoints(IL, IR);
         % imshow(IL); hold on; plot(imagePoints(:,1,i), imagePoints(:,2,i), 'ro');
         
-        
+        disp(boardSize);
         
         if and(boardSize(1) == 5,  boardSize(2) == 7)
             im_coord_L =  mean(imagePoints(:,:,1,1), 1);

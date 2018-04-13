@@ -6,21 +6,21 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                        roscpp
-                        rospy
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        sensor_msgs
-                        stereo_msgs
-                        sensor_msgs
-                        actionlib_msgs
-                        actionlib
-						irob_msgs
-						irob_utils
-						irob_robot
-                        )
+	COMPONENTS
+	roscpp
+	rospy
+	roslib
+	geometry_msgs
+	std_msgs
+	sensor_msgs
+	stereo_msgs
+	sensor_msgs
+	actionlib_msgs
+	actionlib
+	irob_msgs
+	irob_utils
+	irob_robot
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -88,12 +88,12 @@ find_package(catkin REQUIRED
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		INCLUDE_DIRS include
-  		LIBRARIES irob_motion_lib
-        CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-        	 message_runtime irob_msgs irob_utils actionlib_msgs
-        #DEPENDS system_lib
-)
+	INCLUDE_DIRS include
+	LIBRARIES irob_motion_lib
+	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
+	message_runtime irob_msgs irob_utils actionlib_msgs
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -102,19 +102,20 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								include
-								)
+	/usr/include/eigen3
+	include
+	)
 
 ## Declare a C++ library
 
 file(GLOB irob_motion_lib_src
-    "src/*.cpp"
-)
+	"src/*.cpp"
+	)
 
 
 add_library( irob_motion_lib STATIC
-       ${irob_motion_lib_src}
-       )
+	${irob_motion_lib_src}
+	)
 
 set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -133,7 +134,7 @@ set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(gesture_server src/gesture_server.cpp)
+add_executable(surgeme_server src/surgeme_server.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -147,15 +148,15 @@ add_executable(gesture_server src/gesture_server.cpp)
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_motion_lib
- 	${catkin_LIBRARIES}
- )
- 
- 
- target_link_libraries(gesture_server
-   ${catkin_LIBRARIES}
-   irob_motion_lib
- ) 
+target_link_libraries(irob_motion_lib
+	${catkin_LIBRARIES}
+	)
+
+
+target_link_libraries(surgeme_server
+	${catkin_LIBRARIES}
+	irob_motion_lib
+	)
 
 
 #############

@@ -3,6 +3,9 @@
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-27
+ *
+ *  Class to store and make calculations on a robot arm,
+ *  including the angle of the grippers.
  *  
  */
 
@@ -13,6 +16,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Float32.h>
+#include <sensor_msgs/JointState.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
@@ -20,7 +24,7 @@
 #include <irob_msgs/ToolPoseStamped.h>
 
 
-namespace ias {
+namespace saf {
 
 class Pose {
  
@@ -51,6 +55,7 @@ class Pose {
 	Pose(const geometry_msgs::Pose&, double jaw);
 	Pose(const geometry_msgs::PoseStamped&, double jaw);
    	Pose(const Eigen::Vector3d&, const Eigen::Quaternion<double>&, double);
+    Pose(const geometry_msgs::Point&, const Eigen::Quaternion<double>&, double);
    	
    	void swap(Pose&);
    	Pose operator=(const Pose&);
@@ -77,13 +82,8 @@ class Pose {
    	
     irob_msgs::ToolPose toRosToolPose() const;
    	geometry_msgs::Pose toRosPose() const;
-    std_msgs::Float32 toRosJaw() const;
+    sensor_msgs::JointState toRosJaw() const;
    	
-   	/*
-   	double length() const;
-   	
-   	double distance(const Eigen::Vector3d&) const;
-   */
    	friend std::ostream& operator<<(std::ostream&, const Pose&);
 	friend std::istream& operator>>(std::istream&, Pose&);
 };

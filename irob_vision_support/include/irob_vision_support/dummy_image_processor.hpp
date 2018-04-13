@@ -1,8 +1,13 @@
 /*
  * 	dummy_image_processor.hpp
- * 	
+ *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-08-31
+ *
+ *  Example of the image processor node, that can be
+ *  used as a member of the generic vision server object.
+ *  Image processor node that simply republishes the postion
+ *  of a dummy target.
  *
  */
 
@@ -36,45 +41,43 @@
 #include "irob_utils/abstract_directions.hpp"
 
 
-namespace ias {
+namespace saf {
 
 class DummyImageProcessor {
 
 private:
 
-	ros::NodeHandle nh;
-	
-	Eigen::Vector3d dummy_location;
-	Eigen::Quaternion<double> grasp_orientation;
-   	
-   	ros::Subscriber result_sub;
-	
+  ros::NodeHandle nh;
+
+  Eigen::Vector3d dummy_location;
+  Eigen::Quaternion<double> grasp_orientation;
+
+  ros::Subscriber result_sub;
+
 public:
-	DummyImageProcessor(ros::NodeHandle);
-	~DummyImageProcessor();
-	
-	void subscribeTopics();
-	
-	void tragetCB(const visualization_msgs::MarkerConstPtr&);
-	
-	geometry_msgs::Point processImages( const cv_bridge::CvImagePtr, 
-										const cv_bridge::CvImagePtr,
-										const cv_bridge::CvImagePtr,
-										const cv_bridge::CvImagePtr,
-										const cv_bridge::CvImagePtr);
-	
+  DummyImageProcessor(ros::NodeHandle);
+  ~DummyImageProcessor();
+
+  void subscribeTopics();
+
+  void tragetCB(const visualization_msgs::MarkerConstPtr&);
+
+  geometry_msgs::Pose processImages( const cv_bridge::CvImagePtr,
+                                     const cv_bridge::CvImagePtr,
+                                     const cv_bridge::CvImagePtr,
+                                     const cv_bridge::CvImagePtr,
+                                     const cv_bridge::CvImagePtr);
+
 
 };
 
 DummyImageProcessor::DummyImageProcessor(ros::NodeHandle nh): 
-	nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
-	grasp_orientation(
-		vecToQuat<Eigen::Quaternion<double>,Eigen::Vector3d>(
-			BaseDirections<CoordinateFrame::CAMERA,
-			Eigen::Vector3d>::BACKWARD,
-			180.0))
+  nh(nh), dummy_location(makeNaN<Eigen::Vector3d>()),
+  grasp_orientation(
+    BaseOrientations<CoordinateFrame::ROBOT,
+    Eigen::Quaternion<double>>::DOWN_SIDEWAYS)
 {
-	subscribeTopics();
+  subscribeTopics();
 }
 
 DummyImageProcessor::~DummyImageProcessor() {}
@@ -82,36 +85,36 @@ DummyImageProcessor::~DummyImageProcessor() {}
 
 void DummyImageProcessor::subscribeTopics() 
 {                 	            						
-   	result_sub = nh.subscribe<visualization_msgs::Marker>(
-   					"marker", 1000, 
-   					&DummyImageProcessor::tragetCB,this);
+  result_sub = nh.subscribe<visualization_msgs::Marker>(
+        "marker", 1000,
+        &DummyImageProcessor::tragetCB,this);
 }
 
 // Callbacks
 void DummyImageProcessor::tragetCB(const visualization_msgs::MarkerConstPtr& msg)
 {
-    dummy_location.x() = msg->pose.position.x * 1000.0;
-    dummy_location.y() = msg->pose.position.y * 1000.0;
-    dummy_location.z() = msg->pose.position.z * 1000.0;
+  dummy_location.x() = msg->pose.position.x * 1000.0;
+  dummy_location.y() = msg->pose.position.y * 1000.0;
+  dummy_location.z() = msg->pose.position.z * 1000.0;
 }
 
-geometry_msgs::Point DummyImageProcessor::processImages(
-			const  cv_bridge::CvImagePtr image_left_ptr,
-    		const cv_bridge::CvImagePtr image_right_ptr,
-    		const cv_bridge::CvImagePtr color_image_left_ptr,
-   			const cv_bridge::CvImagePtr color_image_right_ptr,
-   			const cv_bridge::CvImagePtr disparity_ptr)
+geometry_msgs::Pose DummyImageProcessor::processImages(
+    const  cv_bridge::CvImagePtr image_left_ptr,
+    const cv_bridge::CvImagePtr image_right_ptr,
+    const cv_bridge::CvImagePtr color_image_left_ptr,
+    const cv_bridge::CvImagePtr color_image_right_ptr,
+    const cv_bridge::CvImagePtr disparity_ptr)
 {
-	ros::spinOnce();
-	
-	geometry_msgs::Point grasp_pos;
-	grasp_pos = 
-		wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
-	//grasp_pose.orientation = 
-	//	wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
-	//			>(grasp_orientation);
-		
-	return grasp_pos;
+  ros::spinOnce();
+
+  geometry_msgs::Pose grasp_pose;
+  grasp_pose.position =
+      wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
+  grasp_pose.orientation =
+      wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
+      >(grasp_orientation);
+
+  return grasp_pose;
 } 
 
 

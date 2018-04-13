@@ -4,6 +4,13 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-08-30
  *
+ *  Generic vision server prototype, with arbitrary input
+ *  and output message types. The image processing algorithm
+ *  can be implemented in a separate class, see
+ *  dummy_image_processor.hpp.
+ *  See an assembled example for the usage of the class
+ *  in vision_server_test_dummy.cpp.
+ *
  */
 
 #ifndef VISION_SERVER_HPP_
@@ -32,7 +39,7 @@
 
 
 
-namespace ias {
+namespace saf {
 
 template <class MsgT, class ImageProcessor>
 class VisionServer {

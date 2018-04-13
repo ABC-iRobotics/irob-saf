@@ -1,0 +1,15 @@
+<!-- Launch file to grasp a dummy marker -->
+
+<launch>
+	<group ns="saf">
+	
+  	
+			<node name="dummy_grasp" pkg="irob_subtask_logic" 
+			type="grasp" output="screen">
+  		
+				<rosparam param="arm_names">["arm_1"]</rosparam>
+
+				<remap from="target" to="vision/target" />
+	</node>
+  	</group>
+</launch>

@@ -7,7 +7,7 @@
 
 #include <irob_utils/trajectory.hpp>
 
-namespace ias {
+namespace saf {
 
 template <>
 Trajectory<Pose>::Trajectory(const irob_msgs::TrajectoryToolPose& other): dt(other.dt)

@@ -1,7 +1,7 @@
 <!-- Launch file for left and right camera nodes using cv-camera -->
 
 <launch>
-	<group ns="ias"><group ns="stereo">
+	<group ns="saf"><group ns="stereo">
 
 		<arg name="postfix" default="left"/> 
 	
@@ -20,19 +20,19 @@
 
     		<param name="camera_frame_id" value="raspicam"/> 
     		
-    		<remap from="/ias/stereo/raspicam_$(arg postfix)/camera_info" 
-    			to="/ias/stereo/$(arg postfix)/raspicam/image/camera_info" />
+    		<remap from="/saf/stereo/raspicam_$(arg postfix)/camera_info" 
+    			to="/saf/stereo/$(arg postfix)/raspicam/image/camera_info" />
     			
-    		<remap from="/ias/stereo/raspicam_$(arg postfix)/image/compressed" 
-    			to="/ias/stereo/$(arg postfix)/raspicam/image/compressed" />
-    			
-    		<remap 
-    			from="/ias/stereo/raspicam_$(arg postfix)/parameter_descriptions" 
-    			to="/ias/stereo/$(arg postfix)/raspicam/parameter_descriptions" />
+    		<remap from="/saf/stereo/raspicam_$(arg postfix)/image/compressed" 
+    			to="/saf/stereo/$(arg postfix)/raspicam/image/compressed" />
     			
     		<remap 
-    			from="/ias/stereo/raspicam_$(arg postfix)/parameter_updates" 
-    			to="/ias/stereo/$(arg postfix)/raspicam/parameter_updates" />
+    			from="/saf/stereo/raspicam_$(arg postfix)/parameter_descriptions" 
+    			to="/saf/stereo/$(arg postfix)/raspicam/parameter_descriptions" />
+    			
+    		<remap 
+    			from="/saf/stereo/raspicam_$(arg postfix)/parameter_updates" 
+    			to="/saf/stereo/$(arg postfix)/raspicam/parameter_updates" />
 
 		</node>
 	

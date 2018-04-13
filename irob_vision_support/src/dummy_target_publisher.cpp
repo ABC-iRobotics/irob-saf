@@ -3,6 +3,9 @@
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-26
+ *
+ *  ROS node that publishes a dummy
+ *  target marker.
  *  
  */
 
@@ -22,7 +25,7 @@
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/trajectory_factory.hpp>
 
-using namespace ias;
+using namespace saf;
 
 
 int main(int argc, char **argv)

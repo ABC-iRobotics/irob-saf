@@ -8,7 +8,7 @@
 
 #include <irob_dvrk/arm_types.hpp>
 
-namespace ias {
+namespace saf {
 
 // Enum value DEFINITIONS
 // The initialization occurs in the scope of the class,

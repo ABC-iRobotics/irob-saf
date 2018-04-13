@@ -1,12 +1,12 @@
 /*
  * 	robot_client.hpp
- * 	
+ *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-07-19
  *
- *	Single arm, ROS actions down to the robot interface. Property of
- * 	GestureServer.
- *	Substribe to cartesian_pos.
+ *	Single arm, ROS actions interface to the robot server. This objects are
+ *  planned to be used as members of irob_motion/SurgemeServer.
+ *	Substribes to cartesian_pos.
  *	Move relative, absolute, gripper, waypoints, Bezier...
  */
 
@@ -40,74 +40,74 @@
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
 
-namespace ias {
+namespace saf {
 
 class RobotClient {
 
 public:
-	typedef enum CoordFrame 
-    	{WCS, TCPF} CoordFrame;  
-   
+  typedef enum CoordFrame
+  {WCS, TCPF} CoordFrame;
+
 
 private:
-	const std::string arm_name;
-    ros::NodeHandle nh;
-    
-    double dt;
-    
-    // Action clients
-    IrobActionClient<irob_msgs::RobotAction> ac;
-   
+  const std::string arm_name;
+  ros::NodeHandle nh;
 
-    // States
-    irob_msgs::ToolPoseStamped position_cartesian_current;
-    irob_msgs::InstrumentInfo instrument_info;
+  double dt;
 
-    // Subscribers
-    ros::Subscriber position_cartesian_current_sub;
-	ros::Subscriber instrument_info_sub;
+  // Action clients
+  IrobActionClient<irob_msgs::RobotAction> ac;
 
-    // Publishers
-	ros::Publisher position_cartesian_current_pub;
-	ros::Publisher instrument_info_pub;
-   	
-    void subscribeTopics();
-    void advertiseTopics();
-    void waitForActionServer();
-    
+
+  // States
+  irob_msgs::ToolPoseStamped position_cartesian_current;
+  irob_msgs::InstrumentInfo instrument_info;
+
+  // Subscribers
+  ros::Subscriber position_cartesian_current_sub;
+  ros::Subscriber instrument_info_sub;
+
+  // Publishers
+  ros::Publisher position_cartesian_current_pub;
+  ros::Publisher instrument_info_pub;
+
+  void subscribeTopics();
+  void advertiseTopics();
+  void waitForActionServer();
+
 
 public:
-	RobotClient(ros::NodeHandle, std::string, double);
-	~RobotClient();
+  RobotClient(ros::NodeHandle, std::string, double);
+  ~RobotClient();
 
-    // Callbacks    
+  // Callbacks
 
-    void positionCartesianCurrentCB(
-    		const irob_msgs::ToolPoseStampedConstPtr&);
-    		
-    void instrumentInfoCB(
-    		const irob_msgs::InstrumentInfoConstPtr&);
+  void positionCartesianCurrentCB(
+      const irob_msgs::ToolPoseStampedConstPtr&);
 
-   	Pose getPoseCurrent();
-   	irob_msgs::InstrumentInfo getInstrumentInfo();
-   	std::string getName();
-   	
-   	// Robot motions
-   	void initArm(bool);	
-   	void resetPose(bool);
-	void moveJaws(double, double = 10.0);
-	void moveTool(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(), 
-			InterpolationMethod = LINEAR);
-	
-	void stop();
-	
-	
-	bool isActionDone(bool = true);
-	actionlib::SimpleClientGoalState getState();
-	
-	irob_msgs::RobotFeedback getFeedback(bool = true);
-	irob_msgs::RobotResult getResult(bool = true);
-	
+  void instrumentInfoCB(
+      const irob_msgs::InstrumentInfoConstPtr&);
+
+  Pose getPoseCurrent();
+  irob_msgs::InstrumentInfo getInstrumentInfo();
+  std::string getName();
+
+  // Robot motions
+  void initArm(bool);
+  void resetPose(bool);
+  void moveJaws(double, double = 10.0);
+  void moveTool(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(),
+                InterpolationMethod = LINEAR);
+
+  void stop();
+
+
+  bool isActionDone(bool = true);
+  actionlib::SimpleClientGoalState getState();
+
+  irob_msgs::RobotFeedback getFeedback(bool = true);
+  irob_msgs::RobotResult getResult(bool = true);
+
 };
 
 }

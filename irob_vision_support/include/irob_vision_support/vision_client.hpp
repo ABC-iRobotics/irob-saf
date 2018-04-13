@@ -1,8 +1,12 @@
 /*
  * 	vision_client.hpp
- * 	
+ *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-07-31
+ *
+ *  Generic client to receive computer vision information
+ *  of any datatype. Designed to be used as member of
+ *  subtask-level logic node.
  *
  */
 
@@ -26,10 +30,10 @@
 
 
 
-namespace ias {
+namespace saf {
 
 /* 
- * template<MsgT, DataT> 
+ * template<MsgT, DataT>
  * DataT unwrapMsg(const MsgT& msg) should be implemented
  */
 template <class MsgT, class DataT>
@@ -37,37 +41,37 @@ class VisionClient {
 
 public:
 
-   
+
 
 protected:
-    ros::NodeHandle nh;
-    
-    std::string topic_name;
+  ros::NodeHandle nh;
 
-   	// States
-   	MsgT result_msg;
-   	
-   	ros::Subscriber result_sub;
-   	
-    void subscribeTopics();
+  std::string topic_name;
+
+  // States
+  MsgT result_msg;
+
+  ros::Subscriber result_sub;
+
+  void subscribeTopics();
 
 public:
-	VisionClient(ros::NodeHandle, std::string);
-	~VisionClient();
+  VisionClient(ros::NodeHandle, std::string);
+  ~VisionClient();
 
-    // Callbacks 
-    void resultCB(const typename MsgT::ConstPtr&);   
-	
-	// Does not block if the result is not valid
-	DataT getResult();
+  // Callbacks
+  void resultCB(const typename MsgT::ConstPtr&);
+
+  // Does not block if the result is not valid
+  DataT getResult();
 };
 
 
 template <class MsgT, class DataT>
 VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh, std::string topic_name): nh(nh), topic_name(topic_name)
 {
-	result_msg = makeNaN<MsgT>();
-	subscribeTopics();
+  result_msg = makeNaN<MsgT>();
+  subscribeTopics();
 }
 
 
@@ -79,29 +83,29 @@ VisionClient<MsgT, DataT>::~VisionClient() {}
 template <class MsgT, class DataT>
 void VisionClient<MsgT, DataT>::subscribeTopics() 
 {                 	            						
-   	result_sub = nh.subscribe<MsgT>(
-   					topic_name, 1000, 
-   					&VisionClient<MsgT, DataT>::resultCB,this);
+  result_sub = nh.subscribe<MsgT>(
+        topic_name, 1000,
+        &VisionClient<MsgT, DataT>::resultCB,this);
 }
 
 // Callbacks
 template <class MsgT, class DataT>
 void VisionClient<MsgT, DataT>::resultCB(const typename MsgT::ConstPtr& msg)
 {
-    result_msg = *msg;
+  result_msg = *msg;
 }
 
 /* 
- * template<MsgT, DataT> 
+ * template<MsgT, DataT>
  * DataT unwrapMsg(const MsgT& msg) is used here
  */
 template <class MsgT, class DataT>
 DataT VisionClient<MsgT, DataT>::getResult()
 {
-	ros::spinOnce();
-	
-	return unwrapMsg<MsgT, DataT>(result_msg);
-	
+  ros::spinOnce();
+
+  return unwrapMsg<MsgT, DataT>(result_msg);
+
 }
 
 
