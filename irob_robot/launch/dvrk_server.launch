@@ -1,4 +1,4 @@
-<!-- Launch the irob dVRK intermediate robot controller-->
+<!-- Launch the irob dVRK high-level robot controller. After start, it will wait for irob_msgs/Robot actions -->
 
 <launch>
 	<group ns="saf">

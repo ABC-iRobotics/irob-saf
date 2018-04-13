@@ -1,8 +1,11 @@
 /*
  * 	autosurg_agent.hpp
- * 	
+ *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-11-08
+ *
+ *  Base class for autonomous surgical agents.
+ *  Possesses a vector that can contans SurgemeClient.
  *
  */
 
@@ -34,29 +37,29 @@ namespace saf {
 class AutosurgAgent {
 
 protected:
-    ros::NodeHandle nh;
-    
-    std::vector<SurgemeClient*> arms;
-    
-    // Inherited classes should countain 1 or more
-    // VisionClient, e. g.:
-    // VisionClient<geometry_msgs::Point, Eigen::Vector3d> vision;
-    
-   
-    
+  ros::NodeHandle nh;
+
+  std::vector<SurgemeClient*> arms;
+
+  // Inherited classes should countain 1 or more
+  // VisionClient, e. g.:
+  // VisionClient<geometry_msgs::Point, Eigen::Vector3d> vision;
+
+
+
 public:
-	AutosurgAgent(ros::NodeHandle nh, std::vector<std::string> arm_names): nh(nh)
-	{
-		for (std::string name : arm_names)
+  AutosurgAgent(ros::NodeHandle nh, std::vector<std::string> arm_names): nh(nh)
+  {
+    for (std::string name : arm_names)
       arms.push_back(new SurgemeClient(nh, name));
-	}
-	
-	~AutosurgAgent() 
-	{
+  }
+
+  ~AutosurgAgent()
+  {
     for (SurgemeClient* gc : arms)
-			delete(gc);
-	}
-	
+      delete(gc);
+  }
+
 };
 
 }

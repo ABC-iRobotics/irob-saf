@@ -4,6 +4,9 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2087-03-13
  *
+ *  Node to do basic preprocessing algorithms
+ *  on camera stream. Yet only averaging frames is
+ *  implemented.
  */
 
 #ifndef CAMERA_PREPROCESSOR_HPP_
@@ -38,29 +41,29 @@ public:
 
 private:
 
-    typedef enum Command {
-      NONE,
-      AVG_ADJACENT
-    } Command;
+  typedef enum Command {
+    NONE,
+    AVG_ADJACENT
+  } Command;
 
-    ros::NodeHandle nh;
-    std::string camera;
-    Command command;
-    cv::Mat prev_image;
+  ros::NodeHandle nh;
+  std::string camera;
+  Command command;
+  cv::Mat prev_image;
 
 
-    // Subscribers
-    ros::Subscriber image_sub;
-    ros::Subscriber camera_info_sub;
+  // Subscribers
+  ros::Subscriber image_sub;
+  ros::Subscriber camera_info_sub;
 
-    // Publishers
-    ros::Publisher image_pub;
-    ros::Publisher camera_info_pub;
+  // Publishers
+  ros::Publisher image_pub;
+  ros::Publisher camera_info_pub;
 
-    ros::ServiceServer cam_info_service;
+  ros::ServiceServer cam_info_service;
 
-    void subscribeTopics();
-    void advertiseTopics();
+  void subscribeTopics();
+  void advertiseTopics();
 
 public:
   CameraPreprocessor(ros::NodeHandle, std::string, std::string);
@@ -68,14 +71,14 @@ public:
 
 
 
-    // Callbacks
-    void imageCB(
-        const sensor_msgs::ImageConstPtr &);
+  // Callbacks
+  void imageCB(
+      const sensor_msgs::ImageConstPtr &);
 
-    void cameraInfoCB(
-        const sensor_msgs::CameraInfoConstPtr &);
+  void cameraInfoCB(
+      const sensor_msgs::CameraInfoConstPtr &);
 
-    bool setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response);
+  bool setCameraInfoCB(sensor_msgs::SetCameraInfo::Request& request, sensor_msgs::SetCameraInfo::Response& response);
 
 
 };

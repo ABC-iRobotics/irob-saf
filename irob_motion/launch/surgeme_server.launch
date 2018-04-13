@@ -1,4 +1,4 @@
-<!-- Launch file to move on a preprogrammed trajectory -->
+<!-- Launch file to start surgeme server. After start, waits for irob_msgs/Surgeme actions -->
 
 <launch>
 	<group ns="saf">

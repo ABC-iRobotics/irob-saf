@@ -4,6 +4,8 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-11-07
  *
+ *  Robot server for dVRK PSMs.
+ *
  */
 
 #ifndef ROBOT_SERVER_PSM_HPP_

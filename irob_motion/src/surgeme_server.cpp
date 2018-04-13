@@ -70,7 +70,7 @@ void SurgemeServer::surgemeActionCB(
     return;
   }
 
-
+  // Call surgeme function
   try {
     // Do the action
     switch(goal -> action)
@@ -257,6 +257,12 @@ bool SurgemeServer::handleActionState(std::string stage,
   }
 }
 
+/**
+ * Check if the installed instrument is usable for
+ * the current surgeme.
+ * @param surgeme_type surgeme
+ * @return is the surgeme can be executed
+ */
 bool SurgemeServer::isAbleToDoSurgeme(int surgeme_type)
 {
   if (	surgeme_type == irob_msgs::SurgemeGoal::STOP
@@ -283,6 +289,11 @@ bool SurgemeServer::isAbleToDoSurgeme(int surgeme_type)
   return false;
 }
 
+/**
+ * Find the part of the instument's jaws usable for the surgeme.
+ * @param surgeme_type surgeme
+ * @return jaw part
+ */
 irob_msgs::InstrumentJawPart SurgemeServer::findInstrumentJawPartForSurgeme(
     int surgeme_type)
 {
@@ -315,6 +326,16 @@ irob_msgs::InstrumentJawPart SurgemeServer::findInstrumentJawPartForSurgeme(
   return ret;
 }
 
+/**
+ * Calculate parameters of the current surgeme based on
+ * the target and the installed instrument.
+ * @param surgeme_type surgeme
+ * @param jaw_part the part of the jaw, used for the surgeme
+ * @param target_ori desired tool orientation at target
+ * @param target_diameter size of the target object
+ * @param compression_rate rate of the desired compression of the target (used in grasp)
+ * @return the calculated surgeme setting
+ */
 SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
     int surgeme_type,
     irob_msgs::InstrumentJawPart jaw_part,
@@ -347,11 +368,11 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
 
     g.jaw_closed_angle = (2.0 * atan(((target_diameter / 2.0)
                                       * compression_rate) / dist))
-                                      * (180.0 / M_PI);
+        * (180.0 / M_PI);
 
     g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0)
                                     * 1.5) / dist))
-                                    * (180.0 / M_PI);
+        * (180.0 / M_PI);
 
     ROS_INFO_STREAM("g.t: " << g.t);
     return g;
@@ -372,7 +393,6 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
   }
 
   // End of jaw
-  // TODO check
   if (	surgeme_type == irob_msgs::SurgemeGoal::DISSECT
         ||	surgeme_type == irob_msgs::SurgemeGoal::PUSH)
   {
@@ -402,7 +422,9 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
 
 
 /**
- * Stop
+ * Stop the arm immediately.
+ *
+ * @brief SurgemeServer::stop
  */
 void SurgemeServer::stop()
 {
@@ -424,7 +446,13 @@ void SurgemeServer::stop()
 }
 
 /**
- * Nav_to_pos
+ * Navigate freely to the target position.
+ *
+ * @brief SurgemeServer::nav_to_pos
+ * @param target desired position
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
 void SurgemeServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
                                InterpolationMethod interp_method, double speed_cartesian)
@@ -447,7 +475,17 @@ void SurgemeServer::nav_to_pos(Pose target, std::vector<Pose> waypoints,
 }
 
 /**
- * Grasp
+ * Grasp object.
+ *
+ * @brief SurgemeServer::grasp
+ * @param target object position
+ * @param approach_pose approach object from position with grippers open
+ * @param target_diameter diameter of the object
+ * @param compression_rate desired compression of the object
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ * @param speed_jaw jaw speed in deg/s
  */
 void SurgemeServer::grasp(Pose target, Pose approach_pose,
                           double target_diameter,
@@ -519,7 +557,16 @@ void SurgemeServer::grasp(Pose target, Pose approach_pose,
 }
 
 /**
- * Cut
+ * Cut object using scrissors.
+ *
+ * @brief SurgemeServer::cut
+ * @param target object position
+ * @param approach_pose approach object from position with grippers open
+ * @param target_diameter diameter of the object
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ * @param speed_jaw jaw speed in deg/s
  */
 void SurgemeServer::cut(Pose target, Pose approach_pose,
                         double target_diameter,
@@ -585,7 +632,13 @@ void SurgemeServer::cut(Pose target, Pose approach_pose,
 }
 
 /**
- * Release
+ * Release grasped object.
+ *
+ * @brief SurgemeServer::release
+ * @param approach_pose positon to retract tool with open grippers
+ * @param target_diameter diameter of the object
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ * @param speed_jaw jaw speed in deg/s
  */
 void SurgemeServer::release(Pose approach_pose,
                             double target_diameter,
@@ -629,7 +682,15 @@ void SurgemeServer::release(Pose approach_pose,
 }
 
 /**
- * Place
+ * Place grasped object to position, jaws angles remain constant.
+ *
+ * @brief SurgemeServer::place
+ * @param target desired object position
+ * @param approach_pose approach object from position
+ * @param target_diameter diameter of the object
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
 void SurgemeServer::place(Pose target, Pose approach_pose,
                           double target_diameter,
@@ -679,7 +740,16 @@ void SurgemeServer::place(Pose target, Pose approach_pose,
 }
 
 /**
- * Push
+ * Push tissue with tool tip.
+ *
+ * @brief SurgemeServer::push
+ * @param target object position
+ * @param approach_pose approach object from position
+ * @param displacement displacement vector of the tool after reached target position
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ * @param speed_jaw jaw speed in deg/s
  */
 void SurgemeServer::push(Pose target, Pose approach_pose, 
                          Eigen::Vector3d displacement,
@@ -747,7 +817,16 @@ void SurgemeServer::push(Pose target, Pose approach_pose,
 }
 
 /**
- * Dissect
+ * Dissect soft tissue using an opening motion.
+ *
+ * @brief SurgemeServer::dissect
+ * @param target object position
+ * @param approach_pose approach object from position
+ * @param target_diameter for the open state of the grippers
+ * @param waypoints waypoints to be touched during navigation
+ * @param interp_method method for interpolation between positions
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ * @param speed_jaw jaw speed in deg/s
  */
 void SurgemeServer::dissect(Pose target, Pose approach_pose, 
                             Eigen::Vector3d displacement,
@@ -839,9 +918,12 @@ void SurgemeServer::dissect(Pose target, Pose approach_pose,
 }
 
 /**
- * Maipulate
+ * Manipulate grasped soft tissue.
+ *
+ * @brief SurgemeServer::manipulate
+ * @param displacement displacement vector of the tool after reached target position
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
-// TODO rotation?
 void SurgemeServer::manipulate(Eigen::Vector3d displacement,
                                double speed_cartesian)
 {
@@ -907,7 +989,7 @@ int main(int argc, char **argv)
   priv_nh.getParam("rate", rate_command);
 
 
-  // StartSurgeme server
+  // Start surgeme server
   try {
     SurgemeServer surgeme(nh, arm_name, 1.0/rate_command);
 

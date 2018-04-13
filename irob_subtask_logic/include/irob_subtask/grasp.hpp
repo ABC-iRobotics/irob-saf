@@ -1,8 +1,10 @@
 /*
- * 	pick_n_place.hpp
- * 	
+ * 	grasp.hpp
+ *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-11-08
+ *
+ *  Grasp the object received in the topic 'saf/vision/target'.
  *
  */
 
@@ -40,14 +42,14 @@ class Grasp : public AutosurgAgent {
 
 protected:
 
-    VisionClient<geometry_msgs::Pose, Pose> vision;
-    
+  VisionClient<geometry_msgs::Pose, Pose> vision;
+
 
 public:
   Grasp(ros::NodeHandle, std::vector<std::string>);
   ~Grasp();
-	 void graspObject();
-	
+  void graspObject();
+
 };
 
 }

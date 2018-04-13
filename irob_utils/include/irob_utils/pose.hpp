@@ -84,11 +84,6 @@ class Pose {
    	geometry_msgs::Pose toRosPose() const;
     sensor_msgs::JointState toRosJaw() const;
    	
-   	/*
-   	double length() const;
-   	
-   	double distance(const Eigen::Vector3d&) const;
-   */
    	friend std::ostream& operator<<(std::ostream&, const Pose&);
 	friend std::istream& operator>>(std::istream&, Pose&);
 };

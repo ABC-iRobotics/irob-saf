@@ -6,14 +6,14 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                        roscpp
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        sensor_msgs
-                        irob_msgs
-                        )
+	COMPONENTS
+	roscpp
+	roslib
+	geometry_msgs
+	std_msgs
+	sensor_msgs
+	irob_msgs
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -46,9 +46,9 @@ find_package(catkin REQUIRED
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- #add_message_files(
- #  FILES
- #  ToolPose.msg
+#add_message_files(
+#  FILES
+#  ToolPose.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -62,8 +62,8 @@ find_package(catkin REQUIRED
 # 	DIRECTORY
 #	action
 #   	FILES
-   	
- #  	FollowTrajectory.action
+
+#  	FollowTrajectory.action
 # )
 
 ## Generate added messages and services with any dependencies listed here
@@ -99,12 +99,12 @@ find_package(catkin REQUIRED
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		INCLUDE_DIRS include
-  		LIBRARIES irob_utils_lib
-        CATKIN_DEPENDS geometry_msgs roscpp std_msgs sensor_msgs
-        	 message_runtime irob_msgs
-        #DEPENDS system_lib
-)
+	INCLUDE_DIRS include
+	LIBRARIES irob_utils_lib
+	CATKIN_DEPENDS geometry_msgs roscpp std_msgs sensor_msgs
+	message_runtime irob_msgs
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -113,20 +113,20 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								/usr/include/eigen3
-								include/irob_utils
-								)
+	/usr/include/eigen3
+	include/irob_utils
+	)
 
 ## Declare a C++ library
 
 file(GLOB irob_utils_lib_src
-    "src/*.cpp"
-)
+	"src/*.cpp"
+	)
 
 
 add_library( irob_utils_lib STATIC
-       ${irob_utils_lib_src}
-       )
+	${irob_utils_lib_src}
+	)
 
 set_target_properties( irob_utils_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -154,10 +154,10 @@ set_target_properties( irob_utils_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 ## Specify libraries to link a library or executable target against
 
- 
- target_link_libraries(irob_utils_lib
- 	${catkin_LIBRARIES}
- )
+
+target_link_libraries(irob_utils_lib
+	${catkin_LIBRARIES}
+	)
 
 
 

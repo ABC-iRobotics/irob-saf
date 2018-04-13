@@ -6,21 +6,21 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                        roscpp
-                        rospy
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        sensor_msgs
-                        stereo_msgs
-                        sensor_msgs
-						cv_bridge
-						image_transport
-						camera_info_manager
-						irob_msgs
-						irob_utils
-                        )
+	COMPONENTS
+	roscpp
+	rospy
+	roslib
+	geometry_msgs
+	std_msgs
+	sensor_msgs
+	stereo_msgs
+	sensor_msgs
+	cv_bridge
+	image_transport
+	camera_info_manager
+	irob_msgs
+	irob_utils
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -88,12 +88,12 @@ find_package(catkin REQUIRED
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		INCLUDE_DIRS include
-  		LIBRARIES irob_vision_support_lib
-        CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-        	 message_runtime irob_msgs irob_utils
-        #DEPENDS system_lib
-)
+	INCLUDE_DIRS include
+	LIBRARIES irob_vision_support_lib
+	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
+	message_runtime irob_msgs irob_utils
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -102,20 +102,20 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								/usr/include/eigen3
-								include
-								)
+	/usr/include/eigen3
+	include
+	)
 
 ## Declare a C++ library
 
 file(GLOB irob_vision_support_lib_src
-    "src/*.cpp"
-)
+	"src/*.cpp"
+	)
 
 
 add_library( irob_vision_support_lib STATIC
-       ${irob_vision_support_lib_src}
-       )
+	${irob_vision_support_lib_src}
+	)
 
 set_target_properties( irob_vision_support_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -135,14 +135,14 @@ set_target_properties( irob_vision_support_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(vision_server_test_dummy 
-				src/vision_server_test_dummy.cpp)
-				
+	src/vision_server_test_dummy.cpp)
+
 add_executable(dummy_target_publisher 
-				src/dummy_target_publisher.cpp)
+	src/dummy_target_publisher.cpp)
 
 add_executable(camera_preprocessor
-					src/camera_preprocessor.cpp)
-				
+	src/camera_preprocessor.cpp)
+
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -156,28 +156,28 @@ add_executable(camera_preprocessor
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_vision_support_lib
- 	${catkin_LIBRARIES}
- )
- 
- 
- target_link_libraries(vision_server_test_dummy
-   ${catkin_LIBRARIES}
-   irob_vision_support_lib
- )
- 
-  target_link_libraries(dummy_target_publisher
-   ${catkin_LIBRARIES}
-   irob_vision_support_lib
- )
- 
+target_link_libraries(irob_vision_support_lib
+	${catkin_LIBRARIES}
+	)
 
-   target_link_libraries(camera_preprocessor
-   ${catkin_LIBRARIES}
-   irob_vision_support_lib
- )
 
- 
+target_link_libraries(vision_server_test_dummy
+	${catkin_LIBRARIES}
+	irob_vision_support_lib
+	)
+
+target_link_libraries(dummy_target_publisher
+	${catkin_LIBRARIES}
+	irob_vision_support_lib
+	)
+
+
+target_link_libraries(camera_preprocessor
+	${catkin_LIBRARIES}
+	irob_vision_support_lib
+	)
+
+
 
 
 #############

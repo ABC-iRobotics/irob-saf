@@ -1,5 +1,5 @@
 /*
- * 	pick_n_place.cpp
+ * 	peg_transfer.cpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2018-01-11
@@ -13,7 +13,7 @@ namespace saf {
 
 
 PegTransfer::PegTransfer(ros::NodeHandle nh,
-                       std::vector<std::string> arm_names, Eigen::Quaternion<double> ori, Eigen::Vector3d dp):
+                         std::vector<std::string> arm_names, Eigen::Quaternion<double> ori, Eigen::Vector3d dp):
   AutosurgAgent(nh, arm_names), vision(nh, "target"), ori(ori), dp(dp)
 {
   //
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 
   Eigen::Vector3d vec_dp(dp[0], dp[1], dp[2]);
 
-  // Startsurgeme server
+  // Start autonomous agent
   try {
     PegTransfer pnp(nh, arm_names, quat_ori, vec_dp);
 

@@ -6,22 +6,22 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                        roscpp
-                        rospy
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        sensor_msgs
-                        stereo_msgs
-                        sensor_msgs
-                        cv_bridge
-                        actionlib
-                        actionlib_msgs
-						irob_utils
-						irob_motion
-						irob_vision_support
-                        )
+	COMPONENTS
+	roscpp
+	rospy
+	roslib
+	geometry_msgs
+	std_msgs
+	sensor_msgs
+	stereo_msgs
+	sensor_msgs
+	cv_bridge
+	actionlib
+	actionlib_msgs
+	irob_utils
+	irob_motion
+	irob_vision_support
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -89,12 +89,12 @@ find_package(catkin REQUIRED
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		INCLUDE_DIRS include
-  		LIBRARIES irob_behavior_lib
-        CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-        	 message_runtime actionlib_msgs irob_utils
-        #DEPENDS system_lib
-)
+	INCLUDE_DIRS include
+	LIBRARIES irob_behavior_lib
+	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
+	message_runtime actionlib_msgs irob_utils
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -103,20 +103,20 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								/usr/include/eigen3
-								include
-								)
+	/usr/include/eigen3
+	include
+	)
 
 ## Declare a C++ library
 
 file(GLOB irob_subtask_logic_lib_src
-    "src/*.cpp"
-)
+	"src/*.cpp"
+	)
 
 
 add_library( irob_subtask_logic_lib STATIC
-       ${irob_subtask_logic_lib_src}
-       )
+	${irob_subtask_logic_lib_src}
+	)
 
 set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -151,21 +151,21 @@ add_executable(grasp src/grasp.cpp)
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_subtask_logic_lib
- 	${catkin_LIBRARIES}
- )
- 
- 
- target_link_libraries(peg_transfer
-   ${catkin_LIBRARIES}
-   irob_subtask_logic_lib
- )
- 
-  target_link_libraries(grasp
-   ${catkin_LIBRARIES}
-   irob_subtask_logic_lib
- )
- 
+target_link_libraries(irob_subtask_logic_lib
+	${catkin_LIBRARIES}
+	)
+
+
+target_link_libraries(peg_transfer
+	${catkin_LIBRARIES}
+	irob_subtask_logic_lib
+	)
+
+target_link_libraries(grasp
+	${catkin_LIBRARIES}
+	irob_subtask_logic_lib
+	)
+
 
 
 #############

@@ -1,3 +1,14 @@
+/*
+ * 	peg_transfer.hpp
+ *
+ *	Author(s): Tamas D. Nagy
+ *	Created on: 2017-11-08
+ *
+ *  Prototype of the autonomous peg transfer
+ *  training exercise.
+ *
+ */
+
 #ifndef PEG_TRASNFER_HPP
 #define PEG_TRASNFER_HPP
 

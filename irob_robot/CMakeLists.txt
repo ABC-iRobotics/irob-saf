@@ -6,20 +6,20 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                        roscpp
-                        rospy
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        sensor_msgs
-                        stereo_msgs
-                        sensor_msgs
-                        actionlib_msgs
-                        actionlib
-						irob_msgs
-						irob_utils
-                        )
+	COMPONENTS
+	roscpp
+	rospy
+	roslib
+	geometry_msgs
+	std_msgs
+	sensor_msgs
+	stereo_msgs
+	sensor_msgs
+	actionlib_msgs
+	actionlib
+	irob_msgs
+	irob_utils
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -87,12 +87,12 @@ find_package(catkin REQUIRED
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		INCLUDE_DIRS include
-  		LIBRARIES irob_dvrk_lib irob_general_robot_lib
-        CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-        	 message_runtime irob_msgs irob_utils actionlib_msgs
-        #DEPENDS system_lib
-)
+	INCLUDE_DIRS include
+	LIBRARIES irob_dvrk_lib irob_general_robot_lib
+	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
+	message_runtime irob_msgs irob_utils actionlib_msgs
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -101,31 +101,31 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								/usr/include/eigen3
-								include
-								)
+	/usr/include/eigen3
+	include
+	)
 
 ## Declare a C++ library
 
 file(GLOB irob_dvrk_lib_src
-    "src/irob_dvrk/*.cpp"
-)
+	"src/irob_dvrk/*.cpp"
+	)
 
 
 add_library( irob_dvrk_lib STATIC
-       ${irob_dvrk_lib_src}
-       )
+	${irob_dvrk_lib_src}
+	)
 
 set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 file(GLOB irob_general_robot_lib_src
-    "src/irob_general_robot/*.cpp"
-)
+	"src/irob_general_robot/*.cpp"
+	)
 
 
 add_library( irob_general_robot_lib STATIC
-       ${irob_general_robot_lib_src}
-       )
+	${irob_general_robot_lib_src}
+	)
 
 set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -145,7 +145,7 @@ set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(robot_server_dvrk 
-				src/irob_dvrk/robot_server_psm.cpp)
+	src/irob_dvrk/robot_server_psm.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -159,22 +159,22 @@ add_executable(robot_server_dvrk
 ## Specify libraries to link a library or executable target against
 
 
- target_link_libraries(irob_dvrk_lib
- 	${catkin_LIBRARIES}
- )
- 
-  target_link_libraries(irob_general_robot_lib
- 	${catkin_LIBRARIES}
- )
- 
- 
- target_link_libraries(robot_server_dvrk
-   ${catkin_LIBRARIES}
-   irob_dvrk_lib
- )
- 
+target_link_libraries(irob_dvrk_lib
+	${catkin_LIBRARIES}
+	)
 
- 
+target_link_libraries(irob_general_robot_lib
+	${catkin_LIBRARIES}
+	)
+
+
+target_link_libraries(robot_server_dvrk
+	${catkin_LIBRARIES}
+	irob_dvrk_lib
+	)
+
+
+
 
 
 #############

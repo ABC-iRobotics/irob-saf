@@ -4,6 +4,10 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-11-08
  *
+ *  Useful functions to provide compatibility
+ *  of basic datatypes, mainly in matematical
+ *  calculations.
+ *
  */
 
 #ifndef DVRK_UTILS_HPP_

@@ -6,15 +6,15 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-                        COMPONENTS
-                    
-                        roslib
-                        geometry_msgs
-                        std_msgs
-                        message_generation
-                        actionlib
-                        sensor_msgs
-                        )
+	COMPONENTS
+
+	roslib
+	geometry_msgs
+	std_msgs
+	message_generation
+	actionlib
+	sensor_msgs
+	)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -47,35 +47,35 @@ find_package(catkin REQUIRED
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   ToolPose.msg
-   ToolPoseStamped.msg
-   TrajectoryToolPose.msg
-   VisionObject.msg
-   InstrumentJawPart.msg
-   InstrumentInfo.msg
-   FloatArray.msg
-   GraspObject.msg
-   Environment.msg
- )
+add_message_files(
+	FILES
+	ToolPose.msg
+	ToolPoseStamped.msg
+	TrajectoryToolPose.msg
+	VisionObject.msg
+	InstrumentJawPart.msg
+	InstrumentInfo.msg
+	FloatArray.msg
+	GraspObject.msg
+	Environment.msg
+	)
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   GetControlVariables.srv
-   BoolQuery.srv
- )
+add_service_files(
+	FILES
+	GetControlVariables.srv
+	BoolQuery.srv
+	)
 
 ## Generate actions in the 'action' folder
- add_action_files(
- 	DIRECTORY
- 	action
-   	FILES
-   	
-   	Robot.action
+add_action_files(
+	DIRECTORY
+	action
+	FILES
+
+	Robot.action
 	Surgeme.action
- )
+	)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(DEPENDENCIES std_msgs geometry_msgs actionlib_msgs)
@@ -110,12 +110,12 @@ generate_messages(DEPENDENCIES std_msgs geometry_msgs actionlib_msgs)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  		#INCLUDE_DIRS include "${CATKIN_DEVEL_PREFIX}/include"
-  		#LIBRARIES 
-        CATKIN_DEPENDS geometry_msgs std_msgs sensor_msgs
-        	 message_runtime
-        #DEPENDS system_lib
-)
+	#INCLUDE_DIRS include "${CATKIN_DEVEL_PREFIX}/include"
+	#LIBRARIES
+	CATKIN_DEPENDS geometry_msgs std_msgs sensor_msgs
+	message_runtime
+	#DEPENDS system_lib
+	)
 
 ###########
 ## Build ##
@@ -124,7 +124,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
-								/usr/include/eigen3)
+	/usr/include/eigen3)
 
 ## Declare a C++ library
 
@@ -153,10 +153,10 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 ## Specify libraries to link a library or executable target against
 
- 
- 
 
- 
+
+
+
 
 
 #############

@@ -50,6 +50,10 @@ void RobotServerDVRK::initArm()
   as.setSucceeded(result);
 }
 
+/*
+ * Move in joint space immediately.
+ */
+
 void RobotServerDVRK::resetPose(bool move_allowed)
 {
   // helper variables
@@ -173,6 +177,9 @@ void RobotServerDVRK::followTrajectory(Trajectory<Pose> tr)
 }
 
 
+/*
+ * Callbacks
+ */
 
 void RobotServerDVRK::robotStateCB(const std_msgs::String msg)
 {
@@ -322,7 +329,9 @@ Pose RobotServerDVRK::getPoseCurrent()
 
 }
 
-
+/*
+ * Move in joint space immediately.
+ */
 void RobotServerDVRK::moveJointRelative(int joint_idx, double movement, double dt)
 {
   // Collect data
@@ -351,6 +360,9 @@ void RobotServerDVRK::moveJointRelative(int joint_idx, double movement, double d
   }
 }
 
+/*
+ * Move in joint space immediately.
+ */
 void RobotServerDVRK::moveJointAbsolute(int joint_idx, double pos, double dt)
 {
   // Collect data
@@ -379,6 +391,9 @@ void RobotServerDVRK::moveJointAbsolute(int joint_idx, double pos, double dt)
   }
 }
 
+/*
+ * Move in cartesian immediately.
+ */
 void RobotServerDVRK::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 {
   // Collect data
@@ -410,6 +425,9 @@ void RobotServerDVRK::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 
 }
 
+/*
+ * Move in cartesian immediately.
+ */
 void RobotServerDVRK::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 {
   // Collect data
@@ -441,6 +459,9 @@ void RobotServerDVRK::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 
 }
 
+/*
+ * Move in cartesian immediately.
+ */
 void RobotServerDVRK::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
 {
   // Collect data
@@ -470,6 +491,9 @@ void RobotServerDVRK::moveCartesianAbsolute(Eigen::Quaternion<double> orientatio
   }
 }
 
+/*
+ * Move in cartesian, and move jaw immediately.
+ */
 void RobotServerDVRK::moveCartesianAbsolute(Pose pose, double dt)
 {
   // Collect data

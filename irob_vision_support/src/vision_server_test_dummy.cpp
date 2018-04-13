@@ -4,6 +4,11 @@
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-08-30
  *  
+ *  Example for the usage of the generic class
+ *  VisionServer. The vision server is specified
+ *  by the command:
+ *     VisionServer<geometry_msgs::Pose, DummyImageProcessor> td(nh, rate);
+ *
  */
 
 

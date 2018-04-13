@@ -155,7 +155,7 @@ After the last node was launched, you should see how the instrument grasps the g
 
     
 
-![alt tag](docs/irob-autosurg-blockdiagram_v3.png =500x)
+![alt tag](docs/irob-autosurg-blockdiagram.png =500x)
 
 
 ## Acknowledgement

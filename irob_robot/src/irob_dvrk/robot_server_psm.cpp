@@ -13,7 +13,9 @@
 
 namespace saf {
 
-
+/*
+ * Constructor
+ */
 RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
                                ArmTypes arm_typ, std::string arm_name,
                                bool isActive):
@@ -25,6 +27,9 @@ RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
         "Tried to create RobotServerPSM object for ECM or MTM arm type.");
 }
 
+/*
+ * irob_msgs/Robot actions
+ */
 
 void RobotServerPSM::resetPose(bool move_allowed)
 {
@@ -91,6 +96,9 @@ void RobotServerPSM::advertiseLowLevelTopics()
         1000);
 }
 
+/*
+ * Callbacks
+ */
 
 void RobotServerPSM::positionCartesianCurrentCB(
     const geometry_msgs::PoseStampedConstPtr& msg)
@@ -105,7 +113,6 @@ void RobotServerPSM::positionCartesianCurrentCB(
 
   }
   Pose tmp(position_cartesian_current, position_jaw.position[0]);
-  //ROS_INFO_STREAM(tmp);
   // Hand-eye calibration
   // Convert from m-s to mm-s
   fwd.pose = tmp.invTransform(R, t, 0.001).toRosToolPose();
@@ -156,6 +163,9 @@ void RobotServerPSM::moveJawRelative(double movement, double dt)
   }
 }
 
+/*
+ * Move the grippers immediatley.
+ */
 void RobotServerPSM::moveJawAbsolute(double jaw, double dt)
 {
   // Collect data
@@ -184,6 +194,9 @@ void RobotServerPSM::moveJawAbsolute(double jaw, double dt)
   }
 }
 
+/*
+ * Move in cartesian, and move jaw immediately.
+ */
 void RobotServerPSM::moveCartesianAbsolute(Pose pose, double dt)
 {
   // Collect data

@@ -3,6 +3,9 @@
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2016-10-26
+ *
+ *  ROS node that publishes a dummy
+ *  target marker.
  *  
  */
 

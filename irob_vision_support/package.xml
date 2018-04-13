@@ -2,7 +2,7 @@
 <package>
   <name>irob_vision_support</name>
   <version>0.0.1</version>
-  <description>iRob Automated Surgery---Computer vision</description>
+  <description>iRob Surgical Automation Framework---Computer vision</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 
@@ -10,7 +10,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>BSD</license>
+  <license>MIT</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
