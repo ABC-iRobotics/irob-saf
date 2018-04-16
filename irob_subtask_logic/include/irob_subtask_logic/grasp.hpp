@@ -32,7 +32,7 @@
 #include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
 
-#include <irob_subtask/autosurg_agent.hpp>
+#include <irob_subtask_logic/autosurg_agent.hpp>
 
 
 namespace saf {

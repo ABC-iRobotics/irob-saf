@@ -35,8 +35,9 @@ Pose::Pose(const irob_msgs::ToolPose& msg):
   jaw(msg.jaw) {}
 
 Pose::Pose(const irob_msgs::ToolPoseStamped& msg):
-  position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x,
-                                                                                             msg.pose.orientation.y, msg.pose.orientation.z),
+  position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z),
+  orientation( msg.pose.orientation.w, msg.pose.orientation.x,
+               msg.pose.orientation.y, msg.pose.orientation.z),
   jaw(msg.pose.jaw) {}
 
 Pose::Pose(const geometry_msgs::Pose& msg, double jaw):
@@ -46,8 +47,9 @@ Pose::Pose(const geometry_msgs::Pose& msg, double jaw):
   jaw(jaw){}
 
 Pose::Pose(const geometry_msgs::PoseStamped& msg, double jaw):
-  position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z), 			orientation( msg.pose.orientation.w, msg.pose.orientation.x,
-                                                                                             msg.pose.orientation.y, msg.pose.orientation.z),
+  position(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z),
+  orientation( msg.pose.orientation.w, msg.pose.orientation.x,
+               msg.pose.orientation.y, msg.pose.orientation.z),
   jaw(jaw){}
 
 Pose::Pose(const  Eigen::Vector3d& position,

@@ -6,7 +6,7 @@
  *
  */
 
-#include <irob_subtask/grasp.hpp>
+#include <irob_subtask_logic/grasp.hpp>
 
 
 namespace saf {

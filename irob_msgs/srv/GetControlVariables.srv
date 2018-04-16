@@ -1,3 +1,5 @@
+# GetControlVariables.srv
+
 #request 
 float64[] input
 ---

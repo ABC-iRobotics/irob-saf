@@ -1,3 +1,4 @@
+# InstrumentJawPart.msg
 # Jaw part type
 int8 JOINT = 1
 int8 GRIPPER = 2

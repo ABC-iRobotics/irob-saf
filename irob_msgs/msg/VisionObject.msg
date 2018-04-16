@@ -1,3 +1,4 @@
+# VisionObject.msg
 # Material types
 int8 RIGID=1
 int8 SOFT=2

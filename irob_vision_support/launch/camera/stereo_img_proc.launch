@@ -1,4 +1,6 @@
-<!-- Launch file for left and right camera nodes using cv-camera -->
+<!-- Launch file for stereo image processing, calculates
+	 rectified images and disparity map
+-->
 
 <launch>	
 

@@ -6,7 +6,7 @@
  *
  */
 
-#include <irob_subtask/peg_transfer.hpp>
+#include <irob_subtask_logic/peg_transfer.hpp>
 
 
 namespace saf {

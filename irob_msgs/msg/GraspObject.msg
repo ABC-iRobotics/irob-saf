@@ -1,3 +1,4 @@
+# GraspObject.msg
 # Object info 
 int8 id
 string name
