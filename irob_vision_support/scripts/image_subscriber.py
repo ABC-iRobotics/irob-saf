@@ -10,13 +10,13 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
-class image_converter:
+class image_subscriber:
 
   def __init__(self):
     self.image_pub = rospy.Publisher("image_topic_2",Image, queue_size=10)
 
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("stereo/preprocessed/left/image_rect_color",Image,self.callback)
+    self.image_sub = rospy.Subscriber("stereo/preprocessed/left/image_rect",Image,self.callback)
 
   def callback(self,data):
     try:
@@ -37,7 +37,7 @@ class image_converter:
       print(e)
 
 def main(args):
-  ic = image_converter()
+  ic = image_subscriber()
   rospy.init_node('image_subscriber', anonymous=True)
   try:
     rospy.spin()
