@@ -13,7 +13,7 @@ Install packages *ros-kinetic-cv-camera* and *ros-kinetic-camera-calibration*
     
 The video feed can be started by the launch file *stereo_cam_usb_raw.launch* (device ID is based on the connection order of the cameras), for example:
     
-    roslaunch irob_vision_support stereo_cam_usb_raw device_id_left:=0 device_id_right:=1
+    roslaunch irob_vision_support stereo_cam_usb_raw.launch  device_id_left:=0 device_id_right:=1
     
 Before usage the stereo camera pair should be calibrated by the following command:
 
@@ -67,7 +67,7 @@ Test the video stream:
     
 The video feed can be started by the launch file *stereo_cam_blackmagic.launch*, for example:
     
-    roslaunch irob_vision_support stereo_cam_blackmagic
+    roslaunch irob_vision_support stereo_cam_blackmagic.launch 
     
 This launch file includes a pair of preprocessing nodes, those are simply averaging two successive frames to reduce noise. Before usage the stereo camera pair should be calibrated by the following command:
 
