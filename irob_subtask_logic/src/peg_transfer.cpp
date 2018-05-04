@@ -31,7 +31,7 @@ void PegTransfer::doPegTransfer()
   Pose dist_pose(dp, ori, 0.0);
   double compress_rate = 0.705;
 
-  ROS_INFO_STREAM("Starting Pick-and-Place behaviour...");
+  ROS_INFO_STREAM("Starting Peg-transfer subtask...");
 
   int tube_idx_on = 6;
   int tube_idx_to = 7;
@@ -117,7 +117,7 @@ void PegTransfer::doPegTransfer()
       ros::Duration(0.1).sleep();
     }
 
-    ROS_INFO_STREAM("Pick-and-place task done");
+    ROS_INFO_STREAM("Peg-transfer subtask done");
 
     // Set new traget
     tube_idx_on = tube_idx_to;
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 {
 
   // Initialize ros node
-  ros::init(argc, argv, "test_task");
+  ros::init(argc, argv, "peg_transfer");
   ros::NodeHandle nh;
   ros::NodeHandle priv_nh("~");
 
