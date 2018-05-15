@@ -22,12 +22,9 @@ find_package(catkin REQUIRED
 	irob_utils
 	)
 
-find_package(OpenCV REQUIRED
-      COMPONENTS
-      opencv_highgui
-      CONFIG
- )
+find_package(OpenCV REQUIRED)
 
+catkin_package(INCLUDE_DIRS DEPENDS OpenCV)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -111,6 +108,8 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 	/usr/include/eigen3
 	include
 	)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 
