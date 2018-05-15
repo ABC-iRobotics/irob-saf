@@ -34,10 +34,13 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/version.hpp>
+#include <opencv2/aruco.hpp>
 
 #include "irob_utils/pose.hpp"
 #include "irob_utils/utils.hpp"
 #include "irob_utils/abstract_directions.hpp"
+
 
 
 namespace saf {
@@ -80,15 +83,15 @@ void ArucoDetector::subscribeTopics()
 {
   result_sub = nh.subscribe<visualization_msgs::Marker>(
         "marker", 1000,
-        &DummyImageProcessor::tragetCB,this);
+        &ArucoDetector::tragetCB,this);
 }
 
 // Callbacks
 void ArucoDetector::tragetCB(const visualization_msgs::MarkerConstPtr& msg)
 {
-  dummy_location.x() = msg->pose.position.x * 1000.0;
-  dummy_location.y() = msg->pose.position.y * 1000.0;
-  dummy_location.z() = msg->pose.position.z * 1000.0;
+  //dummy_location.x() = msg->pose.position.x * 1000.0;
+  //dummy_location.y() = msg->pose.position.y * 1000.0;
+  //dummy_location.z() = msg->pose.position.z * 1000.0;
 }
 
 geometry_msgs::Pose ArucoDetector::processImages(
@@ -102,33 +105,27 @@ geometry_msgs::Pose ArucoDetector::processImages(
 
   geometry_msgs::Pose aruco_pose;
 
+  // OpenCV conversion
+  cv::Mat inputImage;
+  color_image_left_ptr->image.copyTo(inputImage);
 
+  // Detect Aruco markers
+  std::vector<int> markerIds;
+  std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
+  cv::Ptr<cv::aruco::DetectorParameters> parameters;
+  cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+  cv::aruco::detectMarkers(inputImage, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
-
-
+  // Display detected markers
+  cv::Mat outputImage;
+  cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
+  cv::imshow("out", outputImage);
 
   return aruco_pose;
 }
 
 
 }
-#endif /* DUMMY_IMAGE_PROCESSOR_HPP_ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

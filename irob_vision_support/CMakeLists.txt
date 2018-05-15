@@ -22,6 +22,12 @@ find_package(catkin REQUIRED
 	irob_utils
 	)
 
+find_package(OpenCV REQUIRED
+      COMPONENTS
+      opencv_highgui
+      CONFIG
+ )
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -143,6 +149,9 @@ add_executable(dummy_target_publisher
 add_executable(camera_preprocessor
 	src/camera_preprocessor.cpp)
 
+add_executable(vision_server_aruco_detector
+            src/vision_server_aruco_detector.cpp)
+
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -158,24 +167,35 @@ add_executable(camera_preprocessor
 
 target_link_libraries(irob_vision_support_lib
 	${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
 	)
 
 
 target_link_libraries(vision_server_test_dummy
 	${catkin_LIBRARIES}
+         ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
 
 target_link_libraries(dummy_target_publisher
 	${catkin_LIBRARIES}
+         ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
 
 
 target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
+
+    target_link_libraries(vision_server_aruco_detector
+            ${catkin_LIBRARIES}
+            ${OpenCV_LIBRARIES}
+            irob_vision_support_lib
+            )
+
 
 
 
