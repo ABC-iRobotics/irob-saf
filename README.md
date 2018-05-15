@@ -82,8 +82,8 @@ The library can be used stand-alone, but it was developed to use with the [da Vi
 
 ### Install the fiducials library
 
-The [fiducials library](https://github.com/UbiquityRobotics/fiducials) is a quite useful tool for aruco marker detection. Install
-Clone and build the source from the GitHub repository:
+The [fiducials library](http://wiki.ros.org/fiducials) is a quite useful tool for ArUco marker detection. See more about OpenCV and ArUco [here](https://docs.opencv.org/3.1.0/d5/dae/tutorial_aruco_detection.html). Install
+Clone and build the source from the [GitHub repository](https://github.com/UbiquityRobotics/fiducials), that will also install the requred aruco OpenCV module:
 
     cd ~/catkin_ws/src
     git clone https://github.com/UbiquityRobotics/fiducials.git
