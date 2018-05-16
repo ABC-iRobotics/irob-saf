@@ -49,7 +49,7 @@ def main(args):
   #cv2.imwrite("/home/tamas/Pictures/test_marker.jpg", img)
   #cv2.imwrite("test_marker.jpg", img)
 
-  img = cv2.imread('/home/tamas/Pictures/marker_photo.jpg',0)
+  img = cv2.imread('/home/dvrk_nat/Pictures/marker_photo.jpg',0)
   #cv2.imshow(img)
   #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 

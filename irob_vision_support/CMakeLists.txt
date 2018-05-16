@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(irob_vision_support)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -21,10 +22,6 @@ find_package(catkin REQUIRED
 	irob_msgs
 	irob_utils
 	)
-
-find_package(OpenCV REQUIRED)
-
-catkin_package(INCLUDE_DIRS DEPENDS OpenCV)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -148,8 +145,6 @@ add_executable(dummy_target_publisher
 add_executable(camera_preprocessor
 	src/camera_preprocessor.cpp)
 
-add_executable(vision_server_aruco_detector
-            src/vision_server_aruco_detector.cpp)
 
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -166,38 +161,24 @@ add_executable(vision_server_aruco_detector
 
 target_link_libraries(irob_vision_support_lib
 	${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
 	)
 
 
 target_link_libraries(vision_server_test_dummy
 	${catkin_LIBRARIES}
-         ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
 
 target_link_libraries(dummy_target_publisher
 	${catkin_LIBRARIES}
-         ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
 
 
 target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
 	irob_vision_support_lib
 	)
-
-    target_link_libraries(vision_server_aruco_detector
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBRARIES}
-            irob_vision_support_lib
-            )
-
-
-
-
 
 #############
 ## Install ##
