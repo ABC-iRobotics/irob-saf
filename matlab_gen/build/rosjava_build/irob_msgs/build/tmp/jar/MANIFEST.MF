@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Export-Package: irob_msgs;version="1.0.0";uses:="actionlib_msgs,geomet
+ ry_msgs,org.ros.internal.message,std_msgs"
+Bundle-Version: 1.0.0
+Tool: Bnd-2.1.0.20130426-122213
+Bundle-Name: irob_msgs
+Bnd-LastModified: 1526474618000
+Created-By: 1.7.0_60 (Oracle Corporation)
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.ros.rosjava_messages.irob_msgs
+Import-Package: actionlib_msgs;version="[1.10,2)",geometry_msgs;versio
+ n="[1.10,2)",org.ros.internal.message,std_msgs;version="[0.5,1)"
+

@@ -71,7 +71,7 @@ The video feed can be started by the launch file *stereo_cam_blackmagic.launch*,
     
 This launch file includes a pair of preprocessing nodes, those are simply averaging two successive frames to reduce noise. Before usage the stereo camera pair should be calibrated by the following command:
 
-    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/irob-saf/stereo/preprocessed/right/image_raw left:=/irob-saf/stereo/preprocessed/left/image_raw right_camera:=/irob-saf/stereo/preprocessed/right left_camera:=/irob-saf/stereo/preprocessed/left --approximate=0.1
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/saf/stereo/preprocessed/right/image_raw left:=/saf/stereo/preprocessed/left/image_raw right_camera:=/saf/stereo/preprocessed/right left_camera:=/saf/stereo/preprocessed/left --approximate=0.1
 
 Useful commands for debug if something goes wrong:
 

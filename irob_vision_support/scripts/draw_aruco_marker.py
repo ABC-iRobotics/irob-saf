@@ -18,6 +18,6 @@ from cv_bridge import CvBridge, CvBridgeError
 aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 print(aruco_dict)
 
-img = aruco.drawMarker(aruco_dict, 3, 700)
+img = aruco.drawMarker(aruco_dict, 4, 700)
 cv2.imwrite("marker.jpg", img)
 print("Marker saved to file.")

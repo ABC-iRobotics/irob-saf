@@ -50,15 +50,16 @@ class aruco_detector:
       marker_msg.header = data.header
       marker_msg.markers = [];
       #print(corners)
-      if ids:
-        for i in range(len(ids)):
-          marker_msg.markers.append(Marker())
-          marker_msg.markers[i].id = int(ids[i])
-          marker_msg.markers[i].corners = []
-          for j in range((corners[i]).shape[1]):
-            marker_msg.markers[i].corners.append(Point2D())
-            marker_msg.markers[i].corners[j].x = corners[i][0,j,0]
-            marker_msg.markers[i].corners[j].y = corners[i][0,j,1]
+      if not ids is None:
+        if len(ids) != 0:
+          for i in range(len(ids)):
+            marker_msg.markers.append(Marker())
+            marker_msg.markers[i].id = int(ids[i])
+            marker_msg.markers[i].corners = []
+            for j in range((corners[i]).shape[1]):
+              marker_msg.markers[i].corners.append(Point2D())
+              marker_msg.markers[i].corners[j].x = corners[i][0,j,0]
+              marker_msg.markers[i].corners[j].y = corners[i][0,j,1]
 
     #cv2.imshow("Image window", cv_image)
     #cv2.waitKey(3)
