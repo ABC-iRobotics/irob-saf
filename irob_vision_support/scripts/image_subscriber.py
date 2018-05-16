@@ -59,6 +59,10 @@ def main(args):
   corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=parameters)
   print(corners)
 
+  img = aruco.drawDetectedMarkers(img, corners)
+
+  cv2.imshow('frame',img)
+  cv2.waitKey()
 
   ic = image_subscriber()
   rospy.init_node('image_subscriber', anonymous=True)

@@ -1,0 +1,15 @@
+<!-- Launch file to detect aruco markers -->
+
+<launch>
+    <group ns="saf">
+
+    <node name="aruco_detector" pkg="irob_vision_support"
+            type="aruco_detector.py" output="screen" >
+
+                <remap from="image_input" to="stereo/preprocessed/left/image_rect_color" />
+                <remap from="image_markers" to="vision/image_markers" />
+                <remap from="image_markers" to="vision/markers" />
+    </node>
+    </group>
+</launch>
+

@@ -49,6 +49,7 @@ find_package(catkin REQUIRED
 ## Generate messages in the 'msg' folder
 add_message_files(
 	FILES
+    Point2D.msg
 	ToolPose.msg
 	ToolPoseStamped.msg
 	TrajectoryToolPose.msg
@@ -58,6 +59,8 @@ add_message_files(
 	FloatArray.msg
 	GraspObject.msg
 	Environment.msg
+    Marker.msg
+    MarkerArray.msg
 	)
 
 ## Generate services in the 'srv' folder
