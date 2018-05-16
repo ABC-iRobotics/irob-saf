@@ -6,6 +6,7 @@ roslib.load_manifest('irob_vision_support')
 import sys
 import rospy
 import cv2
+import cv2.aruco as aruco
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -37,6 +38,28 @@ class image_subscriber:
       print(e)
 
 def main(args):
+  print("Node started")
+  #help(cv2.aruco)
+
+  aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+  print(aruco_dict)
+  # second parameter is id number
+  # last parameter is total image size
+  #img = aruco.drawMarker(aruco_dict, 2, 700)
+  #cv2.imwrite("/home/tamas/Pictures/test_marker.jpg", img)
+  #cv2.imwrite("test_marker.jpg", img)
+
+  img = cv2.imread('/home/tamas/Pictures/marker_photo.jpg',0)
+  #cv2.imshow(img)
+  #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+  #aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+  parameters =  aruco.DetectorParameters_create()
+  print(parameters)
+  corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=parameters)
+  print(corners)
+
+
   ic = image_subscriber()
   rospy.init_node('image_subscriber', anonymous=True)
   try:
