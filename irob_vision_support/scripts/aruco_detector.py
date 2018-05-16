@@ -50,7 +50,8 @@ class aruco_detector:
       marker_msg.header = data.header
       marker_msg.markers = [];
       #print(corners)
-      for i in range(len(ids)):
+      if ids:
+        for i in range(len(ids)):
           marker_msg.markers.append(Marker())
           marker_msg.markers[i].id = int(ids[i])
           marker_msg.markers[i].corners = []
