@@ -44,7 +44,7 @@ class aruco_detector:
       corners, ids, rejectedImgPoints = aruco.detectMarkers(cv_image, self.aruco_dict, parameters=self.parameters)
       #print(corners)
 
-      img = aruco.drawDetectedMarkers(cv_image, corners)
+      #img = aruco.drawDetectedMarkers(cv_image, corners)
 
       marker_msg = MarkerArray();
       marker_msg.header = data.header
@@ -65,7 +65,7 @@ class aruco_detector:
     #cv2.waitKey(3)
 
     try:
-      self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+       #self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
       self.marker_pub.publish(marker_msg)
     except CvBridgeError as e:
       print(e)

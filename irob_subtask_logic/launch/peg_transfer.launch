@@ -5,7 +5,7 @@
 	
   	
 			<node name="peg_transfer" pkg="irob_subtask_logic" 
-			type="irob_subtask_logic" output="screen">
+            type="peg_transfer" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
 				<!-- [w, x, y, z] -->

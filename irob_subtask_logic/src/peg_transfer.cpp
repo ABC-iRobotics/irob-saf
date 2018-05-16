@@ -37,6 +37,37 @@ void PegTransfer::doPegTransfer()
   int tube_idx_to = 7;
   int increment = 1;
 
+ irob_msgs::Environment e;
+  ///////////////
+
+
+  // Read environment data
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  e = makeNaN<irob_msgs::Environment>();
+  while (e.valid != irob_msgs::Environment::VALID
+         && ros::ok())
+  {
+    e = vision.getResult();
+    ros::Duration(0.1).sleep();
+  }
+
+
+  // Grasp object
+  ROS_INFO_STREAM("Grasping object on rod " << tube_idx_on << "...");
+  Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, ori, 0.0);
+  Pose approach_pose_on(e.objects[tube_idx_on].approach_position, ori, 0.0);
+  double d = e.objects[tube_idx_on].grasp_diameter;
+  arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
+  while(!arms[0] -> isSurgemeDone() && ros::ok())
+  {
+    ros::Duration(0.1).sleep();
+  }
+
+
+
+  ////////////////////
+
+
   // Go to distant position
   ROS_INFO_STREAM("Go to distant position...");
   arms[0] -> nav_to_pos(dist_pose);
@@ -47,7 +78,7 @@ void PegTransfer::doPegTransfer()
 
   // Read environment data
   ROS_INFO_STREAM("Waiting for data from vision...");
-  irob_msgs::Environment e = makeNaN<irob_msgs::Environment>();
+  e = makeNaN<irob_msgs::Environment>();
   while (e.valid != irob_msgs::Environment::VALID
          && ros::ok())
   {

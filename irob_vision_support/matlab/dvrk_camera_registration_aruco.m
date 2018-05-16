@@ -3,15 +3,15 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
+cfgfilename = '../../irob_robot/config/registration_psm1.yaml';
 
-posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
+posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
 left_marker_sub = rossubscriber('/saf/vision/left/markers', 'irob_msgs/MarkerArray');
 right_marker_sub = rossubscriber('/saf/vision/right/markers', 'irob_msgs/MarkerArray');
 
-left_cam_info_sub = rossubscriber('/saf/stereo/preprocessed/left/camera_info', 'sensor_msgs/CameraInfo');
-right_cam_info_sub = rossubscriber('/saf/stereo/preprocessed/right/camera_info', 'sensor_msgs/CameraInfo');
+left_cam_info_sub = rossubscriber('/saf/stereo/left/camera_info', 'sensor_msgs/CameraInfo');
+right_cam_info_sub = rossubscriber('/saf/stereo/right/camera_info', 'sensor_msgs/CameraInfo');
 
 pause(2) % Wait to ensure publisher is registered
 
@@ -29,7 +29,7 @@ robot_3d = double(zeros(0,3));
 
 i = 1;
 n = 7;
-marker_id = 2;
+marker_id = 1;
 
 while i < (n+1)
     
