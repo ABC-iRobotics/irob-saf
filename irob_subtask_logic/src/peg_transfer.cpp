@@ -52,25 +52,25 @@ void PegTransfer::doPegTransfer()
   Eigen::Quaternion<double> grasp_ori(disp_ori);
 
   Pose grasp_translate_phantom(
-        Eigen::Vector3d(6.0, 0.0, 0.0), ori_phantom, 0.0);
+        Eigen::Vector3d(8.0, 0.0, 0.0), ori_phantom, 0.0);
 
   Eigen::Vector3d grasp_translate(
         grasp_translate_phantom.transform(e.tf_phantom).position
         - Pose().transform(e.tf_phantom).position);
           // Remove translation
 
-  double compress_rate = 0.4;
-  int tube_idx_on = 6;
-  int tube_idx_to = 7;
+  double compress_rate = 0.2;
+  int tube_idx_on = 0;
+  int tube_idx_to = 6;
   int increment = 1;
   double speed_cartesian = 30.0;
-  double speed_jaw = 1.0;
+  double speed_jaw = 30.0;
 
 
   while(ros::ok())
   {
 
-    // Go to distant position
+   /* // Go to distant position
     ROS_INFO_STREAM("Go to distant position...");
     arms[0] -> nav_to_pos(dist_pose, speed_cartesian);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
@@ -101,7 +101,7 @@ void PegTransfer::doPegTransfer()
           grasp_translate_phantom.transform(e.tf_phantom).position
           - Pose().transform(e.tf_phantom).position;
             // Remove translation
-
+    */
 
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << tube_idx_on << "...");
@@ -143,11 +143,14 @@ void PegTransfer::doPegTransfer()
     ROS_INFO_STREAM("Peg-transfer subtask done");
 
     // Set new traget
-    tube_idx_on = tube_idx_to;
+    tube_idx_on+=increment;
     tube_idx_to+=increment;
     if (tube_idx_to == 12) {
+      ROS_INFO_STREAM("All pegs transfered");
       tube_idx_on = 6;
-      tube_idx_to  = 7;
+      tube_idx_to = 0;
+
+      ros::Duration(1.0).sleep();
     }
 
   }

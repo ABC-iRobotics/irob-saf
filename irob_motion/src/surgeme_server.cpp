@@ -369,7 +369,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
         * (180.0 / M_PI);
 
     g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0)
-                                    * 2.5) / dist))
+                                    * 3.5) / dist))
         * (180.0 / M_PI);
 
     ROS_INFO_STREAM("g.t: " << g.t);
