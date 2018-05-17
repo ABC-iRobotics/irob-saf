@@ -37,7 +37,7 @@ P_r = reshape(right_cam_info.P, 4, 3)
 
 load('pnp_phantom_model.mat');
 
-offset = [0, 0, 0];
+offset = [0, 0, 0.0];
 marker_ids = [1, 2, 3, 4];
 
 while true
@@ -136,7 +136,7 @@ while true
             
             
             
-            if rmse < 2.5
+            if rmse < 4
                 valid = true;
                 % Transform environment
                 model_3d_targets_transformed = (R*model_3d_targets') + repmat(t, 1, size(model_3d_targets,1));
@@ -179,6 +179,18 @@ while true
                     tgt_msg.Objects(i).ApproachPosition.Z = model_3d_approaches_transformed(i,3) + offset_t(3);
                     
                     tgt_msg.Objects(i).GraspDiameter= target_d;
+                    
+                    tgt_msg.TfPhantom.Translation.X = t(1);
+                    tgt_msg.TfPhantom.Translation.Y = t(2);
+                    tgt_msg.TfPhantom.Translation.Z = t(3);
+                    
+                    R_quat = rotm2quat(R);
+                    
+                    tgt_msg.TfPhantom.Rotation.X = R_quat(2);
+                    tgt_msg.TfPhantom.Rotation.Y = R_quat(3);
+                    tgt_msg.TfPhantom.Rotation.Z = R_quat(4);
+                    tgt_msg.TfPhantom.Rotation.W = R_quat(1);
+                    
                     
                 end
                 send(target_pub,tgt_msg);

@@ -13,8 +13,8 @@ namespace saf {
 
 
 PegTransfer::PegTransfer(ros::NodeHandle nh,
-                         std::vector<std::string> arm_names, Eigen::Quaternion<double> ori, Eigen::Vector3d dp):
-  AutosurgAgent(nh, arm_names), vision(nh, "target"), ori(ori), dp(dp)
+                         std::vector<std::string> arm_names):
+  AutosurgAgent(nh, arm_names), vision(nh, "target")
 {
   //
 }
@@ -27,66 +27,42 @@ PegTransfer::~PegTransfer()
 
 void PegTransfer::doPegTransfer()
 {
+  irob_msgs::Environment e;
+  // Read environment data
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  e = makeNaN<irob_msgs::Environment>();
+  while (e.valid != irob_msgs::Environment::VALID
+         && ros::ok())
+  {
+    e = vision.getResult();
+    ros::Duration(0.1).sleep();
+  }
 
-  Pose dist_pose(dp, ori, 0.0);
-  double compress_rate = 0.705;
+  //Environment data received
 
-  ROS_INFO_STREAM("Starting Peg-transfer subtask...");
+  Eigen::Quaternion<double> ori_phantom =
+        BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+        DOWN_SIDEWAYS;
 
+  Pose dp_phantom(Eigen::Vector3d(90.0, 0.0, 70.0), ori_phantom, 0.0);
+
+  Pose dist_pose(dp_phantom.transform(e.tf_phantom));
+
+  Eigen::Quaternion<double> disp_ori(dist_pose.orientation);
+  Eigen::Quaternion<double> grasp_ori(disp_ori);
+
+  Pose grasp_translate_phantom(
+        Eigen::Vector3d(6.0, 0.0, 0.0), ori_phantom, 0.0);
+
+  Eigen::Vector3d grasp_translate(
+        grasp_translate_phantom.transform(e.tf_phantom).position
+        - Pose().transform(e.tf_phantom).position);
+          // Remove translation
+
+  double compress_rate = 0.7;
   int tube_idx_on = 6;
   int tube_idx_to = 7;
   int increment = 1;
-
- irob_msgs::Environment e;
-  ///////////////
-
-
-  // Read environment data
-  ROS_INFO_STREAM("Waiting for data from vision...");
-  e = makeNaN<irob_msgs::Environment>();
-  while (e.valid != irob_msgs::Environment::VALID
-         && ros::ok())
-  {
-    e = vision.getResult();
-    ros::Duration(0.1).sleep();
-  }
-
-
-  // Grasp object
-  ROS_INFO_STREAM("Grasping object on rod " << tube_idx_on << "...");
-  Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, ori, 0.0);
-  Pose approach_pose_on(e.objects[tube_idx_on].approach_position, ori, 0.0);
-  double d = e.objects[tube_idx_on].grasp_diameter;
-  arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
-  while(!arms[0] -> isSurgemeDone() && ros::ok())
-  {
-    ros::Duration(0.1).sleep();
-  }
-
-
-
-  ////////////////////
-
-
-  // Go to distant position
-  ROS_INFO_STREAM("Go to distant position...");
-  arms[0] -> nav_to_pos(dist_pose);
-  while(!arms[0] -> isSurgemeDone() && ros::ok())
-  {
-    ros::Duration(0.1).sleep();
-  }
-
-  // Read environment data
-  ROS_INFO_STREAM("Waiting for data from vision...");
-  e = makeNaN<irob_msgs::Environment>();
-  while (e.valid != irob_msgs::Environment::VALID
-         && ros::ok())
-  {
-    e = vision.getResult();
-    ros::Duration(0.1).sleep();
-  }
-
-
 
 
   while(ros::ok())
@@ -117,8 +93,10 @@ void PegTransfer::doPegTransfer()
 
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << tube_idx_on << "...");
-    Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, ori, 0.0);
-    Pose approach_pose_on(e.objects[tube_idx_on].approach_position, ori, 0.0);
+    Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, grasp_ori, 0.0);
+     grasp_pose_on += grasp_translate;
+    Pose approach_pose_on(e.objects[tube_idx_on].approach_position, grasp_ori, 0.0);
+    approach_pose_on += grasp_translate;
     double d = e.objects[tube_idx_on].grasp_diameter;
     arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
@@ -128,8 +106,10 @@ void PegTransfer::doPegTransfer()
 
     // Place to new rod
     ROS_INFO_STREAM("Placing object to rod " << tube_idx_to << "...");
-    Pose grasp_pose_to(e.objects[tube_idx_to].grasp_position, ori, 0.0);
-    Pose approach_pose_to(e.objects[tube_idx_to].approach_position, ori, 0.0);
+    Pose grasp_pose_to(e.objects[tube_idx_to].grasp_position, grasp_ori, 0.0);
+    grasp_pose_to += grasp_translate;
+    Pose approach_pose_to(e.objects[tube_idx_to].approach_position, grasp_ori, 0.0);
+    approach_pose_to += grasp_translate;
     std::vector<Pose> waypoints;
     waypoints.push_back(approach_pose_on);
     //waypoints.push_back(dist_pose);
@@ -179,19 +159,10 @@ int main(int argc, char **argv)
   std::vector<std::string> arm_names;
   priv_nh.getParam("arm_names", arm_names);
 
-  std::vector<double> ori;
-  priv_nh.getParam("ori", ori);
-
-  Eigen::Quaternion<double> quat_ori(ori[0], ori[1], ori[2], ori[3]);
-
-  std::vector<double> dp;
-  priv_nh.getParam("dp", dp);
-
-  Eigen::Vector3d vec_dp(dp[0], dp[1], dp[2]);
 
   // Start autonomous agent
   try {
-    PegTransfer pnp(nh, arm_names, quat_ori, vec_dp);
+    PegTransfer pnp(nh, arm_names);
 
     pnp.doPegTransfer();
 

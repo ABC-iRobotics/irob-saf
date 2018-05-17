@@ -42,15 +42,15 @@ model_3d_targets = [18.7, 17.3, 0; ...    %
                     68.7, 57.2, 0; ...  %
                     ];
                 
-target_h = 19.4;
+target_h = 60.0;
 
-grasp_h = 9.0;
+grasp_h = 20.0;
 
 model_3d_approaches = model_3d_targets + repmat([0, 0, target_h], size(model_3d_targets, 1), 1);
 
 model_3d_grasps = model_3d_targets + repmat([0, 0, grasp_h], size(model_3d_targets, 1), 1);
 
-target_d = 8.0;
+target_d = 2.0;
 
 
 save pnp_phantom_model.mat model_3d_corners model_3d_targets model_3d_approaches model_3d_grasps target_h grasp_h target_d

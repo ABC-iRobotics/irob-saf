@@ -12,7 +12,7 @@ classdef Environment < robotics.ros.Message
     end
     
     properties (Constant, Hidden)
-        MD5Checksum = 'f3cb574a94d9cc7b4f88c568a55da439' % The MD5 Checksum of the message definition
+        MD5Checksum = '0d4d36bba3c5e21fb3144f87836deecd' % The MD5 Checksum of the message definition
     end
     
     properties (Access = protected)
@@ -25,6 +25,7 @@ classdef Environment < robotics.ros.Message
     end
     
     properties (Constant, Access = protected)
+        GeometryMsgsTransformClass = robotics.ros.msg.internal.MessageFactory.getClassForType('geometry_msgs/Transform') % Dispatch to MATLAB class for message type geometry_msgs/Transform
         IrobMsgsGraspObjectClass = robotics.ros.msg.internal.MessageFactory.getClassForType('irob_msgs/GraspObject') % Dispatch to MATLAB class for message type irob_msgs/GraspObject
         StdMsgsHeaderClass = robotics.ros.msg.internal.MessageFactory.getClassForType('std_msgs/Header') % Dispatch to MATLAB class for message type std_msgs/Header
     end
@@ -32,16 +33,17 @@ classdef Environment < robotics.ros.Message
     properties (Dependent)
         Header
         Valid
+        TfPhantom
         Objects
     end
     
     properties (Access = protected)
-        Cache = struct('Header', [], 'Objects', []) % The cache for fast data access
+        Cache = struct('Header', [], 'TfPhantom', [], 'Objects', []) % The cache for fast data access
     end
     
     properties (Constant, Hidden)
-        PropertyList = {'Header', 'Objects', 'Valid'} % List of non-constant message properties
-        ROSPropertyList = {'header', 'objects', 'valid'} % List of non-constant ROS message properties
+        PropertyList = {'Header', 'Objects', 'TfPhantom', 'Valid'} % List of non-constant message properties
+        ROSPropertyList = {'header', 'objects', 'tf_phantom', 'valid'} % List of non-constant ROS message properties
     end
     
     methods
@@ -122,6 +124,26 @@ classdef Environment < robotics.ros.Message
             obj.JavaMessage.setValid(valid);
         end
         
+        function tfphantom = get.TfPhantom(obj)
+            %get.TfPhantom Get the value for property TfPhantom
+            if isempty(obj.Cache.TfPhantom)
+                obj.Cache.TfPhantom = feval(obj.GeometryMsgsTransformClass, obj.JavaMessage.getTfPhantom);
+            end
+            tfphantom = obj.Cache.TfPhantom;
+        end
+        
+        function set.TfPhantom(obj, tfphantom)
+            %set.TfPhantom Set the value for property TfPhantom
+            validateattributes(tfphantom, {obj.GeometryMsgsTransformClass}, {'nonempty', 'scalar'}, 'Environment', 'TfPhantom');
+            
+            obj.JavaMessage.setTfPhantom(tfphantom.getJavaObject);
+            
+            % Update cache if necessary
+            if ~isempty(obj.Cache.TfPhantom)
+                obj.Cache.TfPhantom.setJavaObject(tfphantom.getJavaObject);
+            end
+        end
+        
         function objects = get.Objects(obj)
             %get.Objects Get the value for property Objects
             if isempty(obj.Cache.Objects)
@@ -157,6 +179,7 @@ classdef Environment < robotics.ros.Message
         function resetCache(obj)
             %resetCache Resets any cached properties
             obj.Cache.Header = [];
+            obj.Cache.TfPhantom = [];
             obj.Cache.Objects = [];
         end
         
@@ -177,6 +200,7 @@ classdef Environment < robotics.ros.Message
             
             % Recursively copy compound properties
             cpObj.Header = copy(obj.Header);
+            cpObj.TfPhantom = copy(obj.TfPhantom);
             cpObj.Objects = copy(obj.Objects);
         end
         
@@ -184,6 +208,7 @@ classdef Environment < robotics.ros.Message
             %reload Called by loadobj to assign properties
             obj.Valid = strObj.Valid;
             obj.Header = feval([obj.StdMsgsHeaderClass '.loadobj'], strObj.Header);
+            obj.TfPhantom = feval([obj.GeometryMsgsTransformClass '.loadobj'], strObj.TfPhantom);
             ObjectsCell = arrayfun(@(x) feval([obj.IrobMsgsGraspObjectClass '.loadobj'], x), strObj.Objects, 'UniformOutput', false);
             obj.Objects = vertcat(ObjectsCell{:});
         end
@@ -201,6 +226,7 @@ classdef Environment < robotics.ros.Message
             
             strObj.Valid = obj.Valid;
             strObj.Header = saveobj(obj.Header);
+            strObj.TfPhantom = saveobj(obj.TfPhantom);
             strObj.Objects = arrayfun(@(x) saveobj(x), obj.Objects);
         end
     end
