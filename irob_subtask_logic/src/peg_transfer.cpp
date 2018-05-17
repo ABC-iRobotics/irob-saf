@@ -59,10 +59,12 @@ void PegTransfer::doPegTransfer()
         - Pose().transform(e.tf_phantom).position);
           // Remove translation
 
-  double compress_rate = 0.7;
+  double compress_rate = 0.4;
   int tube_idx_on = 6;
   int tube_idx_to = 7;
   int increment = 1;
+  double speed_cartesian = 30.0;
+  double speed_jaw = 1.0;
 
 
   while(ros::ok())
@@ -70,7 +72,7 @@ void PegTransfer::doPegTransfer()
 
     // Go to distant position
     ROS_INFO_STREAM("Go to distant position...");
-    arms[0] -> nav_to_pos(dist_pose);
+    arms[0] -> nav_to_pos(dist_pose, speed_cartesian);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -89,6 +91,16 @@ void PegTransfer::doPegTransfer()
       e = vision.getResult();
       ros::Duration(0.1).sleep();
     }
+    dist_pose = dp_phantom.transform(e.tf_phantom);
+
+    disp_ori = dist_pose.orientation;
+    grasp_ori = disp_ori;
+
+
+    grasp_translate =
+          grasp_translate_phantom.transform(e.tf_phantom).position
+          - Pose().transform(e.tf_phantom).position;
+            // Remove translation
 
 
     // Grasp object
@@ -98,7 +110,7 @@ void PegTransfer::doPegTransfer()
     Pose approach_pose_on(e.objects[tube_idx_on].approach_position, grasp_ori, 0.0);
     approach_pose_on += grasp_translate;
     double d = e.objects[tube_idx_on].grasp_diameter;
-    arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate);
+    arms[0]->grasp(grasp_pose_on, approach_pose_on, d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -113,7 +125,7 @@ void PegTransfer::doPegTransfer()
     std::vector<Pose> waypoints;
     waypoints.push_back(approach_pose_on);
     //waypoints.push_back(dist_pose);
-    arms[0] -> place(grasp_pose_to, approach_pose_to, d, waypoints);
+    arms[0] -> place(grasp_pose_to, approach_pose_to, speed_cartesian, waypoints);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -121,7 +133,7 @@ void PegTransfer::doPegTransfer()
 
 
     // Release
-    arms[0] -> release(approach_pose_to, d);
+    arms[0] -> release(approach_pose_to, d, speed_cartesian, speed_jaw);
     ROS_INFO_STREAM("Release object...");
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {

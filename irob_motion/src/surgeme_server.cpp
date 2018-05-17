@@ -12,8 +12,6 @@ namespace saf {
 
 
 const double SurgemeServer::DEFAULT_LOOP_RATE = 10.0;				// Hz
-const double  SurgemeServer::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
-const double SurgemeServer::DEFAULT_SPEED_JAW = 1.0;			// deg/s
 
 
 SurgemeServer::SurgemeServer(ros::NodeHandle nh, std::string arm_name, 
@@ -371,7 +369,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
         * (180.0 / M_PI);
 
     g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0)
-                                    * 1.5) / dist))
+                                    * 2.5) / dist))
         * (180.0 / M_PI);
 
     ROS_INFO_STREAM("g.t: " << g.t);

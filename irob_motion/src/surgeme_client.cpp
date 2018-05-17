@@ -10,9 +10,6 @@
 
 namespace saf {
 
-const double SurgemeClient::DEFAULT_SPEED_CARTESIAN = 30.0;	// mm/s
-const double SurgemeClient::DEFAULT_SPEED_JAW = 10.0;		// deg/s
-
 
 SurgemeClient::SurgemeClient(ros::NodeHandle nh, std::string arm_name):
   nh(nh), arm_name(arm_name),
@@ -135,7 +132,7 @@ void SurgemeClient::stop()
 }
 
 void SurgemeClient::nav_to_pos(Pose target,
-                               double speed_cartesian/* = DEFAULT_SPEED_CARTESIAN */,
+                               double speed_cartesian,
                                std::vector<Pose> waypoints /* = empty */,
                                InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -165,8 +162,8 @@ void SurgemeClient::nav_to_pos(Pose target,
 void SurgemeClient::grasp(Pose target, Pose approach_pose,
                           double target_diameter,
                           double compression_rate,
-                          double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-                          double speed_jaw /* = DEFAULT_SPEED_JAW */,
+                          double speed_cartesian,
+                          double speed_jaw,
                           std::vector<Pose> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -201,8 +198,8 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
 
 void SurgemeClient::cut(Pose target, Pose approach_pose,
                         double target_diameter,
-                        double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-                        double speed_jaw /* = DEFAULT_SPEED_JAW */,
+                        double speed_cartesian,
+                        double speed_jaw,
                         std::vector<Pose> waypoints /* = empty */,
                         InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -234,8 +231,8 @@ void SurgemeClient::cut(Pose target, Pose approach_pose,
 
 
 void SurgemeClient::release(Pose approach_pose,	double target_diameter,
-                            double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-                            double speed_jaw /* = DEFAULT_SPEED_JAW */)
+                            double speed_cartesian,
+                            double speed_jaw)
 {
   // Send a goal to the action
   irob_msgs::SurgemeGoal goal;
@@ -257,7 +254,7 @@ void SurgemeClient::release(Pose approach_pose,	double target_diameter,
 
 
 void SurgemeClient::place(Pose target, Pose approach_pose,
-                          double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
+                          double speed_cartesian,
                           std::vector<Pose> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -288,8 +285,8 @@ void SurgemeClient::place(Pose target, Pose approach_pose,
 
 void SurgemeClient::push(Pose target, Pose approach_pose,
                          Eigen::Vector3d displacement,
-                         double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-                         double speed_jaw /* = DEFAULT_SPEED_JAW */,
+                         double speed_cartesian,
+                         double speed_jaw,
                          std::vector<Pose> waypoints /* = empty */,
                          InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -328,8 +325,8 @@ void SurgemeClient::push(Pose target, Pose approach_pose,
 void SurgemeClient::dissect(Pose target, Pose approach_pose,
                             Eigen::Vector3d displacement,
                             double target_diameter,
-                            double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */,
-                            double speed_jaw /* = DEFAULT_SPEED_JAW */,
+                            double speed_cartesian,
+                            double speed_jaw,
                             std::vector<Pose> waypoints /* = empty */,
                             InterpolationMethod interp_method /* = LINEAR */)
 {
@@ -367,7 +364,7 @@ void SurgemeClient::dissect(Pose target, Pose approach_pose,
 
 
 void SurgemeClient::manipulate(Eigen::Vector3d displacement,
-                               double speed_cartesian /* = DEFAULT_SPEED_CARTESIAN */)
+                               double speed_cartesian)
 {
   // Send a goal to the action
   irob_msgs::SurgemeGoal goal;
