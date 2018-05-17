@@ -15,6 +15,7 @@
 #include <iostream>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Transform.h>
 #include <std_msgs/Float32.h>
 #include <sensor_msgs/JointState.h>
 #include <Eigen/Dense>
@@ -73,6 +74,9 @@ class Pose {
    	Pose transform(const Eigen::Matrix3d&, const Eigen::Vector3d&, double = 1.0);
    	Pose invTransform(const Eigen::Matrix3d&, const Eigen::Vector3d&, double = 1.0);
    	
+    Pose transform(const geometry_msgs::Transform&, double = 1.0);
+    Pose invTransform(const geometry_msgs::Transform&, double = 1.0);
+
    	bool isNaN() const;
    	
    	Distance dist(const Pose&) const;

@@ -7,4 +7,6 @@ int8 INVALID = 2
 Header header
 int8 valid
 
+geometry_msgs/Transform tf_phantom
+
 GraspObject[] objects
