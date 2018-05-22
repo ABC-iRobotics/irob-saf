@@ -136,7 +136,6 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(peg_transfer src/peg_transfer.cpp)
-add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 add_executable(grasp src/grasp.cpp)
 
 
@@ -162,10 +161,6 @@ target_link_libraries(peg_transfer
 	irob_subtask_logic_lib
 	)
 
-target_link_libraries(peg_transfer_dual
-  ${catkin_LIBRARIES}
-  irob_subtask_logic_lib
-  )
 
 target_link_libraries(grasp
 	${catkin_LIBRARIES}
