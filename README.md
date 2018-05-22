@@ -81,6 +81,16 @@ The library can be used stand-alone, but it was developed to use with the [da Vi
 * install `cisst-saw` by folloing this [guide](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros)
 * install `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
 
+### Install the fiducials library
+
+The [fiducials library](https://github.com/UbiquityRobotics/fiducials) is a very useful tool for aruco marker detection. Install
+Clone and build the source from the GitHub repository:
+
+    cd ~/catkin_ws/src
+    git clone https://github.com/UbiquityRobotics/fiducials.git
+    cd ~/catkin_ws
+    catkin build
+
 ### Build irob-saf
 
 In your have installed dVRK, you should already have a catkin_ws directory set-up properly. Elsehow, do the following:
