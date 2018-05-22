@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>irob_vision_support</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>iRob Surgical Automation Framework---Computer vision</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
