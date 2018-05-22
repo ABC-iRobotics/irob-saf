@@ -70,39 +70,6 @@ void PegTransfer::doPegTransfer()
   while(ros::ok())
   {
 
-   /* // Go to distant position
-    ROS_INFO_STREAM("Go to distant position...");
-    arms[0] -> nav_to_pos(dist_pose, speed_cartesian);
-    while(!arms[0] -> isSurgemeDone() && ros::ok())
-    {
-      ros::Duration(0.1).sleep();
-    }
-
-    // Wait to let the phantom be rearranged
-    ros::Duration(1.0).sleep();
-
-
-    // Read environment data
-    ROS_INFO_STREAM("Waiting for data from vision...");
-    irob_msgs::Environment e = makeNaN<irob_msgs::Environment>();
-    while (e.valid != irob_msgs::Environment::VALID
-           && ros::ok())
-    {
-      e = vision.getResult();
-      ros::Duration(0.1).sleep();
-    }
-    dist_pose = dp_phantom.transform(e.tf_phantom);
-
-    disp_ori = dist_pose.orientation;
-    grasp_ori = disp_ori;
-
-
-    grasp_translate =
-          grasp_translate_phantom.transform(e.tf_phantom).position
-          - Pose().transform(e.tf_phantom).position;
-            // Remove translation
-    */
-
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << tube_idx_on << "...");
     Pose grasp_pose_on(e.objects[tube_idx_on].grasp_position, grasp_ori, 0.0);
