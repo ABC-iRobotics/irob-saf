@@ -11,6 +11,7 @@
 #include <ros/ros.h>
 #include <irob_utils/pose.hpp>
 
+
 namespace saf {
 
 /*
@@ -319,6 +320,34 @@ Pose Pose::invTransform(const Eigen::Matrix3d& R,
   ret.position *= (1.0 / scale);
   return ret;
 }
+
+
+/**
+ * Transform Pose; first scales the position, then does the rotation and
+ * finally the translation
+ */
+Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
+{
+  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
+                              T.rotation.y,T.rotation.z);
+  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
+  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
+  return transform(R, t, scale);
+}
+
+/**
+ * Transform Pose; first un-translates the position, then does the inverse
+ * rotation and finally the inverse scaling
+ */
+Pose Pose::invTransform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
+{
+  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
+                              T.rotation.y,T.rotation.z);
+  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
+  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
+  return invTransform(R, t, scale);
+}
+
 
 /**
  *  Implementation of << operator

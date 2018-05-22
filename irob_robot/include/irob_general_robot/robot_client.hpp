@@ -95,8 +95,8 @@ public:
   // Robot motions
   void initArm(bool);
   void resetPose(bool);
-  void moveJaws(double, double = 10.0);
-  void moveTool(Pose, double = 10.0, std::vector<Pose> = std::vector<Pose>(),
+  void moveJaws(double, double);
+  void moveTool(Pose, double, std::vector<Pose> = std::vector<Pose>(),
                 InterpolationMethod = LINEAR);
 
   void stop();

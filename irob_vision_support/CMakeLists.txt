@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(irob_vision_support)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -22,10 +23,6 @@ find_package(catkin REQUIRED
 	irob_utils
 	)
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -109,6 +106,8 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 	include
 	)
 
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 ## Declare a C++ library
 
 file(GLOB irob_vision_support_lib_src
@@ -146,11 +145,6 @@ add_executable(dummy_target_publisher
 add_executable(camera_preprocessor
 	src/camera_preprocessor.cpp)
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -183,12 +177,6 @@ target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
 	irob_vision_support_lib
 	)
-
-<<<<<<< Updated upstream
-
-
-=======
->>>>>>> Stashed changes
 
 #############
 ## Install ##

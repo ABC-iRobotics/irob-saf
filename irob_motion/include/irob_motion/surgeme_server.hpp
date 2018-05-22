@@ -60,8 +60,6 @@ protected:
   // Action servers
   actionlib::SimpleActionServer<irob_msgs::SurgemeAction> as;
 
-  static const double DEFAULT_SPEED_CARTESIAN;	// mm/s
-  static const double DEFAULT_SPEED_JAW;			// deg/s
   static const double DEFAULT_LOOP_RATE;					// Hz
 
 

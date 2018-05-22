@@ -1,4 +1,4 @@
-<!-- Launch file to move on a preprogrammed trajectory -->
+<!-- Launch file to start a dummy vision node -->
 
 <launch>
 	<group ns="saf">

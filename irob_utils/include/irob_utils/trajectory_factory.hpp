@@ -277,7 +277,7 @@ public:
 
 
   /**
-   * Vertical circular trajectory around center.
+   * Vertical circular trajectory around center in Y plane.
    */
   static Trajectory<Eigen::Vector3d> circleTrajectoryVerticalY(
       Eigen::Vector3d start,
@@ -300,7 +300,7 @@ public:
 
 
   /**
-   * Vertical circular trajectory around center.
+   * Vertical circular trajectory around center in X plane.
    */
   static Trajectory<Eigen::Vector3d> circleTrajectoryVerticalX(
       Eigen::Vector3d start,

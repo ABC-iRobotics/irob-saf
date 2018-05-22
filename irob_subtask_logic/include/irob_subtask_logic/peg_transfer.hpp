@@ -48,12 +48,10 @@ protected:
 
   VisionClient<irob_msgs::Environment, irob_msgs::Environment> vision;
 
-  Eigen::Quaternion<double> ori;
-  Eigen::Vector3d dp;
 
 
 public:
-  PegTransfer(ros::NodeHandle, std::vector<std::string>, Eigen::Quaternion<double>, Eigen::Vector3d);
+  PegTransfer(ros::NodeHandle, std::vector<std::string>);
   ~PegTransfer();
   void doPegTransfer();
 

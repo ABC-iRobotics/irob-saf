@@ -160,7 +160,7 @@ void RobotClient::stop()
  * @param angle angle of jaws in deg
  * @param speed opening speed in deg/s
  */
-void RobotClient::moveJaws(double angle, double speed /*=10.0*/)
+void RobotClient::moveJaws(double angle, double speed)
 {
   Pose p1 = getPoseCurrent();
 
@@ -196,7 +196,7 @@ void RobotClient::moveJaws(double angle, double speed /*=10.0*/)
  * @param waypoints move through a vector of waypoints
  * @param interp_method method used to interpolate between positions
  */
-void RobotClient::moveTool(Pose target, double speed /* = 10.0 */,
+void RobotClient::moveTool(Pose target, double speed,
                            std::vector<Pose> waypoints /* = empty vector */,
                            InterpolationMethod interp_method /* = LINEAR */)
 {
