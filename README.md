@@ -175,7 +175,7 @@ After the last node was launched, you should see how the instrument grasps the g
 
 The `irob-saf` package is built and maintained in the Antal Bejczy Center for Intelligent Robotics, see our [homepage](http://irob.uni-obuda.hu/?q=en). 
 
-If you have any questions or comments, feel free to contact us at [saf@irob.uni-obuda.hu].
+If you have any questions or comments, feel free to contact us at saf@irob.uni-obuda.hu.
 
 
 ## Acknowledgement
