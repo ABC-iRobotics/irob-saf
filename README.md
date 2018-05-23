@@ -1,7 +1,14 @@
 # irob-saf
 
 ## About
+
 The *iRob Surgical Automation Framework*---`irob-saf`--- is an open-source ROS-based metapackage, built by the Antal Bejczy Center for Intelligent Robotics (iRob), for the aim to support the research of partial automation in robot-assisted surgery.  The packages of the framework implements basic functionalities, usable as universal building blocks in surgical automation, such as infrastructure to implement subtask-level logic, interfacing of stereo cameras, a hierarchic motion library with parameterizable surgemes, and high-level robot control. The framework were built and tested alongside the da Vinci Resarch Kit (dVRK), however it is easily portable to other platforms as well.
+
+## Citation
+
+If you use this framework in your reserach, please cite the following article:
+
+Nagy, Tamás D., and Tamás Haidegger. “An Open-Source Framework for Surgical Subtask Automation.” In Proc. of the 2018 IEEE Intl. Conf. on Robotics and Automation (ICRA), Workshop on Supervised Autonomy in Surgical Robotics. Brisbane, Australia, 2018.
 
 ## List of Packages
 * [irob_msgs](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_msgs)
@@ -160,11 +167,15 @@ And finally, start the subtask-level logic node:
     
 After the last node was launched, you should see how the instrument grasps the green sphere.  
   
-  
-
     
 
 ![alt tag](docs/irob-autosurg-blockdiagram.png)
+
+## Contact
+
+The `irob-saf` package is built and maintained in the Antal Bejczy Center for Intelligent Robotics, see our [homepage](http://irob.uni-obuda.hu/?q=en). 
+
+If you have any questions or comments, feel free to contact us at [saf@irob.uni-obuda.hu].
 
 
 ## Acknowledgement
