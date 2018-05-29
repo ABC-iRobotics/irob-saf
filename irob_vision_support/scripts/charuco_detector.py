@@ -12,6 +12,7 @@ import cv2
 import cv2.aruco as aruco
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
 from irob_msgs.msg import Point2D
 from irob_msgs.msg import Marker
 from irob_msgs.msg import MarkerArray
@@ -23,12 +24,17 @@ class aruco_detector:
   def __init__(self):
     # Declare aruco stuff
     self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+
+    self.board = aruco.CharucoBoard_create(3,3,.025,.0125,self.aruco_dict)
+
     self.parameters =  aruco.DetectorParameters_create()
 
     self.image_pub = rospy.Publisher("image_markers",Image, queue_size=10)
     self.marker_pub = rospy.Publisher("markers",MarkerArray, queue_size=10)
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("image_input",Image,self.callback)
+    self.camera_info_read = False
+    self.camera_info_sub = rospy.Subscriber("camera_info",CameraInfo,self.camera_info_callback)
 
 
 
@@ -42,9 +48,18 @@ class aruco_detector:
     (rows,cols,channels) = cv_image.shape
     if cols > 60 and rows > 60 :
       corners, ids, rejectedImgPoints = aruco.detectMarkers(cv_image, self.aruco_dict, parameters=self.parameters)
+      #print("aruco")
       #print(corners)
 
-      img = aruco.drawDetectedMarkers(cv_image, corners)
+      if len(corners)>0:
+        retval, charucoCorners, charucoIds = aruco.interpolateCornersCharuco(corners, ids, cv_image, self.board)
+        #print(diamondCorners)
+        img = aruco.drawDetectedCornersCharuco(cv_image, charucoCorners)
+        if self.camera_info_read and (not charucoCorners is None):
+          retval, rvec, tvec=aruco.estimatePoseCharucoBoard(charucoCorners, charucoIds, self.board, self.camera_matrix, self.dist_coeffs	)
+          #print(retval)
+          if  not rvec is None:
+            img = aruco.drawAxis( img, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1	)
 
       marker_msg = MarkerArray()
       marker_msg.header = data.header
@@ -71,7 +86,14 @@ class aruco_detector:
       print(e)
 
 
-
+  # Callback for image topic
+  def camera_info_callback(self,data):
+    if not self.camera_info_read:
+      K = np.asarray(data.K)
+      self.camera_matrix = K.reshape(3,3)
+      self.dist_coeffs = K = np.asarray(data.D)
+      self.camera_info_read = True
+      print("Camera info read.")
 
 
 

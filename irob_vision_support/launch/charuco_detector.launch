@@ -1,0 +1,16 @@
+<!-- Launch file to detect charuco markers -->
+
+<launch>
+    <group ns="saf">
+
+    <node name="charuco_detector" pkg="irob_vision_support"
+            type="charuco_detector.py" output="screen" >
+
+                <remap from="image_input" to="stereo/left/image_color" />
+                <remap from="image_markers" to="vision/left/image_markers" />
+                <remap from="markers" to="vision/left/markers" />
+                <remap from="camera_info" to="stereo/right/camera_info" />
+    </node>
+    </group>
+</launch>
+
