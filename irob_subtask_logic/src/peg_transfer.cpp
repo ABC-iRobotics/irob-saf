@@ -121,9 +121,10 @@ void PegTransfer::doPegTransfer()
 
     Pose start_pose(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     start_pose = poseToCameraFrame(start_pose, e);
+    // The issue is at the get pose, it won't return
     start_pose.position = arms[0] -> getPoseCurrent().position;
     start_pose += Eigen::Vector3d(10.0, 10.0, 10.0);
-
+      ROS_INFO_STREAM("starting nav");
     arms[0]->nav_to_pos(start_pose,  speed_cartesian);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
