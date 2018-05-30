@@ -2,12 +2,16 @@
 
 <launch>
 	<group ns="saf">
-	
-  	
-			<node name="peg_transfer" pkg="irob_subtask_logic" 
+
+        <arg name="board_descriptor"
+        default="peg_transfer_board.yaml"/>
+
+        <node name="peg_transfer" pkg="irob_subtask_logic"
             type="peg_transfer" output="screen">
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
+                <rosparam command="load"
+                file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
 
 				<remap from="target" to="vision/target" />
 	</node>

@@ -28,6 +28,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Transform.h>
 #include <irob_msgs/ToolPose.h>
 #include <irob_msgs/ToolPoseStamped.h>
 #include <irob_msgs/Environment.h>
@@ -114,6 +115,11 @@ inline irob_msgs::Environment unwrapMsg(const irob_msgs::Environment& msg){
 }
 
 template <>
+inline geometry_msgs::Transform unwrapMsg(const geometry_msgs::Transform& msg){
+  return msg;
+}
+
+template <>
 inline double unwrapMsg(const std_msgs::Float32& msg){
   return msg.data;
 }
@@ -195,6 +201,7 @@ inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
   msg.z = data.z();
   return msg;
 }
+
 
 template <>
 inline geometry_msgs::PointStamped wrapToMsg(const Eigen::Vector3d& data){
@@ -301,6 +308,21 @@ inline geometry_msgs::Point makeNaN(){
 }
 
 template <>
+inline geometry_msgs::Transform makeNaN(){
+  geometry_msgs::Transform msg;
+  msg.translation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.translation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.translation.z = std::numeric_limits<double>::quiet_NaN();
+
+  msg.rotation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.z = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.w = std::numeric_limits<double>::quiet_NaN();
+  return msg;
+}
+
+
+template <>
 inline geometry_msgs::PointStamped makeNaN(){
   geometry_msgs::PointStamped msg;
   msg.point.x = std::numeric_limits<double>::quiet_NaN();
@@ -401,6 +423,18 @@ inline bool isnan(const geometry_msgs::Point& d)
   return (std::isnan(d.x)
           || std::isnan(d.y)
           || std::isnan(d.z) );
+}
+
+template <>
+inline bool isnan(const geometry_msgs::Transform& d)
+{
+  return (std::isnan(d.translation.x)
+          || std::isnan(d.translation.y)
+          || std::isnan(d.translation.z)
+          || std::isnan(d.rotation.x)
+          || std::isnan(d.rotation.y)
+          || std::isnan(d.rotation.z)
+          || std::isnan(d.rotation.w));
 }
 
 template <>

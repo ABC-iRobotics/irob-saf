@@ -27,10 +27,10 @@
 #include <Eigen/Geometry>
 
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Transform.h>
 
 #include <irob_utils/pose.hpp>
 #include <irob_utils/utils.hpp>
-#include <irob_msgs/Environment.h>
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
@@ -46,12 +46,23 @@ class PegTransfer : public AutosurgAgent {
 
 protected:
 
-  VisionClient<irob_msgs::Environment, irob_msgs::Environment> vision;
+  VisionClient<geometry_msgs::Transform, geometry_msgs::Transform> vision;
 
+  Eigen::Vector3d board_t;
+  std::vector<Eigen::Vector3d> peg_positions;
+  double peg_h;
+  double object_h;
+  double object_d;
+  double object_wall_d;
+
+
+  void loadBoardDescriptor(ros::NodeHandle);
+  Pose poseToCameraFrame(const Pose&, const geometry_msgs::Transform&);
+  Pose poseToWorldFrame(const Pose&, const geometry_msgs::Transform&);
 
 
 public:
-  PegTransfer(ros::NodeHandle, std::vector<std::string>);
+  PegTransfer(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
   ~PegTransfer();
   void doPegTransfer();
 
