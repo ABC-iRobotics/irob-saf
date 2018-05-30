@@ -59,7 +59,7 @@ Pose PegTransfer::poseToCameraFrame(const Pose& pose,
 {
   Pose ret(pose);
   ret -= board_t;
-  ret = ret.transform(tr);
+  ret = ret.invTransform(tr);
   return ret;
 }
 
@@ -67,7 +67,7 @@ Pose PegTransfer::poseToWorldFrame(const Pose& pose,
                                    const geometry_msgs::Transform& tr)
 {
   Pose ret(pose);
-  ret = ret.invTransform(tr);
+  ret = ret.transform(tr);
   ret += board_t;
   return ret;
 
@@ -117,6 +117,21 @@ void PegTransfer::doPegTransfer()
 
   while(ros::ok())
   {
+    ROS_INFO_STREAM("Set orientation");
+
+    Pose start_pose(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    start_pose = poseToCameraFrame(start_pose, e);
+    start_pose.position = arms[0] -> getPoseCurrent().position;
+    start_pose += Eigen::Vector3d(10.0, 10.0, 10.0);
+
+    arms[0]->nav_to_pos(start_pose,  speed_cartesian);
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
+    {
+      ros::Duration(0.1).sleep();
+    }
+    ROS_INFO_STREAM("Ori set done.");
+    ros::Duration(100.0).sleep();
+
 
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");

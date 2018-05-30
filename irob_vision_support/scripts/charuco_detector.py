@@ -74,6 +74,8 @@ class aruco_detector:
 
             rquat = tf.transformations.quaternion_from_matrix(rmat)
 
+            tvec = tvec * 1000.0
+
             tr_msg = Transform(Vector3(*tvec), Quaternion(*rquat))
 
       marker_msg = MarkerArray()

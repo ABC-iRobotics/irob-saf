@@ -13,7 +13,7 @@
                 <rosparam command="load"
                 file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
 
-				<remap from="target" to="vision/target" />
+        <remap from="target" to="vision/left/transform" />
 	</node>
   	</group>
 </launch>
