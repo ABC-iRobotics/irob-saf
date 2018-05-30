@@ -3,9 +3,9 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
+cfgfilename = '../../irob_robot/config/registration_psm1.yaml';
 
-posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
+posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
 left_marker_sub = rossubscriber('/saf/vision/left/markers', 'irob_msgs/MarkerArray');
 right_marker_sub = rossubscriber('/saf/vision/right/markers', 'irob_msgs/MarkerArray');
