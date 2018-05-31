@@ -58,8 +58,8 @@ Pose PegTransfer::poseToCameraFrame(const Pose& pose,
                                       const geometry_msgs::Transform& tr)
 {
   Pose ret(pose);
-  ret -= board_t;
-  ret = ret.invTransform(tr);
+  ret += board_t;
+  ret = ret.transform(tr);  // Ori OK
   return ret;
 }
 
@@ -67,8 +67,8 @@ Pose PegTransfer::poseToWorldFrame(const Pose& pose,
                                    const geometry_msgs::Transform& tr)
 {
   Pose ret(pose);
-  ret = ret.transform(tr);
-  ret += board_t;
+  ret = ret.invTransform(tr);
+  ret -= board_t;
   return ret;
 
 }
@@ -91,10 +91,8 @@ void PegTransfer::doPegTransfer()
         BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
         DOWN_SIDEWAYS;
 
-  Eigen::Quaternion<double> dist_ori_world(ori_world);
   Eigen::Quaternion<double> grasp_ori_world(ori_world);
 
-  Pose dp_world(Eigen::Vector3d(90.0, 0.0, 70.0), ori_world, 0.0);
 
   double grasp_translate_x = (object_d / 2.0) - (object_wall_d / 2.0);
 
@@ -117,22 +115,25 @@ void PegTransfer::doPegTransfer()
 
   while(ros::ok())
   {
-    ROS_INFO_STREAM("Set orientation");
+    /////////////////////////////////////////////////////////////////////// FOR DEBUG
 
-    Pose start_pose(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+   /* ROS_INFO_STREAM("Set orientation");
+
+    Pose start_pose(peg_positions[0], grasp_ori_world, 0.0);
+    start_pose += Eigen::Vector3d(0.0, 0.0, 11.0);
     start_pose = poseToCameraFrame(start_pose, e);
-    // The issue is at the get pose, it won't return
-    start_pose.position = arms[0] -> getPoseCurrent().position;
-    start_pose += Eigen::Vector3d(10.0, 10.0, 10.0);
-      ROS_INFO_STREAM("starting nav");
+    //start_pose.position = arms[0] -> getPoseCurrent().position;
+    //start_pose += Eigen::Vector3d(10.0, 10.0, 10.0);
+    ROS_INFO_STREAM("starting nav");
     arms[0]->nav_to_pos(start_pose,  speed_cartesian);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
     ROS_INFO_STREAM("Ori set done.");
-    ros::Duration(100.0).sleep();
-
+    ros::Duration(3.0).sleep();
+  */
+    /////////////////////////////////////////////////////////////////////// END DEBUG
 
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");

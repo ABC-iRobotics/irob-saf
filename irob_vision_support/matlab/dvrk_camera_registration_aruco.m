@@ -28,7 +28,7 @@ marker_3d = double(zeros(0,3));
 robot_3d = double(zeros(0,3));
 
 i = 1;
-n = 7;
+n = 15;
 marker_id = 1;
 
 while i < (n+1)

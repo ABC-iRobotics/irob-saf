@@ -30,7 +30,7 @@ class aruco_detector:
     # Declare aruco stuff
     self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 
-    self.board = aruco.CharucoBoard_create(3,3,.025,.0125,self.aruco_dict)
+    self.board = aruco.CharucoBoard_create(3,3,0.025,0.0125,self.aruco_dict)
 
     self.parameters =  aruco.DetectorParameters_create()
 
@@ -74,7 +74,7 @@ class aruco_detector:
 
             rquat = tf.transformations.quaternion_from_matrix(rmat)
 
-            tvec = tvec * 1000.0
+            tvec = tvec * (1000.0)
 
             tr_msg = Transform(Vector3(*tvec), Quaternion(*rquat))
 

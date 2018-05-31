@@ -1,4 +1,6 @@
-board_t: [105.0, 0.0, 18.0]
+# offset board_t: [-26.0, 0.0, 13.0]
+
+board_t: [106.0, -3.0, 20.0]
 
 peg_positions: [    18.7, 17.3, 0,
                     9.4, 28.0, 0,
@@ -16,7 +18,7 @@ peg_positions: [    18.7, 17.3, 0,
 
 peg_h: 20.0
 
-object_h: 40.0
+object_h: 33.0
 
 object_d: 12.0
 

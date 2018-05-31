@@ -134,7 +134,7 @@ Pose Pose::rotate(const Eigen::Matrix3d& R) const
   Eigen::Matrix3d rotated_ori_R = R * ori_R;
   Eigen::Vector3d rotated_pos = R * position;
   Eigen::Quaternion<double> rotated_ori(rotated_ori_R);
-  Pose ret(rotated_pos, rotated_ori, jaw);
+  Pose ret(rotated_pos, rotated_ori.normalized(), jaw);
 
   return ret;
 }
@@ -332,6 +332,7 @@ Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */
                               T.rotation.y,T.rotation.z);
   Eigen::Matrix3d R = q.normalized().toRotationMatrix();
   Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
+
   return transform(R, t, scale);
 }
 

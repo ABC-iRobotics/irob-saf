@@ -63,12 +63,12 @@ void RobotClient::advertiseTopics()
 {
   position_cartesian_current_pub
       = nh.advertise<irob_msgs::ToolPoseStamped>(
-        "gesture/"+arm_name+"/position_cartesian_current_cf",
+        "surgeme/"+arm_name+"/position_cartesian_current_cf",
         1000);
 
   instrument_info_pub
       = nh.advertise<irob_msgs::InstrumentInfo>(
-        "gesture/"+arm_name+"/instrument_info",
+        "surgeme/"+arm_name+"/instrument_info",
         1000);
 }
 

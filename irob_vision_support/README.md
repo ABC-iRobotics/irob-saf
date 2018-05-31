@@ -18,7 +18,7 @@ The video feed can be started by the launch file *stereo_cam_usb_raw.launch* (de
     
 Before usage the stereo camera pair should be calibrated by the following command:
 
-    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/irob-saf/stereo/right/image_raw left:=/irob-saf/stereo/left/image_raw right_camera:=/irob-saf/stereo/right left_camera:=/irob-saf/stereo/left --approximate=0.1
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.025 right:=/saf/stereo/right/image_raw left:=/saf/stereo/left/image_raw right_camera:=/saf/stereo/right left_camera:=/saf/stereo/left --approximate=0.1
 
 Read on in section **Calibration**
   
