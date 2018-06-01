@@ -45,9 +45,9 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
   double rows = param_peg_positions.size() / 3;
   for (int i = 0; i < rows; i++)
      peg_positions.push_back(Eigen::Vector3d(
-                                param_peg_positions[i * rows],
-                                param_peg_positions[(i * rows) + 1],
-                                param_peg_positions[(i * rows) + 2]));
+                                param_peg_positions[i * 3],
+                                param_peg_positions[(i * 3) + 1],
+                                param_peg_positions[(i * 3) + 2]));
 
   ROS_INFO_STREAM(
         "Board descriptor read.");
