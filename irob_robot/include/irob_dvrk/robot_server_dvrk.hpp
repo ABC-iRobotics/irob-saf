@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <cmath>
 #include <ros/ros.h>
@@ -102,6 +103,8 @@ public:
 
   void recordTrajectory(Trajectory<Eigen::Vector3d>&);
   void recordTrajectory(Trajectory<Pose>&);
+  void saveTrajectory(std::string);
+
 
   void checkErrors();
   void checkVelCartesian(const Pose&, const Pose&, double);

@@ -649,5 +649,30 @@ void RobotServerDVRK::recordTrajectory(Trajectory<Pose>& tr)
 
 }
 
+void RobotServerDVRK::saveTrajectory(std::string filename)
+{
+  std::ofstream logfile;
+  logfile.open (filename, std::ofstream::out | std::ofstream::trunc);
+  if (logfile.is_open())
+    ROS_INFO_STREAM("Start logging to "<< filename);
+  else
+    ROS_INFO_STREAM("Cannot open file  "<< filename);
+
+  ros::Rate loop_rate(1.0/tr.dt);
+  // Skip invalid points
+  while (ros::ok() && getPositionCartesianCurrent().norm() < 0.001)
+  {
+    loop_rate.sleep();
+  }
+  while(ros::ok())
+  {
+    logfile << getPoseCurrent() << std::endl;
+    loop_rate.sleep();
+  }
+  logfile.flush();
+  logfile.close();
+  ROS_INFO_STREAM("Trajectory saved to file  "<< filename << " successfully.");
+}
+
 }
 
