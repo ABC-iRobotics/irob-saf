@@ -8,6 +8,8 @@
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="camera_registration_file" 
 		default="registration_psm2.yaml"/>
+        <arg name="filename"
+        default="/home/dvrk_nat/trajectory_1.dat"/>
 		
 		<arg name="instrument_info_file" 
 		default="prograsp_forceps.yaml"/>
@@ -20,6 +22,7 @@
   		
   				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
 				<param name="arm_name" type="string" value="$(arg arm_name)" />
+                <param name="filename" type="string" value="$(arg filename)" />
 				<!-- <param name="camera_registration_file" type="string" 	
 									value="$(arg camera_registration_file)" /> -->
 				<rosparam command="load" 

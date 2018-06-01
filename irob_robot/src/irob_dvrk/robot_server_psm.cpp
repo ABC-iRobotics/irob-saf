@@ -249,6 +249,9 @@ int main(int argc, char **argv)
   std::string arm_name;
   priv_nh.getParam("arm_name", arm_name);
 
+  std::string filename;
+  priv_nh.getParam("filename", filename);
+
 
   // Robot control
   try {
@@ -256,14 +259,18 @@ int main(int argc, char **argv)
       RobotServerPSM psm(nh, priv_nh, arm_type,
                          arm_name, RobotServerPSM::ACTIVE);
       psm.initRosCommunication();
-      ros::spin();
+      //ros::spin();
+      psm.saveTrajectory(filename);
     }
     else {
       RobotServerDVRK arm(nh, priv_nh, arm_type,
                           arm_name, RobotServerDVRK::ACTIVE);
       arm.initRosCommunication();
-      ros::spin();
+      //ros::spin();
+      arm.saveTrajectory(filename);
     }
+
+
 
     ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
 

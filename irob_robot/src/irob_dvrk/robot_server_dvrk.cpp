@@ -658,7 +658,7 @@ void RobotServerDVRK::saveTrajectory(std::string filename)
   else
     ROS_INFO_STREAM("Cannot open file  "<< filename);
 
-  ros::Rate loop_rate(1.0/tr.dt);
+  ros::Rate loop_rate(100.0);
   // Skip invalid points
   while (ros::ok() && getPositionCartesianCurrent().norm() < 0.001)
   {
