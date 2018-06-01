@@ -259,15 +259,15 @@ int main(int argc, char **argv)
       RobotServerPSM psm(nh, priv_nh, arm_type,
                          arm_name, RobotServerPSM::ACTIVE);
       psm.initRosCommunication();
-      //ros::spin();
-      psm.saveTrajectory(filename);
+      ros::spin();
+      //psm.saveTrajectory(filename);
     }
     else {
       RobotServerDVRK arm(nh, priv_nh, arm_type,
                           arm_name, RobotServerDVRK::ACTIVE);
       arm.initRosCommunication();
-      //ros::spin();
-      arm.saveTrajectory(filename);
+      ros::spin();
+      //arm.saveTrajectory(filename);
     }
 
 

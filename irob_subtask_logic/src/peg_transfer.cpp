@@ -14,7 +14,7 @@ namespace saf {
 
 PegTransfer::PegTransfer(ros::NodeHandle nh, ros::NodeHandle priv_nh,
                          std::vector<std::string> arm_names):
-  AutosurgAgent(nh, arm_names), vision(nh, "target")
+  AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target")
 {
   loadBoardDescriptor(priv_nh);
 }
@@ -76,6 +76,14 @@ Pose PegTransfer::poseToWorldFrame(const Pose& pose,
 
 void PegTransfer::doPegTransfer()
 {
+
+
+
+  double compress_rate = 0.2;
+  int peg_idx_on = 0;
+  int peg_idx_to = 6;
+  int increment = 1;
+
   geometry_msgs::Transform e;
   // Read marker transform
   ROS_INFO_STREAM("Waiting for data from vision...");
@@ -102,38 +110,12 @@ void PegTransfer::doPegTransfer()
                                                      0.0, object_h + 10.0);
 
   Eigen::Vector3d approach_post_grasp_translate_world(grasp_translate_x,
-                                                      0.0, object_h + peg_h + 10.0);
+                                                      0.0, (2.0 * object_h) + 10.0);
 
-
-  double compress_rate = 0.2;
-  int peg_idx_on = 0;
-  int peg_idx_to = 6;
-  int increment = 1;
-  double speed_cartesian = 30.0;
-  double speed_jaw = 30.0;
 
 
   while(ros::ok())
   {
-    /////////////////////////////////////////////////////////////////////// FOR DEBUG
-
-   /* ROS_INFO_STREAM("Set orientation");
-
-    Pose start_pose(peg_positions[0], grasp_ori_world, 0.0);
-    start_pose += Eigen::Vector3d(0.0, 0.0, 11.0);
-    start_pose = poseToCameraFrame(start_pose, e);
-    //start_pose.position = arms[0] -> getPoseCurrent().position;
-    //start_pose += Eigen::Vector3d(10.0, 10.0, 10.0);
-    ROS_INFO_STREAM("starting nav");
-    arms[0]->nav_to_pos(start_pose,  speed_cartesian);
-    while(!arms[0] -> isSurgemeDone() && ros::ok())
-    {
-      ros::Duration(0.1).sleep();
-    }
-    ROS_INFO_STREAM("Ori set done.");
-    ros::Duration(3.0).sleep();
-  */
-    /////////////////////////////////////////////////////////////////////// END DEBUG
 
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
@@ -142,11 +124,11 @@ void PegTransfer::doPegTransfer()
     grasp_pose_on += grasp_translate_world;
     grasp_pose_on = poseToCameraFrame(grasp_pose_on, e);
 
-    Pose approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
-    approach_pose_on += approach_pre_grasp_translate_world;
-    approach_pose_on = poseToCameraFrame(approach_pose_on, e);
+    Pose grasp_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    grasp_approach_pose_on += approach_pre_grasp_translate_world;
+    grasp_approach_pose_on = poseToCameraFrame(grasp_approach_pose_on, e);
 
-    arms[0]->grasp(grasp_pose_on, approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
+    arms[0]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -155,18 +137,21 @@ void PegTransfer::doPegTransfer()
     // Place to new rod
     ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
 
-    Pose grasp_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
-    grasp_pose_to += grasp_translate_world;
-    grasp_pose_to = poseToCameraFrame(grasp_pose_to, e);
-
-    Pose approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
-    approach_pose_to += approach_post_grasp_translate_world;
-    approach_pose_to = poseToCameraFrame(approach_pose_to, e);
-
+    Pose place_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    place_approach_pose_on += approach_post_grasp_translate_world;
+    place_approach_pose_on = poseToCameraFrame(place_approach_pose_on, e);
     std::vector<Pose> waypoints;
-    waypoints.push_back(approach_pose_on);
-    //waypoints.push_back(dist_pose);
-    arms[0] -> place(grasp_pose_to, approach_pose_to, speed_cartesian, waypoints);
+    waypoints.push_back(place_approach_pose_on);
+
+    Pose place_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    place_pose_to += grasp_translate_world;
+    place_pose_to = poseToCameraFrame(place_pose_to, e);
+
+    Pose place_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    place_approach_pose_to += approach_post_grasp_translate_world;
+    place_approach_pose_to = poseToCameraFrame(place_approach_pose_to, e);
+
+    arms[0] -> place(place_pose_to, place_approach_pose_to, speed_cartesian, waypoints);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
       ros::Duration(0.1).sleep();
@@ -174,7 +159,11 @@ void PegTransfer::doPegTransfer()
 
 
     // Release
-    arms[0] -> release(approach_pose_to, object_wall_d, speed_cartesian, speed_jaw);
+    Pose release_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    release_approach_pose_to += approach_pre_grasp_translate_world;
+    release_approach_pose_to = poseToCameraFrame(release_approach_pose_to, e);
+
+    arms[0] -> release(release_approach_pose_to, object_wall_d, speed_cartesian, speed_jaw);
     ROS_INFO_STREAM("Release object...");
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
@@ -192,7 +181,14 @@ void PegTransfer::doPegTransfer()
       peg_idx_to = 0;
 
       ros::Duration(1.0).sleep();
+    } else if (peg_idx_to == 6) {
+      ROS_INFO_STREAM("All pegs transfered");
+      peg_idx_on = 0;
+      peg_idx_to = 6;
+
+      ros::Duration(1.0).sleep();
     }
+
 
   }
 

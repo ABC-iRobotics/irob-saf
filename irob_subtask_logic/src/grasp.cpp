@@ -12,9 +12,9 @@
 namespace saf {
 
 
-Grasp::Grasp(ros::NodeHandle nh, 
+Grasp::Grasp(ros::NodeHandle nh, ros::NodeHandle priv_nh,
              std::vector<std::string> arm_names):
-  AutosurgAgent(nh, arm_names), vision(nh, "target")
+  AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target")
 {	
   //
 }
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
   // Start autonomous agent
   try {
-    Grasp pnp(nh, arm_names);
+    Grasp pnp(nh, priv_nh, arm_names);
 
     pnp.graspObject();
 

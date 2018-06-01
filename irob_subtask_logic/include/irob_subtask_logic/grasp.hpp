@@ -46,7 +46,7 @@ protected:
 
 
 public:
-  Grasp(ros::NodeHandle, std::vector<std::string>);
+  Grasp(ros::NodeHandle, ros::NodeHandle priv_nh, std::vector<std::string>);
   ~Grasp();
   void graspObject();
 

@@ -41,6 +41,9 @@ protected:
 
   std::vector<SurgemeClient*> arms;
 
+  double speed_cartesian;
+  double speed_jaw;
+
   // Inherited classes should countain 1 or more
   // VisionClient, e. g.:
   // VisionClient<geometry_msgs::Point, Eigen::Vector3d> vision;
@@ -48,8 +51,13 @@ protected:
 
 
 public:
-  AutosurgAgent(ros::NodeHandle nh, std::vector<std::string> arm_names): nh(nh)
+  AutosurgAgent(ros::NodeHandle nh, ros::NodeHandle priv_nh, std::vector<std::string> arm_names): nh(nh)
   {
+
+    // Get params from launch
+    priv_nh.getParam("speed_cartesian", speed_cartesian);
+    priv_nh.getParam("speed_jaw", speed_jaw);
+
     for (std::string name : arm_names)
       arms.push_back(new SurgemeClient(nh, name));
   }
@@ -59,6 +67,7 @@ public:
     for (SurgemeClient* gc : arms)
       delete(gc);
   }
+
 
 };
 
