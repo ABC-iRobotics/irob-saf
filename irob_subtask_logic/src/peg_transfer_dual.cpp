@@ -128,6 +128,12 @@ void PegTransferDual::doPegTransfer()
   approach_pass_grasp_translate_world.push_back(Eigen::Vector3d(-grasp_translate_x,
                                                 0.0, (2.0 * object_h) + 20.0));
 
+  std::vector<Eigen::Vector3d> parking_translate_world;
+  parking_translate_world.push_back(Eigen::Vector3d(30.0,
+                                                0.0, (2.0 * object_h) + 30.0));
+  parking_translate_world.push_back(Eigen::Vector3d(-30.0,
+                                                0.0, (2.0 * object_h) + 30.0));
+
 
 
   Eigen::Vector3d pass_loc_world(35.0, 35.0, 0.0);
@@ -139,6 +145,7 @@ void PegTransferDual::doPegTransfer()
   while(ros::ok())
   {
 
+    // Grasp object with pick arm and move place arm to parking position
     // Grasp object with pick arm
     ROS_INFO_STREAM("Grasping object on peg " << peg_idx_on << "...");
 
@@ -150,8 +157,16 @@ void PegTransferDual::doPegTransfer()
     grasp_approach_pose_on += approach_pre_grasp_translate_world[pick_arm];
     grasp_approach_pose_on = poseToCameraFrame(grasp_approach_pose_on, e);
 
+    // Nav pick arm to parking position
+    Pose parking_pos_place(pass_loc_world, grasp_ori_world, 0.0);
+    parking_pos_place += parking_translate_world[place_arm];
+    parking_pos_place = poseToCameraFrame(parking_pos_place, e);
+
+
+    arms[place_arm] -> nav_to_pos(parking_pos_place, speed_cartesian);
     arms[pick_arm]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
-    while(!arms[pick_arm] -> isSurgemeDone() && ros::ok())
+
+    while(!(arms[pick_arm] -> isSurgemeDone() && arms[place_arm] -> isSurgemeDone()) && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
@@ -191,7 +206,7 @@ void PegTransferDual::doPegTransfer()
     }
 
     // Release with pick arm
-    Pose release_approach_pose_pick(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    Pose release_approach_pose_pick(pass_loc_world, grasp_ori_world, 0.0);
     release_approach_pose_pick += approach_pass_grasp_translate_world[pick_arm];
     release_approach_pose_pick = poseToCameraFrame(release_approach_pose_pick, e);
 
@@ -203,6 +218,7 @@ void PegTransferDual::doPegTransfer()
     }
 
 
+    // Place object on peg and move pick arm to praking position
     // Place object on peg
     ROS_INFO_STREAM("Placing object to peg " << peg_idx_to << "...");
 
@@ -214,8 +230,16 @@ void PegTransferDual::doPegTransfer()
     place_approach_pose_to += approach_post_grasp_translate_world[place_arm];
     place_approach_pose_to = poseToCameraFrame(place_approach_pose_to, e);
 
+
+    // Nav pick arm to parking position
+    Pose parking_pos_pick(pass_loc_world, grasp_ori_world, 0.0);
+    parking_pos_pick += parking_translate_world[pick_arm];
+    parking_pos_pick = poseToCameraFrame(parking_pos_pick, e);
+
+    arms[pick_arm] -> nav_to_pos(parking_pos_pick, speed_cartesian);
     arms[place_arm] -> place(place_pose_to, place_approach_pose_to, speed_cartesian);
-    while(!arms[place_arm] -> isSurgemeDone() && ros::ok())
+    ROS_INFO_STREAM("Release object with pick arm...");
+    while(!(arms[pick_arm] -> isSurgemeDone() && arms[place_arm] -> isSurgemeDone()) && ros::ok())
     {
       ros::Duration(0.1).sleep();
     }
