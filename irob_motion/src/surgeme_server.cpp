@@ -355,7 +355,8 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
   // Center of jaw part
   if (	surgeme_type == irob_msgs::SurgemeGoal::GRASP
         || 	surgeme_type == irob_msgs::SurgemeGoal::PLACE
-        ||  surgeme_type == irob_msgs::SurgemeGoal::RELEASE)
+        ||  surgeme_type == irob_msgs::SurgemeGoal::RELEASE
+        ||  surgeme_type == irob_msgs::SurgemeGoal::CUT)
   {
 
     double dist = jaw_part.end - (target_diameter / 2.0);
@@ -372,11 +373,14 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
                                     * 3.5) / dist))
         * (180.0 / M_PI);
 
+    if (surgeme_type == irob_msgs::SurgemeGoal::CUT)
+        g.jaw_closed_angle = 0.0;
+
     ROS_INFO_STREAM("g.t: " << g.t);
     return g;
   }
 
-  if (surgeme_type == irob_msgs::SurgemeGoal::CUT)
+  /*if (surgeme_type == irob_msgs::SurgemeGoal::CUT)
   {
     double dist = jaw_part.end - (target_diameter / 2.0);
 
@@ -388,7 +392,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
 
     g.jaw_closed_angle = 0.0;
     return g;
-  }
+  }*/
 
   // End of jaw
   if (	surgeme_type == irob_msgs::SurgemeGoal::DISSECT

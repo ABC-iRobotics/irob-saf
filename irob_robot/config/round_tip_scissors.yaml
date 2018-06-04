@@ -5,9 +5,9 @@ instrument:
  jaw_parts:
   p0:
    start: 0.0
-   end: 3.5
+   end: 3.0
    type: JOINT
   p1:
-   start: 3.5
+   start: 3.0
    end: 11.0
    type: SCISSORS

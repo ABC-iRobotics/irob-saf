@@ -1,0 +1,25 @@
+<!-- Launch file for vessel cutting training excercise -->
+
+<launch>
+    <group ns="saf">
+
+        <arg name="board_descriptor"
+        default="vessel_board.yaml"/>
+
+        <arg name="speed_cartesian" default="20.0"/>
+        <arg name="speed_jaw" default="20.0"/>
+
+        <node name="cut_vessel" pkg="irob_subtask_logic"
+            type="cut_vessel" output="screen">
+
+                <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+                <param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
+
+                <rosparam param="arm_names">["arm_1", "arm_2"]</rosparam>
+                <rosparam command="load"
+                file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
+
+        <remap from="target" to="vision/left/transform" />
+    </node>
+    </group>
+</launch>
