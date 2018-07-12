@@ -154,6 +154,9 @@ add_executable(camera_preprocessor
   add_executable(pcl_test
       src/pcl_test.cpp)
 
+    add_executable(serial_test
+        src/serial_test.cpp)
+
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -186,6 +189,13 @@ target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
 	irob_vision_support_lib
     )
+
+
+
+  target_link_libraries(serial_test
+      ${catkin_LIBRARIES}
+      irob_vision_support_lib
+      )
 
   target_link_libraries(pcl_test
       ${catkin_LIBRARIES}

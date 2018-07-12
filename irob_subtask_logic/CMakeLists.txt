@@ -139,6 +139,7 @@ add_executable(peg_transfer src/peg_transfer.cpp)
 add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 add_executable(cut_vessel src/cut_vessel.cpp)
 add_executable(grasp src/grasp.cpp)
+add_executable(accuracy_meas src/accuracy_meas.cpp)
 
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
@@ -178,6 +179,13 @@ target_link_libraries(grasp
 	${catkin_LIBRARIES}
 	irob_subtask_logic_lib
 	)
+
+
+  target_link_libraries(accuracy_meas
+      ${catkin_LIBRARIES}
+      irob_subtask_logic_lib
+      )
+
 
 
 
