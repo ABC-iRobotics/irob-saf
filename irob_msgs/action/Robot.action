@@ -6,12 +6,14 @@ int8 STOP=1
 int8 INIT_ARM=2
 int8 RESET_POSE=3
 int8 FOLLOW_TRAJECTORY=4
+int8 MOVE_JOINT=5
 
 int8 action
 
 # Params
 bool move_allowed
 TrajectoryToolPose trajectory
+sensor_msgs/JointState joint_state
 
 ---
 # Define the result

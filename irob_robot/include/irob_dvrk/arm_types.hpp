@@ -23,6 +23,7 @@ public:
   static const ArmTypes MTMR;
   static const ArmTypes PSM1;
   static const ArmTypes PSM2;
+  static const ArmTypes PSM3;
   static const ArmTypes ECM;
 
   // Attributes
@@ -49,6 +50,8 @@ public:
       return PSM1;
     if (name == PSM2.name)
       return PSM2;
+    if (name == PSM3.name)
+      return PSM3;
     if (name == ECM.name)
       return ECM;
     return PSM1;

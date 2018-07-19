@@ -189,6 +189,11 @@ void RobotServerDVRK::robotStateCB(const std_msgs::String msg)
 void RobotServerDVRK::stateJointCurrentCB(const sensor_msgs::JointStateConstPtr& msg) 
 {
   position_joint = *msg;
+  sensor_msgs::JointState fwd;
+  fwd = position_joint;
+  //ROS_INFO_STREAM(*msg);
+  //ROS_INFO_STREAM(fwd);
+  joint_state_current_pub.publish(fwd);
 }
 
 void RobotServerDVRK::positionCartesianCurrentCB(
@@ -329,26 +334,39 @@ Pose RobotServerDVRK::getPoseCurrent()
 
 }
 
+
 /*
  * Move in joint space immediately.
  */
-void RobotServerDVRK::moveJointRelative(int joint_idx, double movement, double dt)
+void RobotServerDVRK::moveJointAbsolute(sensor_msgs::JointState pos, double dt)
 {
   // Collect data
+  if (!pos.position.empty()){
   std::vector<double> currJoint = getJointStateCurrent();
-  sensor_msgs::JointState new_position_joint = position_joint;
-  new_position_joint.position[joint_idx] += movement;
+  sensor_msgs::JointState new_position_joint = pos;
+  //for (int i = 0; i <  arm_typ.dof; i++)
+    //new_position_joint.position[i] = pos.position[i];
 
+  //new_position_joint = maximizeVelJoint(new_position_joint, currJoint, dt);
   // Safety
   try {
+
     checkErrors();
-    checkVelJoint(new_position_joint, currJoint, dt);
     checkNaNJoint(new_position_joint);
     // End safety
-    
+
     // Publish movement
+
     position_joint_pub.publish(new_position_joint);
+    //ROS_INFO_STREAM(new_position_joint);
     ros::spinOnce();
+    irob_msgs::RobotResult result;
+    result.pose = getPoseCurrent().toRosToolPose();
+    result.info = "done";
+    //ROS_INFO_STREAM("Follow trajectory: Succeeded");
+      // set the action state to succeeded
+   as.setSucceeded(result);
+
   } catch (std::runtime_error e)
   {
     std::string str_nan = "NaN";
@@ -358,36 +376,6 @@ void RobotServerDVRK::moveJointRelative(int joint_idx, double movement, double d
     else
       throw e;
   }
-}
-
-/*
- * Move in joint space immediately.
- */
-void RobotServerDVRK::moveJointAbsolute(int joint_idx, double pos, double dt)
-{
-  // Collect data
-  std::vector<double> currJoint = getJointStateCurrent();
-  sensor_msgs::JointState new_position_joint = position_joint;
-  new_position_joint.position[joint_idx] = pos;
-
-  // Safety
-  try {
-    checkErrors();
-    checkVelJoint(new_position_joint, currJoint, dt);
-    checkNaNJoint(new_position_joint);
-    // End safety
-    
-    // Publish movement
-    position_joint_pub.publish(new_position_joint);
-    ros::spinOnce();
-  } catch (std::runtime_error e)
-  {
-    std::string str_nan = "NaN";
-    std::string str_err = e.what();
-    if (str_err.find(str_nan) != std::string::npos)
-      ROS_ERROR_STREAM(e.what());
-    else
-      throw e;
   }
 }
 
@@ -597,6 +585,25 @@ void RobotServerDVRK::checkVelJoint(const sensor_msgs::JointState& new_position_
       throw std::runtime_error(errstring.str());
     }
   }
+}
+
+sensor_msgs::JointState RobotServerDVRK::maximizeVelJoint(const sensor_msgs::JointState& new_position_joint,
+                                    const std::vector<double>& currJoint, double dt)
+{
+  std::vector<double> distance(arm_typ.dof);
+  sensor_msgs::JointState ret(new_position_joint);
+
+  for (int i = 0; i < arm_typ.dof; i++) {
+    distance[i] = new_position_joint.position[i]-currJoint[i]/dt;
+  }
+  for (int i = 0; i < arm_typ.dof; i++)
+  {
+    if (std::abs(distance[i]) > arm_typ.maxVelJoint[i])
+    {
+      ret.position[i] = currJoint[i] + std::copysign(arm_typ.maxVelJoint[i], distance[i]);
+    }
+  }
+  return ret;
 }
 
 void RobotServerDVRK::checkNaNJoint(const sensor_msgs::JointState& new_position_joint)

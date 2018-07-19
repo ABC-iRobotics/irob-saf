@@ -39,6 +39,7 @@
 #include <irob_msgs/RobotAction.h>
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
+#include <sensor_msgs/JointState.h>
 
 namespace saf {
 
@@ -61,14 +62,17 @@ private:
 
   // States
   irob_msgs::ToolPoseStamped position_cartesian_current;
+  sensor_msgs::JointState joint_state_current;
   irob_msgs::InstrumentInfo instrument_info;
 
   // Subscribers
   ros::Subscriber position_cartesian_current_sub;
+  ros::Subscriber joint_state_current_sub;
   ros::Subscriber instrument_info_sub;
 
   // Publishers
   ros::Publisher position_cartesian_current_pub;
+  ros::Publisher joint_state_current_pub;
   ros::Publisher instrument_info_pub;
 
   void subscribeTopics();
@@ -85,10 +89,14 @@ public:
   void positionCartesianCurrentCB(
       const irob_msgs::ToolPoseStampedConstPtr&);
 
+  void jointStateCurrentCB(
+      const sensor_msgs::JointStateConstPtr&);
+
   void instrumentInfoCB(
       const irob_msgs::InstrumentInfoConstPtr&);
 
   Pose getPoseCurrent();
+  sensor_msgs::JointState getJointStateCurrent();
   irob_msgs::InstrumentInfo getInstrumentInfo();
   std::string getName();
 
@@ -98,6 +106,7 @@ public:
   void moveJaws(double, double);
   void moveTool(Pose, double, std::vector<Pose> = std::vector<Pose>(),
                 InterpolationMethod = LINEAR);
+  void moveJoints(sensor_msgs::JointState);
 
   void stop();
 

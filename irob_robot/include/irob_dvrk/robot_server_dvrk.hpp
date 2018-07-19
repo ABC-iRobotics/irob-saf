@@ -74,6 +74,7 @@ public:
   void resetPose(bool);
   void stop();
   void followTrajectory(Trajectory<Pose>);
+  void moveJointAbsolute(sensor_msgs::JointState , double );
 
   void robotStateCB(const std_msgs::String);
   void errorCB(const std_msgs::String);
@@ -93,8 +94,6 @@ public:
 
   //DVRK actions
   std::string getCurrentState();
-  void moveJointRelative(int, double, double = 0.01 );
-  void moveJointAbsolute(int, double, double = 0.01 );
   void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
   void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
   void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
@@ -110,6 +109,8 @@ public:
   void checkVelCartesian(const Pose&, const Pose&, double);
   void checkNaNCartesian(const Pose&);
   void checkVelJoint(const sensor_msgs::JointState&,
+                     const std::vector<double>&, double);
+  sensor_msgs::JointState maximizeVelJoint(const sensor_msgs::JointState&,
                      const std::vector<double>&, double);
   void checkNaNJoint(const sensor_msgs::JointState&);
 

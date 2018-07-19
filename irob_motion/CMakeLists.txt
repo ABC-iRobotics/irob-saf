@@ -135,6 +135,7 @@ set_target_properties( irob_motion_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 add_executable(surgeme_server src/surgeme_server.cpp)
+add_executable(mimic src/mimic.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -157,6 +158,11 @@ target_link_libraries(surgeme_server
 	${catkin_LIBRARIES}
 	irob_motion_lib
 	)
+
+  target_link_libraries(mimic
+      ${catkin_LIBRARIES}
+      irob_motion_lib
+      )
 
 
 #############

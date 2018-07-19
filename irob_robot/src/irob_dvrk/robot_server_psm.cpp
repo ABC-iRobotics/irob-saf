@@ -22,7 +22,8 @@ RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
   RobotServerDVRK(nh, priv_nh, arm_typ, arm_name, isActive)
 {
   if (!(arm_typ == ArmTypes::PSM1 ||
-        arm_typ == ArmTypes::PSM2))
+        arm_typ == ArmTypes::PSM2 ||
+       arm_typ == ArmTypes::PSM3))
     throw std::runtime_error(
         "Tried to create RobotServerPSM object for ECM or MTM arm type.");
 }
@@ -255,7 +256,7 @@ int main(int argc, char **argv)
 
   // Robot control
   try {
-    if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
+    if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2 || arm_type == ArmTypes::PSM3) {
       RobotServerPSM psm(nh, priv_nh, arm_type,
                          arm_name, RobotServerPSM::ACTIVE);
       psm.initRosCommunication();

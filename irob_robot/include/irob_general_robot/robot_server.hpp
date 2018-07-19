@@ -66,6 +66,7 @@ protected:
 
   // Publisher
   ros::Publisher position_cartesian_current_pub;
+  ros::Publisher joint_state_current_pub;
   ros::Publisher instrument_info_pub;
 
   virtual void subscribeLowLevelTopics() = 0;
@@ -77,6 +78,10 @@ protected:
     position_cartesian_current_pub
         = nh.advertise<irob_msgs::ToolPoseStamped>(
           "robot/"+arm_name+"/position_cartesian_current_cf",
+          1000);
+    joint_state_current_pub
+        = nh.advertise<sensor_msgs::JointState>(
+          "robot/"+arm_name+"/joint_state_current_cf",
           1000);
     instrument_info_pub
         = nh.advertise<irob_msgs::InstrumentInfo>(
@@ -195,6 +200,7 @@ public:
   virtual void resetPose(bool) = 0;
   virtual void stop() = 0;
   virtual void followTrajectory(Trajectory<Pose>) = 0;
+  virtual void moveJointAbsolute(sensor_msgs::JointState, double) = 0;
   virtual Pose getPoseCurrent() = 0;
 
   virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr& goal)
@@ -222,6 +228,11 @@ public:
     case  irob_msgs::RobotGoal::FOLLOW_TRAJECTORY:
     {
       followTrajectory(goal->trajectory);
+      break;
+    }
+    case  irob_msgs::RobotGoal::MOVE_JOINT:
+    {
+      moveJointAbsolute(goal->joint_state, 0.01);
       break;
     }
     default:
