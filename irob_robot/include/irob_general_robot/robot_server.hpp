@@ -52,6 +52,7 @@ protected:
 
   const std::string arm_name;
   ros::NodeHandle nh;
+  ros::NodeHandle priv_nh;
   bool isActive;
 
   // Action servers
@@ -251,7 +252,7 @@ public:
   // initRosCommunication must be called in child class or main function
   RobotServer(ros::NodeHandle nh, ros::NodeHandle priv_nh,
               std::string arm_name, bool isActive):
-    nh(nh), arm_name(arm_name), isActive(isActive),
+    nh(nh), priv_nh(priv_nh), arm_name(arm_name), isActive(isActive),
     as(nh, "robot/"+arm_name+"/robot_action",
        boost::bind(&RobotServer::robotActionCB, this, _1), false)
   {

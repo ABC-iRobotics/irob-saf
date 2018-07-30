@@ -13,12 +13,17 @@
 		
 		<arg name="instrument_info_file" 
 		default="prograsp_forceps.yaml"/>
+
+        <arg name="topic_name_file"
+          default="dvrk_topic_names.xml"/>
 	
-			<include 
-			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 
+
   	
 			<node name="robot_server_$(arg arm_typ)" pkg="irob_robot" 
 			type="robot_server_dvrk" output="screen">
+
+            <include
+            file="$(find irob_robot)/config/$(arg topic_name_file)" />
   		
   				<param name="arm_typ" type="string" value="$(arg arm_typ)" />
 				<param name="arm_name" type="string" value="$(arg arm_name)" />

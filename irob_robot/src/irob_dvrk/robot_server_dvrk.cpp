@@ -224,35 +224,35 @@ void RobotServerDVRK::warningCB(const std_msgs::String msg)
 void RobotServerDVRK::subscribeLowLevelTopics() 
 {
   current_state_sub = nh.subscribe<std_msgs::String>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/current_state"),
         1000, &RobotServerDVRK::robotStateCB,this);
   
   state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/state_joint_current"),
         1000, &RobotServerDVRK::stateJointCurrentCB,this);
 
   position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/position_cartesian_current"),
         1000, &RobotServerDVRK::positionCartesianCurrentCB,this);
 
   error_sub = nh.subscribe<std_msgs::String>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/error"),
         1000, &RobotServerDVRK::errorCB,this);
 
   warning_sub = nh.subscribe<std_msgs::String>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/warning"),
@@ -264,13 +264,13 @@ void RobotServerDVRK::advertiseLowLevelTopics()
 {
   // dVRK
   position_joint_pub = nh.advertise<sensor_msgs::JointState>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_joint"),
         1000);
   position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_cartesian"),

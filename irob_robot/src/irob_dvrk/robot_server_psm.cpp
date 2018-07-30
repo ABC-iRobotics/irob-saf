@@ -78,7 +78,7 @@ void RobotServerPSM::subscribeLowLevelTopics()
   RobotServerDVRK::subscribeLowLevelTopics();
 
   current_state_sub = nh.subscribe<sensor_msgs::JointState>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/state_jaw_current"),
@@ -90,7 +90,7 @@ void RobotServerPSM::advertiseLowLevelTopics()
   RobotServerDVRK::advertiseLowLevelTopics();
 
   position_jaw_pub = nh.advertise<sensor_msgs::JointState>(
-        TopicNameLoader::load(nh,
+        TopicNameLoader::load(priv_nh,
                               "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_jaw"),
