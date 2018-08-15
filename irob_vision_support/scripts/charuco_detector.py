@@ -120,9 +120,9 @@ class aruco_detector:
 def main(args):
   print("Node started")
   #help(cv2.aruco)
-
-  detector = aruco_detector()
   rospy.init_node('aruco_detector', anonymous=True)
+  detector = aruco_detector()
+
   try:
     rospy.spin()
   except KeyboardInterrupt:
