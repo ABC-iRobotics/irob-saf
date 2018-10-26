@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="irob_autosurg_flowdiagram.svg"
+   sodipodi:docname="irob_autosurg_dvrk.svg"
    inkscape:export-filename="/home/tamas/Desktop/4th_semester_complex/img/irob_autosurg_flowdiagram.png"
    inkscape:export-xdpi="69"
    inkscape:export-ydpi="69">
@@ -251,7 +251,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35000001"
-     inkscape:cx="1525.9861"
+     inkscape:cx="1041.7004"
      inkscape:cy="764.03581"
      inkscape:document-units="px"
      inkscape:current-layer="g4729-3-0"
@@ -283,7 +283,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
