@@ -1,0 +1,33 @@
+
+
+<launch>
+    <group ns="dvrk">
+      <group ns="twin">
+
+
+<!-- Set args -->
+
+        <arg name="host" default="localhost"/>
+        <arg name="port" default="9090"/>
+        <arg name="drop_rate" default="10"/>
+        <arg name="ros_rate" default="100"/>
+        <arg name="namespace" default="/dvrk/twin/"/>
+
+<!-- Start uplinks for DVRK arms -->
+        <include
+            file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
+            pass_all_args="false">
+
+            <arg name="arm" value="PSM1" />
+            <arg name="host" value="$(arg host)" />
+            <arg name="port" value="$(arg port)" />
+            <arg name="drop_rate" value="$(arg drop_rate)" />
+             <arg name="ros_rate" value="$(arg ros_rate)" />
+
+             <arg name="namespace" value="$(arg namespace)" />
+
+        </include>
+     </group>
+    </group>
+  </launch>
+
