@@ -14,6 +14,8 @@
         <arg name="namespace" default="/dvrk/twin/"/>
 
 <!-- Start uplinks for DVRK arms -->
+
+  <!-- PSM1 -->
         <include
             file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
             pass_all_args="false">
@@ -27,6 +29,67 @@
              <arg name="namespace" value="$(arg namespace)" />
 
         </include>
+
+  <!-- PSM2 -->
+        <include
+            file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
+            pass_all_args="false">
+
+            <arg name="arm" value="PSM2" />
+            <arg name="host" value="$(arg host)" />
+            <arg name="port" value="$(arg port)" />
+            <arg name="drop_rate" value="$(arg drop_rate)" />
+            <arg name="ros_rate" value="$(arg ros_rate)" />
+
+            <arg name="namespace" value="$(arg namespace)" />
+
+        </include>
+
+  <!-- ECM -->
+        <include
+            file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
+            pass_all_args="false">
+
+            <arg name="arm" value="ECM" />
+            <arg name="host" value="$(arg host)" />
+            <arg name="port" value="$(arg port)" />
+            <arg name="drop_rate" value="$(arg drop_rate)" />
+            <arg name="ros_rate" value="$(arg ros_rate)" />
+
+            <arg name="namespace" value="$(arg namespace)" />
+
+        </include>
+
+  <!-- MTML -->
+        <include
+            file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
+            pass_all_args="false">
+
+            <arg name="arm" value="MTML" />
+            <arg name="host" value="$(arg host)" />
+            <arg name="port" value="$(arg port)" />
+            <arg name="drop_rate" value="$(arg drop_rate)" />
+            <arg name="ros_rate" value="$(arg ros_rate)" />
+
+            <arg name="namespace" value="$(arg namespace)" />
+
+        </include>
+
+  <!-- MTMR -->
+        <include
+            file="$(find irob_robot)/launch/dvrk_rosbridge_upstream.launch"
+            pass_all_args="false">
+
+            <arg name="arm" value="MTMR" />
+            <arg name="host" value="$(arg host)" />
+            <arg name="port" value="$(arg port)" />
+            <arg name="drop_rate" value="$(arg drop_rate)" />
+            <arg name="ros_rate" value="$(arg ros_rate)" />
+
+            <arg name="namespace" value="$(arg namespace)" />
+
+        </include>
+
      </group>
     </group>
   </launch>
