@@ -7,10 +7,9 @@ import rospy
 from twisted.internet import reactor
 
 from sensor_msgs.msg import JointState
+from cisst_msgs.msg import mtsIntervalStatistics
 
 from rospy_message_converter import message_converter
-
-
 
 
 class DVRKRosbridgeUpstream():
@@ -23,17 +22,15 @@ class DVRKRosbridgeUpstream():
 
     self.ros = roslibpy.Ros(host=host, port=port, is_secure=False)
     self.ros.on_ready(self.connect_cb)
-    self.topic = roslibpy.Topic(self.ros, self.namespace + "/" + self.arm + '/state_joint_current', 'sensor_msgs/JointState')
     self.topic.advertise()
     self.ros.run_forever()
-
 
 
 
   def connect_cb(self):
     print("Is connected?")
     print(self.ros.is_connected)
-    rospy.Subscriber("/dvrk/" + self.arm + "/state_joint_current", JointState, self.joint_cb)
+    rospy.Subscriber('/dvrk/spin/period_statistics', mtsIntervalStatistics, self.joint_cb)
 
 
 

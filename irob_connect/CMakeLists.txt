@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_robot)
+project(irob_subtask_logic)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
 ## Find catkin macros and libraries
@@ -14,11 +14,13 @@ find_package(catkin REQUIRED
 	std_msgs
 	sensor_msgs
 	stereo_msgs
-  sensor_msgs
-	actionlib_msgs
+	sensor_msgs
+	cv_bridge
 	actionlib
-	irob_msgs
-  irob_utils
+	actionlib_msgs
+	irob_utils
+	irob_motion
+	irob_vision_support
 	)
 
 
@@ -88,9 +90,9 @@ find_package(catkin REQUIRED
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 	INCLUDE_DIRS include
-	LIBRARIES irob_dvrk_lib irob_general_robot_lib
+	LIBRARIES irob_behavior_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime irob_msgs irob_utils actionlib_msgs
+	message_runtime actionlib_msgs irob_utils
 	#DEPENDS system_lib
 	)
 
@@ -107,27 +109,16 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 ## Declare a C++ library
 
-file(GLOB irob_dvrk_lib_src
-	"src/irob_dvrk/*.cpp"
+file(GLOB irob_subtask_logic_lib_src
+	"src/*.cpp"
 	)
 
 
-add_library( irob_dvrk_lib STATIC
-	${irob_dvrk_lib_src}
+add_library( irob_subtask_logic_lib STATIC
+	${irob_subtask_logic_lib_src}
 	)
 
-set_target_properties( irob_dvrk_lib  PROPERTIES LINKER_LANGUAGE CXX)
-
-file(GLOB irob_general_robot_lib_src
-	"src/irob_general_robot/*.cpp"
-	)
-
-
-add_library( irob_general_robot_lib STATIC
-	${irob_general_robot_lib_src}
-	)
-
-set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -144,8 +135,12 @@ set_target_properties( irob_general_robot_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(robot_server_dvrk 
-	src/irob_dvrk/robot_server_psm.cpp)
+add_executable(peg_transfer src/peg_transfer.cpp)
+add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
+add_executable(cut_vessel src/cut_vessel.cpp)
+add_executable(grasp src/grasp.cpp)
+add_executable(accuracy_meas src/accuracy_meas.cpp)
+
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -159,19 +154,37 @@ add_executable(robot_server_dvrk
 ## Specify libraries to link a library or executable target against
 
 
-target_link_libraries(irob_dvrk_lib
-	${catkin_LIBRARIES}
-	)
-
-target_link_libraries(irob_general_robot_lib
+target_link_libraries(irob_subtask_logic_lib
 	${catkin_LIBRARIES}
 	)
 
 
-target_link_libraries(robot_server_dvrk
+target_link_libraries(peg_transfer
 	${catkin_LIBRARIES}
-	irob_dvrk_lib
+	irob_subtask_logic_lib
 	)
+
+  target_link_libraries(peg_transfer_dual
+      ${catkin_LIBRARIES}
+      irob_subtask_logic_lib
+      )
+
+    target_link_libraries(cut_vessel
+        ${catkin_LIBRARIES}
+        irob_subtask_logic_lib
+        )
+
+
+target_link_libraries(grasp
+	${catkin_LIBRARIES}
+	irob_subtask_logic_lib
+	)
+
+
+  target_link_libraries(accuracy_meas
+      ${catkin_LIBRARIES}
+      irob_subtask_logic_lib
+      )
 
 
 

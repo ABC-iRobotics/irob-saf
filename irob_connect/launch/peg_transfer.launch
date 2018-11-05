@@ -1,0 +1,25 @@
+<!-- Launch file for peg-transfer training excercise -->
+
+<launch>
+	<group ns="saf">
+
+        <arg name="board_descriptor"
+        default="peg_transfer_board.yaml"/>
+
+        <arg name="speed_cartesian" default="20.0"/>
+        <arg name="speed_jaw" default="20.0"/>
+
+        <node name="peg_transfer" pkg="irob_subtask_logic"
+            type="peg_transfer" output="screen">
+
+                <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+                <param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
+  		
+				<rosparam param="arm_names">["arm_1"]</rosparam>
+                <rosparam command="load"
+                file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
+
+        <remap from="target" to="vision/left/transform" />
+	</node>
+  	</group>
+</launch>
