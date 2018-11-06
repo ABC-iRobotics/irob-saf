@@ -15,14 +15,18 @@ from robot_arm_dvrk import RobotArmDVRK
 
 class RobotArmSUJECM(RobotArmDVRK):
 
-  def __init__(self, name, namespace, ros):
-    RobotArmDVRK.__init__(self, name, namespace, ros,
-            {'outer_yaw': 'J0',
-            'outer_pitch': 'J1',
-            'outer_insertion': 'J2',
-            'outer_roll': 'J3'},
+  JOINT_DICT = {'outer_yaw': 'J0',
+                'outer_pitch': 'J1',
+                'outer_insertion': 'J2',
+                'outer_roll': 'J3'}
 
-            ['J0','J1','J2','J3'])
+  JOINT_NAMES_BRIDGE = ['J0','J1','J2','J3']
+
+
+  def __init__(self, name, ros):
+    RobotArmDVRK.__init__(self, name, ros,
+                          self.JOINT_DICT, self.JOINT_NAMES_BRIDGE)
+
 
   def subscribe_to_topics(self):
     print('Dummy ' + self.name + ', not subscribing.')

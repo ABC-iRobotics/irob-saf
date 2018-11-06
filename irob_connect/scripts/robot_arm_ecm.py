@@ -15,15 +15,21 @@ from robot_arm_dvrk import RobotArmDVRK
 
 class RobotArmECM(RobotArmDVRK):
 
-  def __init__(self, name, namespace, ros):
-    RobotArmDVRK.__init__(self, name, namespace, ros,
-            {'outer_yaw': '_yaw_joint',
-            'outer_pitch': '_pitch_front_joint',
-            'insertion': '_main_insertion_joint',
-            'outer_roll': '_tool_joint'},
+  JOINT_DICT =  {'outer_yaw': '_yaw_joint',
+                 'outer_pitch': '_pitch_front_joint',
+                 'insertion': '_main_insertion_joint',
+                 'outer_roll': '_tool_joint'}
 
-            ['_yaw_joint','_pitch_front_joint','_pitch_bottom_joint','_pitch_end_joint','_main_insertion_joint',
-                '_tool_joint','_pitch_top_joint','_pitch_back_joint'])
+  JOINT_NAMES_BRIDGE = ['_yaw_joint','_pitch_front_joint',
+                        '_pitch_bottom_joint','_pitch_end_joint',
+                        '_main_insertion_joint', '_tool_joint',
+                        '_pitch_top_joint','_pitch_back_joint']
+
+
+  def __init__(self, name, ros):
+    RobotArmDVRK.__init__(self, name, ros,
+                          self.JOINT_DICT, self.JOINT_NAMES_BRIDGE)
+
 
 
 

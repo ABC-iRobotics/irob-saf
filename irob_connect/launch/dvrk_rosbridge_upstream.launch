@@ -1,14 +1,22 @@
-
+<!-- Launch file to start the position upstream of a full DVRK  -->
 <launch>
 
   <group ns="dvrk">
    <group ns="twin">
 
-	
+    <!-- IP of the server -->
     <arg name="host" default="localhost"/>
+
     <arg name="port" default="9090"/>
-    <arg name="drop_rate" default="10"/>
+
+    <!-- Wait for this number of messages on the topic
+    /dvrk/spin/period_statistic before every publish -->
+    <arg name="drop_rate" default="1"/>
+
+    <!-- Rate of the ROS loop -->
     <arg name="ros_rate" default="100"/>
+
+    <!-- Namespace of the published message -->
     <arg name="namespace" default="/dvrk/twin/"/>
 
 
@@ -20,8 +28,17 @@
           <param name="port" type="int" value="$(arg port)" />
           <param name="drop_rate" type="double" value="$(arg drop_rate)" />
           <param name="ros_rate" type="double" value="$(arg ros_rate)" />
-          <rosparam param="arm_names">["SUJ_PSM2", "SUJ_ECM", "SUJ_PSM1", "SUJ_PSM3", "ECM", "PSM1", "PSM2", "PSM3"]</rosparam>
           <param name="namespace" type="string" value="$(arg namespace)" />
+
+          <!--
+               Set wich arms to be used here, those will be
+               the tags of the arms in the topic names we subscribe to,
+               and also the prefix of the published joint names.
+               e. g.: ["SUJ_PSM2", "SUJ_ECM", "SUJ_PSM1", "SUJ_PSM3",
+                       "ECM", "PSM1", "PSM2", "PSM3"]
+          -->
+          <rosparam param="arm_names">["SUJ_PSM2", "SUJ_ECM", "SUJ_PSM1", "SUJ_PSM3", "ECM", "PSM1", "PSM2", "PSM3"]</rosparam>
+
 				
 			</node>
     </group>

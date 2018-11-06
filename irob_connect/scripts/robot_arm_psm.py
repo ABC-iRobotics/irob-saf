@@ -15,17 +15,24 @@ from robot_arm_dvrk import RobotArmDVRK
 
 class RobotArmPSM(RobotArmDVRK):
 
-  def __init__(self, name, namespace, ros):
-    RobotArmDVRK.__init__(self, name, namespace, ros,
-            {'outer_yaw': 'yaw_joint',
-            'outer_pitch': 'pitch_back_joint',
-            'outer_insertion': 'main_insertion_joint',
-            'outer_roll': 'tool_roll_joint',
-            'outer_wrist_pitch': 'tool_pitch_joint',
-            'outer_wrist_yaw': 'tool_yaw_joint',
-            'jaw': 'tool_gripper2_joint'},
+  JOINT_DICT = {'outer_yaw': 'yaw_joint',
+                'outer_pitch': 'pitch_back_joint',
+                'outer_insertion': 'main_insertion_joint',
+                'outer_roll': 'tool_roll_joint',
+                'outer_wrist_pitch': 'tool_pitch_joint',
+                'outer_wrist_yaw': 'tool_yaw_joint',
+                'jaw': 'tool_gripper2_joint'}
 
-            ['rev_joint','yaw_joint','pitch_back_joint','pitch_bottom_joint','pitch_end_joint','main_insertion_joint', 'tool_roll_joint','tool_pitch_joint','tool_yaw_joint','tool_gripper1_joint', 'tool_gripper2_joint','pitch_top_joint','pitch_front_joint'])
+  JOINT_NAMES_BRIDGE = ['rev_joint','yaw_joint','pitch_back_joint',
+                        'pitch_bottom_joint','pitch_end_joint',
+                        'main_insertion_joint', 'tool_roll_joint',
+                        'tool_pitch_joint','tool_yaw_joint',
+                        'tool_gripper1_joint', 'tool_gripper2_joint',
+                        'pitch_top_joint','pitch_front_joint']
+
+  def __init__(self, name, ros):
+    RobotArmDVRK.__init__(self, name, ros,
+                          self.JOINT_DICT, self.JOINT_NAMES_BRIDGE)
 
 
 

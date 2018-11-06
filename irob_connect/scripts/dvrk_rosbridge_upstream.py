@@ -32,17 +32,13 @@ class DVRKRosbridgeUpstream():
 
     for name in arm_names:
       if 'SUJ_PSM' in name:
-        self.arms.append(RobotArmSUJPSM(name,
-                        self.namespace, self.ros))
+        self.arms.append(RobotArmSUJPSM(name, self.ros))
       elif 'SUJ_ECM' in name:
-        self.arms.append(RobotArmSUJECM(name,
-                        self.namespace, self.ros))
+        self.arms.append(RobotArmSUJECM(name, self.ros))
       elif 'ECM' in name:
-        self.arms.append(RobotArmECM(name,
-                        self.namespace, self.ros))
+        self.arms.append(RobotArmECM(name, self.ros))
       elif 'PSM' in name:
-        self.arms.append(RobotArmPSM(name,
-                        self.namespace, self.ros))
+        self.arms.append(RobotArmPSM(name, self.ros))
 
     self.topic = roslibpy.Topic(self.ros, self.namespace + 'state_joint_current', 'sensor_msgs/JointState')
     self.topic.advertise()
