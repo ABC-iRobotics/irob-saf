@@ -17,12 +17,16 @@ class RobotArmDVRK:
 
   joint_names_bridge = []
 
-  joint_states = [0.0] * len(joint_names_bridge)
+  joint_states = []
 
 
-  def __init__(self, name, namespace, ros):
+  def __init__(self, name, namespace, ros, joint_dict, joint_names_bridge):
     self.name = name
     self.namespace = namespace
+    self.joint_dict = joint_dict
+    self.joint_names_bridge = joint_names_bridge
+    self.joint_states = [0.0] * len(self.joint_names_bridge)
+
     self.joint_names_bridge_specific = []
     for joint_name in self.joint_names_bridge:
       self.joint_names_bridge_specific.append(self.name + '_' +  joint_name)
@@ -34,7 +38,7 @@ class RobotArmDVRK:
 
   def store_joint_state(self, joint_name_bridge, position):
       j = self.joint_names_bridge.index(joint_name_bridge)
-      self.joint_states[j] = position[i]
+      self.joint_states[j] = position
 
   def get_joint_states(self):
     return {'position': self.joint_states, 'name': self.joint_names_bridge_specific}
@@ -43,7 +47,7 @@ class RobotArmDVRK:
     return self.joint_names_bridge_specific
 
   def subscribe_to_topics(self):
-    rospy.Subscriber("/dvrk/" + self.arm + "/state_joint_current", JointState, self.joint_cb)
+    rospy.Subscriber("/dvrk/" + self.name + "/state_joint_current", JointState, self.joint_cb)
 
 
   def joint_cb(self, msg):

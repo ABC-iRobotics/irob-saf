@@ -1,29 +1,31 @@
 
 <launch>
+
+  <group ns="dvrk">
+   <group ns="twin">
+
 	
-    <arg name="host"/>
-    <arg name="port"/>
-    <arg name="drop_rate"/>
-    <arg name="arm"/>
-    <arg name="ros_rate"/>
-    <arg name="namespace"/>
+    <arg name="host" default="localhost"/>
+    <arg name="port" default="9090"/>
+    <arg name="drop_rate" default="10"/>
+    <arg name="ros_rate" default="100"/>
+    <arg name="namespace" default="/dvrk/twin/"/>
 
 
-
-   <group ns="$(arg arm)">
   	
-      <node name="rosbridge_upstream" pkg="irob_robot"
+      <node name="rosbridge_upstream" pkg="irob_connect"
       type="dvrk_rosbridge_upstream.py" output="screen">
   		
           <param name="host" type="string" value="$(arg host)" />
           <param name="port" type="int" value="$(arg port)" />
           <param name="drop_rate" type="double" value="$(arg drop_rate)" />
           <param name="ros_rate" type="double" value="$(arg ros_rate)" />
-          <param name="arm" type="string" value="$(arg arm)" />
+          <rosparam param="arm_names">["SUJ_PSM2", "SUJ_ECM", "SUJ_PSM1", "SUJ_PSM3", "ECM", "PSM1", "PSM2", "PSM3"]</rosparam>
           <param name="namespace" type="string" value="$(arg namespace)" />
 				
 			</node>
     </group>
+   </group>
 
 
 </launch>
