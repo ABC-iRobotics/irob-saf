@@ -40,7 +40,7 @@ class DVRKRosbridgeUpstream():
       elif 'PSM' in name:
         self.arms.append(RobotArmPSM(name, self.ros))
 
-    self.topic = roslibpy.Topic(self.ros, self.namespace + 'state_joint_current', 'sensor_msgs/JointState')
+    self.topic = roslibpy.Topic(self.ros, self.namespace + 'joint_states', 'sensor_msgs/JointState')
     self.topic.advertise()
     self.ros.run_forever()
 

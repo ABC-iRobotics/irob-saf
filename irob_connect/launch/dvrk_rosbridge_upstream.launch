@@ -17,7 +17,7 @@
     <arg name="ros_rate" default="100"/>
 
     <!-- Namespace of the published message -->
-    <arg name="namespace" default="/dvrk/twin/"/>
+    <arg name="namespace" default="/"/>
 
 
   	
