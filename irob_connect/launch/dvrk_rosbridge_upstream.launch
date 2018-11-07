@@ -19,6 +19,10 @@
     <!-- Topic of the published message -->
     <arg name="upstream_topic" default="/joint_states"/>
 
+    <!-- Local topic to trigger sending position to server,
+    should be sensor_msgs/JointState-->
+    <arg name="trigger_topic" default="/dvrk/PSM1/state_joint_current"/>
+
 
   	
       <node name="rosbridge_upstream" pkg="irob_connect"
@@ -29,6 +33,7 @@
           <param name="drop_rate" type="double" value="$(arg drop_rate)" />
           <param name="ros_rate" type="double" value="$(arg ros_rate)" />
           <param name="upstream_topic" type="string" value="$(arg upstream_topic)" />
+          <param name="trigger_topic" type="string" value="$(arg trigger_topic)" />
 
           <!--
                Set wich arms to be used here, those will be

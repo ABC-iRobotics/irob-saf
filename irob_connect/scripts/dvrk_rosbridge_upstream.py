@@ -7,7 +7,6 @@ import rospy
 from twisted.internet import reactor
 
 from sensor_msgs.msg import JointState
-from cisst_msgs.msg import mtsIntervalStatistics
 
 from rospy_message_converter import message_converter
 
@@ -30,11 +29,14 @@ class DVRKRosbridgeUpstream():
   :param upstream_topic: name of the topic published to rosbridge
   :param host: ip address of the host
   :param port: port of the websocket
+  :param trigger_topic: local topic to trigger sending position
+                        to server
   :param drop_rate: wait for this number of messages on the topic
                     /dvrk/spin/period_statistic before every publish
   """
-  def __init__(self, arm_names, upstream_topic, host, port, drop_rate):
+  def __init__(self, arm_names, upstream_topic, host, port, trigger_topic, drop_rate):
     self.upstream_topic = upstream_topic
+    self.trigger_topic = trigger_topic
     self.drop_rate = drop_rate
     self.cnt = 0
 
@@ -75,7 +77,7 @@ class DVRKRosbridgeUpstream():
 
     # Subscribe to some topic that triggers the publishing
     # to rosbridg
-    rospy.Subscriber('/dvrk/spin/period_statistics', mtsIntervalStatistics, self.spin_cb)
+    rospy.Subscriber(self.trigger_topic, JointState, self.spin_cb)
     for a in self.arms:
       a.subscribe_to_topics()
 
@@ -122,8 +124,9 @@ def main(args):
   port = rospy.get_param('~port')
   drop_rate = rospy.get_param('~drop_rate')
   upstream_topic = rospy.get_param('~upstream_topic')
+  trigger_topic = rospy.get_param('~trigger_topic')
 
-  drvrk_rb_us = DVRKRosbridgeUpstream(arm_names, upstream_topic, host, port, drop_rate)
+  drvrk_rb_us = DVRKRosbridgeUpstream(arm_names, upstream_topic, host, port, trigger_topic, drop_rate)
 
 
 

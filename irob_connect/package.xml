@@ -57,7 +57,6 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
-  <run_depend>cisst_msgs</run_depend>
 
 
 
