@@ -16,8 +16,8 @@
     <!-- Rate of the ROS loop -->
     <arg name="ros_rate" default="100"/>
 
-    <!-- Namespace of the published message -->
-    <arg name="namespace" default="/"/>
+    <!-- Topic of the published message -->
+    <arg name="upstream_topic" default="/joint_states"/>
 
 
   	
@@ -28,7 +28,7 @@
           <param name="port" type="int" value="$(arg port)" />
           <param name="drop_rate" type="double" value="$(arg drop_rate)" />
           <param name="ros_rate" type="double" value="$(arg ros_rate)" />
-          <param name="namespace" type="string" value="$(arg namespace)" />
+          <param name="upstream_topic" type="string" value="$(arg upstream_topic)" />
 
           <!--
                Set wich arms to be used here, those will be
