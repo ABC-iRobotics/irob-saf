@@ -134,7 +134,7 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
-
+add_executable(camera src/camera.cpp)
 add_executable(peg_transfer src/peg_transfer.cpp)
 add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 add_executable(cut_vessel src/cut_vessel.cpp)
@@ -164,6 +164,10 @@ target_link_libraries(peg_transfer
 	irob_subtask_logic_lib
 	)
 
+target_link_libraries(camera
+	${catkin_LIBRARIES}
+	irob_subtask_logic_lib
+	)
   target_link_libraries(peg_transfer_dual
       ${catkin_LIBRARIES}
       irob_subtask_logic_lib
