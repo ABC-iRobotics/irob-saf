@@ -384,6 +384,26 @@ void SurgemeClient::manipulate(Eigen::Vector3d displacement,
   // in surgemeDoneCB
 }
 
+void SurgemeClient::move_cam(Eigen::Vector3d displacement,
+                               double speed_cartesian)
+{
+  // Send a goal to the action
+  irob_msgs::SurgemeGoal goal;
+
+  goal.action = irob_msgs::SurgemeGoal::MOVE_CAM;
+
+  geometry_msgs::Point displacement_ros;
+  displacement_ros.x = displacement.x();
+  displacement_ros.y = displacement.y();
+  displacement_ros.z = displacement.z();
+  goal.displacement = displacement_ros;
+
+  goal.speed_cartesian = speed_cartesian;
+
+  ac.sendGoal(goal);
+  // Not waiting for action finish here, a notification will be received
+  // in surgemeDoneCB
+}
 
 bool SurgemeClient::isSurgemeDone(bool spin /* = true */)
 {

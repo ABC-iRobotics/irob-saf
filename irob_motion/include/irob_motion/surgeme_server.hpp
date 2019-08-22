@@ -107,6 +107,9 @@ protected:
   void manipulate(Eigen::Vector3d,
                   double);
 
+  void move_cam(Eigen::Vector3d,
+                  double);
+
   bool waitForActionDone(std::string);
   bool handleActionState(std::string, bool = false);
   bool isAbleToDoSurgeme(int);
