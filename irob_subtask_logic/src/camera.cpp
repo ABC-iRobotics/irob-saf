@@ -30,26 +30,23 @@ void Camera::moveCam()
 
   // NaN pose received, until the vision node starts
   Eigen::Vector3d p = makeNaN<Eigen::Vector3d>();
-  while (isnan(p)
-         && ros::ok())
-  {
-    p = vision.getResult();
-    ros::Duration(0.1).sleep();
-  }
 
-  ROS_INFO_STREAM("Object pose received: " << p);
 
-  ROS_INFO_STREAM("Start moving maneuver...");
 
 
 
   // Send grasp surgeme action to the surgeme server.
   while (ros::ok()){
+
       p = vision.getResult();
 
-     if(p.norm()>150)
+
+     if(!isnan(p) && p.norm()>0.1)
         {
-         arms[0] -> move_cam(p, speed_carthesian/100);
+         ROS_INFO_STREAM("Object pose received: " << p);
+
+         ROS_INFO_STREAM("Start moving maneuver...");
+         arms[0] -> move_cam(p, speed_carthesian);
 
 
            // Wait for action to be finished

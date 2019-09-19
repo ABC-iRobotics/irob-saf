@@ -104,8 +104,9 @@ DataT VisionClient<MsgT, DataT>::getResult()
 {
   ros::spinOnce();
 
-  return unwrapMsg<MsgT, DataT>(result_msg);
-
+  MsgT tmp_msg = result_msg;
+  result_msg = makeNaN<MsgT>();
+  return unwrapMsg<MsgT, DataT>(tmp_msg);
 }
 
 
