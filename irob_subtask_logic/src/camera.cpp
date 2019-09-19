@@ -47,9 +47,9 @@ void Camera::moveCam()
   while (ros::ok()){
       p = vision.getResult();
 
-     if(p.norm()>100)
+     if(p.norm()>150)
         {
-         arms[0] -> move_cam(p, speed_carthesian);
+         arms[0] -> move_cam(p, speed_carthesian/100);
 
 
            // Wait for action to be finished
