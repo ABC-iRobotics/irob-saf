@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Tool: Bnd-2.1.0.20130426-122213
 Bundle-Name: irob_vision_support
-Bnd-LastModified: 1526558801000
+Bnd-LastModified: 1569520442000
 Created-By: 1.7.0_60 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.ros.rosjava_messages.irob_vision_support
