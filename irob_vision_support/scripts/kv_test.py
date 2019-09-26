@@ -33,6 +33,7 @@ cv2.imshow("Input", image)
 # convert the mean shift image to grayscale, then apply
 # Otsu's thresholding
 gray = cv2.cvtColor(shifted, cv2.COLOR_BGR2GRAY)
+gray = 255 - gray
 thresh = cv2.threshold(gray, 0, 255,
         cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 cv2.imshow("Thresh", thresh)
