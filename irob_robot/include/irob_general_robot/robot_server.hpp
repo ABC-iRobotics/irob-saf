@@ -151,6 +151,8 @@ public:
       instrument_info.basic_type = irob_msgs::InstrumentInfo::GRIPPER;
     else if (basic_type == "SCISSORS")
       instrument_info.basic_type = irob_msgs::InstrumentInfo::SCISSORS;
+    else if (basic_type == "CAMERA")
+      instrument_info.basic_type = irob_msgs::InstrumentInfo::CAMERA;
     else
       throw std::runtime_error(
           "Invalid basic_type read from instrument info file.");

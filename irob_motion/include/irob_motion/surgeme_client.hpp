@@ -126,6 +126,9 @@ public:
   void manipulate(Eigen::Vector3d,
                   double);
 
+  void move_cam(Eigen::Vector3d,
+                  double);
+
   bool isSurgemeDone(bool = true);
   actionlib::SimpleClientGoalState getState();
 

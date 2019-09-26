@@ -144,6 +144,13 @@ void SurgemeServer::surgemeActionCB(
       break;
     }
 
+      // MOVE_CAM
+    case irob_msgs::SurgemeGoal::MOVE_CAM:
+    {
+      move_cam(displacement, goal -> speed_cartesian);
+      break;
+    }
+
       // RELEASE
     case irob_msgs::SurgemeGoal::RELEASE:
     {
@@ -278,6 +285,10 @@ bool SurgemeServer::isAbleToDoSurgeme(int surgeme_type)
 
   if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::SCISSORS
       && (	surgeme_type == irob_msgs::SurgemeGoal::CUT))
+    return true;
+
+  if (arm.getInstrumentInfo().basic_type == irob_msgs::InstrumentInfo::CAMERA
+      && (	surgeme_type == irob_msgs::SurgemeGoal::MOVE_CAM))
     return true;
 
   if(findInstrumentJawPartForSurgeme(surgeme_type).type
@@ -948,6 +959,48 @@ void SurgemeServer::manipulate(Eigen::Vector3d displacement,
     return;
 
 }  
+
+/**
+ * Move the endoscopic cmera
+ *
+ * @brief SurgemeServer::move_cam
+ * @param displacement displacement vector of the tool after reached target position
+ * @param speed_cartesian cartesian speed of the tool tip in mm/s
+ */
+void SurgemeServer::move_cam(Eigen::Vector3d displacement,
+                               double speed_cartesian)
+{
+  // Helper variables
+  bool done = false;
+  std::string stage = "";
+  // fine-tune here
+  double to_rad_const = 0.0008;
+
+  // Start action
+
+  // Move camera
+  stage = "move_cam";
+  double phi_x, phi_y, phi_z;
+  phi_x = displacement.x() * to_rad_const;
+  phi_y = displacement.y() * to_rad_const;
+  phi_z = 0;
+
+  Eigen::Matrix3d rot;
+  rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitX())
+    * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
+
+  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "rot: " << rot << std::endl );
+  Pose manipulated_pose = arm.getPoseCurrent().rotate(rot);
+  arm.moveTool(manipulated_pose, speed_cartesian);
+
+  done = waitForActionDone(stage);
+  if (done)
+    handleActionState(stage, true);
+  else
+    return;
+
+}
 
 
 // Simple relay
