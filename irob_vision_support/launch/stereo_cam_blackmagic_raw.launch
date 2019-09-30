@@ -24,6 +24,7 @@
         <arg name="calib_file_left" default="camera_dvrk_left.yaml"/>
         <arg name="calib_file_right" default="camera_dvrk_right.yaml"/>
         <arg name="command_preprocessor" default="avg_adjacent"/>
+        <arg name="frame_rate" default="1/1"/>
 
 <!-- Start Decklink stereo cam pair -->
         <include
@@ -34,8 +35,9 @@
             <arg name="right" value="right" />
             <arg name="DEVICE_NUMBER_LEFT" value="$(arg device_number_left)"/>
             <arg name="DEVICE_NUMBER_RIGHT" value="$(arg device_number_right)"/>
-                        <arg name="calib_file_left" value="$(arg calib_file_left)"/>
-                        <arg name="calib_file_right" value="$(arg calib_file_right)"/>
+            <arg name="calib_file_left" value="$(arg calib_file_left)"/>
+            <arg name="calib_file_right" value="$(arg calib_file_right)"/>
+            <arg name="FRAME_RATE" value="$(arg frame_rate)"/>
         </include>
 
 
