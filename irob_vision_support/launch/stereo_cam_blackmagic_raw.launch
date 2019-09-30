@@ -21,8 +21,8 @@
 
         <arg name="device_number_left" default="0"/>
         <arg name="device_number_right" default="1"/>
-        <arg name="calib_file_left" default="camera_dvrk_left.yaml"/>
-        <arg name="calib_file_right" default="camera_dvrk_right.yaml"/>
+        <arg name="calib_file_left" default="camera_dvrk_left_new.yaml"/>
+        <arg name="calib_file_right" default="camera_dvrk_right_new.yaml"/>
         <arg name="command_preprocessor" default="avg_adjacent"/>
         <arg name="frame_rate" default="1/1"/>
 
