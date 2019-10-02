@@ -1,0 +1,16 @@
+<!-- Launch file to detect charuco markers -->
+
+<launch>
+    <group ns="saf">
+
+    <node name="aruco_position" pkg="irob_vision_support"
+            type="aruco_position.py" output="screen" >
+
+                <remap from="qrkam" to="qrkam" />
+
+
+
+    </node>
+    </group>
+</launch>
+
