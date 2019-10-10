@@ -974,7 +974,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   bool done = false;
   std::string stage = "";
   // fine-tune here
-  double to_rad_const = 0.0008;
+  double to_rad_const = 0.1;
 
   // Start action
 
@@ -986,8 +986,8 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   phi_z = 0;
 
   Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitX())
-    * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitY())
+  rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitX())
     * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
 
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "rot: " << rot << std::endl );

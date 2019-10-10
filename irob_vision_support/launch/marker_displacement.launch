@@ -3,8 +3,8 @@
 <launch>
     <group ns="saf">
 
-    <node name="aruco_position" pkg="irob_vision_support"
-            type="aruco_position.py" output="screen" >
+    <node name="marker_displacement" pkg="irob_vision_support"
+            type="marker_displacement.py" output="screen" >
 
                 <remap from="qrkam" to="qrkam" />
 

@@ -41,7 +41,7 @@ void Camera::moveCam()
       p = vision.getResult();
 
 
-     if(!isnan(p) && p.norm()>0.1)
+     if(!isnan(p) && p.norm()>0.001)
         {
          ROS_INFO_STREAM("Object pose received: " << p);
 
