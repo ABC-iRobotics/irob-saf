@@ -2,10 +2,12 @@
 
 <launch>
     <group ns="saf">
+    <arg name="marker_size_ratio" default="0.05"/>
 
     <node name="marker_displacement" pkg="irob_vision_support"
             type="marker_displacement.py" output="screen" >
-
+            <param name="marker_size_ratio"
+                            type="double" value="$(arg marker_size_ratio)" />
                 <remap from="qrkam" to="qrkam" />
 
 

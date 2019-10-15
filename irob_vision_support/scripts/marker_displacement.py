@@ -30,6 +30,7 @@ class marker_displacement:
     self.marker_sub = rospy.Subscriber("vision/markers",MarkerArray,self.callback)
     self.image_pub = rospy.Subscriber("vision/image_markers",Image, self.callback_2)
     self.frame=None
+    self.marker_size_ratio = rospy.get_param('~marker_size_ratio')
 
 
   # Callback for image topic
@@ -50,8 +51,10 @@ class marker_displacement:
           x4=p4.x
           y4=p4.y
 
-          ter=(x2-x1)*(y4-y1)
-          kul= (110*110 - ter)   #ha nagyobb, tehát közelebb van, akkor negatív!!!
+          ter=math.sqrt(abs((x2-x1)*(y4-y1)/(w*h)))  #százalékban van
+
+
+          kul= ( self.marker_size_ratio-ter)   #ha nagyobb, tehát közelebb van, akkor nagyobb, mint 1!!!
           kp=Point()
           kp.x=x1+(x3-x1)/2
           kp.y=y4+(y2-y4)/2
@@ -63,13 +66,9 @@ class marker_displacement:
           tav=Point()
           tav.x=(kp.x-(w/2))/(w/2)
           tav.y=(kp.y-(h/2))/(h/2)
-          if kul>0:
-              tav.z=math.sqrt(kul)
 
-          else:
-              tav.z=-math.sqrt(-kul)
-
-          kp.z=tav.z
+          z_scale_factor=10
+          tav.z=kul*z_scale_factor
           print(tav.x, tav.y, tav.z)
           self.pos_pub.publish(tav)
 
@@ -87,8 +86,9 @@ def main(args):
   print("Node started")
   #help(cv2.aruco)
 
-  detector = marker_displacement()
+
   rospy.init_node('marker_displacement', anonymous=True)
+  detector = marker_displacement()
   try:
     rospy.spin()
   except KeyboardInterrupt:
