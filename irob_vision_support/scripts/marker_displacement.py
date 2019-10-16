@@ -68,7 +68,8 @@ class marker_displacement:
           tav.y=(kp.y-(h/2))/(h/2)
 
           z_scale_factor=10
-          tav.z=kul*z_scale_factor
+          tav.z = 0
+          #tav.z=kul*z_scale_factor
           print(tav.x, tav.y, tav.z)
           self.pos_pub.publish(tav)
 
