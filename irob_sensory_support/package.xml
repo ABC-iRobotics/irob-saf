@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>irob_subtask_logic</name>
+  <name>irob_sensory_support</name>
   <version>1.0.1</version>
-  <description>iRob Surgical Automation Framework---Subtask-level logic</description>
+  <description>iRob Surgical Automation Framework---Support for sensory inputs</description>
 
   <maintainer email="tamas.daniel.nagy@irob.uni-obuda.hu">Tamas D. Nagy</maintainer>
 
@@ -44,12 +44,10 @@
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>roslib</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>irob_msgs</build_depend>
   <build_depend>irob_utils</build_depend>
-  <build_depend>irob_motion</build_depend>
-  <build_depend>irob_sensory_support</build_depend>
-
+  <build_depend>libpcl-all-dev</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -57,15 +55,12 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>roslib</run_depend>
+  <run_depend>cv_bridge</run_depend>
   <run_depend>message_runtime</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>irob_msgs</run_depend>
   <run_depend>irob_utils</run_depend>
-  <run_depend>irob_motion</run_depend>
-  <run_depend>irob_sensory_support</run_depend>
+  <run_depend>libpcl-all</run_depend>
 
-
-	
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->

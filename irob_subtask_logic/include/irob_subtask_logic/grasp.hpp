@@ -30,7 +30,7 @@
 #include <irob_utils/utils.hpp>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
-#include <irob_vision_support/vision_client.hpp>
+#include <irob_sensory_support/vision_client.hpp>
 
 #include <irob_subtask_logic/autosurg_agent.hpp>
 

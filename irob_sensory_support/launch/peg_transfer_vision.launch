@@ -1,0 +1,12 @@
+<launch>
+<!-- Launch file to start a python vision node for peg transfer subtask -->
+
+        <group ns="saf">
+
+            <node pkg="irob_sensory_support" name="peg_transfer_vision" type="peg_transfer_vision.py" output="screen">
+
+            </node>
+
+        </group>
+
+</launch>

@@ -1,0 +1,22 @@
+<!-- Launch file-->
+
+<launch>
+
+		<arg name="angle" default="180"/> 
+		<arg name="camera" default="left"/>
+		<arg name="calibration" 
+			default="///home/tamas/.ros/camera_info/camera.yaml"/>
+		
+	
+	
+		<node name="camera_rotator_$(arg camera)" pkg="irob_sensory_support" 
+			type="camera_rotator" output="screen">
+			
+			<param name="angle" type="int" value="$(arg angle)" />
+			<param name="camera" type="string" value="$(arg camera)"/>
+  		
+		</node>
+		
+
+  		
+</launch>

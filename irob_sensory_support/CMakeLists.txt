@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irob_subtask_logic)
+project(irob_sensory_support)
 set(CMAKE_CXX_FLAGS -std=c++11)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,13 +17,17 @@ find_package(catkin REQUIRED
 	stereo_msgs
 	sensor_msgs
 	cv_bridge
-	actionlib
-	actionlib_msgs
+	image_transport
+	camera_info_manager
+	irob_msgs
 	irob_utils
-	irob_motion
-	irob_sensory_support
+    pcl_conversions
+    pcl_ros
 	)
 
+
+  find_package(PCL REQUIRED)
+  include_directories(${PCL_INCLUDE_DIRS})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -90,9 +95,9 @@ find_package(catkin REQUIRED
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 	INCLUDE_DIRS include
-	LIBRARIES irob_behavior_lib
+	LIBRARIES irob_sensory_support_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime actionlib_msgs irob_utils
+	message_runtime irob_msgs irob_utils
 	#DEPENDS system_lib
 	)
 
@@ -104,21 +109,23 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 	/usr/include/eigen3
-	include
+    include
 	)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 
-file(GLOB irob_subtask_logic_lib_src
+file(GLOB irob_sensory_support_src
 	"src/*.cpp"
 	)
 
 
-add_library( irob_subtask_logic_lib STATIC
-	${irob_subtask_logic_lib_src}
+add_library( irob_sensory_support_lib STATIC
+	${irob_sensory_support_lib_src}
 	)
 
-set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties( irob_sensory_support_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 
 ## Add cmake target dependencies of the library
@@ -134,13 +141,21 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(rviz_plot_trajectory src/rviz_plot_trajectory.cpp)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
-add_executable(camera src/camera.cpp)
-add_executable(peg_transfer src/peg_transfer.cpp)
-add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
-add_executable(cut_vessel src/cut_vessel.cpp)
-add_executable(grasp src/grasp.cpp)
-add_executable(accuracy_meas src/accuracy_meas.cpp)
 
+add_executable(vision_server_test_dummy 
+	src/vision_server_test_dummy.cpp)
+
+add_executable(dummy_target_publisher 
+	src/dummy_target_publisher.cpp)
+
+add_executable(camera_preprocessor
+    src/camera_preprocessor.cpp)
+
+  add_executable(pcl_test
+      src/pcl_test.cpp)
+
+    add_executable(serial_test
+        src/serial_test.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -154,45 +169,39 @@ add_executable(accuracy_meas src/accuracy_meas.cpp)
 ## Specify libraries to link a library or executable target against
 
 
-target_link_libraries(irob_subtask_logic_lib
+target_link_libraries(irob_sensory_support_lib
 	${catkin_LIBRARIES}
 	)
 
 
-target_link_libraries(peg_transfer
+target_link_libraries(vision_server_test_dummy
 	${catkin_LIBRARIES}
-	irob_subtask_logic_lib
+	irob_sensory_support_lib
 	)
 
-target_link_libraries(camera
+target_link_libraries(dummy_target_publisher
 	${catkin_LIBRARIES}
-	irob_subtask_logic_lib
+	irob_sensory_support_lib
 	)
-  target_link_libraries(peg_transfer_dual
+
+
+target_link_libraries(camera_preprocessor
+	${catkin_LIBRARIES}
+	irob_sensory_support_lib
+    )
+
+
+
+  target_link_libraries(serial_test
       ${catkin_LIBRARIES}
-      irob_subtask_logic_lib
+      irob_sensory_support_lib
       )
 
-    target_link_libraries(cut_vessel
-        ${catkin_LIBRARIES}
-        irob_subtask_logic_lib
-        )
-
-
-target_link_libraries(grasp
-	${catkin_LIBRARIES}
-	irob_subtask_logic_lib
-	)
-
-
-  target_link_libraries(accuracy_meas
+  target_link_libraries(pcl_test
       ${catkin_LIBRARIES}
-      irob_subtask_logic_lib
+      ${PCL_LIBRARIES}
+      irob_sensory_support_lib
       )
-
-
-
-
 
 #############
 ## Install ##

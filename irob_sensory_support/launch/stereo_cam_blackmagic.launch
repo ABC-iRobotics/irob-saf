@@ -1,0 +1,79 @@
+<!--	Launch file for left and right camera nodes using Decklink Blackmagic frame grabber and some preprocessing.
+
+		The initiated ROS image pipeline will be like something like:
+
+				decklink source
+
+					|	/saf/stereo
+					V
+
+				preprocessor node
+
+					|	/saf/stereo/preprocessed
+					V
+				stereo_img_proc
+
+
+
+		See the command for camera calibration in the README. Always give the calibration file name in the argument.
+-->
+
+<launch>
+	<group ns="saf"><group ns="stereo">
+
+<!-- Set args -->
+	
+		<arg name="device_number_left" default="0"/>
+		<arg name="device_number_right" default="1"/> 
+		<arg name="calib_file_left" default="camera_dvrk_left.yaml"/> 
+		<arg name="calib_file_right" default="camera_dvrk_right.yaml"/>
+		<arg name="command_preprocessor" default="avg_adjacent"/>
+		
+<!-- Start Decklink stereo cam pair -->
+		<include 
+			file="$(find irob_sensory_support)/launch/camera/decklink_cam_pair_driver.launch"
+			pass_all_args="false">
+			
+			<arg name="left" value="left" />
+			<arg name="right" value="right" />
+			<arg name="DEVICE_NUMBER_LEFT" value="$(arg device_number_left)"/>
+			<arg name="DEVICE_NUMBER_RIGHT" value="$(arg device_number_right)"/> 
+                        <arg name="calib_file_left" value="$(arg calib_file_left)"/>
+                        <arg name="calib_file_right" value="$(arg calib_file_right)"/>
+		</include> 
+
+
+<!-- Pre-process video stream -->
+		<include
+			file="$(find irob_sensory_support)/launch/camera/camera_preprocessor.launch"
+			pass_all_args="false">
+
+			<arg name="command" value="$(arg command_preprocessor)"/>
+			<arg name="camera" value="left"/>
+
+		</include>
+
+		<include
+			file="$(find irob_sensory_support)/launch/camera/camera_preprocessor.launch"
+			pass_all_args="false">
+
+			<arg name="command" value="$(arg command_preprocessor)"/>
+			<arg name="camera" value="right"/>
+
+		</include>
+		
+
+
+<!-- Rectification and disparity calculation -->
+	<group ns="preprocessed">
+		<include
+			file="$(find irob_sensory_support)/launch/camera/stereo_img_proc.launch"
+			pass_all_args="false">
+
+			<arg name="left" value="left" />
+			<arg name="right" value="right" />
+		</include>
+
+	</group>
+	</group></group>
+</launch>

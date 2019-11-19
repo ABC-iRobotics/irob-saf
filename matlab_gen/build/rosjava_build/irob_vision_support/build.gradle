@@ -3,9 +3,9 @@
  */
 
 try {
-    project.catkin.tree.generateMessageArtifact(project, 'irob_vision_support')
+    project.catkin.tree.generateMessageArtifact(project, 'irob_sensory_support')
 } catch (NullPointerException e) {
-    println("Couldn't find irob_vision_support on the ROS_PACKAGE_PATH")
+    println("Couldn't find irob_sensory_support on the ROS_PACKAGE_PATH")
 }
 
 task bugfixtask << {

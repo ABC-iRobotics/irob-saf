@@ -15,5 +15,5 @@
    <build_depend>irob_robot</build_depend>
    <build_depend>irob_subtask_logic</build_depend>
    <build_depend>irob_utils</build_depend>
-   <build_depend>irob_vision_support</build_depend>
+   <build_depend>irob_sensory_support</build_depend>
 </package>

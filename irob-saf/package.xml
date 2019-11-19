@@ -42,7 +42,7 @@
   <run_depend>irob_utils</run_depend>
   <run_depend>irob_robot_interface</run_depend>
   <run_depend>irob_motion</run_depend>
-  <run_depend>irob_vision_support</run_depend>
+  <run_depend>irob_sensory_support</run_depend>
   <run_depend>irob_subtask_logic</run_depend>
   <run_depend>irob_connect</run_depend>
 

@@ -1,0 +1,23 @@
+<!-- Launch file to detect charuco markers -->
+
+<launch>
+    <group ns="saf">
+
+    <node name="charuco_detector" pkg="irob_sensory_support"
+            type="charuco_detector.py" output="screen" >
+
+               <!--  <remap from="image_input" to="mono/cam/image_raw" />
+                <remap from="image_markers" to="vision/image_markers" />
+                <remap from="markers" to="vision/markers" />
+                <remap from="camera_info" to="mono/cam/camera_info" />
+                <remap from="transform" to="vision/transform" /> -->
+
+                <remap from="image_input" to="stereo/left/image_color" />
+                <remap from="image_markers" to="vision/left/image_markers" />
+                <remap from="markers" to="vision/left/markers" />
+               <remap from="camera_info" to="stereo/left/camera_info" />
+                <remap from="transform" to="vision/left/transform" />
+    </node>
+    </group>
+</launch>
+
