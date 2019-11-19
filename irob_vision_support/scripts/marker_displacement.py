@@ -70,7 +70,7 @@ class marker_displacement:
           z_scale_factor=10
           tav.z = 0
           #tav.z=kul*z_scale_factor
-          print(tav.x, tav.y, tav.z)
+          #print(tav.x, tav.y, tav.z)
           self.pos_pub.publish(tav)
 
   # Callback for image topic

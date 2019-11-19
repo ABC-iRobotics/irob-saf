@@ -974,7 +974,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   bool done = false;
   std::string stage = "";
   // fine-tune here
-  double to_rad_const = 0.2;
+  double to_rad_const = 0.25;
   double to_distance=2;
 
   // Start action
