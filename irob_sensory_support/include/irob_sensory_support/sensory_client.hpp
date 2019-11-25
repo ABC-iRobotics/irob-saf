@@ -1,17 +1,17 @@
 /*
- * 	vision_client.hpp
+ * 	sensory_client.hpp
  *
  *	Author(s): Tamas D. Nagy
  *	Created on: 2017-07-31
  *
- *  Generic client to receive computer vision information
+ *  Generic client to receive computer sensory information
  *  of any datatype. Designed to be used as member of
  *  subtask-level logic node.
  *
  */
 
-#ifndef VISION_CLIENT_HPP_
-#define VISION_CLIENT_HPP_
+#ifndef SENSORY_CLIENT_HPP_
+#define SENSORY_CLIENT_HPP_
 
 #include <iostream>
 #include <sstream>
@@ -37,7 +37,7 @@ namespace saf {
  * DataT unwrapMsg(const MsgT& msg) should be implemented
  */
 template <class MsgT, class DataT>
-class VisionClient {
+class SensoryClient {
 
 public:
 
@@ -56,8 +56,8 @@ protected:
   void subscribeTopics();
 
 public:
-  VisionClient(ros::NodeHandle, std::string);
-  ~VisionClient();
+  SensoryClient(ros::NodeHandle, std::string);
+  ~SensoryClient();
 
   // Callbacks
   void resultCB(const typename MsgT::ConstPtr&);
@@ -68,7 +68,7 @@ public:
 
 
 template <class MsgT, class DataT>
-VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh, std::string topic_name): nh(nh), topic_name(topic_name)
+SensoryClient<MsgT, DataT>::SensoryClient(ros::NodeHandle nh, std::string topic_name): nh(nh), topic_name(topic_name)
 {
   result_msg = makeNaN<MsgT>();
   subscribeTopics();
@@ -76,21 +76,21 @@ VisionClient<MsgT, DataT>::VisionClient(ros::NodeHandle nh, std::string topic_na
 
 
 template <class MsgT, class DataT>
-VisionClient<MsgT, DataT>::~VisionClient() {}
+SensoryClient<MsgT, DataT>::~SensoryClient() {}
 
 
 
 template <class MsgT, class DataT>
-void VisionClient<MsgT, DataT>::subscribeTopics() 
+void SensoryClient<MsgT, DataT>::subscribeTopics()
 {                 	            						
   result_sub = nh.subscribe<MsgT>(
         topic_name, 1000,
-        &VisionClient<MsgT, DataT>::resultCB,this);
+        &SensoryClient<MsgT, DataT>::resultCB,this);
 }
 
 // Callbacks
 template <class MsgT, class DataT>
-void VisionClient<MsgT, DataT>::resultCB(const typename MsgT::ConstPtr& msg)
+void SensoryClient<MsgT, DataT>::resultCB(const typename MsgT::ConstPtr& msg)
 {
   result_msg = *msg;
 }
@@ -100,7 +100,7 @@ void VisionClient<MsgT, DataT>::resultCB(const typename MsgT::ConstPtr& msg)
  * DataT unwrapMsg(const MsgT& msg) is used here
  */
 template <class MsgT, class DataT>
-DataT VisionClient<MsgT, DataT>::getResult()
+DataT SensoryClient<MsgT, DataT>::getResult()
 {
   ros::spinOnce();
 

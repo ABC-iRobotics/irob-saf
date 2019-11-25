@@ -29,7 +29,7 @@
 
 #include <irob_utils/pose.hpp>
 #include <irob_motion/surgeme_client.hpp>
-#include <irob_sensory_support/vision_client.hpp>
+#include <irob_sensory_support/sensory_client.hpp>
 
 
 namespace saf {

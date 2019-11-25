@@ -36,7 +36,7 @@
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
-#include <irob_sensory_support/vision_client.hpp>
+#include <irob_sensory_support/sensory_client.hpp>
 
 #include <irob_subtask_logic/autosurg_agent.hpp>
 
@@ -48,7 +48,7 @@ class CutVessel : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Transform, geometry_msgs::Transform> vision;
+  SensoryClient<geometry_msgs::Transform, geometry_msgs::Transform> vision;
 
   Eigen::Vector3d board_t;
   std::vector<Eigen::Vector3d> vessel_ends;
