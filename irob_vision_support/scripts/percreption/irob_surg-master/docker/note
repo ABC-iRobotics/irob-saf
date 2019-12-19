@@ -1,0 +1,1 @@
+docker run -itd --gpus all --name pytorch -v /home/bennyg/Development/irob_surg/:/Development -v /home/bennyg/Development/datasets/:/datasets -v /home/bennyg/Development/pretrained_models/:/pretrined_models nvidia/cuda:10.1-base-ubuntu18.04
