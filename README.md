@@ -8,7 +8,8 @@ The *iRob Surgical Automation Framework*---`irob-saf`--- is an open-source ROS-b
 
 If you use this framework in your reserach, please cite the following article:
 
-Nagy, Tamás D., and Tamás Haidegger. “An Open-Source Framework for Surgical Subtask Automation.” In Proc. of the 2018 IEEE Intl. Conf. on Robotics and Automation (ICRA), Workshop on Supervised Autonomy in Surgical Robotics. Brisbane, Australia, 2018.
+Tamas D. Nagy and Tamas Haidegger, [“A DVRK-based Framework for Surgical Subtask Automation,”](https://www.uni-obuda.hu/journal/Nagy_Haidegger_95.pdf) Acta Polytechnica Hungarica, Special Issue on Platforms for Medical Robotics Research, vol. 16, no. 8, pp. 61–78, 2019.
+
 
 ## List of Packages
 * [irob_msgs](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_msgs)
