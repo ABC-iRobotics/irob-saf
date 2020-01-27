@@ -90,9 +90,9 @@ find_package(catkin REQUIRED
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 	INCLUDE_DIRS include
-	LIBRARIES irob_behavior_lib
+        LIBRARIES irob_subtask_logic_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime actionlib_msgs irob_utils
+        message_runtime actionlib_msgs irob_utils irob_sensory_support
 	#DEPENDS system_lib
 	)
 
@@ -139,6 +139,7 @@ add_executable(peg_transfer src/peg_transfer.cpp)
 add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 add_executable(cut_vessel src/cut_vessel.cpp)
 add_executable(grasp src/grasp.cpp)
+add_executable(palpate src/palpate.cpp)
 add_executable(accuracy_meas src/accuracy_meas.cpp)
 
 
@@ -183,6 +184,11 @@ target_link_libraries(grasp
 	${catkin_LIBRARIES}
 	irob_subtask_logic_lib
 	)
+
+    target_link_libraries(palpate
+            ${catkin_LIBRARIES}
+            irob_subtask_logic_lib
+            )
 
 
   target_link_libraries(accuracy_meas

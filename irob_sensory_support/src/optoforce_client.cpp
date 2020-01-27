@@ -9,6 +9,7 @@
 #include <irob_sensory_support/optoforce_client.hpp>
 #include <numeric>
 #include <chrono>
+#include <cmath>
 
 namespace saf {
 
@@ -23,6 +24,7 @@ OptoforceClient::OptoforceClient(
 	// Subscribe and advertise topics
 	subscribe(TOPIC_NAME);
 	offsets << -434.0, -297.0, 28622.0;
+  forces << std::nan(""),  std::nan(""),  std::nan("");
       
 }
 
@@ -44,7 +46,7 @@ bool OptoforceClient::subscribe(std::string topic)
 {
     forces_sub = nh.subscribe<optoforcesensor::FT>(
                         topic, 1000,
-                        &OptoforceListener::forcesCB,this);
+                        &OptoforceClient::forcesCB,this);
     
     ROS_INFO_STREAM("Subscribed to topic " << topic);
     return true;
@@ -59,12 +61,14 @@ Eigen::Vector3d OptoforceClient::getForcesCurrent()
 
 void OptoforceClient::calibrateOffsets()
 {
+
 	double nSamples = 5;
 	Eigen::Vector3d tmp(0.0, 0.0, 0.0);
 	ros::Rate loop_rate(50.0);
 	for (int i = 0; i < nSamples; i++)
 	{
-		tmp += getForcesCurrent();
+    Eigen::Vector3d f = getForcesCurrent();
+    tmp += f;
 		loop_rate.sleep();
 	}
 	tmp /= nSamples;

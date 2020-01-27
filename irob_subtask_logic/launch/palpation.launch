@@ -1,0 +1,19 @@
+<!-- Launch file for palpation -->
+
+<launch>
+	<group ns="saf">
+
+
+
+        <arg name="speed_cartesian" default="20.0"/>
+
+        <node name="palpation" pkg="irob_subtask_logic"
+            type="palpate" output="screen">
+
+                <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+                <rosparam param="arm_names">["arm_1"]</rosparam>
+  		
+
+	</node>
+  	</group>
+</launch>

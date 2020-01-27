@@ -20,7 +20,8 @@ find_package(catkin REQUIRED
 	image_transport
 	camera_info_manager
 	irob_msgs
-	irob_utils
+        optoforcesensor
+        irob_utils
     pcl_conversions
     pcl_ros
 	)
@@ -97,7 +98,7 @@ catkin_package(
 	INCLUDE_DIRS include
 	LIBRARIES irob_sensory_support_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime irob_msgs irob_utils
+        message_runtime irob_msgs irob_utils optoforcesensor
 	#DEPENDS system_lib
 	)
 
@@ -116,7 +117,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 
-file(GLOB irob_sensory_support_src
+file(GLOB irob_sensory_support_lib_src
 	"src/*.cpp"
 	)
 
