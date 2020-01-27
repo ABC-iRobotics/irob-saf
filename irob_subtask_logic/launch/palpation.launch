@@ -6,11 +6,13 @@
 
 
         <arg name="speed_cartesian" default="20.0"/>
+        <arg name="filename" default="/home/tamas/Data/test.txt"/>
 
         <node name="palpation" pkg="irob_subtask_logic"
             type="palpate" output="screen">
 
                 <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+                <param name="filename" type="string" value="$(arg filename)" />
                 <rosparam param="arm_names">["arm_1"]</rosparam>
   		
 

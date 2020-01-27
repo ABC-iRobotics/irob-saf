@@ -44,12 +44,15 @@ class Palpate : public AutosurgAgent {
 protected:
 
   OptoforceClient optoforce;
+  double dt;
 
 
 public:
   Palpate(ros::NodeHandle, ros::NodeHandle priv_nh, std::vector<std::string>);
   ~Palpate();
-  void palpateSample();
+  void palpateSample(std::string);
+  void writeData(std::string, std::string,
+            std::vector<double>&, std::vector<double>&);
 
 };
 
