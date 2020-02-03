@@ -3,6 +3,8 @@
 <launch>
     <group ns="saf">
     <arg name="marker_size_ratio" default="0.05"/>
+    <arg name="image_markers" default="vision/image_markers"/>
+    <arg name="markers" default="vision/markers"/>
 
     <node name="marker_displacement" pkg="irob_vision_support"
             type="marker_displacement.py" output="screen" >

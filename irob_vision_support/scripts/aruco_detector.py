@@ -50,7 +50,7 @@ class aruco_detector:
       marker_msg = MarkerArray()
       marker_msg.header = data.header
       marker_msg.markers = []
-      #print(corners)
+      print(corners)
       if not ids is None:
         if len(ids) != 0:
           for i in range(len(ids)):
@@ -61,9 +61,11 @@ class aruco_detector:
               marker_msg.markers[i].corners.append(Point2D())
               marker_msg.markers[i].corners[j].x = corners[i][0,j,0]
               marker_msg.markers[i].corners[j].y = corners[i][0,j,1]
+    
 
-    #cv2.imshow("Image window", cv_image)
-    #cv2.waitKey(3)
+    
+    cv2.imshow("Image window", cv_image)
+    cv2.waitKey(3)
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
@@ -91,4 +93,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-

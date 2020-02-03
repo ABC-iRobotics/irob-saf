@@ -40,10 +40,10 @@ void Camera::moveCam()
 
       p = vision.getResult();
       //ROS_INFO_STREAM("Pose...: "<< p);
-
-     if(!isnan(p) && p.norm()>0.2)
+      double xy= sqrt(p(0)*p(0) + p(1)*p(1));
+     if(!isnan(p) && (xy>0.2 || p(2)!=0))
         {
-         ROS_INFO_STREAM("Object pose received: " << p);
+         ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
          arms[0] -> move_cam(p, speed_carthesian);
