@@ -63,7 +63,7 @@ void RobotClient::subscribeTopics()
 
  joint_state_current_sub =
       nh.subscribe<sensor_msgs::JointState>(
-        "robot/"+arm_name+"/joint_state_current_cf",
+        "robot/"+arm_name+"/joint_state_current",
         1000, &RobotClient::jointStateCurrentCB,this);
 
   instrument_info_sub =
@@ -81,7 +81,7 @@ void RobotClient::advertiseTopics()
 
  joint_state_current_pub
       = nh.advertise<sensor_msgs::JointState>(
-        "surgeme/"+arm_name+"/joint_state_current_cf",
+        "surgeme/"+arm_name+"/joint_state_current",
         1000);
 
   instrument_info_pub

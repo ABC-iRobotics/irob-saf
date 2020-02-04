@@ -81,7 +81,7 @@ protected:
           1000);
     joint_state_current_pub
         = nh.advertise<sensor_msgs::JointState>(
-          "robot/"+arm_name+"/joint_state_current_cf",
+          "robot/"+arm_name+"/joint_state_current",
           1000);
     instrument_info_pub
         = nh.advertise<irob_msgs::InstrumentInfo>(

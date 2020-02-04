@@ -1015,6 +1015,12 @@ Pose SurgemeServer::getPoseCurrent()
   return arm.getPoseCurrent();
 }
 
+// Simple relay
+sensor_msgs::JointState SurgemeServer::getJointStateCurrent()
+{
+  return arm.getJointStateCurrent();
+}
+
 std::string SurgemeServer::getArmName()
 {
   return arm.getName();

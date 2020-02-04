@@ -34,6 +34,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <irob_msgs/ToolPoseStamped.h>
+#include <sensor_msgs/JointState.h>
 
 #include <irob_msgs/SurgemeAction.h>
 
@@ -73,6 +74,9 @@ public:
       const irob_msgs::SurgemeGoalConstPtr &);
 
   Pose getPoseCurrent();
+
+  sensor_msgs::JointState getJointStateCurrent();
+
   std::string getArmName();
 
 protected:
