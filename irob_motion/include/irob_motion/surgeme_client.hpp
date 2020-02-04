@@ -37,6 +37,7 @@
 #include <irob_msgs/SurgemeAction.h>
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
+#include <sensor_msgs/JointState.h>
 
 namespace saf {
 
@@ -54,6 +55,7 @@ protected:
 
   // States
   irob_msgs::ToolPoseStamped position_cartesian_current;
+  irob_msgs::ToolPoseStamped joint_state_current;
   irob_msgs::InstrumentInfo instrument_info;
 
   // Subscribers

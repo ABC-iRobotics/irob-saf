@@ -96,6 +96,18 @@ Pose SurgemeClient::getPoseCurrent()
 
 }
 
+Pose SurgemeClient::getJointStateCurrent()
+{
+  while (joint_state_current.header.seq == 0)
+  {
+    ros::spinOnce();
+    ros::Duration(0.05).sleep();
+  }
+  Pose ret(joint_state_current);
+  return ret;
+
+}
+
 
 irob_msgs::InstrumentInfo SurgemeClient::getInstrumentInfo()
 {
