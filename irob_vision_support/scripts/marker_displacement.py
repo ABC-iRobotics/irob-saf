@@ -78,7 +78,7 @@ class marker_displacement:
           dist=Point()
           dist.x=0 #((kp1.x+kp2.x)/2-(w/2))/(w/2)
           dist.y=0 #((kp1.y+kp2.y)/2-(h/2))/(h/2)
-          dist.z=0
+          
 
           #depth calculation from the markers distance
           if (h > w):
@@ -88,9 +88,8 @@ class marker_displacement:
           #z-hez arány! nem előjeles! alsó és felső treshold kell
           markers_distance=math.sqrt((kp1.x-kp2.x)**2+(kp1.y-kp2.y)**2)/k 
 
-          threshold_for_zoom=0.6  #0-1
-          if (1.2*threshold_for_zoom*k<markers_distance) or (0.8*threshold_for_zoom*k>markers_distance):
-              dist.z=markers_distance/k-threshold_for_zoom
+          threshold_for_zoom=0.5  #0-1
+          dist.z=markers_distance-threshold_for_zoom  # -0.5 and 0.5
 
       
                   
