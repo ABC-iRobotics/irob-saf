@@ -37,41 +37,67 @@ class marker_displacement:
   def callback(self,data):
     if not self.frame is None:
       h,w = self.frame.shape[:2]
-      if (len(data.markers) > 0):
-          p1 = data.markers[0].corners[0]
-          x1=p1.x
-          y1=p1.y
-          p2 = data.markers[0].corners[1]
-          x2=p2.x
-          y2=p2.y
-          p3 = data.markers[0].corners[2]
-          x3=p3.x
-          y3=p3.y
-          p4 = data.markers[0].corners[3]
-          x4=p4.x
-          y4=p4.y
+      if (len(data.markers) > 1):   #only works with 2 markers! or the first 2 detected
+         
+          #first marker corners and center
+          x1 = data.markers[0].corners[0].x
+          y1 = data.markers[0].corners[0].y
 
-          ter=math.sqrt(abs((x2-x1)*(y4-y1)/(w*h)))  #százalékban van
+          x2 = data.markers[0].corners[1].x
+          y2 = data.markers[0].corners[1].y
+
+          x3 = data.markers[0].corners[2].x
+          y3 = data.markers[0].corners[2].y
+
+          x4 = data.markers[0].corners[3].x
+          y4 = data.markers[0].corners[3].y
+
+          kp1=Point()
+          kp1.x=x1+(x3-x1)/2
+          kp1.y=y4+(y2-y4)/2
+
+          #second marker corners and center
+          x1 = data.markers[1].corners[0].x
+          y1 = data.markers[1].corners[0].y
+
+          x2 = data.markers[1].corners[1].x
+          y2 = data.markers[1].corners[1].y
+
+          x3 = data.markers[1].corners[2].x
+          y3 = data.markers[1].corners[2].y
+
+          x4 = data.markers[1].corners[3].x
+          y4 = data.markers[1].corners[3].y
+
+          kp2=Point()
+          kp2.x=x1+(x3-x1)/2
+          kp2.y=y4+(y2-y4)/2
 
 
-          kul= ( self.marker_size_ratio-ter)   #ha nagyobb, tehát közelebb van, akkor nagyobb, mint 1!!!
-          kp=Point()
-          kp.x=x1+(x3-x1)/2
-          kp.y=y4+(y2-y4)/2
-          kp.z=kul
-          #kp=np.array([x1+(x3-x1)/2, y4+(y2-y4)/2])
-          #print(kp.x, kp.y,kp.z)
-          # pub.publish(kp)
+          # distance calculation from center; ratio
+          dist=Point()
+          dist.x=0 #((kp1.x+kp2.x)/2-(w/2))/(w/2)
+          dist.y=0 #((kp1.y+kp2.y)/2-(h/2))/(h/2)
+          dist.z=0
 
-          tav=Point()
-          tav.x=(kp.x-(w/2))/(w/2)
-          tav.y=(kp.y-(h/2))/(h/2)
+          #depth calculation from the markers distance
+          if (h > w):
+              k=w
+          else:
+              k=h
+          #z-hez arány! nem előjeles! alsó és felső treshold kell
+          markers_distance=math.sqrt((kp1.x-kp2.x)**2+(kp1.y-kp2.y)**2)/k 
 
-          z_scale_factor=10
-          tav.z = 0
-          #tav.z=kul*z_scale_factor
-          #print(tav.x, tav.y, tav.z)
-          self.pos_pub.publish(tav)
+          threshold_for_zoom=0.6  #0-1
+          if (1.2*threshold_for_zoom*k<markers_distance) or (0.8*threshold_for_zoom*k>markers_distance):
+              dist.z=markers_distance/k-threshold_for_zoom
+
+      
+                  
+
+          #publicate to qrkam
+          self.pos_pub.publish(dist)
+
 
   # Callback for image topic
   def callback_2(self,data):
@@ -89,6 +115,7 @@ def main(args):
 
 
   rospy.init_node('marker_displacement', anonymous=True)
+
   detector = marker_displacement()
   try:
     rospy.spin()
