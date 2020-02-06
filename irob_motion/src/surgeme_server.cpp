@@ -973,10 +973,10 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   // Helper variables
   bool done = false;
   std::string stage = "";
-  // fine-tune here
 
+  // fine-tune here
   sensor_msgs::JointState joint_state_now = arm.getJointStateCurrent();
-  double to_rad_const = joint_state_now.position[2]*100;  //tizedes, pozitív, egyenes arányosság
+  double to_rad_const = 0.2+joint_state_now.position[2]*0.5;  //tizedes, pozitív, egyenes arányosság, nulla lekezelve
   double to_distance=100;
 
   // Start action
@@ -986,9 +986,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   double phi_x, phi_y, phi_z;
   phi_x = displacement.x() * to_rad_const;
   phi_y = displacement.y() * to_rad_const;
-  phi_z = 0; //displacement.z()*to_distance;
+  phi_z = 0;
 
-//double arm.getJointStateCurrent(int);   2 indexű ;  ehhez képest kell zoom   minél jobban be van tolva, annál kisebb az arányszám to_rad_const
+
 
   Eigen::Matrix3d rot;
   rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitY())
@@ -997,7 +997,6 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   Eigen::Vector3d zoom(0,0,displacement.z() * to_distance);
 
 
-  //ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "rot: " << rot << std::endl );
   Pose manipulated_pose = arm.getPoseCurrent().rotate(rot)+zoom;
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "zoom: " << zoom << std::endl<<"manipulated pose (rot+zoom): "<<manipulated_pose<<std::endl <<"jointstate: "<<joint_state_now<<std::endl);
   arm.moveTool(manipulated_pose, speed_cartesian);

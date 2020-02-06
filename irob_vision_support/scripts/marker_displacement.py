@@ -76,8 +76,8 @@ class marker_displacement:
 
           # distance calculation from center; ratio
           dist=Point()
-          dist.x=0 #((kp1.x+kp2.x)/2-(w/2))/(w/2)
-          dist.y=0 #((kp1.y+kp2.y)/2-(h/2))/(h/2)
+          dist.x=((kp1.x+kp2.x)/2-(w/2))/(w/2)
+          dist.y=((kp1.y+kp2.y)/2-(h/2))/(h/2)
           
 
           #depth calculation from the markers distance

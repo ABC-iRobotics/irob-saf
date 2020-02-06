@@ -38,11 +38,50 @@ void Camera::moveCam()
   // Send grasp surgeme action to the surgeme server.
   while (ros::ok()){
 
-      p = vision.getResult();
-      //ROS_INFO_STREAM("Pose...: "<< p);
-      double xy= sqrt(p(0)*p(0) + p(1)*p(1));
-     if(!isnan(p) && (xy>0.2 || p(2)!=0))
+     p = vision.getResult();
+     //if(!isnan(p)){ROS_INFO_STREAM("z abs...: "<< fabs(p(2)));}
+     double xy= sqrt(p(0)*p(0) + p(1)*p(1));
+     if(!isnan(p) && xy>=0.2 && fabs(p(2))>=0.15)
         {
+         ROS_INFO_STREAM("Marker displacement received: " << p);
+
+         ROS_INFO_STREAM("Start moving maneuver...");
+         arms[0] -> move_cam(p, speed_carthesian);
+
+
+           // Wait for action to be finished
+         while(!arms[0] -> isSurgemeDone() && ros::ok())
+             {
+
+                // Receive action result
+                p = vision.getResult();
+                ros::Duration(0.1).sleep();
+             }
+         }
+
+     if(!isnan(p) && xy>=0.2 && fabs(p(2))<0.15)
+        {
+         p(2)=0;
+         ROS_INFO_STREAM("Marker displacement received: " << p);
+
+         ROS_INFO_STREAM("Start moving maneuver...");
+         arms[0] -> move_cam(p, speed_carthesian);
+
+
+           // Wait for action to be finished
+         while(!arms[0] -> isSurgemeDone() && ros::ok())
+             {
+
+                // Receive action result
+                p = vision.getResult();
+                ros::Duration(0.1).sleep();
+             }
+         }
+
+     if(!isnan(p) && xy<0.2 && fabs(p(2))>=0.15)
+        {
+         p(0)=0;
+         p(1)=0;
          ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
