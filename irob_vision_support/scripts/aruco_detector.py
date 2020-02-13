@@ -50,7 +50,7 @@ class aruco_detector:
       marker_msg = MarkerArray()
       marker_msg.header = data.header
       marker_msg.markers = []
-      print(corners)
+      #print(corners)
       if not ids is None:
         if len(ids) != 0:
           for i in range(len(ids)):

@@ -37,6 +37,7 @@ class marker_displacement:
   def callback(self,data):
     if not self.frame is None:
       h,w = self.frame.shape[:2]
+      
       if (len(data.markers) > 1):   #only works with 2 markers! or the first 2 detected
          
           #first marker corners and center
@@ -72,6 +73,8 @@ class marker_displacement:
           kp2=Point()
           kp2.x=x1+(x3-x1)/2
           kp2.y=y4+(y2-y4)/2
+          
+          print("kp1:", kp1, ", kp2:", kp2)
 
 
           # distance calculation from center; ratio
@@ -88,7 +91,7 @@ class marker_displacement:
           #z-hez arány! nem előjeles! alsó és felső treshold kell
           markers_distance=math.sqrt((kp1.x-kp2.x)**2+(kp1.y-kp2.y)**2)/k 
 
-          threshold_for_zoom=0.5  #0-1
+          threshold_for_zoom=0.2  #0-1
           dist.z=markers_distance-threshold_for_zoom  # -0.5 and 0.5
 
       
