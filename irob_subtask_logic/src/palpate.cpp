@@ -68,13 +68,12 @@ void Palpate::palpateSample(std::string filename)
 
   // Do palpation
   ROS_INFO_STREAM("Starting palpation...");
-  double palpation_depth = 8.0;
+  double palpation_depth = 5.0;
   Pose p = arms[0] -> getPoseCurrent();
   Eigen::Vector3d palpation_displacement = palpation_depth *
                             BaseDirections<CoordinateFrame::ROBOT,
                             Eigen::Vector3d>::DOWN;
 
-  // Send navigate surgeme action to the surgeme server.
   std::vector<double> d, f;
   ros::Rate loop_rate(1.0/dt);
   arms[0] -> manipulate(palpation_displacement, 10.0);
@@ -85,10 +84,24 @@ void Palpate::palpateSample(std::string filename)
     f.push_back(optoforce.getForcesCurrent().z());
     loop_rate.sleep();
   }
-  ROS_INFO_STREAM("Palpation executed succesfully.");
+  ROS_INFO_STREAM("Palpation executed succesfully, rising probe.");
   ROS_INFO_STREAM(d);
   ROS_INFO_STREAM(f);
   writeData(filename, "comment", d, f);
+
+  // Rise probe
+  double probe_height = 30.0;
+  Eigen::Vector3d rise_displacement = probe_height *
+                            BaseDirections<CoordinateFrame::ROBOT,
+                            Eigen::Vector3d>::UP;
+
+  arms[0] -> manipulate(rise_displacement, 20.0);
+  while(!arms[0] -> isSurgemeDone() && ros::ok())
+  {
+    loop_rate.sleep();
+  }
+
+  ROS_INFO_STREAM("Finished.");
 
 }
 
