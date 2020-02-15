@@ -977,7 +977,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   // fine-tune here
   sensor_msgs::JointState joint_state_now = arm.getJointStateCurrent();
   double to_rad_const = 0.15+joint_state_now.position[2]*0.15;  //tizedes, pozitív, egyenes arányosság, nulla lekezelve
-  double to_distance=200;
+  double to_distance=100;
 
   // Start action
 
@@ -996,7 +996,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitX())
     * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
-  Eigen::Vector3d zoom(0,0,displacement.z() * to_distance);
+  Eigen::Vector3d zoom(0,0,displacement.z() * to_distance);  //ez negatív legyen!!, 55nél már kiakad!! (max,  tresholdnak?)
   //Eigen::Vector3d zoom(0,0,displacement.z() * 0.0);
 
 

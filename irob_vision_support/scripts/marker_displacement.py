@@ -92,7 +92,7 @@ class marker_displacement:
           markers_distance=math.sqrt((kp1.x-kp2.x)**2+(kp1.y-kp2.y)**2)/k 
 
           threshold_for_zoom=0.2  #0-1
-          dist.z=markers_distance-threshold_for_zoom  # -0.5 and 0.5
+          dist.z=markers_distance-threshold_for_zoom  # -0.2 and 0.8
 
       
                   

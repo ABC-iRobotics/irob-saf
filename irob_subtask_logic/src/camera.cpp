@@ -38,10 +38,11 @@ void Camera::moveCam()
   // Send grasp surgeme action to the surgeme server.
   while (ros::ok()){
 
+     double tresh_zoom=0.3;
      p = vision.getResult();
      //if(!isnan(p)){ROS_INFO_STREAM("z abs...: "<< fabs(p(2)));}
      double xy= sqrt(p(0)*p(0) + p(1)*p(1));
-     if(!isnan(p) && xy>=0.3 && fabs(p(2))>=0.05)
+     if(!isnan(p) && xy>=0.3 && (p(2)>=tresh_zoom || p(2)<0))
         {
          ROS_INFO_STREAM("Marker displacement received: " << p);
 
@@ -59,7 +60,7 @@ void Camera::moveCam()
              }
          }
 
-     if(!isnan(p) && xy>=0.3 && fabs(p(2))<0.05)
+     if(!isnan(p) && xy>=0.3 && (p(2)<tresh_zoom && p(2)>=0))
         {
          p(2)=0;
          ROS_INFO_STREAM("Marker displacement received: " << p);
@@ -78,7 +79,7 @@ void Camera::moveCam()
              }
          }
 
-     if(!isnan(p) && xy<0.3 && fabs(p(2))>=0.05)
+     if(!isnan(p) && xy<0.3 && (p(2)>=tresh_zoom || p(2)<0))
         {
          p(0)=0;
          p(1)=0;
