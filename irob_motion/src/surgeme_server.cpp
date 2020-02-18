@@ -996,11 +996,14 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitX())
     * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
-  Eigen::Vector3d zoom(0,0,displacement.z() * to_distance);  //ez negatív legyen!!, 55nél már kiakad!! (max,  tresholdnak?)
+  double z=displacement.z() * to_distance;
+  if (z>45) z=45;
+  Eigen::Vector3d zoom(0,0,z);  //50 fölött túl messze lesz neki
   //Eigen::Vector3d zoom(0,0,displacement.z() * 0.0);
 
 
   Pose manipulated_pose = arm.getPoseCurrent().rotate(rot)+zoom;
+ if (manipulated_pose.position[2] >-5) manipulated_pose.position[2]=-5;
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "zoom: " << zoom << std::endl<<"pose: "<<arm.getPoseCurrent()<<std::endl <<"manipulated pose (rot): "<<arm.getPoseCurrent().rotate(rot)<<std::endl <<"manipulated pose (rot+zoom): "<<manipulated_pose<<std::endl <<"jointstate: "<<joint_state_now<<std::endl);
   arm.moveTool(manipulated_pose, speed_cartesian);
 
