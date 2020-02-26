@@ -28,6 +28,7 @@
 #include <Eigen/Geometry> 
 #include <irob_utils/pose.hpp>
 #include <irob_utils/trajectory.hpp>
+#include <irob_utils/abstract_directions.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_general_robot/robot_client.hpp>
 #include <actionlib/server/simple_action_server.h>
