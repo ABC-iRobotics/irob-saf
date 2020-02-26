@@ -2,16 +2,16 @@
 
 <launch>
     
-    <!--group ns="saf"-->
-    <arg name="image_input" default="cv_camera/image_raw"/> 
-    <!--arg name="image_input" default="stereo/left/image_color"/-->
+    <group ns="saf">
+    
+    <arg name="image_input" default="stereo/left/image_color"/>
 
     <node name="aruco_detector" pkg="irob_vision_support"
             type="aruco_detector.py" output="screen" >
 
-                <remap from="image_input" to="cv_camera/image_raw" />
-                <remap from="image_markers" to="saf/vision/image_markers" />
-                <remap from="markers" to="saf/vision/markers" />
+                <remap from="image_input" to="stereo/left/image_color" />
+                <remap from="image_markers" to="vision/image_markers" />
+                <remap from="markers" to="vision/markers" />
     </node>
     <!--/group-->
 </launch>
