@@ -1003,11 +1003,15 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
 
   Pose current_pose = arm.getPoseCurrent();
   Eigen::Matrix3d pose_rot = current_pose.orientation.toRotationMatrix();
-  pose_rot = pose_rot * BaseOrientations<CoordinateFrame::ROBOT,
-                                        Eigen::Quaternion<double>>::DOWN_FORWARD.
-                                            toRotationMatrix();
-  rot = pose_rot * rot;
-  zoom = pose_rot * zoom;
+  //pose_rot=pose_rot.inverse();
+  //pose_rot = pose_rot * BaseOrientations<CoordinateFrame::ROBOT,
+    //                                    Eigen::Quaternion<double>>::DOWN_FORWARD.
+      //                                      toRotationMatrix();
+  rot = pose_rot.inverse()*rot*pose_rot;
+  zoom =pose_rot.inverse()*zoom;
+  if (zoom(2)>45) zoom(2)=45;
+
+
 
   Pose manipulated_pose = current_pose.rotate(rot)+zoom;
  if (manipulated_pose.position[2] >-5) manipulated_pose.position[2]=-5;
