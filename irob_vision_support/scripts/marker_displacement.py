@@ -74,14 +74,15 @@ class marker_displacement:
           kp2.x=x1+(x3-x1)/2
           kp2.y=y4+(y2-y4)/2
           
-          print("kp1:", kp1, ", kp2:", kp2)
+          #print("kp1:", kp1, ", kp2:", kp2)
 
 
           # distance calculation from center; ratio
           dist=Point()
           dist.x=((kp1.x+kp2.x)/2-(w/2))/(w/2)
+          #dist.x=0
           dist.y=((kp1.y+kp2.y)/2-(h/2))/(h/2)
-          
+          #dist.y=0
 
           #depth calculation from the markers distance
           if (h > w):
@@ -91,11 +92,11 @@ class marker_displacement:
           #z-hez arány! nem előjeles! alsó és felső treshold kell
           markers_distance=math.sqrt((kp1.x-kp2.x)**2+(kp1.y-kp2.y)**2)/k 
 
-          threshold_for_zoom=0.2  #0-1
-          dist.z=markers_distance-threshold_for_zoom  # -0.2 and 0.8
-
+          #threshold_for_zoom=0.2  #0-1
+          dist.z=markers_distance#-threshold_for_zoom  # -0.2 and 0.8
+          #dist.z=0
       
-                  
+          print(dist)
 
           #publicate to qrkam
           self.pos_pub.publish(dist)

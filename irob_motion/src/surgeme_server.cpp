@@ -976,8 +976,8 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
 
   // fine-tune here
   sensor_msgs::JointState joint_state_now = arm.getJointStateCurrent();
-  double to_rad_const = 0.05+joint_state_now.position[2]*0.05;  //tizedes, pozitív, egyenes arányosság, nulla lekezelve
-  double to_distance=80;
+  double to_rad_const = 0.2+joint_state_now.position[2]*0.2;  //tizedes, pozitív, egyenes arányosság, nulla lekezelve
+  double to_distance=450;
 
   // Start action
 
@@ -985,9 +985,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   stage = "move_cam";
   double phi_x, phi_y, phi_z;
   phi_x = displacement.x() * to_rad_const;
-  ROS_INFO_STREAM("Phi_x: " << phi_x << std::endl);
+  //ROS_INFO_STREAM("Phi_x: " << phi_x << std::endl);
   phi_y = displacement.y() * to_rad_const;
-  ROS_INFO_STREAM("Phi_y: " << phi_y << std::endl);
+  //ROS_INFO_STREAM("Phi_y: " << phi_y << std::endl);
   phi_z = 0;
 
 
@@ -1007,15 +1007,16 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
   //pose_rot = pose_rot * BaseOrientations<CoordinateFrame::ROBOT,
     //                                    Eigen::Quaternion<double>>::DOWN_FORWARD.
       //                                      toRotationMatrix();
-  rot = pose_rot.inverse()*rot*pose_rot;
-  zoom =pose_rot.inverse()*zoom;
+  //rot = pose_rot*rot;
+  zoom =pose_rot*zoom;
   if (zoom(2)>45) zoom(2)=45;
 
 
 
   Pose manipulated_pose = current_pose.rotate(rot)+zoom;
+  //Pose manipulated_pose = current_pose+zoom;
  if (manipulated_pose.position[2] >-5) manipulated_pose.position[2]=-5;
-  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "zoom: " << zoom << std::endl<<"pose: "<<arm.getPoseCurrent()<<std::endl <<"manipulated pose (rot): "<<arm.getPoseCurrent().rotate(rot)<<std::endl <<"manipulated pose (rot+zoom): "<<manipulated_pose<<std::endl <<"jointstate: "<<joint_state_now<<std::endl);
+  //ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "zoom: " << zoom << std::endl<<"pose: "<<arm.getPoseCurrent()<<std::endl <<"manipulated pose (rot): "<<arm.getPoseCurrent().rotate(rot)<<std::endl <<"manipulated pose (rot+zoom): "<<manipulated_pose<<std::endl <<"jointstate: "<<joint_state_now<<std::endl);
   arm.moveTool(manipulated_pose, speed_cartesian);
 
   done = waitForActionDone(stage);

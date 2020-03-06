@@ -266,7 +266,7 @@ void RobotClient::moveTool(Pose target, double speed,
   goal.action = irob_msgs::RobotGoal::FOLLOW_TRAJECTORY;
   goal.move_allowed = true;
   tr.copyToRosTrajectory(goal.trajectory);
-  ROS_INFO_STREAM("tr: " << tr);
+  //ROS_INFO_STREAM("tr: " << tr);
   ac.sendGoal(goal);
 
 }

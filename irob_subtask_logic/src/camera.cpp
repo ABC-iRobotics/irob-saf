@@ -13,8 +13,12 @@ namespace saf {
 
 
 Camera::Camera(ros::NodeHandle nh, ros::NodeHandle priv_nh,
-             std::vector<std::string> arm_names, double speed_carthesian):
-  AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target"), speed_carthesian(speed_carthesian)
+             std::vector<std::string> arm_names, double  marker_dist_desired, double marker_dist_threshold, double marker_xy_threshold, double speed_carthesian):
+  AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target"),
+        speed_carthesian(speed_carthesian),
+        marker_dist_desired(marker_dist_desired),
+        marker_dist_threshold(marker_dist_threshold),
+        marker_xy_threshold(marker_xy_threshold)
 {	
   //
 }
@@ -38,15 +42,16 @@ void Camera::moveCam()
   // Send grasp surgeme action to the surgeme server.
   while (ros::ok()){
 
-     double thresh_zoom=0.5;
+
      p = vision.getResult();
      //if(!isnan(p)){ROS_INFO_STREAM("z abs...: "<< fabs(p(2)));}
      double xy= sqrt(p(0)*p(0) + p(1)*p(1));
-     double thresh_zoom_upper = 0.5;
-     double thresh_zoom_lower = 0.1;
-     if(!isnan(p) && xy>=thresh_zoom && (p(2)>=thresh_zoom_upper || p(2)<thresh_zoom_lower))
-        {
-         ROS_INFO_STREAM("Marker displacement received: " << p);
+     if(!isnan(p))
+        ROS_INFO_STREAM("Marker displacement received: " << p << std::endl << "xy: " << xy);
+     if(!isnan(p) && xy>=marker_xy_threshold &&
+             (p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
+     {
+         //ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
          arms[0] -> move_cam(p, speed_carthesian);
@@ -61,11 +66,11 @@ void Camera::moveCam()
                 ros::Duration(0.1).sleep();
              }
          }
-
-     if(!isnan(p) && xy>=thresh_zoom && (p(2)<thresh_zoom_upper && p(2)>=thresh_zoom_lower))
+     if(!isnan(p) && xy>=marker_xy_threshold &&
+             !(p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
         {
          p(2)=0;
-         ROS_INFO_STREAM("Marker displacement received: " << p);
+        // ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
          arms[0] -> move_cam(p, speed_carthesian);
@@ -81,11 +86,13 @@ void Camera::moveCam()
              }
          }
 
-     if(!isnan(p) && xy<thresh_zoom && (p(2)>=thresh_zoom_upper || p(2)<thresh_zoom_lower))
+     if(!isnan(p) && xy<marker_xy_threshold &&
+             (p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
         {
          p(0)=0;
          p(1)=0;
-         ROS_INFO_STREAM("Marker displacement received: " << p);
+         p(2) = marker_dist_desired - p(2);
+        // ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
          arms[0] -> move_cam(p, speed_carthesian);
@@ -101,7 +108,7 @@ void Camera::moveCam()
              }
          }
      }
-
+  ros::Duration(0.1).sleep();
   ROS_INFO_STREAM("Camera moving succeeded");
 }
 
@@ -124,12 +131,17 @@ int main(int argc, char **argv)
   priv_nh.getParam("arm_names", arm_names);
   double speed_carthesian;
   priv_nh.getParam("speed_cartesian", speed_carthesian);
-
+  double marker_dist_desired;
+  priv_nh.getParam("marker_dist_desired", marker_dist_desired);
+  double marker_dist_threshold;
+  priv_nh.getParam("marker_dist_threshold", marker_dist_threshold);
+  double marker_xy_threshold;
+  priv_nh.getParam("marker_xy_threshold", marker_xy_threshold);
 
 
   // Start autonomous agent
   try {
-    Camera pnp(nh, priv_nh, arm_names, speed_carthesian);
+    Camera pnp(nh, priv_nh, arm_names, marker_dist_desired, marker_dist_threshold, marker_xy_threshold, speed_carthesian);
 
     pnp.moveCam();
 
