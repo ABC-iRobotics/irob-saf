@@ -7,7 +7,7 @@
     <arg name="markers" default="vision/markers"/>
 
     <node name="marker_displacement" pkg="irob_vision_support"
-            type="marker_displacement.py" output="screen" >
+            type="marker_displacement_two.py" output="screen" >
             <param name="marker_size_ratio"
                             type="double" value="$(arg marker_size_ratio)" />
                 <remap from="qrkam" to="qrkam" />
