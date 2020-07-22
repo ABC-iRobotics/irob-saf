@@ -135,7 +135,7 @@ inline Eigen::Transform<double,3,Eigen::Affine> unwrapMsg(const geometry_msgs::T
   Eigen::Quaternion<double> q(msg.rotation.w, msg.rotation.x,
                             msg.rotation.y,msg.rotation.z);
   Eigen::Translation3d t(msg.translation.x, msg.translation.y, msg.translation.z);
-  Eigen::Transform<double,3,Eigen::Affine> ret = t * q;
+  Eigen::Transform<double,3,Eigen::Affine> ret(t * q);
   return ret;
 }
 

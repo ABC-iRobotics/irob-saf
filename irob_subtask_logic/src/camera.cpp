@@ -13,12 +13,12 @@ namespace saf {
 
 
 Camera::Camera(ros::NodeHandle nh, ros::NodeHandle priv_nh,
-             std::vector<std::string> arm_names, double  marker_dist_desired, double marker_dist_threshold, double marker_xy_threshold, double speed_carthesian):
+               std::vector<std::string> arm_names, double  marker_dist_desired, double marker_dist_threshold, double marker_xy_threshold, double speed_carthesian):
   AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target"),
-        speed_carthesian(speed_carthesian),
-        marker_dist_desired(marker_dist_desired),
-        marker_dist_threshold(marker_dist_threshold),
-        marker_xy_threshold(marker_xy_threshold)
+  speed_carthesian(speed_carthesian),
+  marker_dist_desired(marker_dist_desired),
+  marker_dist_threshold(marker_dist_threshold),
+  marker_xy_threshold(marker_xy_threshold)
 {	
   //
 }
@@ -33,7 +33,9 @@ void Camera::moveCam()
 {
 
   // NaN pose received, until the vision node starts
-  Eigen::Vector3d p = makeNaN<Eigen::Vector3d>();
+  Pose m = makeNaN<Pose>();
+  Eigen::Vector3d d(0.0, 0.0, marker_dist_desired);
+  Eigen::Vector3d m_cam(0.0, 0.0, 0.0);
 
 
 
@@ -43,71 +45,40 @@ void Camera::moveCam()
   while (ros::ok()){
 
 
-     p = vision.getResult();
-     //if(!isnan(p)){ROS_INFO_STREAM("z abs...: "<< fabs(p(2)));}
-     double xy= sqrt(p(0)*p(0) + p(1)*p(1));
-     if(!isnan(p))
-        ROS_INFO_STREAM("Marker displacement received: " << p << std::endl << "xy: " << xy);
-     if(!isnan(p) && xy>=marker_xy_threshold &&
-             (p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
-     {
-         //ROS_INFO_STREAM("Marker displacement received: " << p);
+    m = vision.getResult();
+    Eigen::Transform<double,3,Eigen::Affine> R(
+          (arms[0] -> getPoseCurrent()).toTransform().rotation());
+    Eigen::Transform<double,3,Eigen::Affine> R2(
+          Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()));
+    Eigen::Transform<double,3,Eigen::Affine> t;
+    t = Eigen::Translation3d((arms[0] -> getPoseCurrent()).toTransform().translation());
+    m_cam = t * R * m.position;
 
-         ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p,p, speed_carthesian);
+    if(!isnan(m)){
 
-
-           // Wait for action to be finished
-         while(!arms[0] -> isSurgemeDone() && ros::ok())
-             {
-
-                // Receive action result
-                p = vision.getResult();
-                ros::Duration(0.1).sleep();
-             }
-         }
-     if(!isnan(p) && xy>=marker_xy_threshold &&
-             !(p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
-        {
-         p(2)=0;
-        // ROS_INFO_STREAM("Marker displacement received: " << p);
-
-         ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p,p, speed_carthesian);
+      ROS_INFO_STREAM("Marker position received: " << m_cam);
+      ROS_INFO_STREAM("Desired position: " << d);
+      ROS_INFO_STREAM("Camera position " << arms[0] -> getPoseCurrent().position);
 
 
-           // Wait for action to be finished
-         while(!arms[0] -> isSurgemeDone() && ros::ok())
-             {
-
-                // Receive action result
-                p = vision.getResult();
-                ros::Duration(0.1).sleep();
-             }
-         }
-
-     if(!isnan(p) && xy<marker_xy_threshold &&
-             (p(2)<marker_dist_desired - marker_dist_threshold || p(2)>marker_dist_desired + marker_dist_threshold))
-        {
-         p(0)=0;
-         p(1)=0;
-         p(2) = marker_dist_desired - p(2);
-        // ROS_INFO_STREAM("Marker displacement received: " << p);
-
-         ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p, p, speed_carthesian);
+      ROS_INFO_STREAM("Start moving maneuver...");
+      arms[0] -> move_cam(m_cam,d, speed_carthesian);
 
 
-           // Wait for action to be finished
-         while(!arms[0] -> isSurgemeDone() && ros::ok())
-             {
+      // Wait for action to be finished
+      while(!arms[0] -> isSurgemeDone() && ros::ok())
+      {
 
-                // Receive action result
-                p = vision.getResult();
-                ros::Duration(0.1).sleep();
-             }
-         }
-     }
+        // Receive action result
+        m = vision.getResult();
+        R = Eigen::Transform<double,3,Eigen::Affine>((arms[0] -> getPoseCurrent()).toTransform().rotation());
+        t = Eigen::Translation3d((arms[0] -> getPoseCurrent()).toTransform().translation());
+        m_cam = t * R * m.position;
+        ros::Duration(10.0).sleep();
+      }
+    }
+
+  }
   ros::Duration(0.1).sleep();
   ROS_INFO_STREAM("Camera moving succeeded");
 }

@@ -190,8 +190,8 @@ geometry_msgs::Pose Pose::toRosPose() const
 
 Eigen::Transform<double,3,Eigen::Affine> Pose::toTransform() const
 {
-  Eigen::Transform<double,3,Eigen::Affine> ret =
-      Eigen::Translation3d(position) * orientation;
+  Eigen::Transform<double,3,Eigen::Affine> ret(
+        Eigen::Translation3d(position) * orientation);
   return ret;
 }
 
@@ -313,10 +313,10 @@ Pose Pose::transform(const Eigen::Matrix3d& R,
                      const Eigen::Vector3d& t, double scale /* = 1.0 */)
 {
   Pose ret(*this);
-  ret.position *= scale;
-  ret = ret.rotate(R);
-  ret += t;
-  return ret;
+  Eigen::Transform<double,3,Eigen::Affine> T(
+        Eigen::Translation3d(t) * R * Eigen::Scaling(scale));
+  // TODO usage of the rotation matrix might not work here as expected
+  return ret.transform(T);
 }
 
 Pose Pose::transform(const Eigen::Transform<double,3,Eigen::Affine>& T)
@@ -340,10 +340,10 @@ Pose Pose::invTransform(const Eigen::Matrix3d& R,
                         const Eigen::Vector3d& t, double scale /* = 1.0 */)
 {
   Pose ret(*this);
-  ret -= t;
-  ret = ret.rotate(R.transpose());
-  ret.position *= (1.0 / scale);
-  return ret;
+  Eigen::Transform<double,3,Eigen::Affine> T(
+        Eigen::Translation3d(t) * R * Eigen::Scaling(scale));
+  // TODO usage of the rotation matrix might not work here as expected
+  return ret.transform(T.inverse());
 }
 
 
@@ -353,14 +353,11 @@ Pose Pose::invTransform(const Eigen::Matrix3d& R,
  */
 Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
 {
-  Eigen::Transform<double,3,Eigen::Affine> T_eigen =
-          unwrapMsg<geometry_msgs::Transform, Eigen::Transform<double,3,Eigen::Affine>>(T);
-  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
-                              T.rotation.y,T.rotation.z);
-  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
-  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
+  Eigen::Transform<double,3,Eigen::Affine> T_eigen(
+     unwrapMsg<geometry_msgs::Transform,
+                    Eigen::Transform<double,3,Eigen::Affine>>(T) * Eigen::Scaling(scale));
 
-  return transform(R, t, scale);
+  return transform(T_eigen);
 }
 
 /**
@@ -369,11 +366,11 @@ Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */
  */
 Pose Pose::invTransform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
 {
-  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
-                              T.rotation.y,T.rotation.z);
-  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
-  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
-  return invTransform(R, t, scale);
+  Eigen::Transform<double,3,Eigen::Affine> T_eigen(
+     unwrapMsg<geometry_msgs::Transform,
+                    Eigen::Transform<double,3,Eigen::Affine>>(T) * Eigen::Scaling(scale));
+
+  return transform(T_eigen.inverse());
 }
 
 
@@ -415,14 +412,9 @@ std::ostream& operator<<(std::ostream& os, const Pose::Distance& d)
  */
 Pose operator*(const Eigen::Matrix3d& R, const Pose& p)
 {
-
-  Eigen::Matrix3d ori_R = p.orientation.toRotationMatrix();
-  Eigen::Matrix3d rotated_ori_R = R * ori_R;
-  Eigen::Vector3d rotated_pos = R * p.position;
-  Eigen::Quaternion<double> rotated_ori(rotated_ori_R);
-  Pose ret(rotated_pos, rotated_ori.normalized(), p.jaw);
-
-  return ret;
+  Eigen::Transform<double,3,Eigen::Affine> T(R);
+  // TODO usage of the rotation matrix might not work here as expected
+  return T * p;
 }
 
 Pose operator*(const Eigen::Transform<double,3,Eigen::Affine>& T, const Pose& p)

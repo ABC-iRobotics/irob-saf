@@ -979,25 +979,42 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
 
   // Trasform positions from cam to base frame
   Pose p = arm.getPoseCurrent();
-  Eigen::Transform<double,3,Eigen::Affine> T_cam_base = p.toTransform();
+  Eigen::Transform<double,3,Eigen::Affine> T_cam_base(p.toTransform());
   Eigen::Vector3d m_base = T_cam_base.inverse() * marker_pos_cam;
   Eigen::Vector3d d_base = T_cam_base.inverse() * desired_pos_cam;
+  ROS_INFO_STREAM("T_cam_base trans: " << T_cam_base.translation());
+  ROS_INFO_STREAM("m_base: " << m_base);
+  ROS_INFO_STREAM("d_base: " << d_base);
+
+
 
   // Conversion to spherical coordinates r, phi, theta
   double r_M = m_base.norm();
-  double phi_M = atan(m_base.y() / m_base.x());
+  double phi_M = atan2(m_base.y(), m_base.x());
   double theta_M = acos(m_base.z() / r_M);
 
-  double r_D = m_base.norm();
-  double phi_D = atan(d_base.y() / d_base.x());
+  ROS_INFO_STREAM("theta_M: " << theta_M << std::endl <<
+                  "phi_M: " << phi_M << std::endl <<
+                  "r_M: " << r_M);
+
+  double r_D = d_base.norm();
+  double phi_D = atan2(d_base.y(), d_base.x());
   double theta_D = acos(d_base.z() / r_D);
+
+  ROS_INFO_STREAM("theta_D: " << theta_D << std::endl <<
+                  "phi_D: " << phi_D << std::endl <<
+                  "r_D: " << r_D);
 
   // Calculate desired changes in agles and zoom
   // Aplha rotates around x axis, beta around y axis
 
-  double alpha = theta_M - theta_D;
-  double beta = phi_M - phi_D;
-  double delta_r = r_M - r_D;
+  double alpha = -(theta_M - theta_D);
+  double beta = -(0.0);//phi_M - phi_D;
+  double delta_r = -(r_M - r_D);
+
+  ROS_INFO_STREAM("alpha: " << alpha << std::endl <<
+                  "beta: " << beta << std::endl <<
+                  "zoom: " << delta_r);
 
   // Calculate rotation matrices
   Eigen::Quaternion<double> q_x;

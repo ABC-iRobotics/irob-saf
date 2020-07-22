@@ -42,7 +42,7 @@ class Camera : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Point,Eigen::Vector3d> vision;
+  VisionClient<geometry_msgs::Pose,Pose> vision;
   double speed_carthesian;
   double marker_dist_threshold;
   double marker_dist_desired;
