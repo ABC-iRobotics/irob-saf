@@ -21,7 +21,8 @@
 #include <string>
 #include <stdexcept>
 #include <algorithm>
-#include "pose.hpp"
+#include <irob_utils/utils.hpp>
+#include <irob_utils/pose.hpp>
 #include <irob_msgs/TrajectoryToolPose.h>
 
 namespace saf { 

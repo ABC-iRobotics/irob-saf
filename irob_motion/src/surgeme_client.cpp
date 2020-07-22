@@ -414,20 +414,16 @@ void SurgemeClient::manipulate(Eigen::Vector3d displacement,
   // in surgemeDoneCB
 }
 
-void SurgemeClient::move_cam(Eigen::Vector3d displacement,
+void SurgemeClient::move_cam(Eigen::Vector3d marker_pos_tcp,
+                             Eigen::Vector3d desired_pos_tcp,
                                double speed_cartesian)
 {
   // Send a goal to the action
   irob_msgs::SurgemeGoal goal;
 
   goal.action = irob_msgs::SurgemeGoal::MOVE_CAM;
-
-  geometry_msgs::Point displacement_ros;
-  displacement_ros.x = displacement.x();
-  displacement_ros.y = displacement.y();
-  displacement_ros.z = displacement.z();
-  goal.displacement = displacement_ros;
-
+  goal.marker = wrapToMsg<geometry_msgs::Point>(marker_pos_tcp);
+  goal.desired = wrapToMsg<geometry_msgs::Point>(desired_pos_tcp);
   goal.speed_cartesian = speed_cartesian;
 
   ac.sendGoal(goal);

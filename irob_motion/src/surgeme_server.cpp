@@ -51,9 +51,9 @@ void SurgemeServer::surgemeActionCB(
   for (geometry_msgs::Pose p : goal->waypoints)
     waypoints.push_back(Pose(p, 0.0));
 
-  Eigen::Vector3d displacement(goal->displacement.x,
-                               goal->displacement.y,
-                               goal->displacement.z);
+  Eigen::Vector3d displacement(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->displacement));
+  Eigen::Vector3d marker(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->marker));
+  Eigen::Vector3d desired(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->desired));
   // Check tool
   if (!isAbleToDoSurgeme(goal -> action))
   {
@@ -147,7 +147,7 @@ void SurgemeServer::surgemeActionCB(
       // MOVE_CAM
     case irob_msgs::SurgemeGoal::MOVE_CAM:
     {
-      move_cam(displacement, goal -> speed_cartesian);
+      move_cam(marker, desired, goal -> speed_cartesian);
       break;
     }
 
@@ -961,70 +961,70 @@ void SurgemeServer::manipulate(Eigen::Vector3d displacement,
 }  
 
 /**
- * Move the endoscopic cmera
+ * Move the endoscopic camer so the marker_position_tcp appears to move to
+ * desired_pos_tcp.
  *
  * @brief SurgemeServer::move_cam
- * @param displacement displacement vector of the tool after reached target position
+ * @param marker_pos_tcp TODO
+ * @param desired_pos_tcp TODO
  * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
-void SurgemeServer::move_cam(Eigen::Vector3d displacement,
+void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
+                             Eigen::Vector3d desired_pos_cam,
                                double speed_cartesian)
 {
   // Helper variables
   bool done = false;
   std::string stage = "";
 
-  // fine-tune here
-  sensor_msgs::JointState joint_state_now = arm.getJointStateCurrent();
-  double to_rad_const = 0.2+joint_state_now.position[2]*0.2;  //tizedes, pozitív, egyenes arányosság, nulla lekezelve
-  double to_distance=450;
+  // Trasform positions from cam to base frame
+  Pose p = arm.getPoseCurrent();
+  Eigen::Transform<double,3,Eigen::Affine> T_cam_base = p.toTransform();
+  Eigen::Vector3d m_base = T_cam_base.inverse() * marker_pos_cam;
+  Eigen::Vector3d d_base = T_cam_base.inverse() * desired_pos_cam;
+
+  // Conversion to spherical coordinates r, phi, theta
+  double r_M = m_base.norm();
+  double phi_M = atan(m_base.y() / m_base.x());
+  double theta_M = acos(m_base.z() / r_M);
+
+  double r_D = m_base.norm();
+  double phi_D = atan(d_base.y() / d_base.x());
+  double theta_D = acos(d_base.z() / r_D);
+
+  // Calculate desired changes in agles and zoom
+  // Aplha rotates around x axis, beta around y axis
+
+  double alpha = theta_M - theta_D;
+  double beta = phi_M - phi_D;
+  double delta_r = r_M - r_D;
+
+  // Calculate rotation matrices
+  Eigen::Quaternion<double> q_x;
+  q_x = Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX());
+  Eigen::Quaternion<double> q_y;
+  q_y = Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitY());
+  Eigen::Translation<double,3> Trans_zoom = Eigen::Translation<double,3>(0, 0, delta_r);
+
+  Pose p_new =  (Trans_zoom * q_y * q_x) * p;
+
 
   // Start action
 
   // Move camera
   stage = "move_cam";
-  double phi_x, phi_y, phi_z;
-  phi_x = displacement.x() * to_rad_const;
-  //ROS_INFO_STREAM("Phi_x: " << phi_x << std::endl);
-  phi_y = displacement.y() * to_rad_const;
-  //ROS_INFO_STREAM("Phi_y: " << phi_y << std::endl);
-  phi_z = 0;
 
-
-
-  Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitX())
-    * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
-  double z=displacement.z() * to_distance;
-  if (z>45) z=45;
-  Eigen::Vector3d zoom(0,0,z);  //50 fölött túl messze lesz neki
-  //Eigen::Vector3d zoom(0,0,displacement.z() * 0.0);
-
-  Pose current_pose = arm.getPoseCurrent();
-  Eigen::Matrix3d pose_rot = current_pose.orientation.toRotationMatrix();
-  //pose_rot=pose_rot.inverse();
-  //pose_rot = pose_rot * BaseOrientations<CoordinateFrame::ROBOT,
-    //                                    Eigen::Quaternion<double>>::DOWN_FORWARD.
-      //                                      toRotationMatrix();
-  //rot = pose_rot*rot;
-  zoom =pose_rot*zoom;
-  if (zoom(2)>45) zoom(2)=45;
-
-
-
-  Pose manipulated_pose = current_pose.rotate(rot)+zoom;
-  //Pose manipulated_pose = current_pose+zoom;
- if (manipulated_pose.position[2] >-5) manipulated_pose.position[2]=-5;
-  //ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "zoom: " << zoom << std::endl<<"pose: "<<arm.getPoseCurrent()<<std::endl <<"manipulated pose (rot): "<<arm.getPoseCurrent().rotate(rot)<<std::endl <<"manipulated pose (rot+zoom): "<<manipulated_pose<<std::endl <<"jointstate: "<<joint_state_now<<std::endl);
-  arm.moveTool(manipulated_pose, speed_cartesian);
+  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage
+                            << std::endl<<"pose: "<< p
+                            << std::endl << "new pose: " << p_new
+                            << std::endl << "jointstate: " << arm.getJointStateCurrent() << std::endl);
+  arm.moveTool(p_new, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
     handleActionState(stage, true);
   else
     return;
-
 }
 
 

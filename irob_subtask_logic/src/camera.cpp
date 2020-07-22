@@ -54,7 +54,7 @@ void Camera::moveCam()
          //ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p, speed_carthesian);
+         arms[0] -> move_cam(p,p, speed_carthesian);
 
 
            // Wait for action to be finished
@@ -73,7 +73,7 @@ void Camera::moveCam()
         // ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p, speed_carthesian);
+         arms[0] -> move_cam(p,p, speed_carthesian);
 
 
            // Wait for action to be finished
@@ -95,7 +95,7 @@ void Camera::moveCam()
         // ROS_INFO_STREAM("Marker displacement received: " << p);
 
          ROS_INFO_STREAM("Start moving maneuver...");
-         arms[0] -> move_cam(p, speed_carthesian);
+         arms[0] -> move_cam(p, p, speed_carthesian);
 
 
            // Wait for action to be finished

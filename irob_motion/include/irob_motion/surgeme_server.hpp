@@ -36,6 +36,7 @@
 #include <actionlib/client/terminal_state.h>
 #include <irob_msgs/ToolPoseStamped.h>
 #include <sensor_msgs/JointState.h>
+#include <cmath>
 
 #include <irob_msgs/SurgemeAction.h>
 
@@ -112,7 +113,7 @@ protected:
   void manipulate(Eigen::Vector3d,
                   double);
 
-  void move_cam(Eigen::Vector3d,
+  void move_cam(Eigen::Vector3d, Eigen::Vector3d,
                   double);
 
   bool waitForActionDone(std::string);
