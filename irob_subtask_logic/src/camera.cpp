@@ -74,9 +74,11 @@ void Camera::moveCam()
         R = Eigen::Transform<double,3,Eigen::Affine>((arms[0] -> getPoseCurrent()).toTransform().rotation());
         t = Eigen::Translation3d((arms[0] -> getPoseCurrent()).toTransform().translation());
         m_cam = t * R * m.position;
-        ros::Duration(10.0).sleep();
+        ros::Duration(0.1).sleep();
       }
+      ros::Duration(10.0).sleep();
     }
+
 
   }
   ros::Duration(0.1).sleep();
