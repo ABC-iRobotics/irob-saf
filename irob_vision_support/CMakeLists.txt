@@ -156,6 +156,8 @@ add_executable(camera_preprocessor
 
     add_executable(serial_test
         src/serial_test.cpp)
+    add_executable(pcl_marker
+        src/pcl_marker.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -198,6 +200,12 @@ target_link_libraries(camera_preprocessor
       )
 
   target_link_libraries(pcl_test
+      ${catkin_LIBRARIES}
+      ${PCL_LIBRARIES}
+      irob_vision_support_lib
+      )
+
+  target_link_libraries(pcl_marker
       ${catkin_LIBRARIES}
       ${PCL_LIBRARIES}
       irob_vision_support_lib

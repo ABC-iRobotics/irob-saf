@@ -983,8 +983,10 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   // 90 deg rotation to move position out of the poles
   Eigen::Transform<double,3,Eigen::Affine> T_corr(
         Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
-  Eigen::Vector3d m_base = T_corr * T_cam_base.inverse() *  marker_pos_cam;
-  Eigen::Vector3d d_base = T_corr * T_cam_base.inverse() *  desired_pos_cam;
+  Eigen::Transform<double,3,Eigen::Affine> S(
+        Eigen::Scaling(1000.0));
+  Eigen::Vector3d m_base = T_corr * T_cam_base.inverse() *  S * marker_pos_cam;
+  Eigen::Vector3d d_base = T_corr * T_cam_base.inverse() *  S * desired_pos_cam;
   ROS_INFO_STREAM("T_cam_base trans: " << T_cam_base.translation());
   ROS_INFO_STREAM("m_base: " << m_base);
   ROS_INFO_STREAM("d_base: " << d_base);
@@ -1011,23 +1013,29 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   // Calculate desired changes in agles and zoom
   // Aplha rotates around x axis, beta around y axis
 
-  double alpha = -(theta_M - theta_D);
-  double beta = (phi_M - phi_D);
-  double delta_r = -(r_M - r_D);
+  double alpha = (theta_M - theta_D);
+  double beta = -(phi_M - phi_D);
+  double delta_r = (r_M - r_D);
 
   ROS_INFO_STREAM("alpha: " << alpha << std::endl <<
                   "beta: " << beta << std::endl <<
                   "zoom: " << delta_r);
 
   // Calculate rotation matrices
-  Eigen::Quaternion<double> q_x;
-  q_x = Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX());
-  Eigen::Quaternion<double> q_z;
-  q_z = Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitY());
-  Eigen::Translation<double,3> Trans_zoom = Eigen::Translation<double,3>(0, 0, delta_r);
+  Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
+  Eigen::Transform<double,3,Eigen::Affine> q_x(
+              Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX()));
+  //q_x = R_cam_base * q_x;
+  Eigen::Transform<double,3,Eigen::Affine> q_z(
+             Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitY()));
+  //q_z = R_cam_base * q_z;
+  Eigen::Vector3d t_z(0, 0, delta_r);
+  t_z = R_cam_base * t_z;
+  Eigen::Transform<double,3,Eigen::Affine> Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
-  Pose p_new =  (q_x * q_z * Trans_zoom) * p;
+  //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
+  Pose p_new =  q_x * q_z * Trans_zoom * p;
 
 
 
