@@ -1013,8 +1013,8 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   // Calculate desired changes in agles and zoom
   // Aplha rotates around x axis, beta around y axis
 
-  double alpha = (theta_M - theta_D);
-  double beta = (phi_M - phi_D);
+  double alpha = -(theta_M - theta_D);
+  double beta = -(phi_M - phi_D);
   double delta_r = (r_M - r_D);
 
   ROS_INFO_STREAM("alpha: " << alpha << std::endl <<
@@ -1025,17 +1025,17 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
   Eigen::Transform<double,3,Eigen::Affine> q_x(
               Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX()));
-  q_x = T_sp_base.inverse() * q_x;
+  //q_x = q_x * T_sp_base.inverse();
   Eigen::Transform<double,3,Eigen::Affine> q_z(
              Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitZ()));
-  q_z = T_sp_base.inverse() * q_z;
+  //q_z = q_z * T_sp_base.inverse();
   Eigen::Vector3d t_z(0, 0, delta_r);
   t_z = R_cam_base * t_z;
   Eigen::Transform<double,3,Eigen::Affine> Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
-  Pose p_new =  q_x * q_z * Trans_zoom * p;
+  Pose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * Trans_zoom * p;
 
 
 
