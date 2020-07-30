@@ -981,12 +981,12 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   Pose p = arm.getPoseCurrent();
   Eigen::Transform<double,3,Eigen::Affine> T_cam_base(p.toTransform());
   // 90 deg rotation to move position out of the poles
-  Eigen::Transform<double,3,Eigen::Affine> T_corr(
+  Eigen::Transform<double,3,Eigen::Affine> T_sp_base(
         Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
   Eigen::Transform<double,3,Eigen::Affine> S(
         Eigen::Scaling(1000.0));
-  Eigen::Vector3d m_base = T_corr * T_cam_base.inverse() *  S * marker_pos_cam;
-  Eigen::Vector3d d_base = T_corr * T_cam_base.inverse() *  S * desired_pos_cam;
+  Eigen::Vector3d m_base = T_sp_base * T_cam_base.inverse() *  S * marker_pos_cam;
+  Eigen::Vector3d d_base = T_sp_base * T_cam_base.inverse() *  S * desired_pos_cam;
   ROS_INFO_STREAM("T_cam_base trans: " << T_cam_base.translation());
   ROS_INFO_STREAM("m_base: " << m_base);
   ROS_INFO_STREAM("d_base: " << d_base);
@@ -1014,7 +1014,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   // Aplha rotates around x axis, beta around y axis
 
   double alpha = (theta_M - theta_D);
-  double beta = -(phi_M - phi_D);
+  double beta = (phi_M - phi_D);
   double delta_r = (r_M - r_D);
 
   ROS_INFO_STREAM("alpha: " << alpha << std::endl <<
@@ -1025,10 +1025,10 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
   Eigen::Transform<double,3,Eigen::Affine> q_x(
               Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX()));
-  //q_x = R_cam_base * q_x;
+  q_x = T_sp_base.inverse() * q_x;
   Eigen::Transform<double,3,Eigen::Affine> q_z(
-             Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitY()));
-  //q_z = R_cam_base * q_z;
+             Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitZ()));
+  q_z = T_sp_base.inverse() * q_z;
   Eigen::Vector3d t_z(0, 0, delta_r);
   t_z = R_cam_base * t_z;
   Eigen::Transform<double,3,Eigen::Affine> Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
