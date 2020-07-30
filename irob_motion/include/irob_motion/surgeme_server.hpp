@@ -37,6 +37,9 @@
 #include <irob_msgs/ToolPoseStamped.h>
 #include <sensor_msgs/JointState.h>
 #include <cmath>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include <irob_msgs/SurgemeAction.h>
 
@@ -59,6 +62,8 @@ public:
 protected:
   RobotClient arm;
   ros::NodeHandle nh;
+  tf2_ros::TransformBroadcaster br_ori;
+  tf2_ros::TransformBroadcaster br_new;
 
   // Action servers
   actionlib::SimpleActionServer<irob_msgs::SurgemeAction> as;

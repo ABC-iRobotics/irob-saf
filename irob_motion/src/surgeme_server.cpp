@@ -969,8 +969,8 @@ void SurgemeServer::manipulate(Eigen::Vector3d displacement,
  * @param desired_pos_tcp TODO
  * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
-void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
-                             Eigen::Vector3d desired_pos_cam,
+void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
+                             Eigen::Vector3d desired_pos_tcp,
                                double speed_cartesian)
 {
   // Helper variables
@@ -979,15 +979,13 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
 
   // Trasform positions from cam to base frame
   Pose p = arm.getPoseCurrent();
-  Eigen::Transform<double,3,Eigen::Affine> T_cam_base(p.toTransform());
+  Eigen::Transform<double,3,Eigen::Affine> T_tcp_base(p.toTransform());
   // 90 deg rotation to move position out of the poles
   Eigen::Transform<double,3,Eigen::Affine> T_sp_base(
         Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
-  Eigen::Transform<double,3,Eigen::Affine> S(
-        Eigen::Scaling(1000.0));
-  Eigen::Vector3d m_base = T_sp_base * T_cam_base.inverse() *  S * marker_pos_cam;
-  Eigen::Vector3d d_base = T_sp_base * T_cam_base.inverse() *  S * desired_pos_cam;
-  ROS_INFO_STREAM("T_cam_base trans: " << T_cam_base.translation());
+  Eigen::Vector3d m_base = T_sp_base * T_tcp_base.inverse() *  marker_pos_tcp;
+  Eigen::Vector3d d_base = T_sp_base * T_tcp_base.inverse() *  desired_pos_tcp;
+  ROS_INFO_STREAM("T_cam_base trans: " << T_tcp_base.translation());
   ROS_INFO_STREAM("m_base: " << m_base);
   ROS_INFO_STREAM("d_base: " << d_base);
 
@@ -1013,21 +1011,23 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
   // Calculate desired changes in agles and zoom
   // Aplha rotates around x axis, beta around y axis
 
-  double alpha = -(theta_M - theta_D);
-  double beta = -(phi_M - phi_D);
+  double delta_theta = (theta_M - theta_D);
+  double delta_phi = (phi_M - phi_D);
   double delta_r = (r_M - r_D);
 
-  ROS_INFO_STREAM("alpha: " << alpha << std::endl <<
-                  "beta: " << beta << std::endl <<
+  ROS_INFO_STREAM("alpha: " << delta_theta << std::endl <<
+                  "beta: " << delta_phi << std::endl <<
                   "zoom: " << delta_r);
 
   // Calculate rotation matrices
   Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
   Eigen::Transform<double,3,Eigen::Affine> q_x(
-              Eigen::AngleAxis<double>(alpha, Eigen::Vector3d::UnitX()));
+              Eigen::AngleAxis<double>(-delta_theta, Eigen::Vector3d::UnitX()));
   //q_x = q_x * T_sp_base.inverse();
   Eigen::Transform<double,3,Eigen::Affine> q_z(
-             Eigen::AngleAxis<double>(beta, Eigen::Vector3d::UnitZ()));
+             Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitZ()));
+  Eigen::Transform<double,3,Eigen::Affine> q_y(
+             Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitY()));
   //q_z = q_z * T_sp_base.inverse();
   Eigen::Vector3d t_z(0, 0, delta_r);
   t_z = R_cam_base * t_z;
@@ -1035,8 +1035,44 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
+
+  Pose p_ori = q_x * q_y * Trans_zoom * p;
   Pose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * Trans_zoom * p;
 
+
+  while (ros::ok()) {
+    geometry_msgs::TransformStamped transformStamped_ori;
+
+    transformStamped_ori.header.stamp = ros::Time::now();
+    transformStamped_ori.header.frame_id = "ecm_base_link";
+    transformStamped_ori.child_frame_id = "cam_ori";
+    transformStamped_ori.transform.translation.x = p_ori.position.x()/1000.0;
+    transformStamped_ori.transform.translation.y = p_ori.position.y()/1000.0;
+    transformStamped_ori.transform.translation.z = p_ori.position.z()/1000.0;
+    transformStamped_ori.transform.rotation.x = p_ori.orientation.x();
+    transformStamped_ori.transform.rotation.y = p_ori.orientation.y();
+    transformStamped_ori.transform.rotation.z = p_ori.orientation.z();
+    transformStamped_ori.transform.rotation.w = p_ori.orientation.w();
+
+    br_ori.sendTransform(transformStamped_ori);
+
+    geometry_msgs::TransformStamped transformStamped_new;
+
+    transformStamped_new.header.stamp = ros::Time::now();
+    transformStamped_new.header.frame_id = "ecm_base_link";
+    transformStamped_new.child_frame_id = "cam_new";
+    transformStamped_new.transform.translation.x = p_new.position.x()/1000.0;
+    transformStamped_new.transform.translation.y = p_new.position.y()/1000.0;
+    transformStamped_new.transform.translation.z = p_new.position.z()/1000.0;
+    transformStamped_new.transform.rotation.x = p_new.orientation.x();
+    transformStamped_new.transform.rotation.y = p_new.orientation.y();
+    transformStamped_new.transform.rotation.z = p_new.orientation.z();
+    transformStamped_new.transform.rotation.w = p_new.orientation.w();
+
+    br_new.sendTransform(transformStamped_new);
+    ros::Duration(0.1).sleep();
+
+}
 
 
   // Start action
@@ -1046,9 +1082,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_cam,
 
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage
                             << std::endl<<"pose: "<< p
-                            << std::endl << "new pose: " << p_new
+                            << std::endl << "new pose: " << p_ori
                             << std::endl << "jointstate: " << arm.getJointStateCurrent() << std::endl);
-  arm.moveTool(p_new, speed_cartesian);
+  arm.moveTool(p_ori, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
