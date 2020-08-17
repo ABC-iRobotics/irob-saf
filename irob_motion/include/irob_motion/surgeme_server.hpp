@@ -28,12 +28,18 @@
 #include <Eigen/Geometry> 
 #include <irob_utils/pose.hpp>
 #include <irob_utils/trajectory.hpp>
+#include <irob_utils/abstract_directions.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_general_robot/robot_client.hpp>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <irob_msgs/ToolPoseStamped.h>
+#include <sensor_msgs/JointState.h>
+#include <cmath>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include <irob_msgs/SurgemeAction.h>
 
@@ -56,6 +62,8 @@ public:
 protected:
   RobotClient arm;
   ros::NodeHandle nh;
+  tf2_ros::TransformBroadcaster br_ori;
+  tf2_ros::TransformBroadcaster br_new;
 
   // Action servers
   actionlib::SimpleActionServer<irob_msgs::SurgemeAction> as;
@@ -73,6 +81,9 @@ public:
       const irob_msgs::SurgemeGoalConstPtr &);
 
   Pose getPoseCurrent();
+
+  sensor_msgs::JointState getJointStateCurrent();
+
   std::string getArmName();
 
 protected:
@@ -107,7 +118,7 @@ protected:
   void manipulate(Eigen::Vector3d,
                   double);
 
-  void move_cam(Eigen::Vector3d,
+  void move_cam(Eigen::Vector3d, Eigen::Vector3d,
                   double);
 
   bool waitForActionDone(std::string);

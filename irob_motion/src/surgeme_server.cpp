@@ -51,9 +51,9 @@ void SurgemeServer::surgemeActionCB(
   for (geometry_msgs::Pose p : goal->waypoints)
     waypoints.push_back(Pose(p, 0.0));
 
-  Eigen::Vector3d displacement(goal->displacement.x,
-                               goal->displacement.y,
-                               goal->displacement.z);
+  Eigen::Vector3d displacement(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->displacement));
+  Eigen::Vector3d marker(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->marker));
+  Eigen::Vector3d desired(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->desired));
   // Check tool
   if (!isAbleToDoSurgeme(goal -> action))
   {
@@ -147,7 +147,7 @@ void SurgemeServer::surgemeActionCB(
       // MOVE_CAM
     case irob_msgs::SurgemeGoal::MOVE_CAM:
     {
-      move_cam(displacement, goal -> speed_cartesian);
+      move_cam(marker, desired, goal -> speed_cartesian);
       break;
     }
 
@@ -961,45 +961,136 @@ void SurgemeServer::manipulate(Eigen::Vector3d displacement,
 }  
 
 /**
- * Move the endoscopic cmera
+ * Move the endoscopic camer so the marker_position_tcp appears to move to
+ * desired_pos_tcp.
  *
  * @brief SurgemeServer::move_cam
- * @param displacement displacement vector of the tool after reached target position
+ * @param marker_pos_tcp TODO
+ * @param desired_pos_tcp TODO
  * @param speed_cartesian cartesian speed of the tool tip in mm/s
  */
-void SurgemeServer::move_cam(Eigen::Vector3d displacement,
+void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
+                             Eigen::Vector3d desired_pos_tcp,
                                double speed_cartesian)
 {
   // Helper variables
   bool done = false;
   std::string stage = "";
-  // fine-tune here
-  double to_rad_const = 0.0008;
+
+  // Trasform positions from cam to base frame
+  Pose p = arm.getPoseCurrent();
+  Eigen::Transform<double,3,Eigen::Affine> T_tcp_base(p.toTransform());
+  // 90 deg rotation to move position out of the poles
+  Eigen::Transform<double,3,Eigen::Affine> T_sp_base(
+        Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
+  Eigen::Vector3d m_base = T_sp_base * T_tcp_base.inverse() *  marker_pos_tcp;
+  Eigen::Vector3d d_base = T_sp_base * T_tcp_base.inverse() *  desired_pos_tcp;
+  ROS_INFO_STREAM("T_cam_base trans: " << T_tcp_base.translation());
+  ROS_INFO_STREAM("m_base: " << m_base);
+  ROS_INFO_STREAM("d_base: " << d_base);
+
+
+
+  // Conversion to spherical coordinates r, phi, theta
+  double r_M = m_base.norm();
+  double phi_M = atan2(m_base.y(), m_base.x());
+  double theta_M = acos(m_base.z() / r_M);
+
+  ROS_INFO_STREAM("theta_M: " << theta_M << std::endl <<
+                  "phi_M: " << phi_M << std::endl <<
+                  "r_M: " << r_M);
+
+  double r_D = d_base.norm();
+  double phi_D = atan2(d_base.y(), d_base.x());
+  double theta_D = acos(d_base.z() / r_D);
+
+  ROS_INFO_STREAM("theta_D: " << theta_D << std::endl <<
+                  "phi_D: " << phi_D << std::endl <<
+                  "r_D: " << r_D);
+
+  // Calculate desired changes in agles and zoom
+  // Aplha rotates around x axis, beta around y axis
+
+  double delta_theta = (theta_M - theta_D);
+  double delta_phi = (phi_M - phi_D);
+  double delta_r = (r_M - r_D);
+
+  ROS_INFO_STREAM("alpha: " << delta_theta << std::endl <<
+                  "beta: " << delta_phi << std::endl <<
+                  "zoom: " << delta_r);
+
+  // Calculate rotation matrices
+  Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
+  Eigen::Transform<double,3,Eigen::Affine> q_x(
+              Eigen::AngleAxis<double>(-delta_theta, Eigen::Vector3d::UnitX()));
+  //q_x = q_x * T_sp_base.inverse();
+  Eigen::Transform<double,3,Eigen::Affine> q_z(
+             Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitZ()));
+  Eigen::Transform<double,3,Eigen::Affine> q_y(
+             Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitY()));
+  //q_z = q_z * T_sp_base.inverse();
+  Eigen::Vector3d t_z(0, 0, delta_r);
+  t_z = R_cam_base * t_z;
+  Eigen::Transform<double,3,Eigen::Affine> Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
+
+  //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
+  //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
+
+  Pose p_ori = q_x * q_y * Trans_zoom * p;
+  Pose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * Trans_zoom * p;
+
+
+  while (ros::ok()) {
+    geometry_msgs::TransformStamped transformStamped_ori;
+
+    transformStamped_ori.header.stamp = ros::Time::now();
+    transformStamped_ori.header.frame_id = "ecm_base_link";
+    transformStamped_ori.child_frame_id = "cam_ori";
+    transformStamped_ori.transform.translation.x = p_ori.position.x()/1000.0;
+    transformStamped_ori.transform.translation.y = p_ori.position.y()/1000.0;
+    transformStamped_ori.transform.translation.z = p_ori.position.z()/1000.0;
+    transformStamped_ori.transform.rotation.x = p_ori.orientation.x();
+    transformStamped_ori.transform.rotation.y = p_ori.orientation.y();
+    transformStamped_ori.transform.rotation.z = p_ori.orientation.z();
+    transformStamped_ori.transform.rotation.w = p_ori.orientation.w();
+
+    br_ori.sendTransform(transformStamped_ori);
+
+    geometry_msgs::TransformStamped transformStamped_new;
+
+    transformStamped_new.header.stamp = ros::Time::now();
+    transformStamped_new.header.frame_id = "ecm_base_link";
+    transformStamped_new.child_frame_id = "cam_new";
+    transformStamped_new.transform.translation.x = p_new.position.x()/1000.0;
+    transformStamped_new.transform.translation.y = p_new.position.y()/1000.0;
+    transformStamped_new.transform.translation.z = p_new.position.z()/1000.0;
+    transformStamped_new.transform.rotation.x = p_new.orientation.x();
+    transformStamped_new.transform.rotation.y = p_new.orientation.y();
+    transformStamped_new.transform.rotation.z = p_new.orientation.z();
+    transformStamped_new.transform.rotation.w = p_new.orientation.w();
+
+    br_new.sendTransform(transformStamped_new);
+    ros::Duration(0.1).sleep();
+
+}
+
 
   // Start action
 
   // Move camera
   stage = "move_cam";
-  double phi_x, phi_y, phi_z;
-  phi_x = displacement.x() * to_rad_const;
-  phi_y = displacement.y() * to_rad_const;
-  phi_z = 0;
 
-  Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd(phi_x, Eigen::Vector3d::UnitX())
-    * Eigen::AngleAxisd(phi_y,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(phi_z, Eigen::Vector3d::UnitZ());
-
-  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage<< std::endl << "rot: " << rot << std::endl );
-  Pose manipulated_pose = arm.getPoseCurrent().rotate(rot);
-  arm.moveTool(manipulated_pose, speed_cartesian);
+  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage
+                            << std::endl<<"pose: "<< p
+                            << std::endl << "new pose: " << p_ori
+                            << std::endl << "jointstate: " << arm.getJointStateCurrent() << std::endl);
+  arm.moveTool(p_ori, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
     handleActionState(stage, true);
   else
     return;
-
 }
 
 
@@ -1007,6 +1098,12 @@ void SurgemeServer::move_cam(Eigen::Vector3d displacement,
 Pose SurgemeServer::getPoseCurrent()
 {
   return arm.getPoseCurrent();
+}
+
+// Simple relay
+sensor_msgs::JointState SurgemeServer::getJointStateCurrent()
+{
+  return arm.getJointStateCurrent();
 }
 
 std::string SurgemeServer::getArmName()

@@ -20,7 +20,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <limits>
-#include "irob_utils/pose.hpp"
 
 #include <std_msgs/Float32.h>
 #include <irob_msgs/FloatArray.h>
@@ -60,15 +59,12 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
 }
 
 // Interpolation
+
 template<typename T>
 inline T interpolate(double a, T const& x1, T const& x2) {
   return ((1.0-a) * x1) + ((a) * x2);
 }
 
-template <>
-inline Pose interpolate(double a, const Pose& x1, const Pose& x2) {
-  return x1.interpolate(a, x2);
-}
 
 template <>
 inline Eigen::Quaternion<double> interpolate(double a,
@@ -78,26 +74,12 @@ inline Eigen::Quaternion<double> interpolate(double a,
 }
 
 // Distance
+
 template<typename T>
 inline double distanceEuler(T const& x1, T const& x2) {
   return std::abs(x2 - x1);
 }
 
-
-template <>
-inline double distanceEuler(const Pose& x1, const Pose& x2) {
-  Pose::Distance d = x1.dist(x2);
-  double weighted_cartesian = std::abs(d.cartesian) * 10000.0;
-  double weighted_angle = std::abs(d.angle);
-  double weighted_jaw = radToDeg(std::abs(d.jaw));
-  if (weighted_cartesian >= weighted_angle
-      && weighted_cartesian >= weighted_jaw)
-    return std::abs(d.cartesian);
-  if (weighted_angle >= weighted_jaw)
-    // in degrees, should be converted to rad?
-    return std::abs(d.angle);
-  return std::abs(d.jaw);
-}
 
 template <>
 inline double distanceEuler(const Eigen::Vector3d& x1,
@@ -124,29 +106,6 @@ inline double unwrapMsg(const std_msgs::Float32& msg){
   return msg.data;
 }
 
-template <>
-inline Pose unwrapMsg(const geometry_msgs::Pose& msg){
-  Pose ret(msg, 0);
-  return ret;
-}
-
-template <>
-inline Pose unwrapMsg(const irob_msgs::ToolPose& msg){
-  Pose ret(msg);
-  return ret;
-}
-
-template <>
-inline Pose unwrapMsg(const geometry_msgs::PoseStamped& msg){
-  Pose ret(msg, 0);
-  return ret;
-}
-
-template <>
-inline Pose unwrapMsg(const irob_msgs::ToolPoseStamped& msg){
-  Pose ret(msg);
-  return ret;
-}
 
 template <>
 inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
@@ -171,6 +130,14 @@ inline std::vector<double> unwrapMsg(const irob_msgs::FloatArray& msg){
   return msg.data;
 }
 
+template <>
+inline Eigen::Transform<double,3,Eigen::Affine> unwrapMsg(const geometry_msgs::Transform& msg){
+  Eigen::Quaternion<double> q(msg.rotation.w, msg.rotation.x,
+                            msg.rotation.y,msg.rotation.z);
+  Eigen::Translation3d t(msg.translation.x, msg.translation.y, msg.translation.z);
+  Eigen::Transform<double,3,Eigen::Affine> ret(t * q);
+  return ret;
+}
 
 // Conversion to ROS msg
 template<typename MsgT, typename DataT>
@@ -183,15 +150,6 @@ inline std_msgs::Float32 wrapToMsg(const double& data){
   return msg;
 }
 
-template <>
-inline geometry_msgs::Pose wrapToMsg(const Pose& data){
-  return data.toRosPose();
-}
-
-template <>
-inline irob_msgs::ToolPose wrapToMsg(const Pose& data){
-  return data.toRosToolPose();
-}
 
 template <>
 inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
@@ -223,6 +181,24 @@ inline geometry_msgs::Quaternion wrapToMsg(
   return msg;
 }
 
+template <>
+inline geometry_msgs::Transform wrapToMsg(
+    const Eigen::Transform<double,3,Eigen::Affine>& data){
+  geometry_msgs::Transform msg;
+
+  Eigen::Vector3d position(data.translation());
+  Eigen::Quaternion<double> rotation(data.rotation());
+  msg.translation.x = position.x();
+  msg.translation.y = position.y();
+  msg.translation.z = position.z();
+
+  msg.rotation.x = rotation.x();
+  msg.rotation.y = rotation.y();
+  msg.rotation.z = rotation.z();
+  msg.rotation.w = rotation.w();
+  return msg;
+}
+
 // NaN
 template<typename DataT>
 inline DataT makeNaN();
@@ -233,18 +209,7 @@ inline double makeNaN(){
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-template <>
-inline Pose makeNaN(){
-  Pose ret(std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN());
-  return ret;
-}
+
 
 
 template <>
@@ -281,14 +246,29 @@ inline irob_msgs::FloatArray makeNaN(){
 
 template <>
 inline geometry_msgs::Pose makeNaN(){
-  Pose nanp = makeNaN<Pose>();
-  return nanp.toRosPose();
+  geometry_msgs::Pose nanp;
+  nanp.position.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.w = std::numeric_limits<double>::quiet_NaN();
+  return nanp;
 }
 
 template <>
 inline irob_msgs::ToolPose makeNaN(){
-  Pose nanp = makeNaN<Pose>();
-  return nanp.toRosToolPose();
+  irob_msgs::ToolPose nanp;
+  nanp.position.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.w = std::numeric_limits<double>::quiet_NaN();
+  nanp.jaw = std::numeric_limits<double>::quiet_NaN();
+  return nanp;
 }
 
 template <>
@@ -353,18 +333,7 @@ inline bool isnan(const double& d)
   return std::isnan(d);
 }
 
-template <>
-inline bool isnan(const Pose& d)
-{
-  return (std::isnan(d.position.x())
-          || std::isnan(d.position.y())
-          || std::isnan(d.position.z())
-          || std::isnan(d.orientation.x())
-          || std::isnan(d.orientation.y())
-          || std::isnan(d.orientation.z())
-          || std::isnan(d.orientation.w())
-          || std::isnan(d.jaw));
-}
+
 
 
 template <>

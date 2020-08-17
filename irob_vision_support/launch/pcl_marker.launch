@@ -1,0 +1,16 @@
+<!-- -->
+
+<launch>
+
+    <group ns="saf">
+
+
+
+    <node name="pcl_marker" pkg="irob_vision_support"
+            type="pcl_marker" output="screen" >
+
+
+    </node>
+    </group>
+</launch>
+

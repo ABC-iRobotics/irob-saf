@@ -6,16 +6,15 @@
  *
  */
 
-#include <iostream>
-#include <cmath>
-#include <ros/ros.h>
+
 #include <irob_utils/pose.hpp>
 
 
 namespace saf {
 
+
 /*
- * Constructors and basic functions for matematical compatibility
+ * Constructors and basic functions for mathematical compatibility
  */
 Pose::Pose(): position(0.0, 0.0, 0.0),
   orientation(0.0, 0.0, 0.0, 0.0), jaw(0.0) {}
@@ -62,6 +61,10 @@ Pose::Pose(const geometry_msgs::Point& position,
            const Eigen::Quaternion<double>& orientation, double jaw):
   position(position.x, position.y, position.z),
   orientation(orientation), jaw(jaw){}
+
+Pose::Pose(const Eigen::Transform<double,3,Eigen::Affine>& transform, double jaw):
+  position(transform.translation()),
+  orientation(Eigen::Quaternion<double>(transform.rotation())), jaw(jaw){}
 
 
 void Pose::swap(Pose& other)
@@ -139,6 +142,8 @@ Pose Pose::rotate(const Eigen::Matrix3d& R) const
   return ret;
 }
 
+
+
 /**
  *  Return true if any of the attributes is NaN.
  */
@@ -180,6 +185,13 @@ geometry_msgs::Pose Pose::toRosPose() const
   ret.orientation.x = orientation.x();
   ret.orientation.y = orientation.y();
   ret.orientation.z = orientation.z();
+  return ret;
+}
+
+Eigen::Transform<double,3,Eigen::Affine> Pose::toTransform() const
+{
+  Eigen::Transform<double,3,Eigen::Affine> ret(
+        Eigen::Translation3d(position) * orientation);
   return ret;
 }
 
@@ -301,11 +313,24 @@ Pose Pose::transform(const Eigen::Matrix3d& R,
                      const Eigen::Vector3d& t, double scale /* = 1.0 */)
 {
   Pose ret(*this);
-  ret.position *= scale;
-  ret = ret.rotate(R);
-  ret += t;
+  Eigen::Transform<double,3,Eigen::Affine> T(
+        Eigen::Translation3d(t) * R * Eigen::Scaling(scale));
+  // TODO usage of the rotation matrix might not work here as expected
+  return ret.transform(T);
+}
+
+Pose Pose::transform(const Eigen::Transform<double,3,Eigen::Affine>& T)
+{
+  Pose ret(T * toTransform(), jaw);
   return ret;
 }
+
+Pose Pose::invTransform(const Eigen::Transform<double,3,Eigen::Affine>& T)
+{
+  Pose ret(T.inverse() * toTransform(), jaw);
+  return ret;
+}
+
 
 /**
  * Transform Pose; first un-translates the position, then does the inverse
@@ -315,10 +340,10 @@ Pose Pose::invTransform(const Eigen::Matrix3d& R,
                         const Eigen::Vector3d& t, double scale /* = 1.0 */)
 {
   Pose ret(*this);
-  ret -= t;
-  ret = ret.rotate(R.transpose());
-  ret.position *= (1.0 / scale);
-  return ret;
+  Eigen::Transform<double,3,Eigen::Affine> T(
+        Eigen::Translation3d(t) * R * Eigen::Scaling(scale));
+  // TODO usage of the rotation matrix might not work here as expected
+  return ret.transform(T.inverse());
 }
 
 
@@ -328,12 +353,11 @@ Pose Pose::invTransform(const Eigen::Matrix3d& R,
  */
 Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
 {
-  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
-                              T.rotation.y,T.rotation.z);
-  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
-  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
+  Eigen::Transform<double,3,Eigen::Affine> T_eigen(
+     unwrapMsg<geometry_msgs::Transform,
+                    Eigen::Transform<double,3,Eigen::Affine>>(T) * Eigen::Scaling(scale));
 
-  return transform(R, t, scale);
+  return transform(T_eigen);
 }
 
 /**
@@ -342,11 +366,11 @@ Pose Pose::transform(const geometry_msgs::Transform& T, double scale /* = 1.0 */
  */
 Pose Pose::invTransform(const geometry_msgs::Transform& T, double scale /* = 1.0 */)
 {
-  Eigen::Quaternion<double> q(T.rotation.w, T.rotation.x,
-                              T.rotation.y,T.rotation.z);
-  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
-  Eigen::Vector3d t(T.translation.x, T.translation.y, T.translation.z);
-  return invTransform(R, t, scale);
+  Eigen::Transform<double,3,Eigen::Affine> T_eigen(
+     unwrapMsg<geometry_msgs::Transform,
+                    Eigen::Transform<double,3,Eigen::Affine>>(T) * Eigen::Scaling(scale));
+
+  return transform(T_eigen.inverse());
 }
 
 
@@ -382,6 +406,25 @@ std::ostream& operator<<(std::ostream& os, const Pose::Distance& d)
   return os << d.cartesian <<"\t" << d.angle <<"\t"
             << d.jaw;
 }
+
+/**
+ *  Rotate using rotation matrix.
+ */
+Pose operator*(const Eigen::Matrix3d& R, const Pose& p)
+{
+  Eigen::Transform<double,3,Eigen::Affine> T(R);
+  // TODO usage of the rotation matrix might not work here as expected
+  return T * p;
+}
+
+Pose operator*(const Eigen::Transform<double,3,Eigen::Affine>& T, const Pose& p)
+{
+  Pose ret(T * p.toTransform(), p.jaw);
+  return ret;
+}
+
+
+
 
 
 

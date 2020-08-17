@@ -30,7 +30,9 @@ geometry_msgs/Pose	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
 float64 		 	 target_diameter # GRASP, CUT, DISSECT,
 									 # PLACE, RELEASE, DISSECT
 float64 		 	 compression_rate # GRASP
-geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE, MOVE_CAM
+geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE
+geometry_msgs/Point  marker	# MOVE_CAM
+geometry_msgs/Point  desired	# MOVE_CAM
 float64				 speed_cartesian
 									# NAV_TO_POS, GRASP, CUT, PUSH, PLACE, 
 									# DISSECT, MANIPULATE

@@ -40,6 +40,14 @@ void SurgemeClient::positionCartesianCurrentCB(
   position_cartesian_current_pub.publish(msg);
 }
 
+// Read joints
+void SurgemeClient::jointStateCurrentCB(
+    const sensor_msgs::JointStateConstPtr& msg)
+{
+  joint_state_current = *msg;
+  joint_state_current_pub.publish(msg);
+}
+
 void SurgemeClient::instrumentInfoCB(
     const irob_msgs::InstrumentInfoConstPtr& msg)
 {
@@ -55,6 +63,11 @@ void SurgemeClient::subscribeTopics()
         "surgeme/"+arm_name+"/position_cartesian_current_cf",
         1000, &SurgemeClient::positionCartesianCurrentCB,this);
 
+  joint_state_current_sub =
+      nh.subscribe<sensor_msgs::JointState>(
+        "surgeme/"+arm_name+"/joint_state_current",
+        1000, &SurgemeClient::jointStateCurrentCB,this);
+
   instrument_info_sub =
       nh.subscribe<irob_msgs::InstrumentInfo>(
         "surgeme/"+arm_name+"/instrument_info",
@@ -67,6 +80,11 @@ void SurgemeClient::advertiseTopics()
   position_cartesian_current_pub
       = nh.advertise<irob_msgs::ToolPoseStamped>(
         "maneuver/"+arm_name+"/position_cartesian_current_cf",
+        1000);
+
+  joint_state_current_pub
+      = nh.advertise<sensor_msgs::JointState>(
+        "maneuver/"+arm_name+"/joint_state_current",
         1000);
 
   instrument_info_pub
@@ -92,6 +110,18 @@ Pose SurgemeClient::getPoseCurrent()
     ros::Duration(0.05).sleep();
   }
   Pose ret(position_cartesian_current);
+  return ret;
+
+}
+
+sensor_msgs::JointState SurgemeClient::getJointStateCurrent()
+{
+  while (joint_state_current.header.seq == 0)
+  {
+    ros::spinOnce();
+    ros::Duration(0.05).sleep();
+  }
+  sensor_msgs::JointState ret(joint_state_current);
   return ret;
 
 }
@@ -384,20 +414,16 @@ void SurgemeClient::manipulate(Eigen::Vector3d displacement,
   // in surgemeDoneCB
 }
 
-void SurgemeClient::move_cam(Eigen::Vector3d displacement,
+void SurgemeClient::move_cam(Eigen::Vector3d marker_pos_tcp,
+                             Eigen::Vector3d desired_pos_tcp,
                                double speed_cartesian)
 {
   // Send a goal to the action
   irob_msgs::SurgemeGoal goal;
 
   goal.action = irob_msgs::SurgemeGoal::MOVE_CAM;
-
-  geometry_msgs::Point displacement_ros;
-  displacement_ros.x = displacement.x();
-  displacement_ros.y = displacement.y();
-  displacement_ros.z = displacement.z();
-  goal.displacement = displacement_ros;
-
+  goal.marker = wrapToMsg<geometry_msgs::Point>(marker_pos_tcp);
+  goal.desired = wrapToMsg<geometry_msgs::Point>(desired_pos_tcp);
   goal.speed_cartesian = speed_cartesian;
 
   ac.sendGoal(goal);

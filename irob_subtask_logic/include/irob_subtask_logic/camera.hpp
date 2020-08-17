@@ -44,9 +44,14 @@ protected:
 
   VisionClient<geometry_msgs::Point,Eigen::Vector3d> vision;
   double speed_carthesian;
+  double marker_dist_threshold;
+  double marker_dist_desired;
+  double marker_threshold;
+  double camera_offset_x;
+  double camera_offset_y;
 
 public:
-  Camera(ros::NodeHandle, ros::NodeHandle priv_nh, std::vector<std::string>, double speed_carthesian);
+  Camera(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>, double, double, double, double, double, double);
   ~Camera();
   void moveCam();
 
