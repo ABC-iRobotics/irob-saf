@@ -142,20 +142,6 @@ std::string RobotClient::getName()
  */
 
 /**
- * Initialize robot arm.
- *
- */
-void RobotClient::initArm(bool move_allowed)
-{
-  // Send a goal to the action
-  irob_msgs::RobotGoal goal;
-  goal.action = irob_msgs::RobotGoal::INIT_ARM;
-
-  goal.move_allowed = move_allowed;
-  ac.sendGoal(goal);
-}
-
-/**
  * Reset position of the instrument.
  *
  */

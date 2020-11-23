@@ -24,7 +24,7 @@ SurgemeServer::SurgemeServer(ros::NodeHandle nh, std::string arm_name,
   // Subscribe and advertise topics
 
   as.start();
-  arm.initArm(true);
+  //arm.initArm(true);
 }
 
 SurgemeServer::~SurgemeServer()

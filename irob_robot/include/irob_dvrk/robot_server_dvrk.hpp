@@ -70,7 +70,6 @@ public:
   ~RobotServerDVRK();
 
   // Callbacks
-  void initArm();
   void resetPose(bool);
   void stop();
   void followTrajectory(Trajectory<Pose>);

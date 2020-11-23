@@ -20,9 +20,6 @@ Mimic::Mimic(ros::NodeHandle nh, std::string primer_name, std::string seconder_n
 
 {
 
-  // Subscribe and advertise topics
-  primer_arm.initArm(false);
-  seconder_arm.initArm(true);
 }
 
 Mimic::~Mimic()

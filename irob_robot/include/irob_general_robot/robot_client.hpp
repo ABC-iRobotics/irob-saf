@@ -101,7 +101,6 @@ public:
   std::string getName();
 
   // Robot motions
-  void initArm(bool);
   void resetPose(bool);
   void moveJaws(double, double);
   void moveTool(Pose, double, std::vector<Pose> = std::vector<Pose>(),

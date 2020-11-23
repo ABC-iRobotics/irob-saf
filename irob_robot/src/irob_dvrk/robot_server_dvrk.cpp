@@ -27,29 +27,6 @@ RobotServerDVRK::RobotServerDVRK(ros::NodeHandle nh, ros::NodeHandle priv_nh,
 RobotServerDVRK::~RobotServerDVRK() {}
 
 
-void RobotServerDVRK::initArm()
-{
-  // helper variables
-  ros::Rate loop_rate(2);
-  bool success = false;
-
-  irob_msgs::RobotFeedback feedback;
-  irob_msgs::RobotResult result;
-
-
-  ROS_INFO_STREAM("Starting " << arm_typ.name << " initilaization...");
-
-  // Previous operations on robot states are removed,
-  // use the dVRK console to home the robot
-
-  ROS_INFO_STREAM(arm_typ.name << " initilaization succeeded");
-
-  result.info = "initilaization succeeded";
-  result.pose = getPoseCurrent().toRosToolPose();
-  // set the action state to succeeded
-  as.setSucceeded(result);
-}
-
 /*
  * Move in joint space immediately.
  */
