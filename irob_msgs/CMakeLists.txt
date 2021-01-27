@@ -68,6 +68,7 @@ add_service_files(
 	FILES
 	GetControlVariables.srv
 	BoolQuery.srv
+        DmpGenTrajectory.srv
 	)
 
 ## Generate actions in the 'action' folder
