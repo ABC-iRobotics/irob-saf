@@ -1,0 +1,32 @@
+<!-- File launches the whole infrastructure for dummy grasping -->
+
+<launch>
+
+<arg name="arm_typ" default="PSM1"/>
+<arg name="arm_name" default="arm_1"/>
+<arg name="camera_registration_file" default="registration_identity.yaml"/>
+<arg name="filename" default="/home/dvrk_nat/trajectory_1.dat"/>
+<arg name="instrument_info_file" default="large_needle_driver.yaml"/>
+
+
+
+
+<include file="$(find irob_vision_support)/launch/dummy_target.launch"/>
+<include file="$(find irob_vision_support)/launch/dummy_vision.launch"/>
+
+<include file="$(find irob_robot)/launch/dvrk_server.launch">
+    <arg name="arm_typ" value="$(arg arm_typ)"/>
+    <arg name="arm_name" value="$(arg arm_name)"/>
+    <arg name="camera_registration_file" value="$(arg camera_registration_file)"/>
+    <arg name="filename" value="$(arg filename)"/>
+    <arg name="instrument_info_file" value="$(arg instrument_info_file)"/>
+</include>
+
+<include file="$(find irob_motion)/launch/surgeme_server.launch">
+    <arg name="arm_name" value="$(arg arm_name)"/>
+</include>
+
+
+</launch>
+
+

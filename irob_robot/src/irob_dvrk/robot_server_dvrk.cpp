@@ -209,7 +209,7 @@ void RobotServerDVRK::subscribeLowLevelTopics()
   
   state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
+                             "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/state_joint_current"),
         1000, &RobotServerDVRK::stateJointCurrentCB,this);

@@ -21,9 +21,11 @@ rc('text', usetex=True)
 
 
 class dmp_service:
+
+
     def __init__(self):
         self.approach_des = np.genfromtxt('../data/approach_1.dat',
-            delimiter=' ', skip_header = 1)
+                                            delimiter=' ', skip_header = 1)
         #print(approach_des)
 
         self.t_span = np.transpose(self.approach_des)[0]
@@ -43,12 +45,16 @@ class dmp_service:
 
         # ROS service
         rospy.init_node('dmp_server')
-        s = rospy.Service('dmp_gen_trajectory', DmpGenTrajectory, handle_dmp_gen_trajectory)
+        s = rospy.Service('dmp_gen_trajectory',
+                DmpGenTrajectory, self.handle_dmp_gen_trajectory)
         print("Ready to generate trajectories.")
         rospy.spin()
 
+
+
+
+
     def handle_dmp_gen_trajectory(req):
-        #print("Returning [%s + %s = %s]"%(req.a, req.b, (req.a + req.b)))
 
         if (req.action == req.GRASP):
             print("Generating GRASP trajectory...")
@@ -87,7 +93,8 @@ class dmp_service:
         plt.ylabel(r'$x_2$', fontsize=16)
 
         plt.show()
-        helper_ori = np.repeat(np.array([self.approach_des[0,4:9]]), x_track.shape[0], axis=0)
+        helper_ori = np.repeat(np.array([self.approach_des[0,4:9]]),
+                                            x_track.shape[0], axis=0)
         #print(helper_ori)
         #print(self.gamma.shape)
         #print(self.t_span.shape)
@@ -96,6 +103,7 @@ class dmp_service:
         x_track_pos_ori_jaw = np.concatenate((x_track, helper_ori), axis = 1)
         print(x_track_pos_ori_jaw.shape)
         return x_track_pos_ori_jaw
+
 
 
 
@@ -117,11 +125,29 @@ class dmp_service:
         return resp
 
 
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
-    #add_two_ints_server()
     dmp_ser = dmp_service()
 
     # Test
     #x_track_pos_ori_jaw = dmp_ser.calc_dmp(0,0)
     #resp = dmp_service.nparray2rostrajectory(x_track_pos_ori_jaw)
     #print(resp)
+
+
+
+
+
+
+
+
+
+
+

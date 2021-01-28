@@ -1,7 +1,7 @@
 <!-- Launch the irob dVRK high-level robot controller. After start, it will wait for irob_msgs/Robot actions -->
 
 <launch>
-	<group ns="saf">
+
 	
 	
   		<arg name="arm_typ" default="PSM2"/>
@@ -16,7 +16,7 @@
 	
 			<include 
 			file="$(find irob_robot)/config/dvrk_topic_names.xml" /> 
-  	
+        <group ns="saf">
 			<node name="robot_server_$(arg arm_typ)" pkg="irob_robot" 
             type="robot_server_dvrk" output="screen" >
   		

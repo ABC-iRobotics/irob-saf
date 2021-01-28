@@ -1,12 +1,12 @@
 <!-- Launch file to start surgeme server. After start, waits for irob_msgs/Surgeme actions -->
 
 <launch>
-	<group ns="saf">
+
 	
 		<arg name="arm_name" default="arm_1"/>
 		<arg name="rate" default="100"/>
 		
-  	
+        <group ns="saf">
 			<node name="surgeme_server_$(arg arm_name)" pkg="irob_motion" 
 			type="surgeme_server" output="screen">
   		
