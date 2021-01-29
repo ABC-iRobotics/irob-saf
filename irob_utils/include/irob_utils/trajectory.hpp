@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <irob_utils/utils.hpp>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_msgs/TrajectoryToolPose.h>
 
 namespace saf { 

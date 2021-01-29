@@ -54,19 +54,19 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
         //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
-Pose PegTransfer::poseToCameraFrame(const Pose& pose,
+ToolPose PegTransfer::poseToCameraFrame(const ToolPose& pose,
                                       const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret += board_t;
   ret = ret.transform(tr);  // Ori OK
   return ret;
 }
 
-Pose PegTransfer::poseToWorldFrame(const Pose& pose,
+ToolPose PegTransfer::poseToWorldFrame(const ToolPose& pose,
                                    const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret = ret.invTransform(tr);
   ret -= board_t;
   return ret;
@@ -120,11 +120,11 @@ void PegTransfer::doPegTransfer()
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
 
-    Pose grasp_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose grasp_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     grasp_pose_on += grasp_translate_world;
     grasp_pose_on = poseToCameraFrame(grasp_pose_on, e);
 
-    Pose grasp_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose grasp_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     grasp_approach_pose_on += approach_pre_grasp_translate_world;
     grasp_approach_pose_on = poseToCameraFrame(grasp_approach_pose_on, e);
 
@@ -137,17 +137,17 @@ void PegTransfer::doPegTransfer()
     // Place to new rod
     ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
 
-    Pose place_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose place_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     place_approach_pose_on += approach_post_grasp_translate_world;
     place_approach_pose_on = poseToCameraFrame(place_approach_pose_on, e);
-    std::vector<Pose> waypoints;
+    std::vector<ToolPose> waypoints;
     waypoints.push_back(place_approach_pose_on);
 
-    Pose place_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose place_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     place_pose_to += grasp_translate_world;
     place_pose_to = poseToCameraFrame(place_pose_to, e);
 
-    Pose place_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose place_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     place_approach_pose_to += approach_post_grasp_translate_world;
     place_approach_pose_to = poseToCameraFrame(place_approach_pose_to, e);
 
@@ -159,7 +159,7 @@ void PegTransfer::doPegTransfer()
 
 
     // Release
-    Pose release_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose release_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     release_approach_pose_to += approach_pre_grasp_translate_world;
     release_approach_pose_to = poseToCameraFrame(release_approach_pose_to, e);
 

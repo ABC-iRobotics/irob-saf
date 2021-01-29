@@ -29,7 +29,7 @@ void Grasp::graspObject()
 {
 
   // NaN pose received, until the vision node starts
-  Pose p = makeNaN<Pose>();
+  ToolPose p = makeNaN<ToolPose>();
   while (isnan(p)
          && ros::ok())
   {
@@ -43,13 +43,13 @@ void Grasp::graspObject()
 
   // Calculate approach position
   double approach_dist = 10.0;
-  Pose approach_pose = p - (approach_dist *
+  ToolPose approach_pose = p - (approach_dist *
                             BaseDirections<CoordinateFrame::CAMERA,
                             Eigen::Vector3d>::BACKWARD);
 
   // Send grasp surgeme action to the surgeme server.
   arms[0] -> grasp(p, approach_pose, 5.0, 0.95, 20.0, 20.0);
-  Pose old_p = p;
+  ToolPose old_p = p;
   // Wait for action to be finished
   while(!arms[0] -> isSurgemeDone() && ros::ok())
   {

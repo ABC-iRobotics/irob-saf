@@ -26,7 +26,7 @@
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_utils/utils.hpp>
@@ -80,7 +80,7 @@ public:
   void surgemeActionCB(
       const irob_msgs::SurgemeGoalConstPtr &);
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
 
   sensor_msgs::JointState getJointStateCurrent();
 
@@ -91,28 +91,28 @@ protected:
   // Methods for surgeme execution
   void stop();
 
-  void nav_to_pos(Pose ,std::vector<Pose>, InterpolationMethod, double);
+  void nav_to_pos(ToolPose ,std::vector<ToolPose>, InterpolationMethod, double);
 
-  void grasp(Pose, Pose, double, double, std::vector<Pose>,
+  void grasp(ToolPose, ToolPose, double, double, std::vector<ToolPose>,
              InterpolationMethod,
              double, double);
 
-  void cut(Pose, Pose, double, std::vector<Pose>,
+  void cut(ToolPose, ToolPose, double, std::vector<ToolPose>,
            InterpolationMethod,
            double, double);
 
-  void push(Pose, Pose, Eigen::Vector3d, std::vector<Pose>,
+  void push(ToolPose, ToolPose, Eigen::Vector3d, std::vector<ToolPose>,
             InterpolationMethod,
             double, double);
 
-  void dissect(Pose, Pose, Eigen::Vector3d,double, std::vector<Pose>,
+  void dissect(ToolPose, ToolPose, Eigen::Vector3d,double, std::vector<ToolPose>,
                InterpolationMethod,
                double, double);
 
-  void release(Pose, double,
+  void release(ToolPose, double,
                double, double);
 
-  void place(Pose, Pose, double, std::vector<Pose>, InterpolationMethod,
+  void place(ToolPose, ToolPose, double, std::vector<ToolPose>, InterpolationMethod,
              double);
 
   void manipulate(Eigen::Vector3d,

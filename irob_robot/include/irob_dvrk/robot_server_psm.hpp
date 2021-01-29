@@ -27,7 +27,7 @@
 #include <irob_dvrk/robot_server_dvrk.hpp>
 #include <irob_dvrk/arm_types.hpp>
 #include <irob_utils/topic_name_loader.hpp>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 
 namespace saf {
@@ -62,9 +62,9 @@ public:
       const sensor_msgs::JointStateConstPtr&) ;
 
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
 
-  void moveCartesianAbsolute(Pose, double = 0.01);
+  void moveCartesianAbsolute(ToolPose, double = 0.01);
   void moveJawRelative(double, double = 0.01);
   void moveJawAbsolute(double, double = 0.01);
 

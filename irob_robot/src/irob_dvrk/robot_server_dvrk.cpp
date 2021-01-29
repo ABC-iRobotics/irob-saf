@@ -97,7 +97,7 @@ void RobotServerDVRK::stop()
 
 
 
-void RobotServerDVRK::followTrajectory(Trajectory<Pose> tr)
+void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
 {
   // helper variables
   bool success = true;
@@ -180,7 +180,7 @@ void RobotServerDVRK::positionCartesianCurrentCB(
   irob_msgs::ToolPoseStamped fwd;
   fwd.header = position_cartesian_current.header;
 
-  Pose tmp(position_cartesian_current, 0.0);
+  ToolPose tmp(position_cartesian_current, 0.0);
 
   // Hand-eye calibration
   // Convert from m-s to mm-s
@@ -202,35 +202,30 @@ void RobotServerDVRK::subscribeLowLevelTopics()
 {
   current_state_sub = nh.subscribe<std_msgs::String>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/current_state"),
         1000, &RobotServerDVRK::robotStateCB,this);
   
   state_joint_current_sub = nh.subscribe<sensor_msgs::JointState>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/state_joint_current"),
         1000, &RobotServerDVRK::stateJointCurrentCB,this);
 
   position_cartesian_current_sub = nh.subscribe<geometry_msgs::PoseStamped>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/position_cartesian_current"),
         1000, &RobotServerDVRK::positionCartesianCurrentCB,this);
 
   error_sub = nh.subscribe<std_msgs::String>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/error"),
         1000, &RobotServerDVRK::errorCB,this);
 
   warning_sub = nh.subscribe<std_msgs::String>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/warning"),
         1000, &RobotServerDVRK::warningCB,this);
@@ -242,13 +237,11 @@ void RobotServerDVRK::advertiseLowLevelTopics()
   // dVRK
   position_joint_pub = nh.advertise<sensor_msgs::JointState>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_joint"),
         1000);
-  position_cartesian_pub = nh.advertise<geometry_msgs::Pose>(
+  position_cartesian_pub = nh.advertise<geometry_msgs::TransformStamped>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_cartesian"),
         1000);
@@ -303,10 +296,10 @@ Eigen::Quaternion<double> RobotServerDVRK::getOrientationCartesianCurrent()
   return ret;
 }
 
-Pose RobotServerDVRK::getPoseCurrent()
+ToolPose RobotServerDVRK::getPoseCurrent()
 {
   ros::spinOnce();
-  Pose ret(position_cartesian_current, 0.0);
+  ToolPose ret(position_cartesian_current, 0.0);
   return ret;
 
 }
@@ -362,8 +355,8 @@ void RobotServerDVRK::moveJointAbsolute(sensor_msgs::JointState pos, double dt)
 void RobotServerDVRK::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  Pose pose = currPose;
+  ToolPose currPose = getPoseCurrent();
+  ToolPose pose = currPose;
   pose += movement;
   geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
 
@@ -396,8 +389,8 @@ void RobotServerDVRK::moveCartesianRelative(Eigen::Vector3d movement, double dt)
 void RobotServerDVRK::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  Pose pose = currPose;
+  ToolPose currPose = getPoseCurrent();
+  ToolPose pose = currPose;
   pose.position = position;
   geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
 
@@ -430,8 +423,8 @@ void RobotServerDVRK::moveCartesianAbsolute(Eigen::Vector3d position, double dt)
 void RobotServerDVRK::moveCartesianAbsolute(Eigen::Quaternion<double> orientation, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  Pose pose = currPose;
+  ToolPose currPose = getPoseCurrent();
+  ToolPose pose = currPose;
   pose.orientation = orientation;
   geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
 
@@ -459,10 +452,10 @@ void RobotServerDVRK::moveCartesianAbsolute(Eigen::Quaternion<double> orientatio
 /*
  * Move in cartesian, and move jaw immediately.
  */
-void RobotServerDVRK::moveCartesianAbsolute(Pose pose, double dt)
+void RobotServerDVRK::moveCartesianAbsolute(ToolPose pose, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
+  ToolPose currPose = getPoseCurrent();
   geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
   try {
     // Safety
@@ -501,10 +494,10 @@ void RobotServerDVRK::checkErrors()
   }
 }
 
-void RobotServerDVRK::checkVelCartesian(const Pose& pose, 
-                                        const Pose& currPose, double dt)
+void RobotServerDVRK::checkVelCartesian(const ToolPose& pose,
+                                        const ToolPose& currPose, double dt)
 {
-  Pose::Distance d = currPose.dist(pose)/dt;
+  ToolPose::Distance d = currPose.dist(pose)/dt;
   if (d.cartesian > arm_typ.maxVelPose.cartesian ||
       d.angle > arm_typ.maxVelPose.angle ||
       d.jaw > arm_typ.maxVelPose.jaw)
@@ -520,7 +513,7 @@ void RobotServerDVRK::checkVelCartesian(const Pose& pose,
   }
 }
 
-void RobotServerDVRK::checkNaNCartesian(const Pose& pose)
+void RobotServerDVRK::checkNaNCartesian(const ToolPose& pose)
 {
   if (pose.isNaN())
   {
@@ -616,7 +609,7 @@ void RobotServerDVRK::recordTrajectory(Trajectory<Eigen::Vector3d>& tr)
   }
 }
 
-void RobotServerDVRK::recordTrajectory(Trajectory<Pose>& tr) 
+void RobotServerDVRK::recordTrajectory(Trajectory<ToolPose>& tr)
 {
   ros::Rate loop_rate(1.0/tr.dt);
   // Skip invalid points

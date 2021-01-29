@@ -22,6 +22,7 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
@@ -72,7 +73,7 @@ public:
   // Callbacks
   void resetPose(bool);
   void stop();
-  void followTrajectory(Trajectory<Pose>);
+  void followTrajectory(Trajectory<ToolPose>);
   void moveJointAbsolute(sensor_msgs::JointState , double );
 
   void robotStateCB(const std_msgs::String);
@@ -89,24 +90,24 @@ public:
   std::vector<double> getJointStateCurrent();
   Eigen::Vector3d getPositionCartesianCurrent();
   Eigen::Quaternion<double> getOrientationCartesianCurrent();
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
 
   //DVRK actions
   std::string getCurrentState();
   void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
   void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
   void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
-  virtual void moveCartesianAbsolute(Pose, double = 0.01);
+  virtual void moveCartesianAbsolute(ToolPose, double = 0.01);
 
 
   void recordTrajectory(Trajectory<Eigen::Vector3d>&);
-  void recordTrajectory(Trajectory<Pose>&);
+  void recordTrajectory(Trajectory<ToolPose>&);
   void saveTrajectory(std::string);
 
 
   void checkErrors();
-  void checkVelCartesian(const Pose&, const Pose&, double);
-  void checkNaNCartesian(const Pose&);
+  void checkVelCartesian(const ToolPose&, const ToolPose&, double);
+  void checkNaNCartesian(const ToolPose&);
   void checkVelJoint(const sensor_msgs::JointState&,
                      const std::vector<double>&, double);
   sensor_msgs::JointState maximizeVelJoint(const sensor_msgs::JointState&,

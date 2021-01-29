@@ -28,7 +28,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/topic_name_loader.hpp>
@@ -200,9 +200,9 @@ public:
 
   virtual void resetPose(bool) = 0;
   virtual void stop() = 0;
-  virtual void followTrajectory(Trajectory<Pose>) = 0;
+  virtual void followTrajectory(Trajectory<ToolPose>) = 0;
   virtual void moveJointAbsolute(sensor_msgs::JointState, double) = 0;
-  virtual Pose getPoseCurrent() = 0;
+  virtual ToolPose getPoseCurrent() = 0;
 
   virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr& goal)
   {

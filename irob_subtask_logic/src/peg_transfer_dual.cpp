@@ -54,19 +54,19 @@ void PegTransferDual::loadBoardDescriptor(ros::NodeHandle priv_nh)
   //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
-Pose PegTransferDual::poseToCameraFrame(const Pose& pose,
+ToolPose PegTransferDual::poseToCameraFrame(const ToolPose& pose,
                                         const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret += board_t;
   ret = ret.transform(tr);  // Ori OK
   return ret;
 }
 
-Pose PegTransferDual::poseToWorldFrame(const Pose& pose,
+ToolPose PegTransferDual::poseToWorldFrame(const ToolPose& pose,
                                        const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret = ret.invTransform(tr);
   ret -= board_t;
   return ret;
@@ -149,16 +149,16 @@ void PegTransferDual::doPegTransfer()
     // Grasp object with pick arm
     ROS_INFO_STREAM("Grasping object on peg " << peg_idx_on << "...");
 
-    Pose grasp_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose grasp_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     grasp_pose_on += grasp_translate_world[pick_arm];
     grasp_pose_on = poseToCameraFrame(grasp_pose_on, e);
 
-    Pose grasp_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose grasp_approach_pose_on(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     grasp_approach_pose_on += approach_pre_grasp_translate_world[pick_arm];
     grasp_approach_pose_on = poseToCameraFrame(grasp_approach_pose_on, e);
 
     // Nav pick arm to parking position
-    Pose parking_pos_place(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose parking_pos_place(pass_loc_world, grasp_ori_world, 0.0);
     parking_pos_place += parking_translate_world[place_arm];
     parking_pos_place = poseToCameraFrame(parking_pos_place, e);
 
@@ -174,11 +174,11 @@ void PegTransferDual::doPegTransfer()
     // Bring object to pass location
     ROS_INFO_STREAM("Moving object to pass location...");
 
-    Pose pass_approach_pose_pick(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
+    ToolPose pass_approach_pose_pick(peg_positions[peg_idx_on], grasp_ori_world, 0.0);
     pass_approach_pose_pick += approach_post_grasp_translate_world[pick_arm];
     pass_approach_pose_pick = poseToCameraFrame(pass_approach_pose_pick, e);
 
-    Pose pass_pose_pick(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose pass_pose_pick(pass_loc_world, grasp_ori_world, 0.0);
     pass_pose_pick += approach_post_grasp_translate_world[pick_arm];
     pass_pose_pick = poseToCameraFrame(pass_pose_pick, e);
 
@@ -191,11 +191,11 @@ void PegTransferDual::doPegTransfer()
     // Grasp object with place arm
     ROS_INFO_STREAM("Grasping object at pass location...");
 
-    Pose pass_pose_place(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose pass_pose_place(pass_loc_world, grasp_ori_world, 0.0);
     pass_pose_place += approach_post_grasp_translate_world[place_arm];
     pass_pose_place = poseToCameraFrame(pass_pose_place, e);
 
-    Pose pass_approach_pose_place(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose pass_approach_pose_place(pass_loc_world, grasp_ori_world, 0.0);
     pass_approach_pose_place += approach_pass_grasp_translate_world[place_arm];
     pass_approach_pose_place = poseToCameraFrame(pass_approach_pose_place, e);
 
@@ -206,7 +206,7 @@ void PegTransferDual::doPegTransfer()
     }
 
     // Release with pick arm
-    Pose release_approach_pose_pick(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose release_approach_pose_pick(pass_loc_world, grasp_ori_world, 0.0);
     release_approach_pose_pick += approach_pass_grasp_translate_world[pick_arm];
     release_approach_pose_pick = poseToCameraFrame(release_approach_pose_pick, e);
 
@@ -222,17 +222,17 @@ void PegTransferDual::doPegTransfer()
     // Place object on peg
     ROS_INFO_STREAM("Placing object to peg " << peg_idx_to << "...");
 
-    Pose place_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose place_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     place_pose_to += grasp_translate_world[place_arm];
     place_pose_to = poseToCameraFrame(place_pose_to, e);
 
-    Pose place_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose place_approach_pose_to(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     place_approach_pose_to += approach_post_grasp_translate_world[place_arm];
     place_approach_pose_to = poseToCameraFrame(place_approach_pose_to, e);
 
 
     // Nav pick arm to parking position
-    Pose parking_pos_pick(pass_loc_world, grasp_ori_world, 0.0);
+    ToolPose parking_pos_pick(pass_loc_world, grasp_ori_world, 0.0);
     parking_pos_pick += parking_translate_world[pick_arm];
     parking_pos_pick = poseToCameraFrame(parking_pos_pick, e);
 
@@ -246,7 +246,7 @@ void PegTransferDual::doPegTransfer()
 
 
     // Release with place arm
-    Pose release_approach_pose_place(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
+    ToolPose release_approach_pose_place(peg_positions[peg_idx_to], grasp_ori_world, 0.0);
     release_approach_pose_place += approach_pre_grasp_translate_world[place_arm];
     release_approach_pose_place = poseToCameraFrame(release_approach_pose_place, e);
 

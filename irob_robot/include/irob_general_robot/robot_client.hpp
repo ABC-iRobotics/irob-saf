@@ -25,7 +25,7 @@
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/trajectory_factory.hpp>
 #include <irob_utils/utils.hpp>
@@ -95,7 +95,7 @@ public:
   void instrumentInfoCB(
       const irob_msgs::InstrumentInfoConstPtr&);
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
   sensor_msgs::JointState getJointStateCurrent();
   irob_msgs::InstrumentInfo getInstrumentInfo();
   std::string getName();
@@ -103,7 +103,7 @@ public:
   // Robot motions
   void resetPose(bool);
   void moveJaws(double, double);
-  void moveTool(Pose, double, std::vector<Pose> = std::vector<Pose>(),
+  void moveTool(ToolPose, double, std::vector<ToolPose> = std::vector<ToolPose>(),
                 InterpolationMethod = LINEAR);
   void moveJoints(sensor_msgs::JointState);
 

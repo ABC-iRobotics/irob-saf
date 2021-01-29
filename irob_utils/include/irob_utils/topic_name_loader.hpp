@@ -25,67 +25,55 @@ private:
 public:
 
   /**
-     * Load topic with namespace and topic name.
+     * Load topic with topic name.
      */
-  static std::string load(std::string namespace_param_name,
-                          std::string topic_param_name)
+  static std::string load(std::string topic_param_name)
   {
-    std::string ns;
-    ros::param::get(namespace_param_name, ns);
 
     std::string topic;
     ros::param::get(topic_param_name, topic);
 
-    return "/" + ns + "/" + topic;
+    return "/" + topic;
   }
 
   /**
-     * Load topic with namespace, topic name and extra identifier.
+     * Load topic with topic name and extra identifier.
      */
-  static std::string load(std::string namespace_param_name,
-                          std::string topic_middle, std::string topic_param_name)
+  static std::string load(std::string topic_middle, std::string topic_param_name)
   {
-    std::string ns;
-    ros::param::get(namespace_param_name, ns);
 
     std::string topic;
     ros::param::get(topic_param_name, topic);
 
-    return "/" + ns + "/" + topic_middle + "/" + topic;
+    return "/" + topic_middle + "/" + topic;
   }
 
   /**
-     * Load topic with namespace and topic name using
+     * Load topic with topic name using
      * nodehandle.
      */
   static std::string load(ros::NodeHandle nh,
-                          std::string namespace_param_name,
                           std::string topic_param_name)
   {
-    std::string ns;
-    nh.getParam(namespace_param_name, ns);
 
     std::string topic;
     nh.getParam(topic_param_name, topic);
 
-    return "/" + ns + "/" + topic;
+    return "/" + topic;
   }
 
   /**
-     *  Load topic with namespace, topic name and extra identifier using
+     *  Load topic with topic name and extra identifier using
      * 	nodehandle.
      */
   static std::string load(ros::NodeHandle nh,
-                          std::string namespace_param_name,
                           std::string topic_middle,
                           std::string topic_param_name)
   {
-    std::string ns;
-    nh.getParam(namespace_param_name, ns);
 
     std::string topic;
     nh.getParam(topic_param_name, topic);
-    return "/" + ns + "/" + topic_middle + "/" + topic;
+    return "/" + topic_middle + "/" + topic;
   }
 
 

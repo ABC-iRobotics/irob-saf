@@ -29,7 +29,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Transform.h>
 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
@@ -57,8 +57,8 @@ protected:
 
 
   void loadBoardDescriptor(ros::NodeHandle);
-  Pose poseToCameraFrame(const Pose&, const geometry_msgs::Transform&);
-  Pose poseToWorldFrame(const Pose&, const geometry_msgs::Transform&);
+  ToolPose poseToCameraFrame(const ToolPose&, const geometry_msgs::Transform&);
+  ToolPose poseToWorldFrame(const ToolPose&, const geometry_msgs::Transform&);
 
 
 public:

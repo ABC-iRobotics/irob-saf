@@ -102,14 +102,14 @@ void SurgemeClient::waitForActionServer()
 }
 
 
-Pose SurgemeClient::getPoseCurrent()
+ToolPose SurgemeClient::getPoseCurrent()
 {
   while (position_cartesian_current.header.seq == 0)
   {
     ros::spinOnce();
     ros::Duration(0.05).sleep();
   }
-  Pose ret(position_cartesian_current);
+  ToolPose ret(position_cartesian_current);
   return ret;
 
 }
@@ -161,9 +161,9 @@ void SurgemeClient::stop()
   // in surgemeDoneCB
 }
 
-void SurgemeClient::nav_to_pos(Pose target,
+void SurgemeClient::nav_to_pos(ToolPose target,
                                double speed_cartesian,
-                               std::vector<Pose> waypoints /* = empty */,
+                               std::vector<ToolPose> waypoints /* = empty */,
                                InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -171,7 +171,7 @@ void SurgemeClient::nav_to_pos(Pose target,
 
   goal.action = irob_msgs::SurgemeGoal::NAV_TO_POS;
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)
@@ -189,12 +189,12 @@ void SurgemeClient::nav_to_pos(Pose target,
   // in surgemeDoneCB
 }
 
-void SurgemeClient::grasp(Pose target, Pose approach_pose,
+void SurgemeClient::grasp(ToolPose target, ToolPose approach_pose,
                           double target_diameter,
                           double compression_rate,
                           double speed_cartesian,
                           double speed_jaw,
-                          std::vector<Pose> waypoints /* = empty */,
+                          std::vector<ToolPose> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -206,7 +206,7 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
 
   goal.approach_pose = approach_pose.toRosPose();
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)
@@ -226,11 +226,11 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::cut(Pose target, Pose approach_pose,
+void SurgemeClient::cut(ToolPose target, ToolPose approach_pose,
                         double target_diameter,
                         double speed_cartesian,
                         double speed_jaw,
-                        std::vector<Pose> waypoints /* = empty */,
+                        std::vector<ToolPose> waypoints /* = empty */,
                         InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -241,7 +241,7 @@ void SurgemeClient::cut(Pose target, Pose approach_pose,
   goal.target = target.toRosPose();
   goal.approach_pose = approach_pose.toRosPose();
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)
@@ -260,7 +260,7 @@ void SurgemeClient::cut(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::release(Pose approach_pose,	double target_diameter,
+void SurgemeClient::release(ToolPose approach_pose,	double target_diameter,
                             double speed_cartesian,
                             double speed_jaw)
 {
@@ -283,9 +283,9 @@ void SurgemeClient::release(Pose approach_pose,	double target_diameter,
 }
 
 
-void SurgemeClient::place(Pose target, Pose approach_pose,
+void SurgemeClient::place(ToolPose target, ToolPose approach_pose,
                           double speed_cartesian,
-                          std::vector<Pose> waypoints /* = empty */,
+                          std::vector<ToolPose> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -296,7 +296,7 @@ void SurgemeClient::place(Pose target, Pose approach_pose,
   goal.target = target.toRosPose();
   goal.approach_pose = approach_pose.toRosPose();
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)
@@ -313,11 +313,11 @@ void SurgemeClient::place(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::push(Pose target, Pose approach_pose,
+void SurgemeClient::push(ToolPose target, ToolPose approach_pose,
                          Eigen::Vector3d displacement,
                          double speed_cartesian,
                          double speed_jaw,
-                         std::vector<Pose> waypoints /* = empty */,
+                         std::vector<ToolPose> waypoints /* = empty */,
                          InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -334,7 +334,7 @@ void SurgemeClient::push(Pose target, Pose approach_pose,
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)
@@ -352,12 +352,12 @@ void SurgemeClient::push(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::dissect(Pose target, Pose approach_pose,
+void SurgemeClient::dissect(ToolPose target, ToolPose approach_pose,
                             Eigen::Vector3d displacement,
                             double target_diameter,
                             double speed_cartesian,
                             double speed_jaw,
-                            std::vector<Pose> waypoints /* = empty */,
+                            std::vector<ToolPose> waypoints /* = empty */,
                             InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -374,7 +374,7 @@ void SurgemeClient::dissect(Pose target, Pose approach_pose,
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
-  for (Pose p : waypoints)
+  for (ToolPose p : waypoints)
     goal.waypoints.push_back(p.toRosPose());
 
   if (interp_method == InterpolationMethod::BEZIER)

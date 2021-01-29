@@ -42,7 +42,7 @@ void AccuracyMeas::doAccuracyMeas()
 
     ROS_INFO_STREAM("Saving target position");
     ros::spinOnce();
-    Pose target = arms[0] -> getPoseCurrent();
+    ToolPose target = arms[0] -> getPoseCurrent();
 
     ROS_INFO_STREAM("Target position saved");
 
@@ -54,7 +54,7 @@ void AccuracyMeas::doAccuracyMeas()
     ROS_INFO_STREAM("Saving approach position");
 
     ros::spinOnce();
-    Pose appr = arms[0] -> getPoseCurrent();
+    ToolPose appr = arms[0] -> getPoseCurrent();
 
     ROS_INFO_STREAM("Approach position saved");
 
@@ -67,7 +67,7 @@ void AccuracyMeas::doAccuracyMeas()
     ROS_INFO_STREAM("Saving dist position");
 
     ros::spinOnce();
-    Pose dist = arms[0] -> getPoseCurrent();
+    ToolPose dist = arms[0] -> getPoseCurrent();
 
     ROS_INFO_STREAM("Approach position saved");
 
@@ -83,7 +83,7 @@ void AccuracyMeas::doAccuracyMeas()
 
       ROS_INFO_STREAM("Moving arm to saved position...");
 
-      std::vector<Pose> waypoints;
+      std::vector<ToolPose> waypoints;
 
       arms[0] -> place(dist, appr, speed_cartesian, waypoints);
       while(!arms[0] -> isSurgemeDone() && ros::ok())

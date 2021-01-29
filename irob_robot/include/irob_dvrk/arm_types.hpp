@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 
 namespace saf {
 
@@ -29,12 +29,12 @@ public:
   // Attributes
   const std::string name;
   const int dof;
-  const Pose::Distance maxVelPose; // unit/sec
+  const ToolPose::Distance maxVelPose; // unit/sec
   const std::vector<double> maxVelJoint; // unit/sec
 
 private:
   ArmTypes( std::string name, int dof,
-            Pose::Distance maxVelPose, std::vector<double> maxVelJoint):
+            ToolPose::Distance maxVelPose, std::vector<double> maxVelJoint):
     name(name), dof(dof),
     maxVelPose(maxVelPose),
     maxVelJoint(maxVelJoint) { }

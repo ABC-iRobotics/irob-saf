@@ -52,19 +52,19 @@ void CutVessel::loadBoardDescriptor(ros::NodeHandle priv_nh)
   //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
-Pose CutVessel::poseToCameraFrame(const Pose& pose,
+ToolPose CutVessel::poseToCameraFrame(const ToolPose& pose,
                                         const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret += board_t;
   ret = ret.transform(tr);  // Ori OK
   return ret;
 }
 
-Pose CutVessel::poseToWorldFrame(const Pose& pose,
+ToolPose CutVessel::poseToWorldFrame(const ToolPose& pose,
                                        const geometry_msgs::Transform& tr)
 {
-  Pose ret(pose);
+  ToolPose ret(pose);
   ret = ret.invTransform(tr);
   ret -= board_t;
   return ret;
@@ -121,11 +121,11 @@ void CutVessel::doVesselCutting()
     // Grasp object
     ROS_INFO_STREAM("Grasping vessel");
 
-    Pose grasp_pose(vessel_ends[0], grasp_ori_world, 0.0);
+    ToolPose grasp_pose(vessel_ends[0], grasp_ori_world, 0.0);
     grasp_pose += grasp_translate_world;
     grasp_pose = poseToCameraFrame(grasp_pose, e);
 
-    Pose grasp_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
+    ToolPose grasp_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
     grasp_approach_pose += approach_pre_grasp_translate_world;
     grasp_approach_pose = poseToCameraFrame(grasp_approach_pose, e);
 
@@ -148,11 +148,11 @@ void CutVessel::doVesselCutting()
     // Cut vessel
     ROS_INFO_STREAM("Cutting vessel");
 
-    Pose cut_pose(vessel_ends[0], grasp_ori_world, 0.0);
+    ToolPose cut_pose(vessel_ends[0], grasp_ori_world, 0.0);
     cut_pose += cut_translate_world;
     cut_pose = poseToCameraFrame(cut_pose, e);
 
-    Pose cut_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
+    ToolPose cut_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
     cut_approach_pose += approach_cut_translate_world;
     cut_approach_pose = poseToCameraFrame(cut_approach_pose, e);
 
