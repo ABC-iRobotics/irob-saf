@@ -48,12 +48,12 @@ void SurgemeServer::surgemeActionCB(
   ToolPose target(goal -> target, 0.0);
   ToolPose approach_pose(goal -> approach_pose, 0.0);
   std::vector<ToolPose> waypoints;
-  for (geometry_msgs::Pose p : goal->waypoints)
+  for (auto p : goal->waypoints)
     waypoints.push_back(ToolPose(p, 0.0));
 
-  Eigen::Vector3d displacement(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->displacement));
-  Eigen::Vector3d marker(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->marker));
-  Eigen::Vector3d desired(unwrapMsg<geometry_msgs::Point,Eigen::Vector3d>(goal->desired));
+  Eigen::Vector3d displacement(unwrapMsg<geometry_msgs::Vector3,Eigen::Vector3d>(goal->displacement));
+  Eigen::Vector3d marker(unwrapMsg<geometry_msgs::Vector3,Eigen::Vector3d>(goal->marker));
+  Eigen::Vector3d desired(unwrapMsg<geometry_msgs::Vector3,Eigen::Vector3d>(goal->desired));
   // Check tool
   if (!isAbleToDoSurgeme(goal -> action))
   {
@@ -515,7 +515,7 @@ void SurgemeServer::grasp(ToolPose target, ToolPose approach_pose,
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::GRASP,
                                          jaw_part,
-                                         target.orientation,
+                                         Eigen::Quaterniond(target.transform.rotation()),
                                          target_diameter,
                                          compression_rate);
 
@@ -979,9 +979,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
 
   // Trasform positions from cam to base frame
   ToolPose p = arm.getPoseCurrent();
-  Eigen::Transform<double,3,Eigen::Affine> T_tcp_base(p.toTransform());
+  Eigen::Affine3d T_tcp_base(p.toTransform());
   // 90 deg rotation to move position out of the poles
-  Eigen::Transform<double,3,Eigen::Affine> T_sp_base(
+  Eigen::Affine3d T_sp_base(
         Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
   Eigen::Vector3d m_base = T_sp_base * T_tcp_base.inverse() *  marker_pos_tcp;
   Eigen::Vector3d d_base = T_sp_base * T_tcp_base.inverse() *  desired_pos_tcp;
@@ -1020,18 +1020,18 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
                   "zoom: " << delta_r);
 
   // Calculate rotation matrices
-  Eigen::Transform<double,3,Eigen::Affine> R_cam_base(p.toTransform().rotation());
-  Eigen::Transform<double,3,Eigen::Affine> q_x(
+  Eigen::Affine3d R_cam_base(p.transform.rotation());
+  Eigen::Affine3d q_x(
               Eigen::AngleAxis<double>(-delta_theta, Eigen::Vector3d::UnitX()));
   //q_x = q_x * T_sp_base.inverse();
-  Eigen::Transform<double,3,Eigen::Affine> q_z(
+  Eigen::Affine3d q_z(
              Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitZ()));
-  Eigen::Transform<double,3,Eigen::Affine> q_y(
+  Eigen::Affine3d q_y(
              Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitY()));
   //q_z = q_z * T_sp_base.inverse();
   Eigen::Vector3d t_z(0, 0, delta_r);
   t_z = R_cam_base * t_z;
-  Eigen::Transform<double,3,Eigen::Affine> Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
+  Eigen::Affine3d Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
@@ -1046,13 +1046,13 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
     transformStamped_ori.header.stamp = ros::Time::now();
     transformStamped_ori.header.frame_id = "ecm_base_link";
     transformStamped_ori.child_frame_id = "cam_ori";
-    transformStamped_ori.transform.translation.x = p_ori.position.x()/1000.0;
-    transformStamped_ori.transform.translation.y = p_ori.position.y()/1000.0;
-    transformStamped_ori.transform.translation.z = p_ori.position.z()/1000.0;
-    transformStamped_ori.transform.rotation.x = p_ori.orientation.x();
-    transformStamped_ori.transform.rotation.y = p_ori.orientation.y();
-    transformStamped_ori.transform.rotation.z = p_ori.orientation.z();
-    transformStamped_ori.transform.rotation.w = p_ori.orientation.w();
+    transformStamped_ori.transform.translation.x = p_ori.transform.translation().x()/1000.0;
+    transformStamped_ori.transform.translation.y = p_ori.transform.translation().y()/1000.0;
+    transformStamped_ori.transform.translation.z = p_ori.transform.translation().z()/1000.0;
+    transformStamped_ori.transform.rotation.x = p_ori.transform.rotation().x();
+    transformStamped_ori.transform.rotation.y = p_ori.transform.rotation().y();
+    transformStamped_ori.transform.rotation.z = p_ori.transform.rotation().z();
+    transformStamped_ori.transform.rotation.w = p_ori.transform.rotation().w();
 
     br_ori.sendTransform(transformStamped_ori);
 
@@ -1061,13 +1061,13 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
     transformStamped_new.header.stamp = ros::Time::now();
     transformStamped_new.header.frame_id = "ecm_base_link";
     transformStamped_new.child_frame_id = "cam_new";
-    transformStamped_new.transform.translation.x = p_new.position.x()/1000.0;
-    transformStamped_new.transform.translation.y = p_new.position.y()/1000.0;
-    transformStamped_new.transform.translation.z = p_new.position.z()/1000.0;
-    transformStamped_new.transform.rotation.x = p_new.orientation.x();
-    transformStamped_new.transform.rotation.y = p_new.orientation.y();
-    transformStamped_new.transform.rotation.z = p_new.orientation.z();
-    transformStamped_new.transform.rotation.w = p_new.orientation.w();
+    transformStamped_new.transform.translation.x = p_new.transform.translation().x()/1000.0;
+    transformStamped_new.transform.translation.y = p_new.transform.translation().y()/1000.0;
+    transformStamped_new.transform.translation.z = p_new.transform.translation().z()/1000.0;
+    transformStamped_new.transform.rotation.x = p_new.transform.rotation().x();
+    transformStamped_new.transform.rotation.y = p_new.transform.rotation().y();
+    transformStamped_new.transform.rotation.z = p_new.transform.rotation().z();
+    transformStamped_new.transform.rotation.w = p_new.transform.rotation().w();
 
     br_new.sendTransform(transformStamped_new);
     ros::Duration(0.1).sleep();

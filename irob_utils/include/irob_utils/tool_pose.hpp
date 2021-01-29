@@ -15,7 +15,7 @@
 #include <iostream>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Transform.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Float32.h>
 #include <sensor_msgs/JointState.h>
 #include <Eigen/Dense>
@@ -61,6 +61,8 @@ class ToolPose {
     ToolPose(const Eigen::Vector3d&, const Eigen::Quaterniond&, double);
     ToolPose(const Eigen::Affine3d&, double );
     ToolPose(const Eigen::Translation3d&, const Eigen::Quaterniond&, double );
+    ToolPose(const geometry_msgs::Transform&, double);
+    ToolPose(const geometry_msgs::TransformStamped&, double);
 
     irob_msgs::ToolPose toRosToolPose() const;
 

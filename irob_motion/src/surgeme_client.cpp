@@ -172,14 +172,14 @@ void SurgemeClient::nav_to_pos(ToolPose target,
   goal.action = irob_msgs::SurgemeGoal::NAV_TO_POS;
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
   else
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
 
-  goal.target = target.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
 
   goal.speed_cartesian = speed_cartesian;
 
@@ -202,12 +202,12 @@ void SurgemeClient::grasp(ToolPose target, ToolPose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::GRASP;
 
-  goal.target = target.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
 
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -238,11 +238,11 @@ void SurgemeClient::cut(ToolPose target, ToolPose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::CUT;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -269,7 +269,7 @@ void SurgemeClient::release(ToolPose approach_pose,	double target_diameter,
 
   goal.action = irob_msgs::SurgemeGoal::RELEASE;
 
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
 
   goal.target_diameter = target_diameter;
@@ -293,11 +293,11 @@ void SurgemeClient::place(ToolPose target, ToolPose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::PLACE;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -325,17 +325,17 @@ void SurgemeClient::push(ToolPose target, ToolPose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::PUSH;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -365,17 +365,17 @@ void SurgemeClient::dissect(ToolPose target, ToolPose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::DISSECT;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target = wrapToMsg<geometry_msgs::Transform,ToolPose>(target);
+  goal.approach_pose = wrapToMsg<geometry_msgs::Transform,ToolPose>(approach_pose);
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
   for (ToolPose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,ToolPose>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -401,7 +401,7 @@ void SurgemeClient::manipulate(Eigen::Vector3d displacement,
 
   goal.action = irob_msgs::SurgemeGoal::MANIPULATE;
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
@@ -422,8 +422,8 @@ void SurgemeClient::move_cam(Eigen::Vector3d marker_pos_tcp,
   irob_msgs::SurgemeGoal goal;
 
   goal.action = irob_msgs::SurgemeGoal::MOVE_CAM;
-  goal.marker = wrapToMsg<geometry_msgs::Point>(marker_pos_tcp);
-  goal.desired = wrapToMsg<geometry_msgs::Point>(desired_pos_tcp);
+  goal.marker = wrapToMsg<geometry_msgs::Vector3>(marker_pos_tcp);
+  goal.desired = wrapToMsg<geometry_msgs::Vector3>(desired_pos_tcp);
   goal.speed_cartesian = speed_cartesian;
 
   ac.sendGoal(goal);

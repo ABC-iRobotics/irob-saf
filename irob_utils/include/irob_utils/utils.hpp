@@ -25,8 +25,7 @@
 #include <irob_msgs/FloatArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Transform.h>
 #include <sensor_msgs/JointState.h>
 #include <irob_msgs/ToolPose.h>
@@ -97,10 +96,6 @@ inline irob_msgs::Environment unwrapMsg(const irob_msgs::Environment& msg){
   return msg;
 }
 
-template <>
-inline geometry_msgs::Transform unwrapMsg(const geometry_msgs::Transform& msg){
-  return msg;
-}
 
 template <>
 inline double unwrapMsg(const std_msgs::Float32& msg){
@@ -109,16 +104,11 @@ inline double unwrapMsg(const std_msgs::Float32& msg){
 
 
 template <>
-inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
+inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Vector3& msg){
   Eigen::Vector3d ret(msg.x, msg.y, msg.z);
   return ret;
 }
 
-template <>
-inline Eigen::Vector3d unwrapMsg(const geometry_msgs::PointStamped& msg){
-  Eigen::Vector3d ret(msg.point.x, msg.point.y, msg.point.z);
-  return ret;
-}
 
 template <>
 inline Eigen::Quaterniond unwrapMsg(const geometry_msgs::Quaternion& msg){
@@ -161,21 +151,11 @@ inline sensor_msgs::JointState wrapToMsg(const double& data){
 
 
 template <>
-inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
-  geometry_msgs::Point msg;
+inline geometry_msgs::Vector3 wrapToMsg(const Eigen::Vector3d& data){
+  geometry_msgs::Vector3 msg;
   msg.x = data.x();
   msg.y = data.y();
   msg.z = data.z();
-  return msg;
-}
-
-
-template <>
-inline geometry_msgs::PointStamped wrapToMsg(const Eigen::Vector3d& data){
-  geometry_msgs::PointStamped msg;
-  msg.point.x = data.x();
-  msg.point.y = data.y();
-  msg.point.z = data.z();
   return msg;
 }
 
@@ -311,14 +291,6 @@ inline geometry_msgs::Transform makeNaN(){
 }
 
 
-template <>
-inline geometry_msgs::PointStamped makeNaN(){
-  geometry_msgs::PointStamped msg;
-  msg.point.x = std::numeric_limits<double>::quiet_NaN();
-  msg.point.y = std::numeric_limits<double>::quiet_NaN();
-  msg.point.z = std::numeric_limits<double>::quiet_NaN();
-  return msg;
-}
 
 template <>
 inline geometry_msgs::Quaternion makeNaN(){
@@ -415,11 +387,6 @@ inline bool isnan(const geometry_msgs::Transform& d)
           || std::isnan(d.rotation.w));
 }
 
-template <>
-inline bool isnan(const geometry_msgs::PointStamped& d)
-{
-  return isnan<geometry_msgs::Point>(d.point);
-}
 
 template <>
 inline bool isnan(const geometry_msgs::Quaternion& d)

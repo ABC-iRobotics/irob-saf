@@ -53,6 +53,14 @@ ToolPose::ToolPose(const  Eigen::Vector3d& translation,
   transform(Eigen::Translation3d(translation) * Eigen::Affine3d(rotation)),
   jaw(jaw){}
 
+ToolPose::ToolPose(const geometry_msgs::Transform& msg, double jaw):
+  transform(unwrapMsg<geometry_msgs::Transform,Eigen::Affine3d>(msg)),
+  jaw(jaw){}
+
+ToolPose::ToolPose(const geometry_msgs::TransformStamped& msg, double jaw):
+  transform(unwrapMsg<geometry_msgs::Transform,Eigen::Affine3d>(msg.transform)),
+  jaw(jaw){}
+
 
 irob_msgs::ToolPose ToolPose::toRosToolPose() const
 {

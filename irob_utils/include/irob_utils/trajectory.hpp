@@ -55,10 +55,7 @@ public:
   Trajectory<T> operator+=(const Trajectory<T>&);
   Trajectory<T> operator+(const Trajectory<T>&);
 
-  void transform(const Eigen::Matrix3d&, const Eigen::Vector3d&,
-                 double = 1.0);
-  void invTransform(const Eigen::Matrix3d&, const Eigen::Vector3d&,
-                    double = 1.0);
+  void transform(const Eigen::Affine3d&);
 
   void copyToRosTrajectory(irob_msgs::TrajectoryToolPose&);
 
@@ -71,6 +68,7 @@ public:
       os << tr[i] << std::endl;
     return os;
   }
+
 
 };
 
@@ -156,21 +154,12 @@ Trajectory<T> Trajectory<T>::operator+(const Trajectory<T>& other)
 
 // Transform trajectory in place
 template <class T>
-void Trajectory<T>::transform(const Eigen::Matrix3d& R, 
-                              const Eigen::Vector3d& t, double scale /* = 1.0 */)
+void Trajectory<T>::transform(const Eigen::Affine3d& G)
 {
   for (T& p : points)
-    p = p.transform(R, t, scale);
+    p = G * p;
 }
 
-// Transform trajectory in place
-template <class T>
-void Trajectory<T>::invTransform(const Eigen::Matrix3d& R, 
-                                 const Eigen::Vector3d& t, double scale /* = 1.0 */)
-{
-  for (T& p : points)
-    p = p.invTransform(R, t, scale);
-}
 
 
 template <class T>

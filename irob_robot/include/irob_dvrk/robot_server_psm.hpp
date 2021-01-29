@@ -18,7 +18,7 @@
 #include <ros/package.h>
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
-#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/TransformStamped.h"
 #include "std_msgs/Float32.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
@@ -44,7 +44,7 @@ private:
   ros::Publisher position_jaw_sub;
 
   // States
-  sensor_msgs::JointState position_jaw;
+  sensor_msgs::JointState jaw_measured_js;
 
   void advertiseLowLevelTopics();
   void subscribeLowLevelTopics();
@@ -55,8 +55,8 @@ public:
 
   void resetPose(bool);
 
-  void positionCartesianCurrentCB(
-      const geometry_msgs::PoseStampedConstPtr&) ;
+  void measured_cp_cb(
+      const geometry_msgs::TransformStampedConstPtr&) ;
 
   void positionJawCurrentCB(
       const sensor_msgs::JointStateConstPtr&) ;

@@ -21,7 +21,6 @@
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/JointState.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
@@ -45,16 +44,16 @@ protected:
 
 
   // States
-  std_msgs::String current_state;
-  sensor_msgs::JointState position_joint;
-  geometry_msgs::PoseStamped position_cartesian_current;
+  std_msgs::String status;
+  sensor_msgs::JointState measured_js;
+  geometry_msgs::TransformStamped measured_cp;
   std_msgs::String error;
   std_msgs::String warning;
 
   // Subscribers
-  ros::Subscriber current_state_sub;
-  ros::Subscriber state_joint_current_sub;
-  ros::Subscriber position_cartesian_current_sub;
+  ros::Subscriber status_sub;
+  ros::Subscriber smeasured_js_sub;
+  ros::Subscriber measured_cp_sub;
   ros::Subscriber error_sub;
   ros::Subscriber warning_sub;
 
@@ -76,12 +75,12 @@ public:
   void followTrajectory(Trajectory<ToolPose>);
   void moveJointAbsolute(sensor_msgs::JointState , double );
 
-  void robotStateCB(const std_msgs::String);
-  void errorCB(const std_msgs::String);
-  void warningCB(const std_msgs::String);
-  void stateJointCurrentCB(const sensor_msgs::JointStateConstPtr&);
-  virtual void positionCartesianCurrentCB(
-      const geometry_msgs::PoseStampedConstPtr&);
+  void status_cb(const std_msgs::String);
+  void error_cb(const std_msgs::String);
+  void warning_cb(const std_msgs::String);
+  void measured_js_cb(const sensor_msgs::JointStateConstPtr&);
+  virtual void measured_cp_cb(
+      const geometry_msgs::TransformStampedConstPtr&);
 
 
   void loadRegistration(std::string);
@@ -94,9 +93,7 @@ public:
 
   //DVRK actions
   std::string getCurrentState();
-  void moveCartesianRelative(Eigen::Vector3d, double = 0.01);
-  void moveCartesianAbsolute(Eigen::Vector3d, double = 0.01);
-  void moveCartesianAbsolute(Eigen::Quaternion<double>, double = 0.01);
+  void moveCartesianRelative(Eigen::Translation3d, double = 0.01);
   virtual void moveCartesianAbsolute(ToolPose, double = 0.01);
 
 

@@ -266,11 +266,11 @@ public:
     Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
     for (int i = 0; i < ramp.size(); i++)
     {
-      Eigen::Vector3d p = start.position-center;
+      Eigen::Vector3d p = start.transform.translation()-center;
       Eigen::Vector3d p1(p.x()*cos(ramp[i])-p.y()*sin(ramp[i]),
                          p.y()*cos(ramp[i])+p.x()*sin(ramp[i]), p.z());
       Eigen::Vector3d p2 = p1+center;
-      ToolPose po2(p2, start.orientation, start.jaw);
+      ToolPose po2(p2, Eigen::Quaterniond(start.transform.rotation()), start.jaw);
       tr.addPoint(po2);
     }
     return tr;

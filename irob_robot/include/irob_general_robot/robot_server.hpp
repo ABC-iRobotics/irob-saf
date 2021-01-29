@@ -60,13 +60,14 @@ protected:
   // Hand-eye registration
   Eigen::Vector3d t;
   Eigen::Matrix3d R;
+  Eigen::Affine3d T_he;
 
   // Surgical instrument information
   irob_msgs::InstrumentInfo instrument_info;
 
   // Publisher
-  ros::Publisher position_cartesian_current_pub;
-  ros::Publisher joint_state_current_pub;
+  ros::Publisher measured_cp_pub;
+  ros::Publisher measured_js_pub;
   ros::Publisher instrument_info_pub;
 
   virtual void subscribeLowLevelTopics() = 0;
@@ -75,11 +76,11 @@ protected:
   void advertiseHighLevelTopics()
   {
     // robot interface
-    position_cartesian_current_pub
+    measured_cp_pub
         = nh.advertise<irob_msgs::ToolPoseStamped>(
           "robot/"+arm_name+"/position_cartesian_current_cf",
           1000);
-    joint_state_current_pub
+    measured_js_pub
         = nh.advertise<sensor_msgs::JointState>(
           "robot/"+arm_name+"/joint_state_current",
           1000);
@@ -133,6 +134,8 @@ public:
     for (int i = 0; i < R.rows(); i++)
       for (int j = 0; j < R.cols(); j++)
         R(i, j) = param_R[(i * R.rows()) + j];
+
+    T_he = Eigen::Translation3d(t) * Eigen::Affine3d(R) * Eigen::Scaling(0.001);
     
     ROS_INFO_STREAM(
           "Registration read: "<< std::endl << t << std::endl << R);
