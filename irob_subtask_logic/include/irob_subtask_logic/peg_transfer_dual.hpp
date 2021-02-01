@@ -46,10 +46,10 @@ class PegTransferDual : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Transform, geometry_msgs::Transform> vision;
+  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
 
-  Eigen::Vector3d board_t;
-  std::vector<Eigen::Vector3d> peg_positions;
+  Eigen::Translation3d board_t;
+  std::vector<Eigen::Translation3d> peg_positions;
   double peg_h;
   double object_h;
   double object_d;
@@ -57,8 +57,8 @@ protected:
 
 
   void loadBoardDescriptor(ros::NodeHandle);
-  ToolPose poseToCameraFrame(const ToolPose&, const geometry_msgs::Transform&);
-  ToolPose poseToWorldFrame(const ToolPose&, const geometry_msgs::Transform&);
+  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
+  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
 
 
 public:

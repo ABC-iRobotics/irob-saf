@@ -279,21 +279,6 @@ std::ostream& operator<<(std::ostream& os, const ToolPose::Distance& d)
             << d.jaw;
 }
 
-/**
- *  Rotate using rotation matrix.
- */
-ToolPose operator*(const Eigen::Matrix3d& R, const ToolPose& p)
-{
-  ToolPose ret(R * p.transform, p.jaw);
-  return ret;
-}
-
-ToolPose operator*(const Eigen::Affine3d& T, const ToolPose& p)
-{
-  ToolPose ret(T * p.transform, p.jaw);
-  return ret;
-}
-
 
 
 

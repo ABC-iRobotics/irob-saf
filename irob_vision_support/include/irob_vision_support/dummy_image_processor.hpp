@@ -24,8 +24,7 @@
 #include <Eigen/Geometry> 
 #include <sensor_msgs/Image.h>
 #include <stereo_msgs/DisparityImage.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Transform.h>
 #include <geometry_msgs/Quaternion.h>
 #include "visualization_msgs/Marker.h"
 
@@ -62,7 +61,7 @@ public:
 
   void tragetCB(const visualization_msgs::MarkerConstPtr&);
 
-  geometry_msgs::Pose processImages( const cv_bridge::CvImagePtr,
+  geometry_msgs::Transform processImages( const cv_bridge::CvImagePtr,
                                      const cv_bridge::CvImagePtr,
                                      const cv_bridge::CvImagePtr,
                                      const cv_bridge::CvImagePtr,
@@ -98,7 +97,7 @@ void DummyImageProcessor::tragetCB(const visualization_msgs::MarkerConstPtr& msg
   dummy_location.z() = msg->pose.position.z * 1000.0;
 }
 
-geometry_msgs::Pose DummyImageProcessor::processImages(
+geometry_msgs::Transform DummyImageProcessor::processImages(
     const  cv_bridge::CvImagePtr image_left_ptr,
     const cv_bridge::CvImagePtr image_right_ptr,
     const cv_bridge::CvImagePtr color_image_left_ptr,
@@ -107,11 +106,11 @@ geometry_msgs::Pose DummyImageProcessor::processImages(
 {
   ros::spinOnce();
 
-  geometry_msgs::Pose grasp_pose;
-  grasp_pose.position =
-      wrapToMsg<geometry_msgs::Point, Eigen::Vector3d>(dummy_location);
-  grasp_pose.orientation =
-      wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaternion<double>
+  geometry_msgs::Transform grasp_pose;
+  grasp_pose.translation =
+      wrapToMsg<geometry_msgs::Vector3, Eigen::Vector3d>(dummy_location);
+  grasp_pose.rotation =
+      wrapToMsg<geometry_msgs::Quaternion, Eigen::Quaterniond
       >(grasp_orientation);
 
   return grasp_pose;

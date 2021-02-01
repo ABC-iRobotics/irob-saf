@@ -42,7 +42,7 @@ class Grasp : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Pose, ToolPose> vision;
+  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
 
 
 public:

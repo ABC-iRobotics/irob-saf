@@ -348,7 +348,7 @@ irob_msgs::InstrumentJawPart SurgemeServer::findInstrumentJawPartForSurgeme(
 SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
     int surgeme_type,
     irob_msgs::InstrumentJawPart jaw_part,
-    Eigen::Quaternion<double> target_ori,
+    Eigen::Quaterniond target_ori,
     double target_diameter,
     double compression_rate /* = 1.0 */)
 {
@@ -372,7 +372,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
 
     double dist = jaw_part.end - (target_diameter / 2.0);
 
-    g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
+    g.t = -1.0 * dist * quatToVec<Eigen::Quaterniond,
         Eigen::Vector3d>(target_ori);
     //g.t *= 1.0;
 
@@ -416,7 +416,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
     double dist = arm.getInstrumentInfo().jaw_length
         * cos(g.jaw_open_angle * (M_PI / 360.0));
 
-    g.t = -1.0 * dist * quatToVec<Eigen::Quaternion<double>,
+    g.t = -1.0 * dist * quatToVec<Eigen::Quaterniond,
         Eigen::Vector3d>(target_ori);
     g.jaw_closed_angle = 0.0;
     return g;
@@ -515,7 +515,8 @@ void SurgemeServer::grasp(ToolPose target, ToolPose approach_pose,
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::GRASP,
                                          jaw_part,
-                                         Eigen::Quaterniond(target.transform.rotation()),
+                                         Eigen::Quaterniond(
+                                           target.transform.rotation()),
                                          target_diameter,
                                          compression_rate);
 
@@ -525,7 +526,7 @@ void SurgemeServer::grasp(ToolPose target, ToolPose approach_pose,
   // Navigate
   stage = "navigate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage << " at "<< target);
-  arm.moveTool(approach_pose + gs.t,
+  arm.moveTool(Eigen::Translation3d(gs.t) * approach_pose,
                speed_cartesian, waypoints, interp_method);
 
   done = waitForActionDone(stage);
@@ -549,7 +550,7 @@ void SurgemeServer::grasp(ToolPose target, ToolPose approach_pose,
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
 
-  arm.moveTool(target + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * target, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -594,7 +595,8 @@ void SurgemeServer::cut(ToolPose target, ToolPose approach_pose,
       findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::CUT);
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::CUT,
-                                         jaw_part, target.orientation,
+                                         jaw_part, Eigen::Quaterniond(
+                                                target.transform.rotation()),
                                          target_diameter);
 
   // Start action
@@ -602,7 +604,7 @@ void SurgemeServer::cut(ToolPose target, ToolPose approach_pose,
   // Navigate
   stage = "navigate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(approach_pose + gs.t, speed_cartesian, waypoints, interp_method);
+  arm.moveTool(Eigen::Translation3d(gs.t) *approach_pose, speed_cartesian, waypoints, interp_method);
 
   done = waitForActionDone(stage);
   if (done)
@@ -624,7 +626,7 @@ void SurgemeServer::cut(ToolPose target, ToolPose approach_pose,
   // Approach
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(target + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * target, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -665,7 +667,8 @@ void SurgemeServer::release(ToolPose approach_pose,
       findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::RELEASE);
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::RELEASE,
-                                         jaw_part, approach_pose.orientation,
+                                         jaw_part, Eigen::Quaterniond(
+                                           approach_pose.transform.rotation()),
                                          target_diameter);
 
   // Start action
@@ -684,7 +687,7 @@ void SurgemeServer::release(ToolPose approach_pose,
   // Approach
   stage = "leave";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(approach_pose + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * approach_pose, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -719,18 +722,19 @@ void SurgemeServer::place(ToolPose target, ToolPose approach_pose,
       findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::PLACE);
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::PLACE,
-                                         jaw_part, target.orientation,
+                                         jaw_part, Eigen::Quaterniond(
+                                           target.transform.rotation()),
                                          target_diameter);
 
   for (ToolPose& p: waypoints)
-    p += gs.t;
+    p = Eigen::Translation3d(gs.t) * p;
 
   // Start action
 
   // Navigate
   stage = "navigate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(approach_pose + gs.t,
+  arm.moveTool(Eigen::Translation3d(gs.t) * approach_pose,
                speed_cartesian, waypoints, interp_method);
 
   done = waitForActionDone(stage);
@@ -742,7 +746,7 @@ void SurgemeServer::place(ToolPose target, ToolPose approach_pose,
   // Approach
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(target + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * target, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -777,7 +781,8 @@ void SurgemeServer::push(ToolPose target, ToolPose approach_pose,
       findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::PUSH);
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::PUSH,
-                                         jaw_part, target.orientation,
+                                         jaw_part, Eigen::Quaterniond(
+                                           target.transform.rotation()),
                                          0.0);
 
   // Start action
@@ -785,7 +790,7 @@ void SurgemeServer::push(ToolPose target, ToolPose approach_pose,
   // Navigate
   stage = "navigate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(approach_pose + gs.t,
+  arm.moveTool(Eigen::Translation3d(gs.t) * approach_pose,
                speed_cartesian, waypoints, interp_method);
 
   done = waitForActionDone(stage);
@@ -808,7 +813,7 @@ void SurgemeServer::push(ToolPose target, ToolPose approach_pose,
   // Approach
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(target + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * target, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -819,8 +824,8 @@ void SurgemeServer::push(ToolPose target, ToolPose approach_pose,
   // Push
   stage = "push";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  ToolPose pushed_pose = arm.getPoseCurrent() + displacement;
-  arm.moveTool(pushed_pose + gs.t, speed_cartesian);
+  ToolPose pushed_pose = Eigen::Translation3d(displacement) * arm.getPoseCurrent();
+  arm.moveTool(Eigen::Translation3d(gs.t) * pushed_pose, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -855,7 +860,8 @@ void SurgemeServer::dissect(ToolPose target, ToolPose approach_pose,
       findInstrumentJawPartForSurgeme(irob_msgs::SurgemeGoal::DISSECT);
 
   SurgemeSetting gs = calcSurgemeSetting(irob_msgs::SurgemeGoal::DISSECT,
-                                         jaw_part, target.orientation,
+                                         jaw_part, Eigen::Quaterniond(
+                                           target.transform.rotation()),
                                          target_diameter);
 
   // Start action
@@ -863,7 +869,7 @@ void SurgemeServer::dissect(ToolPose target, ToolPose approach_pose,
   // Navigate
   stage = "navigate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(approach_pose + gs.t,
+  arm.moveTool(Eigen::Translation3d(gs.t) *approach_pose,
                speed_cartesian, waypoints, interp_method);
 
   done = waitForActionDone(stage);
@@ -886,7 +892,7 @@ void SurgemeServer::dissect(ToolPose target, ToolPose approach_pose,
   // Approach
   stage = "approach";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  arm.moveTool(target + gs.t, speed_cartesian);
+  arm.moveTool(Eigen::Translation3d(gs.t) * target, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -897,8 +903,8 @@ void SurgemeServer::dissect(ToolPose target, ToolPose approach_pose,
   // Penetrate
   stage = "penetrate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  ToolPose pushed_pose = arm.getPoseCurrent() + displacement;
-  arm.moveTool(pushed_pose + gs.t, speed_cartesian);
+  ToolPose pushed_pose = Eigen::Translation3d(displacement) * arm.getPoseCurrent();
+  arm.moveTool(Eigen::Translation3d(gs.t) * pushed_pose, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -920,8 +926,8 @@ void SurgemeServer::dissect(ToolPose target, ToolPose approach_pose,
   // Pull
   stage = "pull";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  pushed_pose = arm.getPoseCurrent() - displacement;
-  arm.moveTool(pushed_pose + gs.t, speed_cartesian);
+  pushed_pose = Eigen::Translation3d(displacement).inverse() * arm.getPoseCurrent();
+  arm.moveTool(Eigen::Translation3d(gs.t) * pushed_pose, speed_cartesian);
 
   done = waitForActionDone(stage);
   if (done)
@@ -949,7 +955,7 @@ void SurgemeServer::manipulate(Eigen::Vector3d displacement,
   // Manipulate
   stage = "manipulate";
   ROS_INFO_STREAM(arm.getName()  << ": starting " << stage);
-  ToolPose manipulated_pose = arm.getPoseCurrent() + displacement;
+  ToolPose manipulated_pose = Eigen::Translation3d(displacement) *arm.getPoseCurrent();
   arm.moveTool(manipulated_pose, speed_cartesian);
 
   done = waitForActionDone(stage);
@@ -979,7 +985,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
 
   // Trasform positions from cam to base frame
   ToolPose p = arm.getPoseCurrent();
-  Eigen::Affine3d T_tcp_base(p.toTransform());
+  Eigen::Affine3d T_tcp_base(p.transform);
   // 90 deg rotation to move position out of the poles
   Eigen::Affine3d T_sp_base(
         Eigen::AngleAxis<double>(M_PI / 2.0, Eigen::Vector3d::UnitX()));
@@ -1031,7 +1037,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
   //q_z = q_z * T_sp_base.inverse();
   Eigen::Vector3d t_z(0, 0, delta_r);
   t_z = R_cam_base * t_z;
-  Eigen::Affine3d Trans_zoom(Eigen::Translation<double,3>(t_z.x(), t_z.y(), t_z.z()));
+  Eigen::Affine3d Trans_zoom(Eigen::Translation3d(t_z.x(), t_z.y(), t_z.z()));
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
@@ -1046,13 +1052,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
     transformStamped_ori.header.stamp = ros::Time::now();
     transformStamped_ori.header.frame_id = "ecm_base_link";
     transformStamped_ori.child_frame_id = "cam_ori";
-    transformStamped_ori.transform.translation.x = p_ori.transform.translation().x()/1000.0;
-    transformStamped_ori.transform.translation.y = p_ori.transform.translation().y()/1000.0;
-    transformStamped_ori.transform.translation.z = p_ori.transform.translation().z()/1000.0;
-    transformStamped_ori.transform.rotation.x = p_ori.transform.rotation().x();
-    transformStamped_ori.transform.rotation.y = p_ori.transform.rotation().y();
-    transformStamped_ori.transform.rotation.z = p_ori.transform.rotation().z();
-    transformStamped_ori.transform.rotation.w = p_ori.transform.rotation().w();
+    transformStamped_ori.transform =
+        wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(
+          Eigen::Scaling(0.001) * p_ori.transform);
 
     br_ori.sendTransform(transformStamped_ori);
 
@@ -1061,13 +1063,9 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
     transformStamped_new.header.stamp = ros::Time::now();
     transformStamped_new.header.frame_id = "ecm_base_link";
     transformStamped_new.child_frame_id = "cam_new";
-    transformStamped_new.transform.translation.x = p_new.transform.translation().x()/1000.0;
-    transformStamped_new.transform.translation.y = p_new.transform.translation().y()/1000.0;
-    transformStamped_new.transform.translation.z = p_new.transform.translation().z()/1000.0;
-    transformStamped_new.transform.rotation.x = p_new.transform.rotation().x();
-    transformStamped_new.transform.rotation.y = p_new.transform.rotation().y();
-    transformStamped_new.transform.rotation.z = p_new.transform.rotation().z();
-    transformStamped_new.transform.rotation.w = p_new.transform.rotation().w();
+    transformStamped_new.transform =
+        wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(
+          Eigen::Scaling(0.001) * p_new.transform);
 
     br_new.sendTransform(transformStamped_new);
     ros::Duration(0.1).sleep();

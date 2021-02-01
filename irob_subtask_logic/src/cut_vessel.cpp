@@ -52,35 +52,34 @@ void CutVessel::loadBoardDescriptor(ros::NodeHandle priv_nh)
   //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
-ToolPose CutVessel::poseToCameraFrame(const ToolPose& pose,
-                                        const geometry_msgs::Transform& tr)
+Eigen::Affine3d CutVessel::poseToCameraFrame(const Eigen::Affine3d& pose,
+                                      const Eigen::Affine3d& tr)
 {
-  ToolPose ret(pose);
-  ret += board_t;
-  ret = ret.transform(tr);  // Ori OK
+  Eigen::Affine3d ret(pose);
+  ret = Eigen::Translation3d(board_t) * ret;
+  ret = tr * ret;  // Ori OK
   return ret;
 }
 
-ToolPose CutVessel::poseToWorldFrame(const ToolPose& pose,
-                                       const geometry_msgs::Transform& tr)
+Eigen::Affine3d CutVessel::poseToWorldFrame(const Eigen::Affine3d& pose,
+                                     const Eigen::Affine3d& tr)
 {
-  ToolPose ret(pose);
-  ret = ret.invTransform(tr);
-  ret -= board_t;
+  Eigen::Affine3d ret(pose);
+  ret = tr.inverse() * ret;
+  ret = Eigen::Translation3d(board_t).inverse() * ret;
   return ret;
 
 }
-
 
 void CutVessel::doVesselCutting()
 {
 
   double compress_rate = 0.0;
 
-  geometry_msgs::Transform e;
+  Eigen::Affine3d e;
   // Read marker transform
   ROS_INFO_STREAM("Waiting for data from vision...");
-  e = makeNaN<geometry_msgs::Transform>();
+  e = makeNaN<Eigen::Affine3d>();
   while (isnan(e) && ros::ok())
   {
     e = vision.getResult();
@@ -88,11 +87,11 @@ void CutVessel::doVesselCutting()
   }
 
   //Vision data received
-  Eigen::Quaternion<double> ori_world =
-      BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+  Eigen::Quaterniond ori_world =
+      BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaterniond>::
       DOWN_SIDEWAYS;
 
-  Eigen::Quaternion<double> grasp_ori_world(ori_world);
+  Eigen::Quaterniond grasp_ori_world(ori_world);
 
 
   double grasp_translate_y = 25.0;
@@ -121,12 +120,15 @@ void CutVessel::doVesselCutting()
     // Grasp object
     ROS_INFO_STREAM("Grasping vessel");
 
-    ToolPose grasp_pose(vessel_ends[0], grasp_ori_world, 0.0);
-    grasp_pose += grasp_translate_world;
+    Eigen::Affine3d grasp_pose(
+          grasp_ori_world * Eigen::Translation3d(vessel_ends[0]));  // TODO check
+    grasp_pose = Eigen::Translation3d(grasp_translate_world) * grasp_pose;
     grasp_pose = poseToCameraFrame(grasp_pose, e);
 
-    ToolPose grasp_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
-    grasp_approach_pose += approach_pre_grasp_translate_world;
+    Eigen::Affine3d grasp_approach_pose(
+           grasp_ori_world * Eigen::Translation3d(vessel_ends[0]));
+    grasp_approach_pose =
+        Eigen::Translation3d(approach_pre_grasp_translate_world) * grasp_approach_pose;
     grasp_approach_pose = poseToCameraFrame(grasp_approach_pose, e);
 
     arms[grasp_arm]->grasp(grasp_pose, grasp_approach_pose, object_d, compress_rate, speed_cartesian, speed_jaw);
@@ -148,12 +150,15 @@ void CutVessel::doVesselCutting()
     // Cut vessel
     ROS_INFO_STREAM("Cutting vessel");
 
-    ToolPose cut_pose(vessel_ends[0], grasp_ori_world, 0.0);
-    cut_pose += cut_translate_world;
+    Eigen::Affine3d cut_pose(
+           grasp_ori_world * Eigen::Translation3d(vessel_ends[0]));
+    cut_pose = Eigen::Translation3d(cut_translate_world) * cut_pose;
     cut_pose = poseToCameraFrame(cut_pose, e);
 
-    ToolPose cut_approach_pose(vessel_ends[0], grasp_ori_world, 0.0);
-    cut_approach_pose += approach_cut_translate_world;
+    Eigen::Affine3d cut_approach_pose(
+           grasp_ori_world * Eigen::Translation3d(vessel_ends[0]));
+    cut_approach_pose = Eigen::Translation3d(approach_cut_translate_world) *
+        cut_approach_pose;
     cut_approach_pose = poseToCameraFrame(cut_approach_pose, e);
 
     arms[cut_arm]->cut(cut_pose, cut_approach_pose, object_d, speed_cartesian, speed_jaw);

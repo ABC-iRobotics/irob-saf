@@ -58,6 +58,12 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
   return out;
 }
 
+
+/*std::ostream& operator<<(std::ostream& out, const Eigen::Affine3d& T) {
+  out << "Translation:\t" << T.translation() << "\tRotation:\t" << T.rotation();
+  return out;
+}*/
+
 // Interpolation
 
 template<typename T>
@@ -109,6 +115,13 @@ inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Vector3& msg){
   return ret;
 }
 
+template <>
+inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
+  Eigen::Vector3d ret(msg.x, msg.y, msg.z);
+  return ret;
+}
+
+
 
 template <>
 inline Eigen::Quaterniond unwrapMsg(const geometry_msgs::Quaternion& msg){
@@ -153,6 +166,15 @@ inline sensor_msgs::JointState wrapToMsg(const double& data){
 template <>
 inline geometry_msgs::Vector3 wrapToMsg(const Eigen::Vector3d& data){
   geometry_msgs::Vector3 msg;
+  msg.x = data.x();
+  msg.y = data.y();
+  msg.z = data.z();
+  return msg;
+}
+
+template <>
+inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
+  geometry_msgs::Point msg;
   msg.x = data.x();
   msg.y = data.y();
   msg.z = data.z();
@@ -216,6 +238,12 @@ inline Eigen::Quaterniond makeNaN(){
                                 std::numeric_limits<double>::quiet_NaN(),
                                 std::numeric_limits<double>::quiet_NaN(),
                                 std::numeric_limits<double>::quiet_NaN());
+  return ret;
+}
+
+template <>
+inline Eigen::Affine3d makeNaN(){
+  Eigen::Affine3d ret(Eigen::Translation3d(makeNaN<Eigen::Vector3d>()));
   return ret;
 }
 
@@ -334,6 +362,13 @@ inline bool isnan(const Eigen::Quaterniond& d)
           || std::isnan(d.z())
           || std::isnan(d.w()));
 }
+
+template <>
+inline bool isnan(const Eigen::Affine3d& d)
+{
+  return (d.translation().hasNaN() || d.rotation().hasNaN());
+}
+
 
 template <>
 inline bool isnan(const std_msgs::Float32& d)

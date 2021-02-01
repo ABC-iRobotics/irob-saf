@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     
     // Start Vision server
   	try {
-      VisionServer<geometry_msgs::Pose, DummyImageProcessor> td(nh, rate);
+      VisionServer<geometry_msgs::Transform, DummyImageProcessor> td(nh, rate);
     		
     	
     	ROS_INFO_STREAM("Program finished succesfully, shutting down ...");

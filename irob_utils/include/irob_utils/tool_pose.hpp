@@ -82,8 +82,15 @@ class ToolPose {
    	
     friend std::ostream& operator<<(std::ostream&, const ToolPose&);
     friend std::istream& operator>>(std::istream&, ToolPose&);
-    friend ToolPose operator*(const Eigen::Matrix3d&, const ToolPose&);
-    friend ToolPose operator*(const Eigen::Affine3d&, const ToolPose&);
+
+    template<typename T_typ>
+    friend ToolPose operator*(
+          const T_typ& T,
+          const ToolPose& p)
+    {
+      ToolPose ret(T * p.transform, p.jaw);
+      return ret;
+    }
 };
 
 // Template specializations from utils.hpp

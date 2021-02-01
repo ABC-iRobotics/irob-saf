@@ -96,39 +96,39 @@ public:
 
   // Robot motions
   void stop();
-  void nav_to_pos(ToolPose,
+  void nav_to_pos(Eigen::Affine3d,
                   double,
-                  std::vector<ToolPose> = std::vector<ToolPose>(),
+                  std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                   InterpolationMethod = InterpolationMethod::LINEAR);
-  void grasp(ToolPose, ToolPose, double,	double,
+  void grasp(Eigen::Affine3d, Eigen::Affine3d, double,	double,
              double,
              double,
-             std::vector<ToolPose> = std::vector<ToolPose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void cut(ToolPose, ToolPose,double,
+  void cut(Eigen::Affine3d, Eigen::Affine3d,double,
            double,
            double,
-           std::vector<ToolPose> = std::vector<ToolPose>(),
+           std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
            InterpolationMethod = InterpolationMethod::LINEAR);
-  void release(ToolPose,	double,
+  void release(Eigen::Affine3d,	double,
                double,
                double);
-  void place(ToolPose, ToolPose,
+  void place(Eigen::Affine3d, Eigen::Affine3d,
              double,
-             std::vector<ToolPose> = std::vector<ToolPose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void push(ToolPose, ToolPose,
+  void push(Eigen::Affine3d, Eigen::Affine3d,
             Eigen::Vector3d,
             double,
             double,
-            std::vector<ToolPose> = std::vector<ToolPose>(),
+            std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
             InterpolationMethod = InterpolationMethod::LINEAR);
-  void dissect(ToolPose, ToolPose,
+  void dissect(Eigen::Affine3d, Eigen::Affine3d,
                Eigen::Vector3d,
                double,
                double,
                double,
-               std::vector<ToolPose> = std::vector<ToolPose>(),
+               std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                InterpolationMethod = InterpolationMethod::LINEAR);
 
   void manipulate(Eigen::Vector3d,
