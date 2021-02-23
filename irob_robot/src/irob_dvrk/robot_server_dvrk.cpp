@@ -105,17 +105,18 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
   irob_msgs::RobotResult result;
 
   ROS_INFO_STREAM("Starting trajectory follow action.");
-  ROS_INFO_STREAM("Goal untransformed:" << tr[tr.size() - 1]);
+  ROS_INFO_STREAM("Goal untransformed:\n" << tr[tr.size() - 1]);
   // Go to m-s from mm-s here
   // Hande-eye calibration
   tr.transform(Eigen::Translation3d(t) * Eigen::Affine3d(R) * Eigen::Scaling(0.001));
-  ROS_INFO_STREAM("Goal transformed:" << tr[tr.size() - 1]);
-
+  ROS_INFO_STREAM("Goal transformed:\n" << tr[tr.size() - 1]);
+  ROS_INFO_STREAM("Trajectory dt:\t" << tr.dt);
   ros::Rate loop_rate(1.0/tr.dt);
   // start executing the action
   for (int i = 0; i < tr.size(); i++)
   {
     // check that preempt has not been requested by the client
+    ROS_INFO_STREAM("here 1" << tr.dt);
     if (as.isPreemptRequested() || !ros::ok())
     {
       ROS_INFO_STREAM("Follow trajectory: Preempted");
@@ -125,12 +126,17 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
       break;
     }
     try {
+      ROS_INFO_STREAM("here 2");
       moveCartesianAbsolute(tr[i],tr.dt);
-      feedback.info = "following trajectory, index: " + i;
+      ROS_INFO_STREAM("here 3");
+      feedback.info = "following trajectory";
       feedback.pose = tr[i].toRosToolPose();
+      ROS_INFO_STREAM(feedback << "feedback");
       as.publishFeedback(feedback);
+      ROS_INFO_STREAM("here 4.1");
     }catch (std::runtime_error e)
     {
+      ROS_INFO_STREAM("here 5");
       result.pose = getPoseCurrent().toRosToolPose();
       result.info = e.what();
       ROS_ERROR_STREAM(arm_typ.name << ": an error occured: " << e.what());
@@ -139,8 +145,9 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
       success = false;
       break;
     }
-
+     ROS_INFO_STREAM("here 4.2");
     loop_rate.sleep();
+     ROS_INFO_STREAM("here 4.3");
   }
 
   if(success)

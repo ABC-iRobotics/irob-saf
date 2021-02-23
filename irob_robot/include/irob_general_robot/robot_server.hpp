@@ -209,6 +209,7 @@ public:
 
   virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr& goal)
   {
+    ROS_INFO_STREAM("Start robotActionCB");
     switch(goal -> action)
     {
     case irob_msgs::RobotGoal::STOP:
