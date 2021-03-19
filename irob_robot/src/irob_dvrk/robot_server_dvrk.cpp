@@ -116,7 +116,6 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
   for (int i = 0; i < tr.size(); i++)
   {
     // check that preempt has not been requested by the client
-    ROS_INFO_STREAM("here 1" << tr.dt);
     if (as.isPreemptRequested() || !ros::ok())
     {
       ROS_INFO_STREAM("Follow trajectory: Preempted");
@@ -126,17 +125,12 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
       break;
     }
     try {
-      ROS_INFO_STREAM("here 2");
       moveCartesianAbsolute(tr[i],tr.dt);
-      ROS_INFO_STREAM("here 3");
       feedback.info = "following trajectory";
       feedback.pose = tr[i].toRosToolPose();
-      ROS_INFO_STREAM(feedback << "feedback");
       as.publishFeedback(feedback);
-      ROS_INFO_STREAM("here 4.1");
     }catch (std::runtime_error e)
     {
-      ROS_INFO_STREAM("here 5");
       result.pose = getPoseCurrent().toRosToolPose();
       result.info = e.what();
       ROS_ERROR_STREAM(arm_typ.name << ": an error occured: " << e.what());
@@ -145,9 +139,7 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
       success = false;
       break;
     }
-     ROS_INFO_STREAM("here 4.2");
     loop_rate.sleep();
-     ROS_INFO_STREAM("here 4.3");
   }
 
   if(success)
@@ -368,7 +360,8 @@ void RobotServerDVRK::moveCartesianRelative(Eigen::Translation3d movement, doubl
   pose = Eigen::Affine3d(movement) * pose;
   geometry_msgs::Transform new_position_cartesian
       = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
-
+  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.transform=new_position_cartesian;
   // Safety
   try {
     checkErrors();
@@ -377,7 +370,7 @@ void RobotServerDVRK::moveCartesianRelative(Eigen::Translation3d movement, doubl
     // End safety
     
     // Publish movement
-    position_cartesian_pub.publish(new_position_cartesian);
+    position_cartesian_pub.publish(new_position_cartesian_stamped);
     ros::spinOnce();
   } catch (std::runtime_error e)
   {
@@ -402,6 +395,8 @@ void RobotServerDVRK::moveCartesianAbsolute(ToolPose pose, double dt)
   ToolPose currPose = getPoseCurrent();
   geometry_msgs::Transform new_position_cartesian
       = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.transform=new_position_cartesian;
   try {
     // Safety
     checkErrors();
@@ -410,7 +405,7 @@ void RobotServerDVRK::moveCartesianAbsolute(ToolPose pose, double dt)
     // End safety
     
     // Publish movement
-    position_cartesian_pub.publish(new_position_cartesian);
+    position_cartesian_pub.publish(new_position_cartesian_stamped);
     ros::spinOnce();
   } catch (std::runtime_error e)
   {

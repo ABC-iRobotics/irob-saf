@@ -206,9 +206,12 @@ void RobotServerPSM::moveCartesianAbsolute(ToolPose pose, double dt)
   ToolPose currPose = getPoseCurrent();
   geometry_msgs::Transform new_position_cartesian
       = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.transform=new_position_cartesian;
   sensor_msgs::JointState new_position_jaw
       = wrapToMsg<sensor_msgs::JointState,double>(pose.jaw);
-  try {
+
+   try{
     // Safety
     checkErrors();
     checkVelCartesian(pose, currPose, dt);
@@ -216,7 +219,9 @@ void RobotServerPSM::moveCartesianAbsolute(ToolPose pose, double dt)
     // End safety
     
     // Publish movement
-    position_cartesian_pub.publish(new_position_cartesian);
+
+    position_cartesian_pub.publish(new_position_cartesian_stamped);
+
     position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
   } catch (std::runtime_error e)
