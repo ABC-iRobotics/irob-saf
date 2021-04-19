@@ -2,8 +2,6 @@
 <launch>
 	<group ns="dvrk_topics">
 
-
-
         <param name="current_state" type="string" value="status" />
 
         <param name="set_position_joint" type="string"
@@ -11,6 +9,7 @@
 
         <param name="state_joint_current" type="string"
                                     value="measured_js" />
+
 
 	<param name="set_position_cartesian" type="string"
                                     value="servo_cp" />

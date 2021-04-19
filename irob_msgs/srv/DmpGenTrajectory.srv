@@ -1,0 +1,21 @@
+# DmpGenTrajectory.srv
+
+# Action types
+int8 STOP = 1
+int8 NAV_TO_POS = 2
+int8 GRASP = 3
+int8 CUT = 4
+int8 PUSH = 5
+int8 DISSECT = 6
+int8 PLACE = 7
+int8 MANIPULATE = 8		# Manipulate grasped soft tissue
+int8 RELEASE = 9
+int8 MOVE_CAM = 10
+
+#request fields
+int8 action
+geometry_msgs/Pose	 start
+geometry_msgs/Pose	 target
+---
+#response fields
+irob_msgs/TrajectoryToolPose trajectory

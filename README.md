@@ -157,6 +157,7 @@ Autonomous surgical subtasks can be assembled from the ROS nodes of the framewor
 An example using the dVRK PSM simulation and a dummy target can be launched easily however. First, start the simulator:
 
     roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/$(whoami)/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
+
     
 If the simulation is started, press *Home*.  
 Start a dummy target:
