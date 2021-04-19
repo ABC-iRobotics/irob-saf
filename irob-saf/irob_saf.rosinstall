@@ -1,5 +1,5 @@
 - git:
     local-name: irob-saf
     uri: https://github.com/ABC-iRobotics/irob-saf
-    version: dVRK_2_0
+    version: master
 
