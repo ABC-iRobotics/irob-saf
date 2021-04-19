@@ -96,7 +96,7 @@ If you installed dVRK by the `catkin build` and `rosinstall` method, you should 
 
     source ~/catkin_ws/devel/setup.bash
     cd ~/catkin_ws/src
-    wstool merge https://raw.githubusercontent.com/ABC-iRobotics/irob-saf/dVRK_2_0/irob-saf/irob_saf.rosinstall
+    wstool merge https://raw.githubusercontent.com/ABC-iRobotics/irob-saf/master/irob-saf/irob_saf.rosinstall   # or replace "master" with the corresponding branch
     wstool up
     cd ~/catkin_ws
     catkin build irob-saf
