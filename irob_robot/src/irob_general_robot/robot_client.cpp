@@ -39,6 +39,14 @@ void RobotClient::positionCartesianCurrentCB(
   position_cartesian_current_pub.publish(msg);
 }
 
+// Read joints and forward
+void RobotClient::jointStateCurrentCB(
+    const sensor_msgs::JointStateConstPtr& msg)
+{
+  joint_state_current = *msg;
+  joint_state_current_pub.publish(msg);
+}
+
 void RobotClient::instrumentInfoCB(
     const irob_msgs::InstrumentInfoConstPtr& msg)
 {
@@ -53,6 +61,11 @@ void RobotClient::subscribeTopics()
         "robot/"+arm_name+"/position_cartesian_current_cf",
         1000, &RobotClient::positionCartesianCurrentCB,this);
 
+ joint_state_current_sub =
+      nh.subscribe<sensor_msgs::JointState>(
+        "robot/"+arm_name+"/joint_state_current",
+        1000, &RobotClient::jointStateCurrentCB,this);
+
   instrument_info_sub =
       nh.subscribe<irob_msgs::InstrumentInfo>(
         "robot/"+arm_name+"/instrument_info",
@@ -63,12 +76,17 @@ void RobotClient::advertiseTopics()
 {
   position_cartesian_current_pub
       = nh.advertise<irob_msgs::ToolPoseStamped>(
-        "gesture/"+arm_name+"/position_cartesian_current_cf",
+        "surgeme/"+arm_name+"/position_cartesian_current_cf",
+        1000);
+
+ joint_state_current_pub
+      = nh.advertise<sensor_msgs::JointState>(
+        "surgeme/"+arm_name+"/joint_state_current",
         1000);
 
   instrument_info_pub
       = nh.advertise<irob_msgs::InstrumentInfo>(
-        "gesture/"+arm_name+"/instrument_info",
+        "surgeme/"+arm_name+"/instrument_info",
         1000);
 }
 
@@ -80,14 +98,25 @@ void RobotClient::waitForActionServer()
 }
 
 
-Pose RobotClient::getPoseCurrent()
+ToolPose RobotClient::getPoseCurrent()
 {
   while (position_cartesian_current.header.seq == 0)
   {
     ros::spinOnce();
     ros::Duration(0.05).sleep();
   }
-  Pose ret(position_cartesian_current);
+  ToolPose ret(position_cartesian_current);
+  return ret;
+}
+
+sensor_msgs::JointState RobotClient::getJointStateCurrent()
+{
+  while (joint_state_current.header.seq == 0)
+  {
+    ros::spinOnce();
+    ros::Duration(0.05).sleep();
+  }
+  sensor_msgs::JointState ret(joint_state_current);
   return ret;
 }
 
@@ -111,20 +140,6 @@ std::string RobotClient::getName()
 /*
  *  Robot motions
  */
-
-/**
- * Initialize robot arm.
- *
- */
-void RobotClient::initArm(bool move_allowed)
-{
-  // Send a goal to the action
-  irob_msgs::RobotGoal goal;
-  goal.action = irob_msgs::RobotGoal::INIT_ARM;
-
-  goal.move_allowed = move_allowed;
-  ac.sendGoal(goal);
-}
 
 /**
  * Reset position of the instrument.
@@ -162,15 +177,15 @@ void RobotClient::stop()
  */
 void RobotClient::moveJaws(double angle, double speed)
 {
-  Pose p1 = getPoseCurrent();
+  ToolPose p1 = getPoseCurrent();
 
   double angle_rad = degToRad(std::abs(angle));
   double speed_rad = degToRad(std::abs(speed));
 
-  Pose p2 = p1;
+  ToolPose p2 = p1;
   p2.jaw = angle_rad;
 
-  Trajectory<Pose> tr = TrajectoryFactory::
+  Trajectory<ToolPose> tr = TrajectoryFactory::
       linearTrajectoryWithSmoothAcceleration(
         p1,
         p2,
@@ -196,16 +211,16 @@ void RobotClient::moveJaws(double angle, double speed)
  * @param waypoints move through a vector of waypoints
  * @param interp_method method used to interpolate between positions
  */
-void RobotClient::moveTool(Pose target, double speed,
-                           std::vector<Pose> waypoints /* = empty vector */,
+void RobotClient::moveTool(ToolPose target, double speed,
+                           std::vector<ToolPose> waypoints /* = empty vector */,
                            InterpolationMethod interp_method /* = LINEAR */)
 {
-  Pose p1 = getPoseCurrent();
-  Trajectory<Pose> tr;
+  ToolPose p1 = getPoseCurrent();
+  Trajectory<ToolPose> tr;
 
   // Jaw cannot be changed!
   target.jaw = p1.jaw;
-  for (Pose &p : waypoints)
+  for (ToolPose &p : waypoints)
     p.jaw = p1.jaw;
 
   if (waypoints.empty()) {
@@ -237,8 +252,26 @@ void RobotClient::moveTool(Pose target, double speed,
   goal.action = irob_msgs::RobotGoal::FOLLOW_TRAJECTORY;
   goal.move_allowed = true;
   tr.copyToRosTrajectory(goal.trajectory);
+  //ROS_INFO_STREAM("tr: " << tr);
   ac.sendGoal(goal);
 
+}
+
+/**
+ * Move tool, gripper stays fixed.
+ *
+ * @param target target position
+ * @param speed speed of the motion in mm/s
+ * @param waypoints move through a vector of waypoints
+ * @param interp_method method used to interpolate between positions
+ */
+void RobotClient::moveJoints(sensor_msgs::JointState joint_state)
+{
+  irob_msgs::RobotGoal goal;
+  goal.action = irob_msgs::RobotGoal::MOVE_JOINT;
+  goal.move_allowed = true;
+  goal.joint_state = joint_state;
+  ac.sendGoal(goal);
 }
 
 /**

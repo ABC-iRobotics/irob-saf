@@ -20,14 +20,14 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <limits>
-#include "irob_utils/pose.hpp"
 
 #include <std_msgs/Float32.h>
 #include <irob_msgs/FloatArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Transform.h>
+#include <sensor_msgs/JointState.h>
 #include <irob_msgs/ToolPose.h>
 #include <irob_msgs/ToolPoseStamped.h>
 #include <irob_msgs/Environment.h>
@@ -58,45 +58,34 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
   return out;
 }
 
+
+/*std::ostream& operator<<(std::ostream& out, const Eigen::Affine3d& T) {
+  out << "Translation:\t" << T.translation() << "\tRotation:\t" << T.rotation();
+  return out;
+}*/
+
 // Interpolation
+
 template<typename T>
 inline T interpolate(double a, T const& x1, T const& x2) {
   return ((1.0-a) * x1) + ((a) * x2);
 }
 
-template <>
-inline Pose interpolate(double a, const Pose& x1, const Pose& x2) {
-  return x1.interpolate(a, x2);
-}
 
 template <>
-inline Eigen::Quaternion<double> interpolate(double a,
-                                             const Eigen::Quaternion<double>& x1,
-                                             const Eigen::Quaternion<double>& x2) {
+inline Eigen::Quaterniond interpolate(double a,
+                                             const Eigen::Quaterniond& x1,
+                                             const Eigen::Quaterniond& x2) {
   return x1.slerp(a, x2);
 }
 
 // Distance
+
 template<typename T>
 inline double distanceEuler(T const& x1, T const& x2) {
   return std::abs(x2 - x1);
 }
 
-
-template <>
-inline double distanceEuler(const Pose& x1, const Pose& x2) {
-  Pose::Distance d = x1.dist(x2);
-  double weighted_cartesian = std::abs(d.cartesian) * 10000.0;
-  double weighted_angle = std::abs(d.angle);
-  double weighted_jaw = radToDeg(std::abs(d.jaw));
-  if (weighted_cartesian >= weighted_angle
-      && weighted_cartesian >= weighted_jaw)
-    return std::abs(d.cartesian);
-  if (weighted_angle >= weighted_jaw)
-    // in degrees, should be converted to rad?
-    return std::abs(d.angle);
-  return std::abs(d.jaw);
-}
 
 template <>
 inline double distanceEuler(const Eigen::Vector3d& x1,
@@ -113,32 +102,16 @@ inline irob_msgs::Environment unwrapMsg(const irob_msgs::Environment& msg){
   return msg;
 }
 
+
 template <>
 inline double unwrapMsg(const std_msgs::Float32& msg){
   return msg.data;
 }
 
-template <>
-inline Pose unwrapMsg(const geometry_msgs::Pose& msg){
-  Pose ret(msg, 0);
-  return ret;
-}
 
 template <>
-inline Pose unwrapMsg(const irob_msgs::ToolPose& msg){
-  Pose ret(msg);
-  return ret;
-}
-
-template <>
-inline Pose unwrapMsg(const geometry_msgs::PoseStamped& msg){
-  Pose ret(msg, 0);
-  return ret;
-}
-
-template <>
-inline Pose unwrapMsg(const irob_msgs::ToolPoseStamped& msg){
-  Pose ret(msg);
+inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Vector3& msg){
+  Eigen::Vector3d ret(msg.x, msg.y, msg.z);
   return ret;
 }
 
@@ -148,15 +121,11 @@ inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
   return ret;
 }
 
-template <>
-inline Eigen::Vector3d unwrapMsg(const geometry_msgs::PointStamped& msg){
-  Eigen::Vector3d ret(msg.point.x, msg.point.y, msg.point.z);
-  return ret;
-}
+
 
 template <>
-inline Eigen::Quaternion<double> unwrapMsg(const geometry_msgs::Quaternion& msg){
-  Eigen::Quaternion<double> ret(msg.w, msg.x, msg.y, msg.z);
+inline Eigen::Quaterniond unwrapMsg(const geometry_msgs::Quaternion& msg){
+  Eigen::Quaterniond ret(msg.w, msg.x, msg.y, msg.z);
   return ret;
 }
 
@@ -165,6 +134,14 @@ inline std::vector<double> unwrapMsg(const irob_msgs::FloatArray& msg){
   return msg.data;
 }
 
+template <>
+inline Eigen::Affine3d unwrapMsg(const geometry_msgs::Transform& msg){
+  Eigen::Quaterniond q(msg.rotation.w, msg.rotation.x,
+                            msg.rotation.y,msg.rotation.z);
+  Eigen::Translation3d t(msg.translation.x, msg.translation.y, msg.translation.z);
+  Eigen::Affine3d ret(t * q);
+  return ret;
+}
 
 // Conversion to ROS msg
 template<typename MsgT, typename DataT>
@@ -178,13 +155,21 @@ inline std_msgs::Float32 wrapToMsg(const double& data){
 }
 
 template <>
-inline geometry_msgs::Pose wrapToMsg(const Pose& data){
-  return data.toRosPose();
+inline sensor_msgs::JointState wrapToMsg(const double& data){
+  sensor_msgs::JointState msg;
+  msg.name.push_back("jaw");
+  msg.position.push_back(data);
+  return msg;
 }
 
+
 template <>
-inline irob_msgs::ToolPose wrapToMsg(const Pose& data){
-  return data.toRosToolPose();
+inline geometry_msgs::Vector3 wrapToMsg(const Eigen::Vector3d& data){
+  geometry_msgs::Vector3 msg;
+  msg.x = data.x();
+  msg.y = data.y();
+  msg.z = data.z();
+  return msg;
 }
 
 template <>
@@ -197,22 +182,31 @@ inline geometry_msgs::Point wrapToMsg(const Eigen::Vector3d& data){
 }
 
 template <>
-inline geometry_msgs::PointStamped wrapToMsg(const Eigen::Vector3d& data){
-  geometry_msgs::PointStamped msg;
-  msg.point.x = data.x();
-  msg.point.y = data.y();
-  msg.point.z = data.z();
-  return msg;
-}
-
-template <>
 inline geometry_msgs::Quaternion wrapToMsg(
-    const Eigen::Quaternion<double>& data){
+    const Eigen::Quaterniond& data){
   geometry_msgs::Quaternion msg;
   msg.w = data.w();
   msg.x = data.x();
   msg.y = data.y();
   msg.z = data.z();
+  return msg;
+}
+
+template <>
+inline geometry_msgs::Transform wrapToMsg(
+    const Eigen::Affine3d& data){
+  geometry_msgs::Transform msg;
+
+  Eigen::Vector3d translation(data.translation());
+  Eigen::Quaterniond rotation(data.rotation());
+  msg.translation.x = translation.x();
+  msg.translation.y = translation.y();
+  msg.translation.z = translation.z();
+
+  msg.rotation.x = rotation.x();
+  msg.rotation.y = rotation.y();
+  msg.rotation.z = rotation.z();
+  msg.rotation.w = rotation.w();
   return msg;
 }
 
@@ -226,18 +220,7 @@ inline double makeNaN(){
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-template <>
-inline Pose makeNaN(){
-  Pose ret(std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN());
-  return ret;
-}
+
 
 
 template <>
@@ -250,11 +233,17 @@ inline Eigen::Vector3d makeNaN(){
 
 
 template <>
-inline Eigen::Quaternion<double> makeNaN(){
-  Eigen::Quaternion<double> ret(std::numeric_limits<double>::quiet_NaN(),
+inline Eigen::Quaterniond makeNaN(){
+  Eigen::Quaterniond ret(std::numeric_limits<double>::quiet_NaN(),
                                 std::numeric_limits<double>::quiet_NaN(),
                                 std::numeric_limits<double>::quiet_NaN(),
                                 std::numeric_limits<double>::quiet_NaN());
+  return ret;
+}
+
+template <>
+inline Eigen::Affine3d makeNaN(){
+  Eigen::Affine3d ret(Eigen::Translation3d(makeNaN<Eigen::Vector3d>()));
   return ret;
 }
 
@@ -274,14 +263,29 @@ inline irob_msgs::FloatArray makeNaN(){
 
 template <>
 inline geometry_msgs::Pose makeNaN(){
-  Pose nanp = makeNaN<Pose>();
-  return nanp.toRosPose();
+  geometry_msgs::Pose nanp;
+  nanp.position.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.position.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.orientation.w = std::numeric_limits<double>::quiet_NaN();
+  return nanp;
 }
 
 template <>
 inline irob_msgs::ToolPose makeNaN(){
-  Pose nanp = makeNaN<Pose>();
-  return nanp.toRosToolPose();
+  irob_msgs::ToolPose nanp;
+  nanp.transform.translation.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.translation.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.translation.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.rotation.x = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.rotation.y = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.rotation.z = std::numeric_limits<double>::quiet_NaN();
+  nanp.transform.rotation.w = std::numeric_limits<double>::quiet_NaN();
+  nanp.jaw = std::numeric_limits<double>::quiet_NaN();
+  return nanp;
 }
 
 template <>
@@ -301,13 +305,20 @@ inline geometry_msgs::Point makeNaN(){
 }
 
 template <>
-inline geometry_msgs::PointStamped makeNaN(){
-  geometry_msgs::PointStamped msg;
-  msg.point.x = std::numeric_limits<double>::quiet_NaN();
-  msg.point.y = std::numeric_limits<double>::quiet_NaN();
-  msg.point.z = std::numeric_limits<double>::quiet_NaN();
+inline geometry_msgs::Transform makeNaN(){
+  geometry_msgs::Transform msg;
+  msg.translation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.translation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.translation.z = std::numeric_limits<double>::quiet_NaN();
+
+  msg.rotation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.z = std::numeric_limits<double>::quiet_NaN();
+  msg.rotation.w = std::numeric_limits<double>::quiet_NaN();
   return msg;
 }
+
+
 
 template <>
 inline geometry_msgs::Quaternion makeNaN(){
@@ -331,18 +342,7 @@ inline bool isnan(const double& d)
   return std::isnan(d);
 }
 
-template <>
-inline bool isnan(const Pose& d)
-{
-  return (std::isnan(d.position.x())
-          || std::isnan(d.position.y())
-          || std::isnan(d.position.z())
-          || std::isnan(d.orientation.x())
-          || std::isnan(d.orientation.y())
-          || std::isnan(d.orientation.z())
-          || std::isnan(d.orientation.w())
-          || std::isnan(d.jaw));
-}
+
 
 
 template <>
@@ -355,13 +355,20 @@ inline bool isnan(const Eigen::Vector3d& d)
 
 
 template <>
-inline bool isnan(const Eigen::Quaternion<double>& d)
+inline bool isnan(const Eigen::Quaterniond& d)
 {
   return (std::isnan(d.x())
           || std::isnan(d.y())
           || std::isnan(d.z())
           || std::isnan(d.w()));
 }
+
+template <>
+inline bool isnan(const Eigen::Affine3d& d)
+{
+  return (d.translation().hasNaN() || d.rotation().hasNaN());
+}
+
 
 template <>
 inline bool isnan(const std_msgs::Float32& d)
@@ -385,13 +392,13 @@ inline bool isnan(const geometry_msgs::Pose& d)
 template <>
 inline bool isnan(const irob_msgs::ToolPose& d)
 {
-  return (std::isnan(d.position.x)
-          || std::isnan(d.position.y)
-          || std::isnan(d.position.z)
-          || std::isnan(d.orientation.x)
-          || std::isnan(d.orientation.y)
-          || std::isnan(d.orientation.z)
-          || std::isnan(d.orientation.w)
+  return (std::isnan(d.transform.translation.x)
+          || std::isnan(d.transform.translation.y)
+          || std::isnan(d.transform.translation.z)
+          || std::isnan(d.transform.rotation.x)
+          || std::isnan(d.transform.rotation.y)
+          || std::isnan(d.transform.rotation.z)
+          || std::isnan(d.transform.rotation.w)
           || std::isnan(d.jaw));
 }
 
@@ -404,10 +411,17 @@ inline bool isnan(const geometry_msgs::Point& d)
 }
 
 template <>
-inline bool isnan(const geometry_msgs::PointStamped& d)
+inline bool isnan(const geometry_msgs::Transform& d)
 {
-  return isnan<geometry_msgs::Point>(d.point);
+  return (std::isnan(d.translation.x)
+          || std::isnan(d.translation.y)
+          || std::isnan(d.translation.z)
+          || std::isnan(d.rotation.x)
+          || std::isnan(d.rotation.y)
+          || std::isnan(d.rotation.z)
+          || std::isnan(d.rotation.w));
 }
+
 
 template <>
 inline bool isnan(const geometry_msgs::Quaternion& d)
@@ -423,21 +437,21 @@ template<typename QuatT, typename VecT>
 inline QuatT vecToQuat(const VecT& vec, double angle);
 
 template <>
-inline Eigen::Quaternion<double> vecToQuat(const Eigen::Vector3d& vec,
+inline Eigen::Quaterniond vecToQuat(const Eigen::Vector3d& vec,
                                            double angle){
-  Eigen::Quaternion<double> quat_start(0.0, 0.707107, 0.707106, 0.0);
+  Eigen::Quaterniond quat_start(0.0, 0.707107, 0.707106, 0.0);
   double angle_rad = (angle / 180.0) * M_PI;
   Eigen::Matrix3d R1m;
   R1m = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX())
       * Eigen::AngleAxisd(0.0,  Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(angle_rad, Eigen::Vector3d::UnitZ());
-  Eigen::Quaternion<double> R1(R1m);
+  Eigen::Quaterniond R1(R1m);
 
-  Eigen::Quaternion<double> ret = R1 * quat_start;
+  Eigen::Quaterniond ret = R1 * quat_start;
 
   Eigen::Vector3d vec_start(0.0, 0.0, -1.0);
-  Eigen::Quaternion<double> R2 =
-      Eigen::Quaternion<double>::FromTwoVectors(vec_start, vec);
+  Eigen::Quaterniond R2 =
+      Eigen::Quaterniond::FromTwoVectors(vec_start, vec);
   ret = R2 * ret;
   return ret;
 }
@@ -447,11 +461,11 @@ template<typename QuatT, typename VecT>
 inline VecT quatToVec(const QuatT& quat);
 
 template <>
-inline Eigen::Vector3d quatToVec(const Eigen::Quaternion<double>& quat){
+inline Eigen::Vector3d quatToVec(const Eigen::Quaterniond& quat){
 
-  Eigen::Quaternion<double> quat_start(0.0, 0.707107, 0.707106, 0.0);
+  Eigen::Quaterniond quat_start(0.0, 0.707107, 0.707106, 0.0);
 
-  Eigen::Quaternion<double> R = quat * quat_start.inverse();
+  Eigen::Quaterniond R = quat * quat_start.inverse();
 
   Eigen::Vector3d vec_start(0.0, 0.0, -1.0);
   Eigen::Vector3d ret = R * vec_start;

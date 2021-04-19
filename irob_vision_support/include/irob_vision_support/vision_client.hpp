@@ -23,7 +23,7 @@
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include "irob_utils/pose.hpp"
+#include "irob_utils/tool_pose.hpp"
 
 #include "irob_utils/utils.hpp"
 
@@ -104,8 +104,9 @@ DataT VisionClient<MsgT, DataT>::getResult()
 {
   ros::spinOnce();
 
-  return unwrapMsg<MsgT, DataT>(result_msg);
-
+  MsgT tmp_msg = result_msg;
+  result_msg = makeNaN<MsgT>();
+  return unwrapMsg<MsgT, DataT>(tmp_msg);
 }
 
 

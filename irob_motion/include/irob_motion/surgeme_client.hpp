@@ -19,11 +19,11 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/irob_action_client.hpp>
@@ -37,6 +37,7 @@
 #include <irob_msgs/SurgemeAction.h>
 #include <irob_msgs/InstrumentInfo.h>
 #include <irob_msgs/InstrumentJawPart.h>
+#include <sensor_msgs/JointState.h>
 
 namespace saf {
 
@@ -54,14 +55,17 @@ protected:
 
   // States
   irob_msgs::ToolPoseStamped position_cartesian_current;
+  sensor_msgs::JointState joint_state_current;
   irob_msgs::InstrumentInfo instrument_info;
 
   // Subscribers
   ros::Subscriber position_cartesian_current_sub;
+  ros::Subscriber joint_state_current_sub;
   ros::Subscriber instrument_info_sub;
 
   // Publishers
   ros::Publisher position_cartesian_current_pub;
+  ros::Publisher joint_state_current_pub;
   ros::Publisher instrument_info_pub;
 
 
@@ -79,51 +83,58 @@ public:
   void positionCartesianCurrentCB(
       const irob_msgs::ToolPoseStampedConstPtr&);
 
+  void jointStateCurrentCB(
+      const sensor_msgs::JointStateConstPtr&);
+
   void instrumentInfoCB(
       const irob_msgs::InstrumentInfoConstPtr&);
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
+  sensor_msgs::JointState getJointStateCurrent();
   irob_msgs::InstrumentInfo getInstrumentInfo();
   std::string getName();
 
   // Robot motions
   void stop();
-  void nav_to_pos(Pose,
+  void nav_to_pos(Eigen::Affine3d,
                   double,
-                  std::vector<Pose> = std::vector<Pose>(),
+                  std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                   InterpolationMethod = InterpolationMethod::LINEAR);
-  void grasp(Pose, Pose, double,	double,
+  void grasp(Eigen::Affine3d, Eigen::Affine3d, double,	double,
              double,
              double,
-             std::vector<Pose> = std::vector<Pose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void cut(Pose, Pose,double,
+  void cut(Eigen::Affine3d, Eigen::Affine3d,double,
            double,
            double,
-           std::vector<Pose> = std::vector<Pose>(),
+           std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
            InterpolationMethod = InterpolationMethod::LINEAR);
-  void release(Pose,	double,
+  void release(Eigen::Affine3d,	double,
                double,
                double);
-  void place(Pose, Pose,
+  void place(Eigen::Affine3d, Eigen::Affine3d,
              double,
-             std::vector<Pose> = std::vector<Pose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void push(Pose, Pose,
+  void push(Eigen::Affine3d, Eigen::Affine3d,
             Eigen::Vector3d,
             double,
             double,
-            std::vector<Pose> = std::vector<Pose>(),
+            std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
             InterpolationMethod = InterpolationMethod::LINEAR);
-  void dissect(Pose, Pose,
+  void dissect(Eigen::Affine3d, Eigen::Affine3d,
                Eigen::Vector3d,
                double,
                double,
                double,
-               std::vector<Pose> = std::vector<Pose>(),
+               std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                InterpolationMethod = InterpolationMethod::LINEAR);
 
   void manipulate(Eigen::Vector3d,
+                  double);
+
+  void move_cam(Eigen::Vector3d, Eigen::Vector3d,
                   double);
 
   bool isSurgemeDone(bool = true);

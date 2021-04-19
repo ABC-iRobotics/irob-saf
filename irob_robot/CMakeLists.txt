@@ -14,11 +14,11 @@ find_package(catkin REQUIRED
 	std_msgs
 	sensor_msgs
 	stereo_msgs
-	sensor_msgs
+  sensor_msgs
 	actionlib_msgs
 	actionlib
 	irob_msgs
-	irob_utils
+  irob_utils
 	)
 
 

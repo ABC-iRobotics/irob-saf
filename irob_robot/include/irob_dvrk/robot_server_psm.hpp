@@ -18,7 +18,7 @@
 #include <ros/package.h>
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
-#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/TransformStamped.h"
 #include "std_msgs/Float32.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
@@ -27,7 +27,7 @@
 #include <irob_dvrk/robot_server_dvrk.hpp>
 #include <irob_dvrk/arm_types.hpp>
 #include <irob_utils/topic_name_loader.hpp>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 
 namespace saf {
@@ -44,7 +44,7 @@ private:
   ros::Publisher position_jaw_sub;
 
   // States
-  sensor_msgs::JointState position_jaw;
+  sensor_msgs::JointState jaw_measured_js;
 
   void advertiseLowLevelTopics();
   void subscribeLowLevelTopics();
@@ -55,16 +55,16 @@ public:
 
   void resetPose(bool);
 
-  void positionCartesianCurrentCB(
-      const geometry_msgs::PoseStampedConstPtr&) ;
+  void measured_cp_cb(
+      const geometry_msgs::TransformStampedConstPtr&) ;
 
   void positionJawCurrentCB(
       const sensor_msgs::JointStateConstPtr&) ;
 
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
 
-  void moveCartesianAbsolute(Pose, double = 0.01);
+  void moveCartesianAbsolute(ToolPose, double = 0.01);
   void moveJawRelative(double, double = 0.01);
   void moveJawAbsolute(double, double = 0.01);
 

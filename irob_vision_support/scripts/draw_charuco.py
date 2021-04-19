@@ -23,3 +23,4 @@ board = aruco.CharucoBoard_create(3,3,.025,.0125,aruco_dict)
 img = board.draw((700,700))
 cv2.imwrite("marker.jpg", img)
 print("Marker saved to file.")
+0

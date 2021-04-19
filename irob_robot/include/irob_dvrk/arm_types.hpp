@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 
 namespace saf {
 
@@ -23,17 +23,18 @@ public:
   static const ArmTypes MTMR;
   static const ArmTypes PSM1;
   static const ArmTypes PSM2;
+  static const ArmTypes PSM3;
   static const ArmTypes ECM;
 
   // Attributes
   const std::string name;
   const int dof;
-  const Pose::Distance maxVelPose; // unit/sec
+  const ToolPose::Distance maxVelPose; // unit/sec
   const std::vector<double> maxVelJoint; // unit/sec
 
 private:
   ArmTypes( std::string name, int dof,
-            Pose::Distance maxVelPose, std::vector<double> maxVelJoint):
+            ToolPose::Distance maxVelPose, std::vector<double> maxVelJoint):
     name(name), dof(dof),
     maxVelPose(maxVelPose),
     maxVelJoint(maxVelJoint) { }
@@ -49,6 +50,8 @@ public:
       return PSM1;
     if (name == PSM2.name)
       return PSM2;
+    if (name == PSM3.name)
+      return PSM3;
     if (name == ECM.name)
       return ECM;
     return PSM1;

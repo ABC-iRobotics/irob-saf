@@ -1,0 +1,30 @@
+<!-- Launch file for vessel cutting training excercise -->
+
+<launch>
+    <group ns="saf">
+
+
+
+        <arg name="speed_cartesian" default="10.0"/>
+        <arg name="speed_jaw" default="20.0"/>
+        <arg name="marker_dist_desired" default="0.3"/>
+        <arg name="camera_offset_x" default="-0.04"/>
+        <arg name="camera_offset_y" default="-0.009"/>
+        <arg name="marker_threshold" default="0.02"/>
+
+        <node name="camera" pkg="irob_subtask_logic"
+            type="camera" output="screen">
+
+                <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+                <param name="marker_dist_desired" type="double" value="$(arg marker_dist_desired)" />
+                <param name="marker_threshold" type="double" value="$(arg marker_threshold)" />
+                <param name="camera_offset_x" type="double" value="$(arg camera_offset_x)" />
+                <param name="camera_offset_y" type="double" value="$(arg camera_offset_y)" />
+
+                <rosparam param="arm_names">["arm_1"]</rosparam>
+
+
+        <remap from="target" to="vision/target" />
+    </node>
+    </group>
+</launch>

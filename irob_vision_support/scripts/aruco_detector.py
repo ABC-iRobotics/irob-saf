@@ -41,7 +41,8 @@ class aruco_detector:
 
     (rows,cols,channels) = cv_image.shape
     if cols > 60 and rows > 60 :
-      corners, ids, rejectedImgPoints = aruco.detectMarkers(cv_image, self.aruco_dict, parameters=self.parameters)
+      corners, ids, rejectedImgPoints = aruco.detectMarkers(cv_image, self.aruco_dict,
+      parameters=self.parameters)
       #print(corners)
 
       img = aruco.drawDetectedMarkers(cv_image, corners)
@@ -60,9 +61,11 @@ class aruco_detector:
               marker_msg.markers[i].corners.append(Point2D())
               marker_msg.markers[i].corners[j].x = corners[i][0,j,0]
               marker_msg.markers[i].corners[j].y = corners[i][0,j,1]
+    
 
-    #cv2.imshow("Image window", cv_image)
-    #cv2.waitKey(3)
+    
+    cv2.imshow("Image window", cv_image)
+    cv2.waitKey(3)
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
@@ -90,4 +93,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-

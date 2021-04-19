@@ -12,9 +12,9 @@
 namespace saf {
 
 
-Grasp::Grasp(ros::NodeHandle nh, 
+Grasp::Grasp(ros::NodeHandle nh, ros::NodeHandle priv_nh,
              std::vector<std::string> arm_names):
-  AutosurgAgent(nh, arm_names), vision(nh, "target")
+  AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target")
 {	
   //
 }
@@ -29,7 +29,7 @@ void Grasp::graspObject()
 {
 
   // NaN pose received, until the vision node starts
-  Pose p = makeNaN<Pose>();
+  Eigen::Affine3d p = makeNaN<Eigen::Affine3d>();
   while (isnan(p)
          && ros::ok())
   {
@@ -37,19 +37,19 @@ void Grasp::graspObject()
     ros::Duration(0.1).sleep();
   }
 
-  ROS_INFO_STREAM("Object pose received: " << p);
+  //ROS_INFO_STREAM("Object pose received: " << p);
 
   ROS_INFO_STREAM("Start grasp maneuver...");
 
   // Calculate approach position
   double approach_dist = 10.0;
-  Pose approach_pose = p - (approach_dist *
+  Eigen::Affine3d approach_pose(Eigen::Translation3d(approach_dist *
                             BaseDirections<CoordinateFrame::CAMERA,
-                            Eigen::Vector3d>::BACKWARD);
+                            Eigen::Vector3d>::BACKWARD).inverse() * p);
 
   // Send grasp surgeme action to the surgeme server.
   arms[0] -> grasp(p, approach_pose, 5.0, 0.95, 20.0, 20.0);
-  Pose old_p = p;
+  Eigen::Affine3d old_p = p;
   // Wait for action to be finished
   while(!arms[0] -> isSurgemeDone() && ros::ok())
   {
@@ -58,7 +58,7 @@ void Grasp::graspObject()
     p = vision.getResult();
 
     // Preempt if object moves away
-    if ((p.position - old_p.position).norm() > 10.0)
+    if ((p.translation() - old_p.translation()).norm() > 10.0)
     {
       ROS_INFO_STREAM("Initiating grasp preemt...");
       arms[0] -> grasp(p, approach_pose, 5.0, 0.95, 20.0, 20.0);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
   // Start autonomous agent
   try {
-    Grasp pnp(nh, arm_names);
+    Grasp pnp(nh, priv_nh, arm_names);
 
     pnp.graspObject();
 

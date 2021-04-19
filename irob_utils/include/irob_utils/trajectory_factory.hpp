@@ -19,8 +19,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include "irob_utils/trajectory.hpp"
-#include "irob_utils/pose.hpp"
 #include "irob_utils/utils.hpp"
+#include "irob_utils/tool_pose.hpp"
+
 
 namespace saf {
 
@@ -255,21 +256,21 @@ public:
   /**
    * Horizontal circular trajectory around center.
    */
-  static Trajectory<Pose> circleTrajectoryHorizontal(
-      Pose start,
+  static Trajectory<ToolPose> circleTrajectoryHorizontal(
+      ToolPose start,
       double toAngle, Eigen::Vector3d center,
       double T, double dt)
   {
-    Trajectory<Pose> tr(dt);
+    Trajectory<ToolPose> tr(dt);
     int N = (int)round(T / dt)+1;
     Trajectory<double> ramp = uniformRamp(N, 0.0, toAngle);
     for (int i = 0; i < ramp.size(); i++)
     {
-      Eigen::Vector3d p = start.position-center;
+      Eigen::Vector3d p = start.transform.translation()-center;
       Eigen::Vector3d p1(p.x()*cos(ramp[i])-p.y()*sin(ramp[i]),
                          p.y()*cos(ramp[i])+p.x()*sin(ramp[i]), p.z());
       Eigen::Vector3d p2 = p1+center;
-      Pose po2(p2, start.orientation, start.jaw);
+      ToolPose po2(p2, Eigen::Quaterniond(start.transform.rotation()), start.jaw);
       tr.addPoint(po2);
     }
     return tr;

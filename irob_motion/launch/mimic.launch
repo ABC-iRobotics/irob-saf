@@ -1,0 +1,36 @@
+<!-- Launch file to start mimic -->
+
+<launch>
+    <group ns="saf">
+
+        <arg name="primer_name" default="arm_1"/>
+        <arg name="seconder_name" default="arm_2"/>
+        <arg name="rate" default="100"/>
+
+
+            <node name="mimic" pkg="irob_motion"
+            type="mimic" output="screen">
+
+                <param name="primer_name"
+                        type="string" value="$(arg primer_name)" />
+
+                <param name="seconder_name"
+                      type="string" value="$(arg seconder_name)" />
+
+                <param name="rate" type="double" value="$(arg rate)" />
+
+                <remap
+                from="position_cartesian_current_in"
+                to="/robot/position_cartesian_current_cf"
+                />
+
+                <remap
+                from="position_cartesian_current_out"
+                to="/surgeme/position_cartesian_current_cf"
+                />
+
+
+
+            </node>
+    </group>
+</launch>

@@ -15,8 +15,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="irob_autosurg_flowdiagram_2.svg"
-   inkscape:export-filename="/home/tamas/catkin_ws/src/irob-saf/docs/irob_autosurg_flowdiagram_2.png"
+   sodipodi:docname="irob_autosurg_flowdiagram.svg"
+   inkscape:export-filename="/home/tamas/Desktop/4th_semester_complex/img/irob_autosurg_flowdiagram.png"
    inkscape:export-xdpi="69"
    inkscape:export-ydpi="69">
   <defs
@@ -250,11 +250,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.12374369"
-     inkscape:cx="1072.0709"
-     inkscape:cy="1301.8034"
+     inkscape:zoom="0.35000001"
+     inkscape:cx="1525.9861"
+     inkscape:cy="764.03581"
      inkscape:document-units="px"
-     inkscape:current-layer="g4729-3"
+     inkscape:current-layer="g4729-3-0"
      showgrid="true"
      inkscape:snap-bbox="true"
      inkscape:bbox-nodes="true"
@@ -299,20 +299,20 @@
          transform="matrix(-0.01049689,0.99994491,0.99994491,0.01049689,0,0)"
          sodipodi:linespacing="130%"
          id="text4140-5-7"
-         y="533.43372"
-         x="521.9928"
+         y="533.60168"
+         x="537.99182"
          style="font-style:normal;font-weight:normal;font-size:40px;line-height:129.99999523%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
            id="tspan4290"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;line-height:129.99999523%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           y="533.43372"
-           x="521.9928"
-           sodipodi:role="line">translation to</tspan><tspan
+           y="533.60168"
+           x="537.99182"
+           sodipodi:role="line">lefordítás</tspan><tspan
            id="tspan4294"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;line-height:129.99999523%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           y="578.93372"
-           x="521.9928"
-           sodipodi:role="line">robot moton</tspan></text>
+           y="579.10168"
+           x="537.99182"
+           sodipodi:role="line">robot mozgásra</tspan></text>
       <path
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.08661417;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#Arrow2Mend)"
          d="m 539.99998,412.36225 0,260"
@@ -335,12 +335,12 @@
            y="99.836807"
            x="445.77148"
            id="tspan4142-9"
-           sodipodi:role="line">motion</tspan><tspan
+           sodipodi:role="line">mozgás</tspan><tspan
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;line-height:129.99999523%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
            y="145.33681"
            x="445.77148"
            sodipodi:role="line"
-           id="tspan4249">decomposition</tspan></text>
+           id="tspan4249">dekompozíció</tspan></text>
       <g
          transform="matrix(0,1,1,0,-82.362237,-317.6378)"
          id="g4302-75">
@@ -373,12 +373,12 @@
            y="115.62636"
            x="270.28076"
            id="tspan4142"
-           sodipodi:role="line">subtask-level</tspan><tspan
+           sodipodi:role="line">részfeladat-</tspan><tspan
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
            y="160.62636"
            x="270.28076"
            sodipodi:role="line"
-           id="tspan4262">logic</tspan></text>
+           id="tspan4262">szintű logika</tspan></text>
     </g>
     <g
        id="g4296-8"
@@ -401,12 +401,12 @@
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;line-height:129.99999523%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
                y="-548.05811"
                x="543.17944"
-               sodipodi:role="line">trajectory</tspan><tspan
+               sodipodi:role="line">trajektória</tspan><tspan
                id="tspan4294-0"
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;line-height:129.99999523%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
                y="-502.55811"
                x="543.17944"
-               sodipodi:role="line">generation</tspan></text>
+               sodipodi:role="line">generálás</tspan></text>
           <path
              style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.08661413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow2Mend-3-9)"
              d="m 540.00002,422.36221 0,250"
@@ -445,7 +445,7 @@
              sodipodi:role="line"
              x="355.51352"
              y="431.87433"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">server</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">szerver</tspan></text>
       </g>
     </g>
     <g
@@ -478,7 +478,7 @@
              sodipodi:role="line"
              x="355.51352"
              y="431.87433"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">server</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">szerver</tspan></text>
       </g>
     </g>
     <g
@@ -496,7 +496,7 @@
            x="1896.9447"
            y="141.13083"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           id="tspan4294-0-9-5">manipulation</tspan></text>
+           id="tspan4294-0-9-5">manipuláció</tspan></text>
     </g>
     <g
        id="g4659">
@@ -553,14 +553,14 @@
              sodipodi:linespacing="125%"
              id="text4140-4-6-7-8"
              y="738.70825"
-             x="138.98875"
+             x="168.98875"
              style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
              xml:space="preserve"><tspan
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start"
                y="738.70825"
-               x="138.98875"
+               x="168.98875"
                id="tspan4142-3-0-7-1"
-               sodipodi:role="line">environment</tspan></text>
+               sodipodi:role="line">környezet</tspan></text>
         </g>
       </g>
     </g>
@@ -579,7 +579,7 @@
            x="-1671.0542"
            y="18.232296"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           id="tspan4294-0-9-5-7">structured information</tspan></text>
+           id="tspan4294-0-9-5-7">struktúrált információ</tspan></text>
       <path
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.08661413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow2Mend-3-3)"
          d="m 1360,-47.637779 620,0 0,409.999999"
@@ -608,7 +608,7 @@
            x="-953.8363"
            y="2038.0507"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           id="tspan4294-0-9-5-1-3">errors</tspan></text>
+           id="tspan4294-0-9-5-1-3">hibák</tspan></text>
       <text
          xml:space="preserve"
          style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -662,13 +662,13 @@
              sodipodi:role="line"
              x="358.86313"
              y="389.18756"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr;text-anchor:middle"
-             id="tspan4877">perception</tspan><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
+             id="tspan4877">információ</tspan><tspan
              sodipodi:role="line"
              x="358.86313"
-             y="429.18756"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr;text-anchor:middle"
-             id="tspan4881">algorithms</tspan></text>
+             y="431.68756"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:42.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
+             id="tspan4881">kinyerés</tspan></text>
       </g>
     </g>
     <g
@@ -694,7 +694,7 @@
                  sodipodi:role="line"
                  x="537.35181"
                  y="554.83179"
-                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">raw data</tspan></text>
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">nyers adat</tspan></text>
           </g>
           <path
              style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.08661413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow2Mend-3-7)"
@@ -717,7 +717,7 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
          y="576.71735"
          x="1608.4994"
-         sodipodi:role="line">measurement</tspan></text>
+         sodipodi:role="line">mérés</tspan></text>
     <path
        sodipodi:nodetypes="ccc"
        inkscape:connector-curvature="0"
@@ -761,7 +761,7 @@
              sodipodi:role="line"
              x="349.82178"
              y="402.9823"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">sensors</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">szenzorok</tspan></text>
       </g>
     </g>
     <g
@@ -780,15 +780,15 @@
         <text
            xml:space="preserve"
            style="font-style:normal;font-weight:normal;font-size:40px;line-height:100%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           x="270.28076"
+           x="258.28076"
            y="115.62636"
            id="text4140-2"
            sodipodi:linespacing="100%"><tspan
              id="tspan4262-2"
              sodipodi:role="line"
-             x="270.28076"
+             x="258.28076"
              y="115.62636"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:57.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1">surgeon</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:57.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1">sebész</tspan></text>
       </g>
     </g>
     <g
@@ -806,7 +806,7 @@
            x="-978.70929"
            y="1978.6799"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-           id="tspan4294-0-9-5-1-3-0">observation</tspan></text>
+           id="tspan4294-0-9-5-1-3-0">megfigyelés</tspan></text>
       <text
          xml:space="preserve"
          style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -837,7 +837,7 @@
            y="120.995"
            x="480.01953"
            sodipodi:role="line"
-           id="tspan4249-6">supervision</tspan></text>
+           id="tspan4249-6">felügyelet</tspan></text>
     </g>
     <text
        xml:space="preserve"
@@ -851,7 +851,7 @@
          x="1607.2395"
          y="696.71063"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.5px;line-height:100%;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle"
-         id="tspan4294-0-9-5-1-4-2">measurement</tspan></text>
+         id="tspan4294-0-9-5-1-4-2">mérés</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.08661413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow2Mend-3-3-6-1-9-6)"
        d="m -379.99999,362.36218 0,-250 395.000003,0"

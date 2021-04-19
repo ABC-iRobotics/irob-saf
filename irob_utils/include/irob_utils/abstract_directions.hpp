@@ -250,7 +250,7 @@ template<>
 const Eigen::Quaternion<double> 
 		BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
 			DOWN_SIDEWAYS = 
-			Eigen::Quaternion<double>(0.0, 0.7071, 0.7071, 0.0);			
+      Eigen::Quaternion<double>(0.0, -0.7071, 0.7071, 0.0);
 
 
 template<> 

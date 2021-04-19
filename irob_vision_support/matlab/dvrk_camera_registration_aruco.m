@@ -3,12 +3,12 @@ close all;
 rosshutdown;
 rosinit;
 
-cfgfilename = '../../irob_robot/config/registration_psm2.yaml';
+cfgfilename = '../../irob_robot/config/registration_psm1.yaml';
 
-posesub = rossubscriber('/dvrk/PSM2/position_cartesian_current', 'geometry_msgs/PoseStamped');
+posesub = rossubscriber('/dvrk/PSM1/position_cartesian_current', 'geometry_msgs/PoseStamped');
 
-left_marker_sub = rossubscriber('/saf/vision/left/markers', 'irob_msgs/MarkerArray');
-right_marker_sub = rossubscriber('/saf/vision/right/markers', 'irob_msgs/MarkerArray');
+left_marker_sub = rossubscriber('/saf/vision/left/markers', 'geometry_msgs/Point');
+right_marker_sub = rossubscriber('/saf/vision/right/markers', 'geometry_msgs/Point');
 
 left_cam_info_sub = rossubscriber('/saf/stereo/left/camera_info', 'sensor_msgs/CameraInfo');
 right_cam_info_sub = rossubscriber('/saf/stereo/right/camera_info', 'sensor_msgs/CameraInfo');
@@ -40,9 +40,23 @@ while i < (n+1)
     
     if (and(size(left_markers_msg) > 0, size(right_markers_msg) > 0))
         
-        [im_coord_L, marker_left_corners, left_found] = getMarkerCoordinates(left_markers_msg,marker_id);
-        [im_coord_R, marker_right_corners, right_found] = getMarkerCoordinates(right_markers_msg,marker_id);
+        %[im_coord_L, marker_left_corners, left_found] = getMarkerCoordinates(left_markers_msg,marker_id);
+        im_coord_L = [left_markers_msg.Y, left_markers_msg.X];
+        marker_left_corners =  [left_markers_msg.X, left_markers_msg.Y];
+           if (max(abs(im_coord_L)) < 100000.0)
+          left_found = true;
+         else
+          left_found = false;
+         end
         
+        %[im_coord_R, marker_right_corners, right_found] = getMarkerCoordinates(right_markers_msg,marker_id);
+        im_coord_R = [right_markers_msg.Y, right_markers_msg.X];
+        marker_right_corners =  [right_markers_msg.X, right_markers_msg.Y];
+        if (max(abs(im_coord_R)) < 100000.0)
+          right_found = true;
+        else
+          right_found = false
+        end
         
         % disp("Corners");
         % disp(marker_left_corners);
@@ -52,10 +66,17 @@ while i < (n+1)
         if and(left_found,  right_found)
 
             new_marker = triangulate(im_coord_L, im_coord_R, left_p, right_p);
-            marker_3d = cat(1,marker_3d, (new_marker));
-            disp(marker_3d);
-            robot_3d = cat(1,robot_3d, [robot_pose_msg.Pose.Position.X, robot_pose_msg.Pose.Position.Y, robot_pose_msg.Pose.Position.Z]);
-            i = i + 1;
+            if (max(abs(new_marker)) < 100000.0)
+                marker_3d = cat(1,marker_3d, (new_marker));
+                %disp(marker_3d);
+                 disp(marker_3d);
+                robot_3d = cat(1,robot_3d, [robot_pose_msg.Pose.Position.X, robot_pose_msg.Pose.Position.Y, robot_pose_msg.Pose.Position.Z]);
+                i = i + 1;
+            else
+                disp('Marker not found');
+            end
+            
+           
             
         else
             disp('Marker not found');

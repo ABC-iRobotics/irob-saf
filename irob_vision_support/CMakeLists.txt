@@ -23,6 +23,9 @@ find_package(catkin REQUIRED
 	irob_utils
 	)
 
+
+  find_package(REQUIRED)
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -103,7 +106,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 	/usr/include/eigen3
-	include
+    include
 	)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -143,7 +146,12 @@ add_executable(dummy_target_publisher
 	src/dummy_target_publisher.cpp)
 
 add_executable(camera_preprocessor
-	src/camera_preprocessor.cpp)
+    src/camera_preprocessor.cpp)
+
+
+
+    add_executable(serial_test
+        src/serial_test.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -176,7 +184,16 @@ target_link_libraries(dummy_target_publisher
 target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
 	irob_vision_support_lib
-	)
+    )
+
+
+
+  target_link_libraries(serial_test
+      ${catkin_LIBRARIES}
+      irob_vision_support_lib
+      )
+
+
 
 #############
 ## Install ##

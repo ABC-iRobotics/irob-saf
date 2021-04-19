@@ -3,10 +3,12 @@
 ## About
 
 The *iRob Surgical Automation Framework*---`irob-saf`--- is an open-source ROS-based metapackage, built by the Antal Bejczy Center for Intelligent Robotics (iRob), for the aim to support the research of partial automation in robot-assisted surgery.  The packages of the framework implements basic functionalities, usable as universal building blocks in surgical automation, such as infrastructure to implement subtask-level logic, interfacing of stereo cameras, a hierarchic motion library with parameterizable surgemes, and high-level robot control. The framework were built and tested alongside the da Vinci Resarch Kit (dVRK), however it is easily portable to other platforms as well.
+**Compatible with dVRK 2.x.**
 
 ## Citation
 
-If you use this framework in your reserach, please cite the following article:
+If you use this framework in your reserach, please cite the following paper:
+
 
 Tamas D. Nagy and Tamas Haidegger, [“A DVRK-based Framework for Surgical Subtask Automation,”](https://www.uni-obuda.hu/journal/Nagy_Haidegger_95.pdf) Acta Polytechnica Hungarica, Special Issue on Platforms for Medical Robotics Research, vol. 16, no. 8, pp. 61–78, 2019.
 
@@ -22,25 +24,26 @@ Tamas D. Nagy and Tamas Haidegger, [“A DVRK-based Framework for Surgical Subta
 
 ## Build
 
-The framework is tested on Ubuntu 16.04 LTS with ROS Kinetic [recommended by dVRK](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/Development-Environment) from October 2017, so this platform is encouraged. The building process can be performed using catkin build tools for ROS (so use `catkin build`, but you should never `catkin_make`) by the following steps.
+The framework is tested on Ubuntu 20.04 LTS with ROS Noetic, so this platform is encouraged. The building process can be performed using catkin build tools for ROS (so use `catkin build`, but you should never `catkin_make`) by the following steps.
 
-### Install ROS Kinetic
+### Install ROS Noetic
 
 Type:
 
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-    sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+    sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
     sudo apt update
-    sudo apt install ros-kinetic-desktop-full
+    sudo apt install ros-noetic-desktop-full
 
 Initialize rosdep:
 
+    sudo apt install python3-rosdep
     sudo rosdep init
     rosdep update
 
 Setup environment:
 
-    echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+    echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
     source ~/.bashrc
 
 #### Install dependencies for building packages
@@ -49,8 +52,8 @@ Setup environment:
 
 #### ROS webcam support	
 
-    sudo apt install ros-kinetic-cv-camera
-    sudo apt install ros-kinetic-camera-calibration
+    sudo apt install ros-noetic-cv-camera
+    sudo apt install ros-noetic-camera-calibration
 
 
 
@@ -81,22 +84,38 @@ ROS packages using the Eigen library have to list the /usr/include/eigen3 in the
           /usr/include/eigen3
     )
    
-### dVRK
+### Build dVRK
  
-The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit v1.5](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps:
+The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps:
 
-* install `cisst-saw` by folloing this [guide](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros)
-* install `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
+* install `cisst-saw` and `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
 
-### Build irob-saf
+### Build irob-saf using `catkin build` and `rosinstall`
 
-In your have installed dVRK, you should already have a catkin_ws directory set-up properly. Elsehow, do the following:
+If you installed dVRK by the `catkin build` and `rosinstall` method, you should already have a catkin_ws directory with `wstool` set-up properly. A `rosinstall` file is also provided to `irob-saf`, making the build process easier. So, if you used the `catkin build` and `rosinstall` to build dVRK, `irob-saf` can be built using the following commands:
+
+    source ~/catkin_ws/devel/setup.bash
+    cd ~/catkin_ws/src
+    wstool merge https://raw.githubusercontent.com/ABC-iRobotics/irob-saf/dVRK_2_0/irob-saf/irob_saf.rosinstall
+    wstool up
+    cd ~/catkin_ws
+    catkin build irob-saf
+    
+Setup environment:
+
+    echo "~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+    source ~/.bashrc
+    
+
+### Build irob-saf using `calkin build` and `git clone` 
+
+The other option to build `irob-saf` is to simply clone the repository into your workspace. If your have installed dVRK, you should already have a catkin_ws directory set-up properly. Elsehow, do the following:
 
     mkdir -p ~/catkin_ws/src
     cd ~/catkin_ws
     catkin init
     
-If you alread have a catkin_ws, just download the sources:
+If you alread have a workspace, just download the sources:
 
     cd ~/catkin_ws/src
     git clone https://github.com/ABC-iRobotics/irob-saf
@@ -104,8 +123,13 @@ If you alread have a catkin_ws, just download the sources:
 And build using `catkin build`:
 
     cd ~/catkin_ws
+    source devel/setup.bash
     catkin build irob-saf
-    source devel_release/setup.bash
+
+Setup environment:
+
+    echo "~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+    source ~/.bashrc
     
 ### Matlab
 
@@ -120,7 +144,7 @@ Relaunch Matlab in non-sudo mode, then type in Matlab console:
     folderpath = fullfile('catkin_ws','src', 'irob-saf')
     rosgenmsg(folderpath)
         
-Then follow the instructions suggested by rosgenmsg (savepath works only in sudo mode). For a more detailed guide see [https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html].
+Then follow the instructions suggested by rosgenmsg (savepath works only in sudo mode). For a more detailed guide see [https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html]().
 
 
     
@@ -132,7 +156,7 @@ Autonomous surgical subtasks can be assembled from the ROS nodes of the framewor
 
 An example using the dVRK PSM simulation and a dummy target can be launched easily however. First, start the simulator:
 
-    roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/<USERNAME>/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console-PSM1_KIN_SIMULATED.json
+    roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/$(whoami)/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
     
 If the simulation is started, press *Home*.  
 Start a dummy target:
@@ -166,7 +190,7 @@ After the last node was launched, you should see how the instrument grasps the g
 
 The `irob-saf` package is built and maintained in the Antal Bejczy Center for Intelligent Robotics, see our [homepage](http://irob.uni-obuda.hu/?q=en). 
 
-If you have any questions or comments, feel free to contact us at saf@irob.uni-obuda.hu.
+If you have any questions or comments, feel free to contact us at [saf@irob.uni-obuda.hu](mailto:saf@irob.uni-obuda.hu).
 
 
 ## Acknowledgement

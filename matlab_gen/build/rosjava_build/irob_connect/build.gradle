@@ -1,0 +1,14 @@
+/*
+ * Copyright 2015-2018 The MathWorks, Inc.
+ */
+
+try {
+    project.catkin.tree.generateMessageArtifact(project, 'irob_connect')
+} catch (NullPointerException e) {
+    println("Couldn't find irob_connect on the ROS_PACKAGE_PATH")
+}
+
+task bugfixtask << {
+    mkdir sourceSets.main.output.classesDir
+}
+jar.dependsOn(bugfixtask)

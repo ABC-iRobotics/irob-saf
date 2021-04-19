@@ -22,7 +22,8 @@ RobotServerPSM::RobotServerPSM(ros::NodeHandle nh,ros::NodeHandle priv_nh,
   RobotServerDVRK(nh, priv_nh, arm_typ, arm_name, isActive)
 {
   if (!(arm_typ == ArmTypes::PSM1 ||
-        arm_typ == ArmTypes::PSM2))
+        arm_typ == ArmTypes::PSM2 ||
+       arm_typ == ArmTypes::PSM3))
     throw std::runtime_error(
         "Tried to create RobotServerPSM object for ECM or MTM arm type.");
 }
@@ -76,9 +77,8 @@ void RobotServerPSM::subscribeLowLevelTopics()
 {
   RobotServerDVRK::subscribeLowLevelTopics();
 
-  current_state_sub = nh.subscribe<sensor_msgs::JointState>(
+  status_sub = nh.subscribe<sensor_msgs::JointState>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/state_jaw_current"),
         1000, &RobotServerPSM::positionJawCurrentCB,this);
@@ -90,7 +90,6 @@ void RobotServerPSM::advertiseLowLevelTopics()
 
   position_jaw_pub = nh.advertise<sensor_msgs::JointState>(
         TopicNameLoader::load(nh,
-                              "dvrk_topics/namespace",
                               arm_typ.name,
                               "dvrk_topics/set_position_jaw"),
         1000);
@@ -100,35 +99,37 @@ void RobotServerPSM::advertiseLowLevelTopics()
  * Callbacks
  */
 
-void RobotServerPSM::positionCartesianCurrentCB(
-    const geometry_msgs::PoseStampedConstPtr& msg)
+void RobotServerPSM::measured_cp_cb(
+    const geometry_msgs::TransformStampedConstPtr& msg)
 {
-  position_cartesian_current = *msg;
+  measured_cp = *msg;
   irob_msgs::ToolPoseStamped fwd;
-  fwd.header = position_cartesian_current.header;
-  while (position_jaw.position.empty())
+  fwd.header = measured_cp.header;
+  while (jaw_measured_js.position.empty())
   {
     ros::spinOnce();
     ros::Duration(0.1).sleep();
 
   }
-  Pose tmp(position_cartesian_current, position_jaw.position[0]);
+  ToolPose tmp(measured_cp, jaw_measured_js.position[0]);
+
+  tmp = T_he.inverse() * tmp;
   // Hand-eye calibration
   // Convert from m-s to mm-s
-  fwd.pose = tmp.invTransform(R, t, 0.001).toRosToolPose();
-  position_cartesian_current_pub.publish(fwd);
+  fwd.toolpose = tmp.toRosToolPose();
+  measured_cp_pub.publish(fwd);
 }
 
 void RobotServerPSM::positionJawCurrentCB(
     const sensor_msgs::JointStateConstPtr& msg)
 {
-  position_jaw = *msg;
+  jaw_measured_js = *msg;
 }
 
-Pose RobotServerPSM::getPoseCurrent()
+ToolPose RobotServerPSM::getPoseCurrent()
 {
   ros::spinOnce();
-  Pose ret(position_cartesian_current, position_jaw.position[0]);
+  ToolPose ret(measured_cp, jaw_measured_js.position[0]);
   return ret;
 }
 
@@ -138,10 +139,11 @@ Pose RobotServerPSM::getPoseCurrent()
 void RobotServerPSM::moveJawRelative(double movement, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  Pose pose = currPose;
+  ToolPose currPose = getPoseCurrent();
+  ToolPose pose = currPose;
   pose.jaw += movement;
-  sensor_msgs::JointState new_position_jaw = pose.toRosJaw();
+  sensor_msgs::JointState new_position_jaw
+      = wrapToMsg<sensor_msgs::JointState,double>(pose.jaw);
   try {
     // Safety
     checkErrors();
@@ -169,10 +171,11 @@ void RobotServerPSM::moveJawRelative(double movement, double dt)
 void RobotServerPSM::moveJawAbsolute(double jaw, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  Pose pose = currPose;
+  ToolPose currPose = getPoseCurrent();
+  ToolPose pose = currPose;
   pose.jaw = jaw;
-  sensor_msgs::JointState new_position_jaw = pose.toRosJaw();
+  sensor_msgs::JointState new_position_jaw
+      = wrapToMsg<sensor_msgs::JointState,double>(pose.jaw);
   try {
     // Safety
     checkErrors();
@@ -197,13 +200,18 @@ void RobotServerPSM::moveJawAbsolute(double jaw, double dt)
 /*
  * Move in cartesian, and move jaw immediately.
  */
-void RobotServerPSM::moveCartesianAbsolute(Pose pose, double dt)
+void RobotServerPSM::moveCartesianAbsolute(ToolPose pose, double dt)
 {
   // Collect data
-  Pose currPose = getPoseCurrent();
-  geometry_msgs::Pose new_position_cartesian = pose.toRosPose();
-  sensor_msgs::JointState new_position_jaw = pose.toRosJaw();
-  try {
+  ToolPose currPose = getPoseCurrent();
+  geometry_msgs::Transform new_position_cartesian
+      = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.transform=new_position_cartesian;
+  sensor_msgs::JointState new_position_jaw
+      = wrapToMsg<sensor_msgs::JointState,double>(pose.jaw);
+
+   try{
     // Safety
     checkErrors();
     checkVelCartesian(pose, currPose, dt);
@@ -211,7 +219,9 @@ void RobotServerPSM::moveCartesianAbsolute(Pose pose, double dt)
     // End safety
     
     // Publish movement
-    position_cartesian_pub.publish(new_position_cartesian);
+
+    position_cartesian_pub.publish(new_position_cartesian_stamped);
+
     position_jaw_pub.publish(new_position_jaw);
     ros::spinOnce();
   } catch (std::runtime_error e)
@@ -249,21 +259,28 @@ int main(int argc, char **argv)
   std::string arm_name;
   priv_nh.getParam("arm_name", arm_name);
 
+  std::string filename;
+  priv_nh.getParam("filename", filename);
+
 
   // Robot control
   try {
-    if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2) {
+    if (arm_type == ArmTypes::PSM1 || arm_type == ArmTypes::PSM2 || arm_type == ArmTypes::PSM3) {
       RobotServerPSM psm(nh, priv_nh, arm_type,
                          arm_name, RobotServerPSM::ACTIVE);
       psm.initRosCommunication();
       ros::spin();
+      //psm.saveTrajectory(filename);
     }
     else {
       RobotServerDVRK arm(nh, priv_nh, arm_type,
                           arm_name, RobotServerDVRK::ACTIVE);
       arm.initRosCommunication();
       ros::spin();
+      //arm.saveTrajectory(filename);
     }
+
+
 
     ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
 

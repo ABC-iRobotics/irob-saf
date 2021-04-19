@@ -28,7 +28,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 #include <cmath>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/topic_name_loader.hpp>
@@ -60,12 +60,14 @@ protected:
   // Hand-eye registration
   Eigen::Vector3d t;
   Eigen::Matrix3d R;
+  Eigen::Affine3d T_he;
 
   // Surgical instrument information
   irob_msgs::InstrumentInfo instrument_info;
 
   // Publisher
-  ros::Publisher position_cartesian_current_pub;
+  ros::Publisher measured_cp_pub;
+  ros::Publisher measured_js_pub;
   ros::Publisher instrument_info_pub;
 
   virtual void subscribeLowLevelTopics() = 0;
@@ -74,9 +76,13 @@ protected:
   void advertiseHighLevelTopics()
   {
     // robot interface
-    position_cartesian_current_pub
+    measured_cp_pub
         = nh.advertise<irob_msgs::ToolPoseStamped>(
           "robot/"+arm_name+"/position_cartesian_current_cf",
+          1000);
+    measured_js_pub
+        = nh.advertise<sensor_msgs::JointState>(
+          "robot/"+arm_name+"/joint_state_current",
           1000);
     instrument_info_pub
         = nh.advertise<irob_msgs::InstrumentInfo>(
@@ -128,6 +134,8 @@ public:
     for (int i = 0; i < R.rows(); i++)
       for (int j = 0; j < R.cols(); j++)
         R(i, j) = param_R[(i * R.rows()) + j];
+
+    T_he = Eigen::Translation3d(t) * Eigen::Affine3d(R) * Eigen::Scaling(0.001);
     
     ROS_INFO_STREAM(
           "Registration read: "<< std::endl << t << std::endl << R);
@@ -146,6 +154,8 @@ public:
       instrument_info.basic_type = irob_msgs::InstrumentInfo::GRIPPER;
     else if (basic_type == "SCISSORS")
       instrument_info.basic_type = irob_msgs::InstrumentInfo::SCISSORS;
+    else if (basic_type == "CAMERA")
+      instrument_info.basic_type = irob_msgs::InstrumentInfo::CAMERA;
     else
       throw std::runtime_error(
           "Invalid basic_type read from instrument info file.");
@@ -191,25 +201,20 @@ public:
 
 
 
-  virtual void initArm() = 0;
   virtual void resetPose(bool) = 0;
   virtual void stop() = 0;
-  virtual void followTrajectory(Trajectory<Pose>) = 0;
-  virtual Pose getPoseCurrent() = 0;
+  virtual void followTrajectory(Trajectory<ToolPose>) = 0;
+  virtual void moveJointAbsolute(sensor_msgs::JointState, double) = 0;
+  virtual ToolPose getPoseCurrent() = 0;
 
   virtual void robotActionCB(const irob_msgs::RobotGoalConstPtr& goal)
   {
+    ROS_INFO_STREAM("Start robotActionCB");
     switch(goal -> action)
     {
     case irob_msgs::RobotGoal::STOP:
     {
       stop();
-      break;
-    }
-
-    case  irob_msgs::RobotGoal::INIT_ARM:
-    {
-      initArm();
       break;
     }
 
@@ -222,6 +227,11 @@ public:
     case  irob_msgs::RobotGoal::FOLLOW_TRAJECTORY:
     {
       followTrajectory(goal->trajectory);
+      break;
+    }
+    case  irob_msgs::RobotGoal::MOVE_JOINT:
+    {
+      moveJointAbsolute(goal->joint_state, 0.01);
       break;
     }
     default:

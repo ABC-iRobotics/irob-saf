@@ -26,7 +26,7 @@
 
 #include <geometry_msgs/Point.h>
 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
@@ -42,11 +42,11 @@ class Grasp : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Pose, Pose> vision;
+  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
 
 
 public:
-  Grasp(ros::NodeHandle, std::vector<std::string>);
+  Grasp(ros::NodeHandle, ros::NodeHandle priv_nh, std::vector<std::string>);
   ~Grasp();
   void graspObject();
 
