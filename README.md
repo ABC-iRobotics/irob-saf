@@ -91,7 +91,7 @@ The library can be used stand-alone, but it was developed to use with the [da Vi
 
 ### Build irob-saf using `catkin build` and `rosinstall`
 
-If you installed dVRK by the `catkin build` and `rosinstall` method, you should already have a catkin_ws directory with `wstool` set-up properly. A `rosinstall` file is also provided to `irob-saf`, making the build process easier. So, if you used the `catkin build` and `rosinstall` to build dVRK, `irob-saf` cab be built using the following commands:
+If you installed dVRK by the `catkin build` and `rosinstall` method, you should already have a catkin_ws directory with `wstool` set-up properly. A `rosinstall` file is also provided to `irob-saf`, making the build process easier. So, if you used the `catkin build` and `rosinstall` to build dVRK, `irob-saf` can be built using the following commands:
 
     source ~/catkin_ws/devel/setup.bash
     cd ~/catkin_ws/src
