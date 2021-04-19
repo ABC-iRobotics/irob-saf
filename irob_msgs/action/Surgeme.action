@@ -23,16 +23,16 @@ int8 action
 # Params
 # All params are in mm and deg
 
-geometry_msgs/Pose	 target			# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
-geometry_msgs/Pose[] waypoints		# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
+geometry_msgs/Transform	 target			# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
+geometry_msgs/Transform[] waypoints		# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
 int8 				 interpolation	# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
-geometry_msgs/Pose	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
+geometry_msgs/Transform	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
 float64 		 	 target_diameter # GRASP, CUT, DISSECT,
 									 # PLACE, RELEASE, DISSECT
 float64 		 	 compression_rate # GRASP
-geometry_msgs/Point  displacement	# PUSH, DISSECT, MANIPULATE
-geometry_msgs/Point  marker	# MOVE_CAM
-geometry_msgs/Point  desired	# MOVE_CAM
+geometry_msgs/Vector3  displacement	# PUSH, DISSECT, MANIPULATE
+geometry_msgs/Vector3  marker	# MOVE_CAM
+geometry_msgs/Vector3  desired	# MOVE_CAM
 float64				 speed_cartesian
 									# NAV_TO_POS, GRASP, CUT, PUSH, PLACE, 
 									# DISSECT, MANIPULATE

@@ -30,7 +30,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Transform.h>
 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>

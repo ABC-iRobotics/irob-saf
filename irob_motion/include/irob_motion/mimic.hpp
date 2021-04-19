@@ -22,7 +22,7 @@
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_general_robot/robot_client.hpp>
