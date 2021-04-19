@@ -220,7 +220,7 @@ bool SurgemeServer::waitForActionDone(std::string stage)
 /**
  *	Evaluate action state
  */
-bool SurgemeServer::handleActionState(std::string stage, 
+void SurgemeServer::handleActionState(std::string stage,
                                       bool lastStage /* = false */ )
 {
   irob_msgs::SurgemeResult result;
@@ -242,7 +242,6 @@ bool SurgemeServer::handleActionState(std::string stage,
       result.info = stage + " succeeded";
       as.setSucceeded(result);
     }
-
     break;
   case actionlib::SimpleClientGoalState::StateEnum::ABORTED:
     // Send ABORTED to the upper level node
@@ -387,7 +386,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
     if (surgeme_type == irob_msgs::SurgemeGoal::CUT)
         g.jaw_closed_angle = 0.0;
 
-    ROS_INFO_STREAM("g.t: " << g.t);
+    //ROS_INFO_STREAM("g.t: " << g.t);
     return g;
   }
 
@@ -525,10 +524,9 @@ void SurgemeServer::grasp(ToolPose target, ToolPose approach_pose,
 
   // Navigate
   stage = "navigate";
-  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage << " at "<< target);
+  ROS_INFO_STREAM(arm.getName()  << ": starting " << stage << " at\n"<< target);
   arm.moveTool(Eigen::Translation3d(gs.t) * approach_pose,
                speed_cartesian, waypoints, interp_method);
-
   done = waitForActionDone(stage);
   if (done)
     handleActionState(stage, false);

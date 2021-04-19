@@ -122,7 +122,7 @@ protected:
                   double);
 
   bool waitForActionDone(std::string);
-  bool handleActionState(std::string, bool = false);
+  void handleActionState(std::string, bool = false);
   bool isAbleToDoSurgeme(int);
   irob_msgs::InstrumentJawPart findInstrumentJawPartForSurgeme(int);
   SurgemeSetting calcSurgemeSetting(int, irob_msgs::InstrumentJawPart,

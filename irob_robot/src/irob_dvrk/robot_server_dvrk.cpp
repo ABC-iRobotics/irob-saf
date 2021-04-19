@@ -105,11 +105,11 @@ void RobotServerDVRK::followTrajectory(Trajectory<ToolPose> tr)
   irob_msgs::RobotResult result;
 
   ROS_INFO_STREAM("Starting trajectory follow action.");
-  ROS_INFO_STREAM("Goal untransformed:\n" << tr[tr.size() - 1]);
+  //ROS_INFO_STREAM("Goal untransformed:\n" << tr[tr.size() - 1]);
   // Go to m-s from mm-s here
   // Hande-eye calibration
   tr.transform(Eigen::Translation3d(t) * Eigen::Affine3d(R) * Eigen::Scaling(0.001));
-  ROS_INFO_STREAM("Goal transformed:\n" << tr[tr.size() - 1]);
+  //ROS_INFO_STREAM("Goal transformed:\n" << tr[tr.size() - 1]);
   ROS_INFO_STREAM("Trajectory dt:\t" << tr.dt);
   ros::Rate loop_rate(1.0/tr.dt);
   // start executing the action
