@@ -40,55 +40,60 @@ class FiducialDetector:
         bag.close()
 
 
-    def segment_fiducials(self):
+        self.lower_red = (0, 150, 110)
+        self.upper_red = (12, 255, 250)
+        self.lower_darkred = (170, 150, 110)
+        self.upper_darkred = (180, 255, 250)
+        self.lower_yellow = (20, 150, 150)
+        self.upper_yellow = (30, 255, 255)
+        self.lower_green = (50, 80, 50)
+        self.upper_green = (70, 255, 255)
+        self.lower_white = (20, 0, 200)
+        self.upper_white = (40, 120, 255)
 
-        pixel_colors = self.cv_images[0].reshape((
-                    np.shape(self.cv_images[0])[0]*np.shape(self.cv_images[0])[1], 3))
-        norm = colors.Normalize(vmin=-1.,vmax=1.)
-        norm.autoscale(pixel_colors)
-        pixel_colors = norm(pixel_colors).tolist()
 
-        hsv_img = cv2.cvtColor(self.cv_images[0], cv2.COLOR_BGR2HSV)
+
+
+    def mask_fiducial(self, image, color):
+
+        if color == 'red':
+            hsv_lower = self.lower_red
+            hsv_upper = self.upper_red
+            hsv_lower_2 = self.lower_darkred
+            hsv_upper_2 = self.upper_darkred
+        elif color == 'yellow':
+            hsv_lower = self.lower_yellow
+            hsv_upper = self.upper_yellow
+        elif color == 'green':
+            hsv_lower = self.lower_green
+            hsv_upper = self.upper_green
+        elif color == 'white':
+            hsv_lower = self.lower_white
+            hsv_upper = self.upper_white
+        else:
+            return
+
+        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(hsv_img)
-        fig = plt.figure()
-        axis = fig.add_subplot(1, 1, 1, projection="3d")
-        #cv2.imshow("Image window", self.cv_images[0])
-        #cv2.waitKey(0)
 
+        mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
 
-        #axis.scatter(h.flatten(), s.flatten(), v.flatten(), facecolors=pixel_colors, marker=".")
-        #axis.set_xlabel("Hue")
-        #axis.set_ylabel("Saturation")
-        #axis.set_zlabel("Value")
-        #plt.show()
-
-
-
-
-        light_red = (0, 150, 110)
-        dark_red = (12, 255, 250)
-        mask = cv2.inRange(hsv_img, light_red, dark_red)
-        light_red_2 = (170, 150, 110)
-        dark_red_2 = (180, 255, 250)
-        mask_2 = cv2.inRange(hsv_img, light_red_2, dark_red_2)
-        mask = cv2.bitwise_or(mask, mask_2)
-        result = cv2.bitwise_and(self.cv_images[0], self.cv_images[0], mask=mask)
+        if color == 'red':
+            mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
+            mask = cv2.bitwise_or(mask, mask_2)
 
         kernel = np.ones((3,3), np.uint8)
-
-        # The first parameter is the original image,
-        # kernel is the matrix with which image is
-        # convolved and third parameter is the number
-        # of iterations, which will determine how much
-        # you want to erode/dilate a given image.
         mask = cv2.erode(mask, kernel, iterations=1)
         mask = cv2.dilate(mask, kernel, iterations=1)
 
+        result = cv2.bitwise_and(image, image, mask=mask)
+
         x,y,w,h = cv2.boundingRect(mask)
 
-        cv2.imshow("Image window", self.cv_images[0])
+        #cv2.imshow("Image window", image)
         cv2.imshow("Image", result)
         cv2.waitKey(0)
+        return mask
 
 
 
@@ -100,6 +105,12 @@ if __name__ == '__main__':
     detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_104229.bag")
     #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_103332.bag")
 
-    detector.segment_fiducials()
+    image = detector.cv_images[0]
+
+    mask_red = detector.mask_fiducial(image, 'red')
+    mask_yellow = detector.mask_fiducial(image, 'yellow')
+    mask_green = detector.mask_fiducial(image, 'green')
+    mask_white = detector.mask_fiducial(image, 'white')
+
 
     cv2.destroyAllWindows()
