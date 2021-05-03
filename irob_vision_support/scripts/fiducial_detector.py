@@ -88,11 +88,37 @@ class FiducialDetector:
 
         result = cv2.bitwise_and(image, image, mask=mask)
 
-        x,y,w,h = cv2.boundingRect(mask)
+        #x,y,w,h = cv2.boundingRect(mask)
+
+        #cv2.imshow("Image", result)
+        #cv2.waitKey(0)
+
+        output = image.copy()
+        # detect circles in the image
+        gray = cv2.Canny(image,0,255)
+
+        #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #cv2.imshow("Gray", gray)
+        #cv2.waitKey(0)
+        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,1,50,
+            param1=200,param2=15,minRadius=0,maxRadius=50)
+        # ensure at least some circles were found
+        if circles is not None:
+                # convert the (x, y) coordinates and radius of the circles to integers
+                circles = np.round(circles[0, :]).astype("int")
+                # loop over the (x, y) coordinates and radius of the circles
+                for (x, y, r) in circles:
+                        # draw the circle in the output image, then draw a rectangle
+                        # corresponding to the center of the circle
+                        cv2.circle(output, (x, y), r, (0, 255, 0), 4)
+                        cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                # show the output image
+                cv2.imshow("output",  output)
+                cv2.waitKey(0)
+
 
         #cv2.imshow("Image window", image)
-        cv2.imshow("Image", result)
-        cv2.waitKey(0)
+
         return mask
 
 
@@ -107,10 +133,13 @@ if __name__ == '__main__':
 
     image = detector.cv_images[0]
 
+    #cv2.imshow("Image window", image)
+    #cv2.waitKey(0)
+
     mask_red = detector.mask_fiducial(image, 'red')
-    mask_yellow = detector.mask_fiducial(image, 'yellow')
-    mask_green = detector.mask_fiducial(image, 'green')
-    mask_white = detector.mask_fiducial(image, 'white')
+    #mask_yellow = detector.mask_fiducial(image, 'yellow')
+    #mask_green = detector.mask_fiducial(image, 'green')
+    #mask_white = detector.mask_fiducial(image, 'white')
 
 
     cv2.destroyAllWindows()
