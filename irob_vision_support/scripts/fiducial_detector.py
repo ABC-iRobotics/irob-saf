@@ -27,13 +27,18 @@ class FiducialDetector:
         self.bridge = CvBridge()
         bag = rosbag.Bag(bagfile)
         self.cv_images = []
-        for topic, msg, t in bag.read_messages(topics=['/camera/color/image_raw', '/device_0/sensor_1/Color_0/image/data']):
+        i = 0
+        for topic, msg, t in bag.read_messages(topics=['/camera/color/image_raw',
+                                        '/device_0/sensor_1/Color_0/image/data']):
             try:
-                self.cv_images.append(self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8'))
+                self.cv_images.append(self.bridge.imgmsg_to_cv2(msg,
+                                                desired_encoding='bgr8'))
                 #print("Load img")
             except CvBridgeError as e:
                 print(e)
-            break
+            i += 1
+            if i > 50000:
+                break
         print(f'Loaded {len(self.cv_images)} images.')
         #cv2.imshow("Image", self.cv_images[0])
         #cv2.waitKey(0)
@@ -87,39 +92,87 @@ class FiducialDetector:
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         result = cv2.bitwise_and(image, image, mask=mask)
-
-        #x,y,w,h = cv2.boundingRect(mask)
-
-        #cv2.imshow("Image", result)
+        #cv2.imshow("Mask", result)
         #cv2.waitKey(0)
 
-        output = image.copy()
+        # apply connected component analysis to the thresholded image
+        output = cv2.connectedComponentsWithStats(
+                    mask, 4, cv2.CV_32S)
+
+        return output
+
+
+
+
+    def detect_circles(self, image):
         # detect circles in the image
-        gray = cv2.Canny(image,0,255)
-
-        #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        #cv2.imshow("Gray", gray)
-        #cv2.waitKey(0)
+        gray = cv2.Canny(image,0,250)
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,1,50,
-            param1=200,param2=15,minRadius=0,maxRadius=50)
-        # ensure at least some circles were found
-        if circles is not None:
-                # convert the (x, y) coordinates and radius of the circles to integers
-                circles = np.round(circles[0, :]).astype("int")
-                # loop over the (x, y) coordinates and radius of the circles
-                for (x, y, r) in circles:
-                        # draw the circle in the output image, then draw a rectangle
-                        # corresponding to the center of the circle
-                        cv2.circle(output, (x, y), r, (0, 255, 0), 4)
-                        cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-                # show the output image
-                cv2.imshow("output",  output)
-                cv2.waitKey(0)
+            param1=250,param2=10,minRadius=0,maxRadius=60)
+
+        #output = image.copy()
+        #for (x, y, r) in circles[0,:]:
+            #cv2.circle(output, (int(x), int(y)), int(r),
+             #                   (255, 255, 0), 4)
+            #cv2.rectangle(output, (int(x) - 5, int(y) - 5),
+             #                   (int(x) + 5, int(y) + 5),
+             #                   (255, 128, 255), -1)
+        #cv2.imshow("Circles", output)
+        #cv2.waitKey(0)
 
 
-        #cv2.imshow("Image window", image)
+        return circles
 
-        return mask
+
+
+
+    def find_fiducials_locations(self, image):
+
+        fiducial_colors = ['red', 'yellow', 'green', 'white']
+        circles = self.detect_circles(image)
+        valid_circles = {}
+        dist_threshold = 10.0
+        dist_threshold_sq = dist_threshold * dist_threshold
+        output = image.copy()
+
+        for color in fiducial_colors:
+            valid_circles[color] = []
+            cc = self.mask_fiducial(image, color)
+            if cc:
+                (numLabels, labels, stats, centroids) = cc
+                for i in range(numLabels):
+                    cc_x = stats[i, cv2.CC_STAT_LEFT]
+                    cc_y = stats[i, cv2.CC_STAT_TOP]
+                    cc_w = stats[i, cv2.CC_STAT_WIDTH]
+                    cc_h = stats[i, cv2.CC_STAT_HEIGHT]
+                    cc_area = stats[i, cv2.CC_STAT_AREA]
+
+
+                    if cc_area > 10 and cc_area < 3000:
+                        min_dist_sq = float('inf')
+                        closest_circle = []
+                        for circle in circles[0, :]:
+                            circ_x, circ_y, circ_r = circle
+                            dist_sq = (((cc_x + cc_w/2.0) - circ_x) ** 2) + \
+                                        (((cc_y + cc_h/2.0) - circ_y) ** 2)
+                            if dist_sq <= dist_threshold_sq and dist_sq <= min_dist_sq:
+                                min_dist_sq = dist_sq
+                                closest_circle = circle
+                        if min_dist_sq < float('inf'):
+                            valid_circles[color].append(closest_circle)
+                            circ_x, circ_y, circ_r = closest_circle
+                            cv2.circle(output, (int(circ_x), int(circ_y)), int(circ_r),
+                                                (0, 255, 0), 4)
+                            cv2.rectangle(output, (int(circ_x) - 5, int(circ_y) - 5),
+                                                (int(circ_x) + 5, int(circ_y) + 5),
+                                                (0, 128, 255), -1)
+
+        #print(valid_circles)
+        cv2.imshow("Output",  output)
+        cv2.waitKey(0)
+        return valid_circles
+
+
 
 
 
@@ -131,15 +184,9 @@ if __name__ == '__main__':
     detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_104229.bag")
     #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_103332.bag")
 
-    image = detector.cv_images[0]
+    for image in detector.cv_images:
+    #image = detector.cv_images[2]
 
-    #cv2.imshow("Image window", image)
-    #cv2.waitKey(0)
-
-    mask_red = detector.mask_fiducial(image, 'red')
-    #mask_yellow = detector.mask_fiducial(image, 'yellow')
-    #mask_green = detector.mask_fiducial(image, 'green')
-    #mask_white = detector.mask_fiducial(image, 'white')
-
+        detector.find_fiducials_locations(image)
 
     cv2.destroyAllWindows()
