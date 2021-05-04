@@ -37,7 +37,7 @@ class FiducialDetector:
             except CvBridgeError as e:
                 print(e)
             i += 1
-            if i > 50000:
+            if i > 5000:
                 break
         print(f'Loaded {len(self.cv_images)} images.')
         #cv2.imshow("Image", self.cv_images[0])
@@ -66,15 +66,19 @@ class FiducialDetector:
             hsv_upper = self.upper_red
             hsv_lower_2 = self.lower_darkred
             hsv_upper_2 = self.upper_darkred
+            n = 1
         elif color == 'yellow':
             hsv_lower = self.lower_yellow
             hsv_upper = self.upper_yellow
+            n = 3
         elif color == 'green':
             hsv_lower = self.lower_green
             hsv_upper = self.upper_green
+            n = 1
         elif color == 'white':
             hsv_lower = self.lower_white
             hsv_upper = self.upper_white
+            n = 1
         else:
             return
 
@@ -98,30 +102,30 @@ class FiducialDetector:
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
                     mask, 4, cv2.CV_32S)
+        (numLabels, labels, stats, centroids) = output
 
-        return output
+        ret = []
+        for i in range(numLabels):
+            w = stats[i, cv2.CC_STAT_WIDTH]
+            h = stats[i, cv2.CC_STAT_HEIGHT]
+            x = stats[i, cv2.CC_STAT_LEFT] + (w/2.0)
+            y = stats[i, cv2.CC_STAT_TOP] + (h/2.0)
+            area = stats[i, cv2.CC_STAT_AREA]
+            e = math.sqrt(abs((w**2)-(h**2)))/w
+            r = (w+h)/4.0
+            if area > 80 and area < 10000 and e < 0.7 and w < 150 and h < 150:
+                ret.append([x,y,r])
 
+        while len(ret) > n:
+            min_r = float('inf')
+            min_r_i = 0
+            for i in range(len(ret)):
+                if ret[i][2] < min_r:
+                    min_r = ret[i][2]
+                    min_r_i = i
+            ret.pop(min_r_i)
 
-
-
-    def detect_circles(self, image):
-        # detect circles in the image
-        gray = cv2.Canny(image,0,250)
-        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,1,50,
-            param1=250,param2=10,minRadius=0,maxRadius=60)
-
-        #output = image.copy()
-        #for (x, y, r) in circles[0,:]:
-            #cv2.circle(output, (int(x), int(y)), int(r),
-             #                   (255, 255, 0), 4)
-            #cv2.rectangle(output, (int(x) - 5, int(y) - 5),
-             #                   (int(x) + 5, int(y) + 5),
-             #                   (255, 128, 255), -1)
-        #cv2.imshow("Circles", output)
-        #cv2.waitKey(0)
-
-
-        return circles
+        return ret
 
 
 
@@ -129,48 +133,25 @@ class FiducialDetector:
     def find_fiducials_locations(self, image):
 
         fiducial_colors = ['red', 'yellow', 'green', 'white']
-        circles = self.detect_circles(image)
-        valid_circles = {}
-        dist_threshold = 10.0
-        dist_threshold_sq = dist_threshold * dist_threshold
         output = image.copy()
+        fiducials = {}
 
         for color in fiducial_colors:
-            valid_circles[color] = []
-            cc = self.mask_fiducial(image, color)
-            if cc:
-                (numLabels, labels, stats, centroids) = cc
-                for i in range(numLabels):
-                    cc_x = stats[i, cv2.CC_STAT_LEFT]
-                    cc_y = stats[i, cv2.CC_STAT_TOP]
-                    cc_w = stats[i, cv2.CC_STAT_WIDTH]
-                    cc_h = stats[i, cv2.CC_STAT_HEIGHT]
-                    cc_area = stats[i, cv2.CC_STAT_AREA]
-
-
-                    if cc_area > 10 and cc_area < 3000:
-                        min_dist_sq = float('inf')
-                        closest_circle = []
-                        for circle in circles[0, :]:
-                            circ_x, circ_y, circ_r = circle
-                            dist_sq = (((cc_x + cc_w/2.0) - circ_x) ** 2) + \
-                                        (((cc_y + cc_h/2.0) - circ_y) ** 2)
-                            if dist_sq <= dist_threshold_sq and dist_sq <= min_dist_sq:
-                                min_dist_sq = dist_sq
-                                closest_circle = circle
-                        if min_dist_sq < float('inf'):
-                            valid_circles[color].append(closest_circle)
-                            circ_x, circ_y, circ_r = closest_circle
-                            cv2.circle(output, (int(circ_x), int(circ_y)), int(circ_r),
+            fiducials[color] = self.mask_fiducial(image, color)
+            for f in fiducials[color]:
+                x = f[0]
+                y = f[1]
+                r = f[2]
+                cv2.circle(output, (int(x), int(y)), int(r),
                                                 (0, 255, 0), 4)
-                            cv2.rectangle(output, (int(circ_x) - 5, int(circ_y) - 5),
-                                                (int(circ_x) + 5, int(circ_y) + 5),
+                cv2.rectangle(output, (int(x) - 5, int(y) - 5),
+                                                (int(x) + 5, int(y) + 5),
                                                 (0, 128, 255), -1)
 
-        #print(valid_circles)
+        #print(fiducials)
         cv2.imshow("Output",  output)
-        cv2.waitKey(0)
-        return valid_circles
+        cv2.waitKey(5)
+        return fiducials
 
 
 
