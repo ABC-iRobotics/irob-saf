@@ -3,8 +3,9 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Pose2D
 
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge,  CvBridgeError
 import cv2
+import pyrealsense2 as rs2
 
 import numpy as np
 import math
@@ -27,23 +28,68 @@ class FiducialDetector:
         self.bridge = CvBridge()
         bag = rosbag.Bag(bagfile)
         self.cv_images = []
+        self.depth_images = []
+        self.intrinsics = None
+        N = 5000
         i = 0
+        timestamps=[]
         for topic, msg, t in bag.read_messages(topics=['/camera/color/image_raw',
                                         '/device_0/sensor_1/Color_0/image/data']):
             try:
                 self.cv_images.append(self.bridge.imgmsg_to_cv2(msg,
-                                                desired_encoding='bgr8'))
+                                                desired_encoding=msg.encoding))
                 #print("Load img")
+                timestamps.append(msg.header.stamp)
             except CvBridgeError as e:
                 print(e)
             i += 1
-            if i > 5000:
+            if i > N:
                 break
         print(f'Loaded {len(self.cv_images)} images.')
         #cv2.imshow("Image", self.cv_images[0])
         #cv2.waitKey(0)
-        bag.close()
 
+        i = 0
+        for topic, msg, t in bag.read_messages(topics=['/device_0/sensor_0/Depth_0/image/data']):
+            try:
+                self.depth_images.append(self.bridge.imgmsg_to_cv2(msg,
+                                                desired_encoding=msg.encoding))
+                #print("Load img")
+                print(f'Timestamps: {timestamps[i]}   {msg.header.stamp}.')
+            except CvBridgeError as e:
+                print(e)
+            i += 1
+            if i > N:
+                break
+        print(f'Loaded {len(self.depth_images)} depth images.')
+
+
+        i = 0
+        for topic, msg, t in bag.read_messages(topics=['/camera/depth/camera_info',
+                                      '/device_0/sensor_0/Depth_0/info/camera_info']):
+            try:
+                if self.intrinsics:
+                    break
+                self.intrinsics = rs2.intrinsics()
+                self.intrinsics.width = msg.width
+                self.intrinsics.height = msg.height
+                self.intrinsics.ppx = msg.K[2]
+                self.intrinsics.ppy = msg.K[5]
+                self.intrinsics.fx = msg.K[0]
+                self.intrinsics.fy = msg.K[4]
+                if msg.distortion_model == 'plumb_bob':
+                    self.intrinsics.model = rs2.distortion.brown_conrady
+                elif msg.distortion_model == 'equidistant':
+                    self.intrinsics.model = rs2.distortion.kannala_brandt4
+                self.intrinsics.coeffs = [i for i in msg.D]
+            except CvBridgeError as e:
+                print(e)
+            i += 1
+            if i > N:
+                break
+        print(f'Loaded intrinsics: {self.intrinsics}')
+
+        bag.close()
 
         self.lower_red = (0, 150, 110)
         self.upper_red = (12, 255, 250)

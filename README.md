@@ -55,7 +55,12 @@ Setup environment:
     sudo apt install ros-noetic-cv-camera
     sudo apt install ros-noetic-camera-calibration
 
+#### Support for RealSense cameras
 
+    sudo apt install ros-noetic-librealsense2
+    sudo apt install ros-noetic-realsense2-camera
+    sudo apt install ros-noetic-realsense2-description
+    pip3 install pyrealsense2
 
 ### Install Eigen
 
