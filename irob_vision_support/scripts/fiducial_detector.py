@@ -28,16 +28,16 @@ class FiducialDetector:
         rospy.init_node('fiducial_detector', anonymous=True)
         self.bridge = CvBridge()
 
-        self.lower_red = (0, 150, 110)
-        self.upper_red = (12, 255, 250)
-        self.lower_darkred = (170, 150, 110)
-        self.upper_darkred = (180, 255, 250)
-        self.lower_yellow = (20, 150, 150)
-        self.upper_yellow = (30, 255, 255)
-        self.lower_green = (50, 80, 50)
-        self.upper_green = (70, 255, 255)
-        self.lower_white = (20, 0, 200)
-        self.upper_white = (40, 120, 255)
+        self.lower_red = (150, 120, 100)
+        self.upper_red = (180, 255, 255)
+        self.lower_darkred = (0, 150, 110)
+        self.upper_darkred = (0, 255, 250)
+        self.lower_yellow = (0, 20, 150)
+        self.upper_yellow = (80, 220, 255)
+        self.lower_green = (80, 150, 50)
+        self.upper_green = (100, 255, 200)
+        self.lower_white = (70, 0, 220)
+        self.upper_white = (100, 255, 255)
 
         image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
@@ -55,7 +55,8 @@ class FiducialDetector:
     def cb_images(self,image_msg,depth_msg,camera_info):
        try:
            image = self.bridge.imgmsg_to_cv2(image_msg,
-                            desired_encoding="bgr8")
+                            desired_encoding=image_msg.encoding)
+           image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
            depth = self.bridge.imgmsg_to_cv2(depth_msg,
                             desired_encoding=depth_msg.encoding)
        except CvBridgeError as e:
@@ -66,86 +67,14 @@ class FiducialDetector:
        #print()
        #print("Image")
        #print(image_msg.header)
+       #print(image_msg.encoding)
        #print("Depth")
        #print(depth_msg.header)
+       #print(depth_msg.encoding)
        #print("Info")
        #print(camera_info)
 
        self.find_fiducials_locations(image)
-
-
-
-
-    def load_img(self, bagfile):
-        print("Loading images...")
-        self.bridge = CvBridge()
-        bag = rosbag.Bag(bagfile)
-        self.cv_images = []
-        self.depth_images = []
-        self.intrinsics = None
-        N = 5000
-        i = 0
-        timestamps=[]
-        for topic, msg, t in bag.read_messages(topics=['/camera/color/image_raw',
-                                        '/device_0/sensor_1/Color_0/image/data']):
-            try:
-                self.cv_images.append(self.bridge.imgmsg_to_cv2(msg,
-                                                desired_encoding=msg.encoding))
-                #print("Load img")
-                timestamps.append(msg.header.stamp)
-            except CvBridgeError as e:
-                print(e)
-            i += 1
-            if i > N:
-                break
-        print(f'Loaded {len(self.cv_images)} images.')
-        #cv2.imshow("Image", self.cv_images[0])
-        #cv2.waitKey(0)
-
-        i = 0
-        for topic, msg, t in bag.read_messages(topics=['/camera/aligned_depth_to_color/image_raw']):
-            try:
-                self.depth_images.append(self.bridge.imgmsg_to_cv2(msg,
-                                                desired_encoding=msg.encoding))
-                #print("Load img")
-                print(f'Timestamps: {timestamps[i]}   {msg.header.stamp}.')
-            except CvBridgeError as e:
-                print(e)
-            i += 1
-            if i > N:
-                break
-        print(f'Loaded {len(self.depth_images)} depth images.')
-
-
-        i = 0
-        for topic, msg, t in bag.read_messages(topics=['/camera/depth/camera_info',
-                                      '/device_0/sensor_0/Depth_0/info/camera_info']):
-            try:
-                if self.intrinsics:
-                    break
-                self.intrinsics = rs2.intrinsics()
-                self.intrinsics.width = msg.width
-                self.intrinsics.height = msg.height
-                self.intrinsics.ppx = msg.K[2]
-                self.intrinsics.ppy = msg.K[5]
-                self.intrinsics.fx = msg.K[0]
-                self.intrinsics.fy = msg.K[4]
-                if msg.distortion_model == 'plumb_bob':
-                    self.intrinsics.model = rs2.distortion.brown_conrady
-                elif msg.distortion_model == 'equidistant':
-                    self.intrinsics.model = rs2.distortion.kannala_brandt4
-                self.intrinsics.coeffs = [i for i in msg.D]
-            except CvBridgeError as e:
-                print(e)
-            i += 1
-            if i > N:
-                break
-        print(f'Loaded intrinsics: {self.intrinsics}')
-
-        bag.close()
-
-
-
 
 
 
@@ -186,8 +115,9 @@ class FiducialDetector:
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         result = cv2.bitwise_and(image, image, mask=mask)
-        #cv2.imshow("Mask", result)
-        #cv2.waitKey(0)
+        #if color == 'red':
+         #   cv2.imshow("Mask", result)
+         #   cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
@@ -240,7 +170,7 @@ class FiducialDetector:
 
         #print(fiducials)
         cv2.imshow("Output",  output)
-        cv2.waitKey(5)
+        cv2.waitKey(1)
         return fiducials
 
 
