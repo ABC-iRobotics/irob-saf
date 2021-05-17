@@ -1,6 +1,9 @@
 import rospy
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CameraInfo
+import message_filters
+
 from geometry_msgs.msg import Pose2D
 
 from cv_bridge import CvBridge,  CvBridgeError
@@ -17,10 +20,60 @@ import rosbag
 
 
 class FiducialDetector:
+
+
     def __init__(self):
-        #rospy.init_node('fiducial_detector', anonymous=True)
+
         print("Init")
+        rospy.init_node('fiducial_detector', anonymous=True)
+        self.bridge = CvBridge()
+
+        self.lower_red = (0, 150, 110)
+        self.upper_red = (12, 255, 250)
+        self.lower_darkred = (170, 150, 110)
+        self.upper_darkred = (180, 255, 250)
+        self.lower_yellow = (20, 150, 150)
+        self.upper_yellow = (30, 255, 255)
+        self.lower_green = (50, 80, 50)
+        self.upper_green = (70, 255, 255)
+        self.lower_white = (20, 0, 200)
+        self.upper_white = (40, 120, 255)
+
+        image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
+        depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
+        info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
+
+        ts = message_filters.TimeSynchronizer([image_sub, depth_sub, info_sub], 10)
+        ts.registerCallback(self.cb_images)
+
+
         #rospy.spin()
+
+
+
+    # Synced callback function for images
+    def cb_images(self,image_msg,depth_msg,camera_info):
+       try:
+           image = self.bridge.imgmsg_to_cv2(image_msg,
+                            desired_encoding="bgr8")
+           depth = self.bridge.imgmsg_to_cv2(depth_msg,
+                            desired_encoding=depth_msg.encoding)
+       except CvBridgeError as e:
+           print(e)
+
+       #cv2.imshow("Image", image)
+       #cv2.waitKey(1)
+       #print()
+       #print("Image")
+       #print(image_msg.header)
+       #print("Depth")
+       #print(depth_msg.header)
+       #print("Info")
+       #print(camera_info)
+
+       self.find_fiducials_locations(image)
+
+
 
 
     def load_img(self, bagfile):
@@ -50,7 +103,7 @@ class FiducialDetector:
         #cv2.waitKey(0)
 
         i = 0
-        for topic, msg, t in bag.read_messages(topics=['/device_0/sensor_0/Depth_0/image/data']):
+        for topic, msg, t in bag.read_messages(topics=['/camera/aligned_depth_to_color/image_raw']):
             try:
                 self.depth_images.append(self.bridge.imgmsg_to_cv2(msg,
                                                 desired_encoding=msg.encoding))
@@ -91,16 +144,7 @@ class FiducialDetector:
 
         bag.close()
 
-        self.lower_red = (0, 150, 110)
-        self.upper_red = (12, 255, 250)
-        self.lower_darkred = (170, 150, 110)
-        self.upper_darkred = (180, 255, 250)
-        self.lower_yellow = (20, 150, 150)
-        self.upper_yellow = (30, 255, 255)
-        self.lower_green = (50, 80, 50)
-        self.upper_green = (70, 255, 255)
-        self.lower_white = (20, 0, 200)
-        self.upper_white = (40, 120, 255)
+
 
 
 
@@ -208,12 +252,17 @@ if __name__ == '__main__':
     #help(cv2.aruco)
 
     detector = FiducialDetector()
-    detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_104229.bag")
+    #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_104229.bag")
     #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_103332.bag")
 
-    for image in detector.cv_images:
+    #for image in detector.cv_images:
     #image = detector.cv_images[2]
 
-        detector.find_fiducials_locations(image)
+        #detector.find_fiducials_locations(image)
 
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print("Shutting down")
     cv2.destroyAllWindows()
