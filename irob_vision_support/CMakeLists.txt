@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
 	roscpp
 	rospy
 	roslib
+        dynamic_reconfigure
 	geometry_msgs
 	std_msgs
 	sensor_msgs
@@ -76,10 +77,9 @@ find_package(catkin REQUIRED
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/Fiducials.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -157,7 +157,7 @@ add_executable(camera_preprocessor
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(fiducial_detector.py ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 

@@ -17,6 +17,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib import colors
 import rosbag
+from dynamic_reconfigure.server import Server
+from irob_vision_support.cfg import FiducialsConfig
 
 
 class FiducialDetector:
@@ -26,6 +28,7 @@ class FiducialDetector:
 
         print("Init")
         rospy.init_node('fiducial_detector', anonymous=True)
+        srv = Server(FiducialsConfig, self.cb_config)
         self.bridge = CvBridge()
 
         self.lower_red = (150, 120, 100)
@@ -36,8 +39,12 @@ class FiducialDetector:
         self.upper_yellow = (80, 220, 255)
         self.lower_green = (80, 150, 50)
         self.upper_green = (100, 255, 200)
-        self.lower_white = (70, 0, 220)
-        self.upper_white = (100, 255, 255)
+        self.lower_orange = (70, 0, 220)
+        self.upper_orange = (100, 255, 255)
+        self.lower_purple = (70, 0, 220)
+        self.upper_purple = (100, 255, 255)
+        #self.lower_background = (90, 0, 0)
+        #self.upper_background = (180, 255, 255)
 
         image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
@@ -49,6 +56,10 @@ class FiducialDetector:
 
         #rospy.spin()
 
+    def cb_config(self, config, level):
+        self.lower_background = (config.bg_l_h, config.bg_l_s, config.bg_l_v)
+        self.upper_background = (config.bg_u_h, config.bg_u_s, config.bg_u_v)
+        return config
 
 
     # Synced callback function for images
@@ -89,14 +100,18 @@ class FiducialDetector:
         elif color == 'yellow':
             hsv_lower = self.lower_yellow
             hsv_upper = self.upper_yellow
-            n = 3
+            n = 2
         elif color == 'green':
             hsv_lower = self.lower_green
             hsv_upper = self.upper_green
             n = 1
-        elif color == 'white':
-            hsv_lower = self.lower_white
-            hsv_upper = self.upper_white
+        elif color == 'orange':
+            hsv_lower = self.lower_orange
+            hsv_upper = self.upper_orange
+            n = 1
+        elif color == 'purple':
+            hsv_lower = self.lower_purple
+            hsv_upper = self.upper_purple
             n = 1
         else:
             return
@@ -110,14 +125,20 @@ class FiducialDetector:
             mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
             mask = cv2.bitwise_or(mask, mask_2)
 
+        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
+        mask_background = 255 - mask_background
+        mask = cv2.bitwise_and(mask, mask_background)
+
         kernel = np.ones((3,3), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
         mask = cv2.dilate(mask, kernel, iterations=1)
 
-        result = cv2.bitwise_and(image, image, mask=mask)
-        #if color == 'red':
-         #   cv2.imshow("Mask", result)
-         #   cv2.waitKey(1)
+
+
+        result = cv2.bitwise_and(image, image, mask=mask_background)
+        if color == 'red':
+            cv2.imshow("Mask", result)
+            cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
@@ -152,7 +173,7 @@ class FiducialDetector:
 
     def find_fiducials_locations(self, image):
 
-        fiducial_colors = ['red', 'yellow', 'green', 'white']
+        fiducial_colors = ['red', 'yellow', 'green', 'orange', 'purple']
         output = image.copy()
         fiducials = {}
 
@@ -169,8 +190,8 @@ class FiducialDetector:
                                                 (0, 128, 255), -1)
 
         #print(fiducials)
-        cv2.imshow("Output",  output)
-        cv2.waitKey(1)
+        #cv2.imshow("Output",  output)
+        #cv2.waitKey(1)
         return fiducials
 
 
