@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose2D
 
 from cv_bridge import CvBridge,  CvBridgeError
 import cv2
-import pyrealsense2 as rs2
+import pyrealsense2 as rs
 
 import numpy as np
 import math
@@ -27,35 +27,125 @@ class FiducialDetector:
     def __init__(self):
 
         print("Init")
+
+
+        self.lower_red = (150, 100, 50)
+        self.upper_red = (180, 255, 255)
+        self.lower_darkred = (0, 100, 50)
+        self.upper_darkred = (7, 255, 255)
+        self.lower_yellow = (20, 100, 100)
+        self.upper_yellow = (60, 255, 255)
+        self.lower_green = (60, 160, 30)
+        self.upper_green = (80, 255, 255)
+        self.lower_orange = (8, 100, 100)
+        self.upper_orange = (20, 255, 255)
+        self.lower_purple = (0, 0, 0)
+        self.upper_purple = (120, 60, 255)
+        #self.lower_background = (90, 0, 0)
+        #self.upper_background = (180, 255, 255)
+
+        self.width = 640
+        self.height = 480
+        self.fps = 30
+        self.clipping_distance_in_meters = 0.45
+        self.exposure = 1500.0
+
+        #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
+        #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
+        #info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
+
+        #ts = message_filters.TimeSynchronizer([image_sub, depth_sub, info_sub], 10)
+        #ts.registerCallback(self.cb_images)
+
+
+        # Init RealSense
+        self.context = rs.context()
+        self.pipeline = rs.pipeline()
+        self.config = rs.config()
+
+        self.config.enable_stream(rs.stream.depth, self.width,
+                                    self.height, rs.format.z16, self.fps)
+        self.config.enable_stream(rs.stream.color, self.width,
+                                    self.height, rs.format.bgr8, self.fps)
+
+
         rospy.init_node('fiducial_detector', anonymous=True)
         srv = Server(FiducialsConfig, self.cb_config)
         self.bridge = CvBridge()
 
-        self.lower_red = (150, 120, 100)
-        self.upper_red = (180, 255, 255)
-        self.lower_darkred = (0, 150, 110)
-        self.upper_darkred = (0, 255, 250)
-        self.lower_yellow = (0, 20, 150)
-        self.upper_yellow = (80, 220, 255)
-        self.lower_green = (80, 150, 50)
-        self.upper_green = (100, 255, 200)
-        self.lower_orange = (70, 0, 220)
-        self.upper_orange = (100, 255, 255)
-        self.lower_purple = (70, 0, 220)
-        self.upper_purple = (100, 255, 255)
-        #self.lower_background = (90, 0, 0)
-        #self.upper_background = (180, 255, 255)
-
-        image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
-        depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
-        info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
-
-        ts = message_filters.TimeSynchronizer([image_sub, depth_sub, info_sub], 10)
-        ts.registerCallback(self.cb_images)
-
-
         #rospy.spin()
 
+
+
+    # realsense
+    def start_and_process_stream(self):
+
+        # Start streaming
+        self.profile = self.pipeline.start(self.config)
+        self.set_exposure(self.exposure)
+
+        # Getting the depth sensor's depth scale (see rs-align example for explanation)
+        depth_sensor = self.profile.get_device().first_depth_sensor()
+        depth_scale = depth_sensor.get_depth_scale()
+        print("Depth Scale is: " , depth_scale)
+
+        # We will be removing the background of objects more than
+        #  clipping_distance_in_meters meters away
+
+        clipping_distance = self.clipping_distance_in_meters / depth_scale
+
+        # Create an align object
+        # rs.align allows us to perform alignment of depth frames to others frames
+        # The "align_to" is the stream type to which we plan to align depth frames.
+        align_to = rs.stream.color
+        align = rs.align(align_to)
+
+        # Streaming loop
+        try:
+            while not rospy.is_shutdown():
+                # Get frameset of color and depth
+                frames = self.pipeline.wait_for_frames()
+
+                # Align the depth frame to color frame
+                aligned_frames = align.process(frames)
+
+                # Get aligned frames
+                aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+                color_frame = aligned_frames.get_color_frame()
+
+                # Validate that both frames are valid
+                if not aligned_depth_frame or not color_frame:
+                    continue
+
+                depth_image = np.asanyarray(aligned_depth_frame.get_data())
+                color_image = np.asanyarray(color_frame.get_data())
+
+                # Remove background - Set pixels further than clipping_distance to grey
+                grey_color = 0
+                depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
+                bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
+
+                # Render images:
+                #   depth align to color on left
+                #   depth on right
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                images = np.hstack((bg_removed, depth_colormap))
+
+                #self.kmeans_segmentation(bg_removed)
+                self.find_fiducials_locations(bg_removed)
+                #cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
+                #cv2.imshow('Align Example', images)
+                #cv2.waitKey(1)
+
+        finally:
+            self.pipeline.stop()
+
+    #
+    def set_exposure(self, exposure):
+        rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
+        rgb_cam_sensor.set_option(rs.option.exposure, exposure)
+
+    #
     def cb_config(self, config, level):
         self.lower_background = (config.bg_l_h, config.bg_l_s, config.bg_l_v)
         self.upper_background = (config.bg_u_h, config.bg_u_s, config.bg_u_v)
@@ -86,7 +176,36 @@ class FiducialDetector:
        #print(camera_info)
 
        self.find_fiducials_locations(image)
+       #self.kmeans_segmentation(image)
 
+    def kmeans_segmentation(self, image):
+
+        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
+        mask_background = 255 - mask_background
+
+        hsv_img = cv2.bitwise_and(hsv_img, hsv_img, mask=mask_background)
+
+
+        pixel_values = hsv_img.reshape((-1, 3))
+        pixel_values = np.float32(pixel_values)
+
+        # define stopping criteria
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.2)
+
+        k = 8
+        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        centers = np.uint8(centers)
+
+        labels = labels.flatten()
+        segmented_image = centers[labels.flatten()]
+        # reshape back to the original image dimension
+        segmented_image = segmented_image.reshape(image.shape)
+        # show the image
+        segmented_image_bgr = cv2.cvtColor(segmented_image, cv2.COLOR_HSV2BGR)
+        cv2.imshow("KMeans", segmented_image_bgr)
+        cv2.waitKey(1)
 
 
     def mask_fiducial(self, image, color):
@@ -127,7 +246,7 @@ class FiducialDetector:
 
         mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
         mask_background = 255 - mask_background
-        mask = cv2.bitwise_and(mask, mask_background)
+        #mask = cv2.bitwise_and(mask, mask_background)
 
         kernel = np.ones((3,3), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
@@ -135,8 +254,8 @@ class FiducialDetector:
 
 
 
-        result = cv2.bitwise_and(image, image, mask=mask_background)
-        if color == 'red':
+        result = cv2.bitwise_and(image, image, mask=mask)
+        if color == 'purple':
             cv2.imshow("Mask", result)
             cv2.waitKey(1)
 
@@ -154,7 +273,8 @@ class FiducialDetector:
             area = stats[i, cv2.CC_STAT_AREA]
             e = math.sqrt(abs((w**2)-(h**2)))/w
             r = (w+h)/4.0
-            if area > 80 and area < 10000 and e < 0.7 and w < 150 and h < 150:
+
+            if area > 80 and area < 10000 and e < 0.98and w < 150 and h < 150:
                 ret.append([x,y,r])
 
         while len(ret) > n:
@@ -190,8 +310,8 @@ class FiducialDetector:
                                                 (0, 128, 255), -1)
 
         #print(fiducials)
-        #cv2.imshow("Output",  output)
-        #cv2.waitKey(1)
+        cv2.imshow("Output",  output)
+        cv2.waitKey(1)
         return fiducials
 
 
@@ -210,10 +330,10 @@ if __name__ == '__main__':
     #image = detector.cv_images[2]
 
         #detector.find_fiducials_locations(image)
+    detector.start_and_process_stream()
 
-
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
+    #try:
+    #    rospy.spin()
+    #except KeyboardInterrupt:
+    #    print("Shutting down")
     cv2.destroyAllWindows()
