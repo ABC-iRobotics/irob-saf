@@ -35,12 +35,14 @@ class FiducialDetector:
         self.upper_darkred = (7, 255, 255)
         self.lower_yellow = (20, 100, 100)
         self.upper_yellow = (60, 255, 255)
-        self.lower_green = (60, 160, 30)
-        self.upper_green = (80, 255, 255)
+        self.lower_green = (40, 120, 0)
+        self.upper_green = (70, 255, 255)
         self.lower_orange = (8, 100, 100)
         self.upper_orange = (20, 255, 255)
-        self.lower_purple = (0, 0, 0)
-        self.upper_purple = (120, 60, 255)
+        self.lower_purple = (0, 50, 0)
+        self.upper_purple = (10, 170, 255)
+        self.lower_darkpurple = (150, 50, 0)
+        self.upper_darkpurple = (180, 170, 255)
         #self.lower_background = (90, 0, 0)
         #self.upper_background = (180, 255, 255)
 
@@ -231,6 +233,8 @@ class FiducialDetector:
         elif color == 'purple':
             hsv_lower = self.lower_purple
             hsv_upper = self.upper_purple
+            hsv_lower_2 = self.lower_darkpurple
+            hsv_upper_2 = self.upper_darkpurple
             n = 1
         else:
             return
@@ -240,7 +244,7 @@ class FiducialDetector:
 
         mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
 
-        if color == 'red':
+        if color == 'red' or color == 'purple':
             mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
             mask = cv2.bitwise_or(mask, mask_2)
 
@@ -255,9 +259,9 @@ class FiducialDetector:
 
 
         result = cv2.bitwise_and(image, image, mask=mask)
-        if color == 'purple':
-            cv2.imshow("Mask", result)
-            cv2.waitKey(1)
+        #if color == 'green':
+        #    cv2.imshow("Mask", result)
+        #    cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
