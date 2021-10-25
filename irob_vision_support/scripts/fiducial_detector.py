@@ -102,6 +102,8 @@ class FiducialDetector:
         align_to = rs.stream.color
         align = rs.align(align_to)
 
+
+
         # Streaming loop
         try:
             while not rospy.is_shutdown():
@@ -134,10 +136,17 @@ class FiducialDetector:
                 images = np.hstack((bg_removed, depth_colormap))
 
                 #self.kmeans_segmentation(bg_removed)
-                self.find_fiducials_locations(bg_removed)
+                fiducials = self.find_fiducials_locations(bg_removed)
                 #cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
                 #cv2.imshow('Align Example', images)
                 #cv2.waitKey(1)
+
+                x = fiducials('red')[0]
+                y = fiducials('red')[1]
+                d = depth_image[x,y]
+
+                res = rs.rs2_deproject_pixel_to_point(profile.intrinsics, [x,y], d)
+                print(res)
 
         finally:
             self.pipeline.stop()
