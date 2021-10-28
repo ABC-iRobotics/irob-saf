@@ -150,10 +150,16 @@ class FiducialDetector:
                             .as_video_stream_profile().get_intrinsics())
                 w_h = depth_image.shape
 
-                if (fiducials['red'][0] and fiducials['red']):
-                    res = self.get_marker_position(fiducials['red'][0], depth_image,
-                                                            w_h, intrinsics)
-                    print(res)
+                fid_posistion = {}
+                for color in fiducials:
+                    for i in range(len(fiducials[color])):
+                        fid_posistion[color] = []
+                        if (fiducials[color] and fiducials[color]):
+                            fid_posistion[color].append(self.get_marker_position(fiducials[color][i], depth_image,
+                                                            w_h, intrinsics))
+
+                #print(fid_posistion)
+
 
         finally:
             self.pipeline.stop()
