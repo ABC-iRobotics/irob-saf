@@ -9,6 +9,7 @@ from geometry_msgs.msg import Pose2D
 from cv_bridge import CvBridge,  CvBridgeError
 import cv2
 import pyrealsense2 as rs
+# pip3 install pyrealsense2
 
 import numpy as np
 import math
@@ -114,7 +115,8 @@ class FiducialDetector:
                 aligned_frames = align.process(frames)
 
                 # Get aligned frames
-                aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+                aligned_depth_frame = aligned_frames.get_depth_frame()
+                # aligned_depth_frame is a 640x480 depth image
                 color_frame = aligned_frames.get_color_frame()
 
                 # Validate that both frames are valid
@@ -126,13 +128,16 @@ class FiducialDetector:
 
                 # Remove background - Set pixels further than clipping_distance to grey
                 grey_color = 0
-                depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
-                bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
+                depth_image_3d = np.dstack((depth_image,depth_image,depth_image))
+                #depth image is 1 channel, color is 3 channels
+                bg_removed = np.where((depth_image_3d > clipping_distance)
+                                        | (depth_image_3d <= 0), grey_color, color_image)
 
                 # Render images:
                 #   depth align to color on left
                 #   depth on right
-                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03),
+                                                                    cv2.COLORMAP_JET)
                 images = np.hstack((bg_removed, depth_colormap))
 
                 #self.kmeans_segmentation(bg_removed)
@@ -141,15 +146,44 @@ class FiducialDetector:
                 #cv2.imshow('Align Example', images)
                 #cv2.waitKey(1)
 
-                x = fiducials('red')[0]
-                y = fiducials('red')[1]
-                d = depth_image[x,y]
+                intrinsics = (aligned_depth_frame.profile
+                            .as_video_stream_profile().get_intrinsics())
+                w_h = depth_image.shape
 
-                res = rs.rs2_deproject_pixel_to_point(profile.intrinsics, [x,y], d)
-                print(res)
+                if (fiducials['red'][0] and fiducials['red']):
+                    res = self.get_marker_position(fiducials['red'][0], depth_image,
+                                                            w_h, intrinsics)
+                    print(res)
 
         finally:
             self.pipeline.stop()
+
+    #
+    def get_marker_position(self, img_coords, depth_image, w_h, intrinsics):
+        x_c = int(round(img_coords[0]))
+        y_c = int(round(img_coords[1]))
+        r = int(round(img_coords[2]))
+
+        N = 0
+        pos = np.array([0.0, 0.0, 0.0])
+        a = int(round(math.sqrt(2.0 * r * r)))
+
+        for i in range(2*a+1):
+            for j in range(2*a+1):
+                x = (x_c - a) + i
+                y = (y_c - a) + j
+
+                if (x >= 0 and x < w_h[0] and y >=0 and y < w_h[1]):
+                    d = depth_image[x,y]
+                    if (d != 0):
+                        res = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
+                        pos = pos + res
+                        N = N + 1
+
+        if N == 0:
+            return None
+        return pos / N
+
 
     #
     def set_exposure(self, exposure):
