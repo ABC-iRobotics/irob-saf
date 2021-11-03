@@ -21,6 +21,8 @@ import rosbag
 from dynamic_reconfigure.server import Server
 from irob_vision_support.cfg import FiducialsConfig
 
+from irob_utils import rigid_transform_3D
+#import irob_utils
 
 class FiducialDetector:
 
@@ -171,16 +173,19 @@ class FiducialDetector:
                 #break
 
 
-                fid_posistion = {}
+                fid_position = {}
                 for color in fiducials:
                     for i in range(len(fiducials[color])):
-                        fid_posistion[color] = []
+                        fid_position[color] = []
                         if (fiducials[color] and fiducials[color]):
                             res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
                                                                                 w_h, intrinsics, output)
-                            fid_posistion[color].append(res)
+                            fid_position[color].append(res)
 
                             #print(color + ": " + str(fid_posistion[color]))
+
+
+                self.calc_pose(fid_position, output)
 
                 cv2.imshow("Output",  output)
                 cv2.waitKey(1)
@@ -225,6 +230,12 @@ class FiducialDetector:
                            0.5, (255,255,255), 1, cv2.LINE_AA)
 
         return pos, output
+
+
+    #
+    def calc_pose(self, fid_position, output):
+
+        rigid_transform_3D([1,1,1], [0,0,0])
 
 
     #
