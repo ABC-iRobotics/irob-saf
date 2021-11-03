@@ -36,22 +36,35 @@ class FiducialDetector:
         self.upper_darkred = (7, 255, 255)
         self.lower_yellow = (20, 100, 100)
         self.upper_yellow = (60, 255, 255)
-        self.lower_green = (40, 120, 0)
-        self.upper_green = (70, 255, 255)
+        #self.lower_green = (40, 120, 0)
+        #self.upper_green = (70, 255, 255)
+        self.lower_green = (60, 120, 0)
+        self.upper_green = (90, 255, 255)
         self.lower_orange = (8, 100, 100)
         self.upper_orange = (20, 255, 255)
-        self.lower_purple = (0, 50, 0)
-        self.upper_purple = (10, 170, 255)
-        self.lower_darkpurple = (150, 50, 0)
+        #self.lower_purple = (0, 50, 0)
+        #self.upper_purple = (10, 170, 255)
+        #self.lower_darkpurple = (150, 50, 0)
+        #self.upper_darkpurple = (180, 170, 255)
+        self.lower_purple = (105, 0, 0)
+        self.upper_purple = (130, 255, 255)
+        self.lower_darkpurple = (180, 170,255)
         self.upper_darkpurple = (180, 170, 255)
         #self.lower_background = (90, 0, 0)
         #self.upper_background = (180, 255, 255)
 
+        self.fiducial_colors = ['red', 'green', 'orange', 'purple']
+        #self.fiducial_colors = ['red', 'yellow', 'green', 'orange', 'purple']
+
+
         self.width = 640
         self.height = 480
-        self.fps = 30
-        self.clipping_distance_in_meters = 0.45
-        self.exposure = 1500.0
+        self.fps = 30 #30
+        self.clipping_distance_in_meters = 0.30
+        #self.exposure = 1500.0
+        self.exposure = 1800.0 #1000.0
+
+        self.z_offset = 0.004   # m
 
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
@@ -141,7 +154,7 @@ class FiducialDetector:
                 images = np.hstack((bg_removed, depth_colormap))
 
                 #self.kmeans_segmentation(bg_removed)
-                fiducials = self.find_fiducials_locations(bg_removed)
+                fiducials, output = self.find_fiducials_locations(bg_removed)
                 #cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
                 #cv2.imshow('Align Example', images)
                 #cv2.waitKey(1)
@@ -150,45 +163,68 @@ class FiducialDetector:
                             .as_video_stream_profile().get_intrinsics())
                 w_h = depth_image.shape
 
+                #print("intrinsics")
+                #print(intrinsics)
+
+                #print("camera_info")
+                #print(profile.camera_info)
+                #break
+
+
                 fid_posistion = {}
                 for color in fiducials:
                     for i in range(len(fiducials[color])):
                         fid_posistion[color] = []
                         if (fiducials[color] and fiducials[color]):
-                            fid_posistion[color].append(self.get_marker_position(fiducials[color][i], depth_image,
-                                                            w_h, intrinsics))
+                            res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
+                                                                                w_h, intrinsics, output)
+                            fid_posistion[color].append(res)
 
-                #print(fid_posistion)
+                            #print(color + ": " + str(fid_posistion[color]))
+
+                cv2.imshow("Output",  output)
+                cv2.waitKey(1)
 
 
         finally:
             self.pipeline.stop()
 
     #
-    def get_marker_position(self, img_coords, depth_image, w_h, intrinsics):
+    def get_marker_position(self, img_coords, aligned_depth_frame, w_h, intrinsics, output):
         x_c = int(round(img_coords[0]))
         y_c = int(round(img_coords[1]))
         r = int(round(img_coords[2]))
 
+
         N = 0
         pos = np.array([0.0, 0.0, 0.0])
-        a = int(round(math.sqrt(2.0 * r * r)))
+        a = max(1, int(round(math.sqrt(2.0 * r * r) - 10)))
+        #print("a: " + str(a))
 
         for i in range(2*a+1):
             for j in range(2*a+1):
                 x = (x_c - a) + i
                 y = (y_c - a) + j
 
-                if (x >= 0 and x < w_h[0] and y >=0 and y < w_h[1]):
-                    d = depth_image[x,y]
-                    if (d != 0):
+                if (x >= 0 and x < (w_h[1]-1) and y >=0 and y < (w_h[0]-1)):
+                    d = aligned_depth_frame.get_distance(x,y)
+                    #print("x: "  + str(x) + ", y: " + str(y) + ", d: "  + str(d))
+
+                    if (d != 0 and d < self.clipping_distance_in_meters):
                         res = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
                         pos = pos + res
                         N = N + 1
 
         if N == 0:
-            return None
-        return pos / N
+            return None, output
+        pos = (pos / N) - np.array([0.0,0.0,self.z_offset])
+
+        text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
+
+        output = cv2.putText(output, text, (x_c,y_c), cv2.FONT_HERSHEY_SIMPLEX,
+                           0.5, (255,255,255), 1, cv2.LINE_AA)
+
+        return pos, output
 
 
     #
@@ -293,9 +329,9 @@ class FiducialDetector:
 
         mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
 
-        if color == 'red' or color == 'purple':
-            mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
-            mask = cv2.bitwise_or(mask, mask_2)
+        #if color == 'red' or color == 'purple':
+        #    mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
+        #    mask = cv2.bitwise_or(mask, mask_2)
 
         mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
         mask_background = 255 - mask_background
@@ -308,7 +344,7 @@ class FiducialDetector:
 
 
         result = cv2.bitwise_and(image, image, mask=mask)
-        #if color == 'green':
+        #if color == 'purple':
         #    cv2.imshow("Mask", result)
         #    cv2.waitKey(1)
 
@@ -346,11 +382,11 @@ class FiducialDetector:
 
     def find_fiducials_locations(self, image):
 
-        fiducial_colors = ['red', 'yellow', 'green', 'orange', 'purple']
+
         output = image.copy()
         fiducials = {}
 
-        for color in fiducial_colors:
+        for color in self.fiducial_colors:
             fiducials[color] = self.mask_fiducial(image, color)
             for f in fiducials[color]:
                 x = f[0]
@@ -363,9 +399,9 @@ class FiducialDetector:
                                                 (0, 128, 255), -1)
 
         #print(fiducials)
-        cv2.imshow("Output",  output)
-        cv2.waitKey(1)
-        return fiducials
+        #cv2.imshow("Output",  output)
+        #cv2.waitKey(1)
+        return fiducials, output
 
 
 
