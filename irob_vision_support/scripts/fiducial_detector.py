@@ -64,9 +64,14 @@ class FiducialDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
         #self.exposure = 1500.0
-        self.exposure = 1800.0 #1000.0
+        self.exposure = 150.0 #1800.0 #1000.0
 
         self.z_offset = 0.004   # m
+
+        self.points_in_cam_base = np.array([[0.036,0.0,0.0],
+                                            [0-.036,0.0,0.0],
+                                            [0.0,0.036,0.0],
+                                            [0.0,-0.036,0.0]]).T
 
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
@@ -90,6 +95,19 @@ class FiducialDetector:
         rospy.init_node('fiducial_detector', anonymous=True)
         srv = Server(FiducialsConfig, self.cb_config)
         self.bridge = CvBridge()
+
+
+        plt.ion()
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(projection='3d')
+
+
+
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+
 
         #rospy.spin()
 
@@ -177,15 +195,15 @@ class FiducialDetector:
                 for color in fiducials:
                     for i in range(len(fiducials[color])):
                         fid_position[color] = []
-                        if (fiducials[color] and fiducials[color]):
+                        if (fiducials[color] and fiducials[color][0]):
                             res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
                                                                                 w_h, intrinsics, output)
                             fid_position[color].append(res)
 
                             #print(color + ": " + str(fid_posistion[color]))
 
-
-                self.calc_pose(fid_position, output)
+                if (len(fid_position) == 4):
+                    self.calc_pose(fid_position, output)
 
                 cv2.imshow("Output",  output)
                 cv2.waitKey(1)
@@ -235,7 +253,42 @@ class FiducialDetector:
     #
     def calc_pose(self, fid_position, output):
 
-        rigid_transform_3D([1,1,1], [0,0,0])
+
+        points = np.array([fid_position["red"][0],
+                           fid_position["green"][0],
+                           fid_position["orange"][0],
+                           fid_position["purple"][0]]).T
+
+        #print(self.points_in_cam_base)
+        #print("")
+        #print("points:")
+        #print(points)
+
+        R, t = rigid_transform_3D(self.points_in_cam_base, points)
+
+        points_transformed = np.zeros((3,4))
+        for i in range(4):
+            p = np.dot(R, self.points_in_cam_base[:,i]) + t.T
+            points_transformed[:,i] = p
+
+
+
+        #print("p_tr:")
+        #print(points_transformed)
+
+        self.ax.clear()
+
+        self.ax.scatter(points[0,:], points[1,:], points[2,:], marker='o')
+        self.ax.scatter(points_transformed[0,:], points_transformed[1,:],
+                                        points_transformed[2,:], marker='^')
+
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
 
     #
