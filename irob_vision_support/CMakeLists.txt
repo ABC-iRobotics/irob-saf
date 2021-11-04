@@ -207,6 +207,8 @@ target_link_libraries(camera_preprocessor
  catkin_install_python(PROGRAMS
    scripts/fiducial_detector.py
    scripts/peg_detector.py
+   scripts/record_realsense_bag.py
+   scripts/fiducial_detector_bag.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
