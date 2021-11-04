@@ -206,6 +206,7 @@ target_link_libraries(camera_preprocessor
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
    scripts/fiducial_detector.py
+   scripts/peg_detector.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
