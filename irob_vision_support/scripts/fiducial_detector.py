@@ -2,6 +2,7 @@ import rospy
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
+from geometry_msgs.msg import Transform
 import message_filters
 
 from geometry_msgs.msg import Pose2D
@@ -22,16 +23,21 @@ from dynamic_reconfigure.server import Server
 from irob_vision_support.cfg import FiducialsConfig
 
 from irob_utils.rigid_transform_3D import rigid_transform_3D
-#import irob_utils
+from scipy.spatial.transform import Rotation
+
 
 class FiducialDetector:
 
 
     def __init__(self):
+        """Constructor."""
+
+        print("Node started")
+        rospy.init_node('fiducial_detector', anonymous=True)
+        self.fiducial_pub = rospy.Publisher("fiducial_tf", Transform,
+                                                        queue_size=10)
 
         print("Init")
-
-
         self.lower_red = (150, 100, 50)
         self.upper_red = (180, 255, 255)
         self.lower_darkred = (0, 100, 50)
@@ -63,8 +69,8 @@ class FiducialDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        #self.exposure = 1500.0
-        self.exposure = 150.0 #1800.0 #1000.0
+        self.exposure = 1500.0
+        #self.exposure = 150.0 #1800.0 #1000.0
 
         self.z_offset = 0.004   # m
 
@@ -91,9 +97,6 @@ class FiducialDetector:
         self.config.enable_stream(rs.stream.color, self.width,
                                     self.height, rs.format.bgr8, self.fps)
 
-
-        rospy.init_node('fiducial_detector', anonymous=True)
-        srv = Server(FiducialsConfig, self.cb_config)
         self.bridge = CvBridge()
 
 
@@ -101,20 +104,19 @@ class FiducialDetector:
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(projection='3d')
 
-
-
-
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
-
 
         #rospy.spin()
 
 
 
-    # realsense
     def start_and_process_stream(self):
+        """Connect to a RealSense camera and finds
+        the position and orientation of a fiducial.
+        """
+
 
         # Start streaming
         self.profile = self.pipeline.start(self.config)
@@ -135,8 +137,6 @@ class FiducialDetector:
         # The "align_to" is the stream type to which we plan to align depth frames.
         align_to = rs.stream.color
         align = rs.align(align_to)
-
-
 
         # Streaming loop
         try:
@@ -203,7 +203,18 @@ class FiducialDetector:
                             #print(color + ": " + str(fid_posistion[color]))
 
                 if (len(fid_position) == 4):
-                    self.calc_pose(fid_position, output)
+                    R, t = self.calc_pose(fid_position)
+                    q = Rotation.from_matrix(R).as_quat()
+                    T = Transform()
+                    T.translation.x = t[0]
+                    T.translation.y = t[1]
+                    T.translation.z = t[2]
+                    T.rotation.x = q[0]
+                    T.rotation.y = q[1]
+                    T.rotation.z = q[2]
+                    T.rotation.w = q[3]
+                    self.fiducial_pub.publish(T)
+
 
                 cv2.imshow("Output",  output)
                 cv2.waitKey(1)
@@ -212,8 +223,18 @@ class FiducialDetector:
         finally:
             self.pipeline.stop()
 
-    #
+
     def get_marker_position(self, img_coords, aligned_depth_frame, w_h, intrinsics, output):
+        """Get the 3D position of an object from
+        image coordinates. Return the 3D position and output image.
+
+        Keyword arguments:
+        img_coords -- image coordinates of the object as a tuple [x, y, r]
+        aligned_depth_frame -- aligned depth frame from RealSense
+        w_h -- width and height of the image as tuple
+        intrinsics -- camera intrinsics
+        output -- output image with 3D position written
+        """
         x_c = int(round(img_coords[0]))
         y_c = int(round(img_coords[1]))
         r = int(round(img_coords[2]))
@@ -250,9 +271,13 @@ class FiducialDetector:
         return pos, output
 
 
-    #
-    def calc_pose(self, fid_position, output):
+    def calc_pose(self, fid_position):
+        """Get the position and orientation of the fiducial
+        in the camera frame. Return the R rotation and t trasnlation.
 
+        Keyword arguments:
+        fid_position -- 3D positions of the markers in a dictionary by color
+        """
 
         points = np.array([fid_position["red"][0],
                            fid_position["green"][0],
@@ -289,77 +314,24 @@ class FiducialDetector:
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+        return R, t
 
 
-    #
+
     def set_exposure(self, exposure):
+        """Set the camera exposure manually."""
+
         rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
         rgb_cam_sensor.set_option(rs.option.exposure, exposure)
 
-    #
-    def cb_config(self, config, level):
-        self.lower_background = (config.bg_l_h, config.bg_l_s, config.bg_l_v)
-        self.upper_background = (config.bg_u_h, config.bg_u_s, config.bg_u_v)
-        return config
-
-
-    # Synced callback function for images
-    def cb_images(self,image_msg,depth_msg,camera_info):
-       try:
-           image = self.bridge.imgmsg_to_cv2(image_msg,
-                            desired_encoding=image_msg.encoding)
-           image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-           depth = self.bridge.imgmsg_to_cv2(depth_msg,
-                            desired_encoding=depth_msg.encoding)
-       except CvBridgeError as e:
-           print(e)
-
-       #cv2.imshow("Image", image)
-       #cv2.waitKey(1)
-       #print()
-       #print("Image")
-       #print(image_msg.header)
-       #print(image_msg.encoding)
-       #print("Depth")
-       #print(depth_msg.header)
-       #print(depth_msg.encoding)
-       #print("Info")
-       #print(camera_info)
-
-       self.find_fiducials_locations(image)
-       #self.kmeans_segmentation(image)
-
-    def kmeans_segmentation(self, image):
-
-        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
-        mask_background = 255 - mask_background
-
-        hsv_img = cv2.bitwise_and(hsv_img, hsv_img, mask=mask_background)
-
-
-        pixel_values = hsv_img.reshape((-1, 3))
-        pixel_values = np.float32(pixel_values)
-
-        # define stopping criteria
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.2)
-
-        k = 8
-        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-        centers = np.uint8(centers)
-
-        labels = labels.flatten()
-        segmented_image = centers[labels.flatten()]
-        # reshape back to the original image dimension
-        segmented_image = segmented_image.reshape(image.shape)
-        # show the image
-        segmented_image_bgr = cv2.cvtColor(segmented_image, cv2.COLOR_HSV2BGR)
-        cv2.imshow("KMeans", segmented_image_bgr)
-        cv2.waitKey(1)
-
 
     def mask_fiducial(self, image, color):
+        """Segmentation of fiducial markers by color.
+
+        Keyword arguments:
+        image -- color image
+        color -- color string
+        """
 
         if color == 'red':
             hsv_lower = self.lower_red
@@ -397,15 +369,13 @@ class FiducialDetector:
         #    mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
         #    mask = cv2.bitwise_or(mask, mask_2)
 
-        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
-        mask_background = 255 - mask_background
+        #mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
+        #mask_background = 255 - mask_background
         #mask = cv2.bitwise_and(mask, mask_background)
 
         kernel = np.ones((3,3), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
         mask = cv2.dilate(mask, kernel, iterations=1)
-
-
 
         result = cv2.bitwise_and(image, image, mask=mask)
         #if color == 'purple':
@@ -443,10 +413,13 @@ class FiducialDetector:
 
 
 
-
     def find_fiducials_locations(self, image):
+        """Get image coordinates [x, y, r] from color image
+        using color segmentation.
 
-
+        Keyword arguments:
+        image -- color image
+        """
         output = image.copy()
         fiducials = {}
 
@@ -472,19 +445,13 @@ class FiducialDetector:
 
 
 if __name__ == '__main__':
-    print("Node started")
-    #help(cv2.aruco)
-
     detector = FiducialDetector()
     #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_104229.bag")
     #detector.load_img("/home/tamas/data/realsense/Realsense_viewer_20210326_103332.bag")
-
     #for image in detector.cv_images:
     #image = detector.cv_images[2]
-
         #detector.find_fiducials_locations(image)
     detector.start_and_process_stream()
-
     #try:
     #    rospy.spin()
     #except KeyboardInterrupt:
