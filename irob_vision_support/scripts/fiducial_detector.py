@@ -24,6 +24,7 @@ from irob_vision_support.cfg import FiducialsConfig
 
 from irob_utils.rigid_transform_3D import rigid_transform_3D
 from scipy.spatial.transform import Rotation
+import yaml
 
 
 class FiducialDetector:
@@ -314,6 +315,7 @@ class FiducialDetector:
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+        self.save_registration(R,t)
         return R, t
 
 
@@ -409,7 +411,6 @@ class FiducialDetector:
             ret.pop(min_r_i)
 
         return ret
-
 
 
     def find_fiducials_locations(self, image):

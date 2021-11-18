@@ -14,6 +14,7 @@ import rosbag
 
 from irob_utils.rigid_transform_3D import rigid_transform_3D
 from scipy.spatial.transform import Rotation
+import yaml
 
 
 class HandEyeRegistrator:
@@ -69,9 +70,76 @@ class HandEyeRegistrator:
         #rospy.loginfo(rospy.get_caller_id() + " I heard jaw %s", msg)
 
     def cb_manip_clutch(self, msg):
-        """Callback function when clutch button is pressed."""
+        """Callback function when clutch button is pressed.
+        Collect one sample from the positions.
+        """
         rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
+        if True:    # TODO when
+            rospy.sleep(0.5)
 
+            robot_pos = np.array([self.measured_cp.transform.translation.x,
+                                  self.measured_cp.transform.translation.y,
+                                  self.measured_cp.transform.translation.z]).T
+            fiducial_pos = np.array([self.fiducial_tf.x,
+                                     self.fiducial_tf.y,
+                                     self.fiducial_tf.z]).T
+
+            self.robot_positions = np.vstack((self.robot_positions, robot_pos))
+            self.fiducial_positions = np.vstack((self.fiducial_positions, fiducial_pos))
+            print("Positions collected: " + str(self.robot_positions.shape[1]))
+
+
+
+    def collect_and_register(self):
+        """Wait for data colection. When key pressed,
+        do the registration.
+        """
+        input("Collect data for registration. Press Enter when done...")
+
+        R, t = rigid_transform_3D(self.robot_positions, self.fiducial_positions)
+
+        # Check transformation
+        points_transformed = np.zeros(self.robot_positions.shape)
+        for i in range(self.robot_positions.shape[1]):
+            p = np.dot(R, self.robot_positions[:,i]) + t.T
+            points_transformed[:,i] = p
+
+        # Draw plot
+        plt.ion()
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(projection='3d')
+        self.ax.scatter(points[0,:], points[1,:], points[2,:], marker='o')
+        self.ax.scatter(points_transformed[0,:], points_transformed[1,:],
+                                        points_transformed[2,:], marker='^')
+
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
+        return R, t
+
+
+    def save_registration(self, R, t):
+        """Save registration to config file.
+
+        Keyword arguments:
+        R -- rotation matrix
+        t -- translation vector
+        """
+        data = dict(
+            t = [float(t[0,0]), float(t[1,0]), float(t[1,0])],
+            R = [float(R[0,0]), float(R[0,1]), float(R[0,2]),
+                float(R[1,0]), float(R[1,1]), float(R[1,2]),
+                float(R[2,0]), float(R[2,1]), float(R[2,2])]
+        )
+
+        with open(self.camera_registration_filename, 'w') as outfile:
+            yaml.dump(data, outfile, default_flow_style=False)
+            outfile.close()
 
 
 
@@ -142,11 +210,12 @@ class HandEyeRegistrator:
 if __name__ == '__main__':
     # Init arm
     reg = HandEyeRegistrator()
-
     # Sleep is necessary to make sure, that a marker position is received
     rospy.sleep(1.0)
 
     #reg.move_tcp_to([0.0, 0.0, -0.12], 0.05, 0.01)
     #reg.move_jaw_to(0.0, 0.1, 0.01)
+    R, t = reg.collect_and_register()
+    reg.save_registration(R, t)
 
 
