@@ -332,7 +332,6 @@ class FiducialDetector:
         image -- color image
         color -- color string
         """
-
         if color == 'red':
             hsv_lower = self.lower_red
             hsv_upper = self.upper_red

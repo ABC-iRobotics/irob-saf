@@ -1,0 +1,22 @@
+<!-- Launch file to hand-eye registration-->
+
+<launch>
+
+    <group ns="saf">
+        <arg name="arm_typ" default="PSM1"/>
+        <arg name="camera_registration_file"
+                                default="registration_psm1.yaml"/>
+
+
+    <node name="hand_eye_registrator" pkg="irob_vision_support"
+            type="hand_eye_registrator.py" output="screen" >
+
+            <param name="arm" type="string" value="$(arg arm)" />
+            <param name="camera_registration_file"
+               type="string"
+               value="$(find irob_robot)/config/$(arg camera_registration_file)" />
+
+    </node>
+    </group>
+</launch>
+
