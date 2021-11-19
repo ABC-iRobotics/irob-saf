@@ -14,6 +14,7 @@ import rosbag
 
 from irob_utils.rigid_transform_3D import rigid_transform_3D
 from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Slerp
 import yaml
 
 
@@ -25,8 +26,13 @@ class HandEyeRegistrator:
         print("Node started")
         rospy.init_node('hand_eye_registrator', anonymous=True)
         self.arm = rospy.get_param('~arm')
-        self.camera_registration_filename = rospy.get_param('~camera_registration_file')
+        self.camera_registration_filename = rospy.get_param(
+                                            '~camera_registration_file')
 
+        self.mode = rospy.get_param('~mode')    # simple, auto, save
+        self.poses_filename = rospy.get_param('~poses_filename')
+
+        self.poses_to_save = []
         self.robot_positions = np.zeros((0,3))
         self.fiducial_positions = np.zeros((0,3))
 
@@ -75,18 +81,26 @@ class HandEyeRegistrator:
         """
         rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
         if True:    # TODO when
-            rospy.sleep(0.5)
+            self.gather_actual_position()
 
-            robot_pos = np.array([self.measured_cp.transform.translation.x,
-                                  self.measured_cp.transform.translation.y,
-                                  self.measured_cp.transform.translation.z]).T
-            fiducial_pos = np.array([self.fiducial_tf.x,
-                                     self.fiducial_tf.y,
-                                     self.fiducial_tf.z]).T
 
-            self.robot_positions = np.vstack((self.robot_positions, robot_pos))
-            self.fiducial_positions = np.vstack((self.fiducial_positions, fiducial_pos))
-            print("Positions collected: " + str(self.robot_positions.shape[1]))
+    def gather_actual_position(self):
+        """Gather a single position from the camera and the robot."""
+        rospy.sleep(0.5)
+        robot_pos = np.array([self.measured_cp.transform.translation.x,
+                              self.measured_cp.transform.translation.y,
+                              self.measured_cp.transform.translation.z]).T
+        fiducial_pos = np.array([self.fiducial_tf.translation.x,
+                                 self.fiducial_tf.translation.y,
+                                 self.fiducial_tf.translation.z]).T
+        if self.mode == "save":
+            self.poses_to_save.append(self.measured_cp)
+
+
+        self.robot_positions = np.vstack((self.robot_positions, robot_pos))
+        self.fiducial_positions = np.vstack((self.fiducial_positions, fiducial_pos))
+
+        print("Positions collected: " + str(self.robot_positions.shape[0]))
 
 
 
@@ -96,19 +110,19 @@ class HandEyeRegistrator:
         """
         input("Collect data for registration. Press Enter when done...")
 
-        R, t = rigid_transform_3D(self.robot_positions, self.fiducial_positions)
+        R, t = rigid_transform_3D(self.robot_positions.T, self.fiducial_positions.T)
 
         # Check transformation
         points_transformed = np.zeros(self.robot_positions.shape)
         for i in range(self.robot_positions.shape[1]):
-            p = np.dot(R, self.robot_positions[:,i]) + t.T
-            points_transformed[:,i] = p
+            p = np.dot(R, self.robot_positions[i,:].T) + t.T
+            points_transformed[i,:] = p
 
         # Draw plot
         plt.ion()
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(projection='3d')
-        self.ax.scatter(points[0,:], points[1,:], points[2,:], marker='o')
+        self.ax.scatter(self.fiducial_positions[0,:], self.fiducial_positions[1,:], self.fiducial_positions[2,:], marker='o')
         self.ax.scatter(points_transformed[0,:], points_transformed[1,:],
                                         points_transformed[2,:], marker='^')
 
@@ -119,6 +133,10 @@ class HandEyeRegistrator:
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+
+        # Save robot poses for auto registration
+        if self.mode == "save":
+            self.save_robot_poses()
 
         return R, t
 
@@ -143,7 +161,53 @@ class HandEyeRegistrator:
 
 
 
-    # TODO slerp
+
+    def save_robot_poses(self):
+        """Save robot poses to config file for auto registration."""
+        data = dict(
+            p = []
+        )
+        for r in self.poses_to_save:
+            data["p"].append([r.transform.translation.x, r.transform.translation.y,
+                             r.transform.translation.z, r.transform.rotation.x,
+                             r.transform.rotation.y, r.transform.rotation.z,
+                             r.transform.rotation.w])
+
+        with open(self.poses_filename, 'w') as outfile:
+            yaml.dump(data, outfile, default_flow_style=False)
+            outfile.close()
+
+    def load_robot_poses(self):
+        """Load robot poses from file for auto registration."""
+        with open(self.poses_filename, "r") as file:
+            documents = yaml.full_load(file)
+            self.poses_for_reg = []
+            for item, doc in documents.items():
+                print(item, ":", doc)
+                for p in doc:
+                    t = Transform()
+                    t.translation.x = p[0]
+                    t.translation.y = p[1]
+                    t.translation.z = p[2]
+                    t.rotation.x = p[3]
+                    t.rotation.y = p[4]
+                    t.rotation.z = p[5]
+                    t.rotation.w = p[6]
+                    self.poses_for_reg.append(t)
+
+
+    def do_auto_registration(self, v, dt):
+        """Register arm with a predefined set of positions autonomously.
+
+        Keyword arguments:
+        v -- TCP linear velocity
+        dt -- sampling time
+        """
+        for t in self.poses_for_reg:
+            self.move_tcp_to(t, v, dt)
+            self.gather_actual_position()
+
+
     def move_tcp_to(self, target, v, dt):
         """Move the TCP to the desired position on linear trajectory.
 
@@ -156,13 +220,29 @@ class HandEyeRegistrator:
         pos_current_np = np.array([self.measured_cp.transform.translation.x,
                                 self.measured_cp.transform.translation.y,
                                 self.measured_cp.transform.translation.z])
-        pos_target_np = np.array(target)
+        pos_target_np = np.array([target.translation.x,
+                                    target.translation.y,
+                                    target.translation.z])
         d = np.linalg.norm(pos_target_np - pos_current_np)
         T = d / v
         N = int(math.floor(T / dt))
         tx = np.linspace(pos_current_np[0], target[0], N)
         ty = np.linspace(pos_current_np[1], target[1], N)
         tz = np.linspace(pos_current_np[2], target[2], N)
+
+        #SLERP
+        rot_current = Rotation.from_quat([self.measured_cp.transform.rotation.x,
+                                           self.measured_cp.transform.rotation.y,
+                                           self.measured_cp.transform.rotation.z,
+                                           self.measured_cp.transform.rotation.w])
+        rot_target = Rotation.from_quat([target.rotation.x,
+                                           target.rotation.y,
+                                           target.rotation.z,
+                                           target.rotation.w])
+        slerp = Slerp([0,T], [rot_current,rot_target])
+        times = np.linspace(0, T, N)
+        interp_rots = slerp(times)
+
         # Set the rate of the loop
         rate = rospy.Rate(1.0 / dt)
 
@@ -176,6 +256,13 @@ class HandEyeRegistrator:
             p.transform.translation.x = tx[i]
             p.transform.translation.y = ty[i]
             p.transform.translation.z = tz[i]
+
+            quat_helper = interp_rots[i].as_quat()
+            p.transform.rotation.x = quat_helper[0]
+            p.transform.rotation.y = quat_helper[1]
+            p.transform.rotation.z = quat_helper[2]
+            p.transform.rotation.w = quat_helper[3]
+
             #rospy.loginfo(p)
             self.servo_cp_pub.publish(p)
             rate.sleep()    # Sleep to run with the desired rate
@@ -215,7 +302,14 @@ if __name__ == '__main__':
 
     #reg.move_tcp_to([0.0, 0.0, -0.12], 0.05, 0.01)
     #reg.move_jaw_to(0.0, 0.1, 0.01)
-    R, t = reg.collect_and_register()
-    reg.save_registration(R, t)
+    if reg.mode == "auto":
+        reg.load_robot_poses()
+        reg.do_auto_registration(0.05, 0.01)
+    elif reg.mode == "save" or reg.mode == "simple":
+        R, t = reg.collect_and_register()
+        reg.save_registration(R, t)
+    else:
+        print("Please define a correct mode (simple, save, auto). Exiting...")
+
 
 

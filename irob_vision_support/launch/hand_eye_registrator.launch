@@ -3,9 +3,12 @@
 <launch>
 
     <group ns="saf">
-        <arg name="arm_typ" default="PSM1"/>
+        <arg name="arm" default="PSM1"/>
         <arg name="camera_registration_file"
                                 default="registration_psm1.yaml"/>
+        <arg name="mode" default="simple"/> <!-- simple, auto, save-->
+        <arg name="poses_filename"
+                                default="poses_auto_psm1.yaml"/>
 
 
     <node name="hand_eye_registrator" pkg="irob_vision_support"
@@ -15,7 +18,10 @@
             <param name="camera_registration_file"
                type="string"
                value="$(find irob_robot)/config/$(arg camera_registration_file)" />
-
+            <param name="mode" type="string" value="$(arg mode)" />
+            <param name="poses_filename"
+                type="string"
+                value="$(find irob_robot)/config/$(arg poses_filename)" />
     </node>
     </group>
 </launch>

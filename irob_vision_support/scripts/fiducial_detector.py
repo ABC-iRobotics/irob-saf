@@ -315,7 +315,7 @@ class FiducialDetector:
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-        self.save_registration(R,t)
+
         return R, t
 
 
