@@ -21,13 +21,11 @@ find_package(catkin REQUIRED
 	camera_info_manager
 	irob_msgs
 	irob_utils
-    pcl_conversions
-    pcl_ros
 	)
 
 
-  find_package(PCL REQUIRED)
-  include_directories(${PCL_INCLUDE_DIRS})
+#  find_package(PCL REQUIRED)
+#  include_directories(${PCL_INCLUDE_DIRS})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -151,13 +149,11 @@ add_executable(dummy_target_publisher
 add_executable(camera_preprocessor
     src/camera_preprocessor.cpp)
 
-  add_executable(pcl_test
-      src/pcl_test.cpp)
+  
 
     add_executable(serial_test
         src/serial_test.cpp)
-    add_executable(pcl_marker
-        src/pcl_marker.cpp)
+
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -199,17 +195,6 @@ target_link_libraries(camera_preprocessor
       irob_vision_support_lib
       )
 
-  target_link_libraries(pcl_test
-      ${catkin_LIBRARIES}
-      ${PCL_LIBRARIES}
-      irob_vision_support_lib
-      )
-
-  target_link_libraries(pcl_marker
-      ${catkin_LIBRARIES}
-      ${PCL_LIBRARIES}
-      irob_vision_support_lib
-      )
 
 #############
 ## Install ##
