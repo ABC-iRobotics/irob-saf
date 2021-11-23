@@ -70,7 +70,7 @@ class FiducialDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        self.exposure = 1500.0
+        self.exposure = 800.0
         #self.exposure = 150.0 #1800.0 #1000.0
         self.tr_seq = 0
 
@@ -206,22 +206,23 @@ class FiducialDetector:
 
                 if (len(fid_position) == 4):
                     R, t = self.calc_pose(fid_position)
-                    q = Rotation.from_matrix(R).as_quat()
-                    T = TransformStamped()
-                    T.header.seq = self.tr_seq
-                    self.tr_seq = self.tr_seq + 1
-                    T.header.stamp = rospy.Time.now()
-                    T.header.frame_id = "camera"
-                    T.child_frame_id = "fiducial"
+                    if R is not None and t is not None:
+                        q = Rotation.from_matrix(R).as_quat()
+                        T = TransformStamped()
+                        T.header.seq = self.tr_seq
+                        self.tr_seq = self.tr_seq + 1
+                        T.header.stamp = rospy.Time.now()
+                        T.header.frame_id = "camera"
+                        T.child_frame_id = "fiducial"
 
-                    T.transfrom.translation.x = t[0]
-                    T.transfrom.translation.y = t[1]
-                    T.transfrom.translation.z = t[2]
-                    T.transfrom.rotation.x = q[0]
-                    T.transfrom.rotation.y = q[1]
-                    T.transfrom.rotation.z = q[2]
-                    T.transfrom.rotation.w = q[3]
-                    self.fiducial_pub.publish(T)
+                        T.transform.translation.x = t[0]
+                        T.transform.translation.y = t[1]
+                        T.transform.translation.z = t[2]
+                        T.transform.rotation.x = q[0]
+                        T.transform.rotation.y = q[1]
+                        T.transform.rotation.z = q[2]
+                        T.transform.rotation.w = q[3]
+                        self.fiducial_pub.publish(T)
 
 
                 cv2.imshow("Output",  output)
@@ -290,7 +291,7 @@ class FiducialDetector:
         points = np.array([fid_position["red"][0],
                            fid_position["green"][0],
                            fid_position["orange"][0],
-                           fid_position["purple"][0]]).T
+                           fid_position["purple"][0]], float).T
 
         #print(self.points_in_cam_base)
         #print("")
@@ -300,30 +301,35 @@ class FiducialDetector:
         R, t = rigid_transform_3D(self.points_in_cam_base, points)
 
         points_transformed = np.zeros((3,4))
+        err = 0.0
         for i in range(4):
             p = np.dot(R, self.points_in_cam_base[:,i]) + t.T
             points_transformed[:,i] = p
+            err = err + np.linalg.norm(p-points[:,i])
 
 
+        err = err / 4.0
+        if err < 0.003:
 
-        #print("p_tr:")
-        #print(points_transformed)
+            self.ax.clear()
 
-        self.ax.clear()
-
-        self.ax.scatter(points[0,:], points[1,:], points[2,:], marker='o')
-        self.ax.scatter(points_transformed[0,:], points_transformed[1,:],
+            self.ax.scatter(points[0,:], points[1,:], points[2,:], marker='o')
+            self.ax.scatter(points_transformed[0,:], points_transformed[1,:],
                                         points_transformed[2,:], marker='^')
 
 
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
+            self.ax.set_xlabel('X')
+            self.ax.set_ylabel('Y')
+            self.ax.set_zlabel('Z')
 
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
 
-        return R, t
+            return R, t
+        else:
+            print("Error: " + str(err))
+            return None, None
+
 
 
 

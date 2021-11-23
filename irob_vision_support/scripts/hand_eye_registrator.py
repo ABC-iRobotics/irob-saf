@@ -36,6 +36,9 @@ class HandEyeRegistrator:
         self.robot_positions = np.zeros((0,3))
         self.fiducial_positions = np.zeros((0,3))
 
+        self.fiducial_tf = None
+        self.clutch_N = 0
+
         # Subscribe to topics
         rospy.Subscriber("fiducial_tf", TransformStamped, self.cb_fiducial)
         rospy.Subscriber("/" + self.arm + "/measured_cp",
@@ -79,9 +82,11 @@ class HandEyeRegistrator:
         """Callback function when clutch button is pressed.
         Collect one sample from the positions.
         """
-        rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
-        if True:    # TODO when
+        #rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
+        if self.fiducial_tf is not None and self.clutch_N > 0 and msg.buttons[0] == 0:
             self.gather_actual_position()
+
+        self.clutch_N = self.clutch_N + 1
 
 
     def gather_actual_position(self):
@@ -203,7 +208,7 @@ class HandEyeRegistrator:
             documents = yaml.full_load(file)
             self.poses_for_reg = []
             for item, doc in documents.items():
-                print(item, ":", doc)
+                #print(item, ":", doc)
                 for p in doc:
                     t = Transform()
                     t.translation.x = p[0]
@@ -229,6 +234,20 @@ class HandEyeRegistrator:
             self.move_tcp_to(t, v, dt)
             self.gather_actual_position()
 
+    def reset_arm(self):
+        t = Transform()
+        t.translation.x = 0.0
+        t.translation.y = 0.0
+        t.translation.z = -0.12
+        t.rotation.x = 0.393899553586202
+        t.rotation.y = 0.9179819355728568
+        t.rotation.z = -0.046392890942680814
+        t.rotation.w = -0.00000000855
+
+        self.move_tcp_to(t, 0.05, dt)
+        self.move_jaw_to(0.5, 0.3, dt)
+
+
 
     def move_tcp_to(self, target, v, dt):
         """Move the TCP to the desired position on linear trajectory.
@@ -248,22 +267,30 @@ class HandEyeRegistrator:
         d = np.linalg.norm(pos_target_np - pos_current_np)
         T = d / v
         N = int(math.floor(T / dt))
-        tx = np.linspace(pos_current_np[0], target[0], N)
-        ty = np.linspace(pos_current_np[1], target[1], N)
-        tz = np.linspace(pos_current_np[2], target[2], N)
+        tx = np.linspace(pos_current_np[0], pos_target_np[0], N)
+        ty = np.linspace(pos_current_np[1], pos_target_np[1], N)
+        tz = np.linspace(pos_current_np[2], pos_target_np[2], N)
 
         #SLERP
-        rot_current = Rotation.from_quat([self.measured_cp.transform.rotation.x,
+        rotations = Rotation.from_quat([[self.measured_cp.transform.rotation.x,
                                            self.measured_cp.transform.rotation.y,
                                            self.measured_cp.transform.rotation.z,
-                                           self.measured_cp.transform.rotation.w])
-        rot_target = Rotation.from_quat([target.rotation.x,
+                                           self.measured_cp.transform.rotation.w],
+                                           [target.rotation.x,
                                            target.rotation.y,
                                            target.rotation.z,
-                                           target.rotation.w])
-        slerp = Slerp([0,T], [rot_current,rot_target])
+                                           target.rotation.w]])
+
+
         times = np.linspace(0, T, N)
-        interp_rots = slerp(times)
+        do_slerp = False    # If the rotations are the same
+        try:
+            slerp = Slerp([0,T], rotations)
+            interp_rots = slerp(times)
+            do_slerp = True
+        except ValueError as e:
+            do_slerp = False
+
 
         # Set the rate of the loop
         rate = rospy.Rate(1.0 / dt)
@@ -279,7 +306,11 @@ class HandEyeRegistrator:
             p.transform.translation.y = ty[i]
             p.transform.translation.z = tz[i]
 
-            quat_helper = interp_rots[i].as_quat()
+            if do_slerp:
+                quat_helper = interp_rots[i].as_quat()
+            else:
+                quat_helper = rotations[1].as_quat()
+
             p.transform.rotation.x = quat_helper[0]
             p.transform.rotation.y = quat_helper[1]
             p.transform.rotation.z = quat_helper[2]
@@ -321,11 +352,10 @@ if __name__ == '__main__':
     reg = HandEyeRegistrator()
     # Sleep is necessary to make sure, that a marker position is received
     dt = 0.01
-    open_angle = 0.8
-    grasp_angle = 0.5
+    open_angle = 0.1
+    grasp_angle = -0.1
     rospy.sleep(1.0)
-    reg.move_tcp_to([0.0, 0.0, -0.12], 0.05, dt)
-    reg.move_jaw_to(0.0, 0.1, dt)
+    reg.reset_arm()
 
     reg.grasp_marker(open_angle, grasp_angle, 0.3, dt)
 
