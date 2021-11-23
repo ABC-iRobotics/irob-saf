@@ -2,7 +2,7 @@ import rospy
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
-from geometry_msgs.msg import Transform
+from geometry_msgs.msg import Transform, TransformStamped
 import message_filters
 
 from geometry_msgs.msg import Pose2D
@@ -35,7 +35,7 @@ class FiducialDetector:
 
         print("Node started")
         rospy.init_node('fiducial_detector', anonymous=True)
-        self.fiducial_pub = rospy.Publisher("fiducial_tf", Transform,
+        self.fiducial_pub = rospy.Publisher("fiducial_tf", TransformStamped,
                                                         queue_size=10)
 
         print("Init")
@@ -72,6 +72,7 @@ class FiducialDetector:
         self.clipping_distance_in_meters = 0.30
         self.exposure = 1500.0
         #self.exposure = 150.0 #1800.0 #1000.0
+        self.tr_seq = 0
 
         self.z_offset = 0.004   # m
 
@@ -206,14 +207,20 @@ class FiducialDetector:
                 if (len(fid_position) == 4):
                     R, t = self.calc_pose(fid_position)
                     q = Rotation.from_matrix(R).as_quat()
-                    T = Transform()
-                    T.translation.x = t[0]
-                    T.translation.y = t[1]
-                    T.translation.z = t[2]
-                    T.rotation.x = q[0]
-                    T.rotation.y = q[1]
-                    T.rotation.z = q[2]
-                    T.rotation.w = q[3]
+                    T = TransformStamped()
+                    T.header.seq = self.tr_seq
+                    self.tr_seq = self.tr_seq + 1
+                    T.header.stamp = rospy.Time.now()
+                    T.header.frame_id = "camera"
+                    T.child_frame_id = "fiducial"
+
+                    T.transfrom.translation.x = t[0]
+                    T.transfrom.translation.y = t[1]
+                    T.transfrom.translation.z = t[2]
+                    T.transfrom.rotation.x = q[0]
+                    T.transfrom.rotation.y = q[1]
+                    T.transfrom.rotation.z = q[2]
+                    T.transfrom.rotation.w = q[3]
                     self.fiducial_pub.publish(T)
 
 

@@ -37,7 +37,7 @@ class HandEyeRegistrator:
         self.fiducial_positions = np.zeros((0,3))
 
         # Subscribe to topics
-        rospy.Subscriber("fiducial_tf", Transform, self.cb_fiducial)
+        rospy.Subscriber("fiducial_tf", TransformStamped, self.cb_fiducial)
         rospy.Subscriber("/" + self.arm + "/measured_cp",
                         TransformStamped, self.cb_measured_cp)
         rospy.Subscriber("/" + self.arm + "/jaw/measured_js",
@@ -87,21 +87,41 @@ class HandEyeRegistrator:
     def gather_actual_position(self):
         """Gather a single position from the camera and the robot."""
         rospy.sleep(0.5)
-        robot_pos = np.array([self.measured_cp.transform.translation.x,
+        if ((rospy.Time.now().to_sec()
+                    - self.fiducial_tf.header.stamp.to_sec()) < 0.4):
+            robot_pos = np.array([self.measured_cp.transform.translation.x,
                               self.measured_cp.transform.translation.y,
                               self.measured_cp.transform.translation.z]).T
-        fiducial_pos = np.array([self.fiducial_tf.translation.x,
-                                 self.fiducial_tf.translation.y,
-                                 self.fiducial_tf.translation.z]).T
-        if self.mode == "save":
-            self.poses_to_save.append(self.measured_cp)
+            fiducial_pos = np.array([self.fiducial_tf.transform.translation.x,
+                                 self.fiducial_tf.transform.translation.y,
+                                 self.fiducial_tf.transform.translation.z]).T
+            if self.mode == "save":
+                self.poses_to_save.append(self.measured_cp)
 
 
-        self.robot_positions = np.vstack((self.robot_positions, robot_pos))
-        self.fiducial_positions = np.vstack((self.fiducial_positions, fiducial_pos))
+            self.robot_positions = np.vstack((self.robot_positions, robot_pos))
+            self.fiducial_positions = np.vstack((self.fiducial_positions, fiducial_pos))
 
-        print("Positions collected: " + str(self.robot_positions.shape[0]))
+            print("Positions collected: " + str(self.robot_positions.shape[0]))
+        else:
+            print("Couldn't locate fiducials in this setup.")
 
+
+    def grasp_marker(self, open_angle, grasp_angle, omega, dt):
+        """Open jaws, wait for marker insertion then grasp the marker.
+
+        Keyword arguments:
+        open_angle -- jaw angle for inserting marker
+        grasp_angle -- jaw angle for grasping marker
+        omega -- angular velocity of the jaws
+        dt -- sampling time
+        """
+        self.move_jaw_to(open_angle, omega, dt)
+
+        input("Insert marker. Press Enter when done...")
+
+        self.move_jaw_to(grasp_angle, omega, dt)
+        print("Marker grasped succesfully.")
 
 
     def collect_and_register(self):
@@ -203,6 +223,8 @@ class HandEyeRegistrator:
         v -- TCP linear velocity
         dt -- sampling time
         """
+        input("Starting auto registration. The robot will do large movements. " +
+                                                    "Press Enter when ready...")
         for t in self.poses_for_reg:
             self.move_tcp_to(t, v, dt)
             self.gather_actual_position()
@@ -298,13 +320,19 @@ if __name__ == '__main__':
     # Init arm
     reg = HandEyeRegistrator()
     # Sleep is necessary to make sure, that a marker position is received
+    dt = 0.01
+    open_angle = 0.8
+    grasp_angle = 0.5
     rospy.sleep(1.0)
+    reg.move_tcp_to([0.0, 0.0, -0.12], 0.05, dt)
+    reg.move_jaw_to(0.0, 0.1, dt)
 
-    #reg.move_tcp_to([0.0, 0.0, -0.12], 0.05, 0.01)
-    #reg.move_jaw_to(0.0, 0.1, 0.01)
+    reg.grasp_marker(open_angle, grasp_angle, 0.3, dt)
+
+
     if reg.mode == "auto":
         reg.load_robot_poses()
-        reg.do_auto_registration(0.05, 0.01)
+        reg.do_auto_registration(0.05, dt)
     elif reg.mode == "save" or reg.mode == "simple":
         R, t = reg.collect_and_register()
         reg.save_registration(R, t)
