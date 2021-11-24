@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS -std=c++11)
 find_package(catkin REQUIRED
 	COMPONENTS
 	roscpp
+        rospy
 	roslib
 	geometry_msgs
 	std_msgs
@@ -19,7 +20,7 @@ find_package(catkin REQUIRED
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+ catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -130,6 +131,9 @@ add_library( irob_utils_lib STATIC
 
 set_target_properties( irob_utils_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
+file(GLOB python_scripts_DIR
+    "scripts/*.py"
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -170,10 +174,10 @@ target_link_libraries(irob_utils_lib
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
+#install(PROGRAMS
+#   scripts/rigid_transform_3D.py
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+#   )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS irob_dvrk irob_dvrk_node
@@ -195,6 +199,13 @@ target_link_libraries(irob_utils_lib
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+catkin_install_python(PROGRAMS ${python_scripts_DIR}
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 
 #############
 ## Testing ##

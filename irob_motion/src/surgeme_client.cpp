@@ -102,14 +102,14 @@ void SurgemeClient::waitForActionServer()
 }
 
 
-Pose SurgemeClient::getPoseCurrent()
+ToolPose SurgemeClient::getPoseCurrent()
 {
   while (position_cartesian_current.header.seq == 0)
   {
     ros::spinOnce();
     ros::Duration(0.05).sleep();
   }
-  Pose ret(position_cartesian_current);
+  ToolPose ret(position_cartesian_current);
   return ret;
 
 }
@@ -161,9 +161,9 @@ void SurgemeClient::stop()
   // in surgemeDoneCB
 }
 
-void SurgemeClient::nav_to_pos(Pose target,
+void SurgemeClient::nav_to_pos(Eigen::Affine3d target,
                                double speed_cartesian,
-                               std::vector<Pose> waypoints /* = empty */,
+                               std::vector<Eigen::Affine3d> waypoints /* = empty */,
                                InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -171,15 +171,17 @@ void SurgemeClient::nav_to_pos(Pose target,
 
   goal.action = irob_msgs::SurgemeGoal::NAV_TO_POS;
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(
+          wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
   else
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_LINEAR;
 
-  goal.target = target.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
 
   goal.speed_cartesian = speed_cartesian;
 
@@ -189,12 +191,12 @@ void SurgemeClient::nav_to_pos(Pose target,
   // in surgemeDoneCB
 }
 
-void SurgemeClient::grasp(Pose target, Pose approach_pose,
+void SurgemeClient::grasp(Eigen::Affine3d target, Eigen::Affine3d approach_pose,
                           double target_diameter,
                           double compression_rate,
                           double speed_cartesian,
                           double speed_jaw,
-                          std::vector<Pose> waypoints /* = empty */,
+                          std::vector<Eigen::Affine3d> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -202,12 +204,14 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::GRASP;
 
-  goal.target = target.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
 
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -226,11 +230,11 @@ void SurgemeClient::grasp(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::cut(Pose target, Pose approach_pose,
+void SurgemeClient::cut(Eigen::Affine3d target, Eigen::Affine3d approach_pose,
                         double target_diameter,
                         double speed_cartesian,
                         double speed_jaw,
-                        std::vector<Pose> waypoints /* = empty */,
+                        std::vector<Eigen::Affine3d> waypoints /* = empty */,
                         InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -238,11 +242,14 @@ void SurgemeClient::cut(Pose target, Pose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::CUT;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(
+          wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -260,7 +267,7 @@ void SurgemeClient::cut(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::release(Pose approach_pose,	double target_diameter,
+void SurgemeClient::release(Eigen::Affine3d approach_pose,	double target_diameter,
                             double speed_cartesian,
                             double speed_jaw)
 {
@@ -269,7 +276,8 @@ void SurgemeClient::release(Pose approach_pose,	double target_diameter,
 
   goal.action = irob_msgs::SurgemeGoal::RELEASE;
 
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
 
   goal.target_diameter = target_diameter;
@@ -283,9 +291,9 @@ void SurgemeClient::release(Pose approach_pose,	double target_diameter,
 }
 
 
-void SurgemeClient::place(Pose target, Pose approach_pose,
+void SurgemeClient::place(Eigen::Affine3d target, Eigen::Affine3d approach_pose,
                           double speed_cartesian,
-                          std::vector<Pose> waypoints /* = empty */,
+                          std::vector<Eigen::Affine3d> waypoints /* = empty */,
                           InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -293,11 +301,14 @@ void SurgemeClient::place(Pose target, Pose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::PLACE;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(
+          wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -313,11 +324,11 @@ void SurgemeClient::place(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::push(Pose target, Pose approach_pose,
+void SurgemeClient::push(Eigen::Affine3d target, Eigen::Affine3d approach_pose,
                          Eigen::Vector3d displacement,
                          double speed_cartesian,
                          double speed_jaw,
-                         std::vector<Pose> waypoints /* = empty */,
+                         std::vector<Eigen::Affine3d> waypoints /* = empty */,
                          InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -325,17 +336,20 @@ void SurgemeClient::push(Pose target, Pose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::PUSH;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(
+          wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -352,12 +366,12 @@ void SurgemeClient::push(Pose target, Pose approach_pose,
 }
 
 
-void SurgemeClient::dissect(Pose target, Pose approach_pose,
+void SurgemeClient::dissect(Eigen::Affine3d target, Eigen::Affine3d approach_pose,
                             Eigen::Vector3d displacement,
                             double target_diameter,
                             double speed_cartesian,
                             double speed_jaw,
-                            std::vector<Pose> waypoints /* = empty */,
+                            std::vector<Eigen::Affine3d> waypoints /* = empty */,
                             InterpolationMethod interp_method /* = LINEAR */)
 {
   // Send a goal to the action
@@ -365,17 +379,20 @@ void SurgemeClient::dissect(Pose target, Pose approach_pose,
 
   goal.action = irob_msgs::SurgemeGoal::DISSECT;
 
-  goal.target = target.toRosPose();
-  goal.approach_pose = approach_pose.toRosPose();
+  goal.target =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(target);
+  goal.approach_pose =
+      wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(approach_pose);
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
   goal.displacement = displacement_ros;
 
-  for (Pose p : waypoints)
-    goal.waypoints.push_back(p.toRosPose());
+  for (Eigen::Affine3d p : waypoints)
+    goal.waypoints.push_back(
+          wrapToMsg<geometry_msgs::Transform,Eigen::Affine3d>(p));
 
   if (interp_method == InterpolationMethod::BEZIER)
     goal.interpolation = irob_msgs::SurgemeGoal::INTERPOLATION_BEZIER;
@@ -401,7 +418,7 @@ void SurgemeClient::manipulate(Eigen::Vector3d displacement,
 
   goal.action = irob_msgs::SurgemeGoal::MANIPULATE;
 
-  geometry_msgs::Point displacement_ros;
+  geometry_msgs::Vector3 displacement_ros;
   displacement_ros.x = displacement.x();
   displacement_ros.y = displacement.y();
   displacement_ros.z = displacement.z();
@@ -422,8 +439,8 @@ void SurgemeClient::move_cam(Eigen::Vector3d marker_pos_tcp,
   irob_msgs::SurgemeGoal goal;
 
   goal.action = irob_msgs::SurgemeGoal::MOVE_CAM;
-  goal.marker = wrapToMsg<geometry_msgs::Point>(marker_pos_tcp);
-  goal.desired = wrapToMsg<geometry_msgs::Point>(desired_pos_tcp);
+  goal.marker = wrapToMsg<geometry_msgs::Vector3>(marker_pos_tcp);
+  goal.desired = wrapToMsg<geometry_msgs::Vector3>(desired_pos_tcp);
   goal.speed_cartesian = speed_cartesian;
 
   ac.sendGoal(goal);

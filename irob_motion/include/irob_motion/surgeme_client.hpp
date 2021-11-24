@@ -19,11 +19,11 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/trajectory.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_utils/irob_action_client.hpp>
@@ -89,46 +89,46 @@ public:
   void instrumentInfoCB(
       const irob_msgs::InstrumentInfoConstPtr&);
 
-  Pose getPoseCurrent();
+  ToolPose getPoseCurrent();
   sensor_msgs::JointState getJointStateCurrent();
   irob_msgs::InstrumentInfo getInstrumentInfo();
   std::string getName();
 
   // Robot motions
   void stop();
-  void nav_to_pos(Pose,
+  void nav_to_pos(Eigen::Affine3d,
                   double,
-                  std::vector<Pose> = std::vector<Pose>(),
+                  std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                   InterpolationMethod = InterpolationMethod::LINEAR);
-  void grasp(Pose, Pose, double,	double,
+  void grasp(Eigen::Affine3d, Eigen::Affine3d, double,	double,
              double,
              double,
-             std::vector<Pose> = std::vector<Pose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void cut(Pose, Pose,double,
+  void cut(Eigen::Affine3d, Eigen::Affine3d,double,
            double,
            double,
-           std::vector<Pose> = std::vector<Pose>(),
+           std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
            InterpolationMethod = InterpolationMethod::LINEAR);
-  void release(Pose,	double,
+  void release(Eigen::Affine3d,	double,
                double,
                double);
-  void place(Pose, Pose,
+  void place(Eigen::Affine3d, Eigen::Affine3d,
              double,
-             std::vector<Pose> = std::vector<Pose>(),
+             std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
              InterpolationMethod = InterpolationMethod::LINEAR);
-  void push(Pose, Pose,
+  void push(Eigen::Affine3d, Eigen::Affine3d,
             Eigen::Vector3d,
             double,
             double,
-            std::vector<Pose> = std::vector<Pose>(),
+            std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
             InterpolationMethod = InterpolationMethod::LINEAR);
-  void dissect(Pose, Pose,
+  void dissect(Eigen::Affine3d, Eigen::Affine3d,
                Eigen::Vector3d,
                double,
                double,
                double,
-               std::vector<Pose> = std::vector<Pose>(),
+               std::vector<Eigen::Affine3d> = std::vector<Eigen::Affine3d>(),
                InterpolationMethod = InterpolationMethod::LINEAR);
 
   void manipulate(Eigen::Vector3d,

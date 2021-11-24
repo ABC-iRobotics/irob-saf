@@ -29,7 +29,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Transform.h>
 
-#include <irob_utils/pose.hpp>
+#include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_msgs/GraspObject.h>
 #include <irob_utils/abstract_directions.hpp>
@@ -37,6 +37,8 @@
 #include <irob_vision_support/vision_client.hpp>
 
 #include <irob_subtask_logic/autosurg_agent.hpp>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 
 namespace saf {
@@ -46,7 +48,7 @@ class PegTransfer : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Transform, geometry_msgs::Transform> vision;
+  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
 
   Eigen::Vector3d board_t;
   std::vector<Eigen::Vector3d> peg_positions;
@@ -57,8 +59,8 @@ protected:
 
 
   void loadBoardDescriptor(ros::NodeHandle);
-  Pose poseToCameraFrame(const Pose&, const geometry_msgs::Transform&);
-  Pose poseToWorldFrame(const Pose&, const geometry_msgs::Transform&);
+  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
+  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
 
 
 public:

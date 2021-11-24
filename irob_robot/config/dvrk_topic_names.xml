@@ -1,18 +1,34 @@
 <!-- Launch file to store the names of dVRK topics -->
 <launch>
 	<group ns="dvrk_topics">
-	<param name="namespace" type="string" value="dvrk" />
-		<param name="current_state" type="string" value="current_state" />
-    <param name="set_position_joint" type="string" value="set_position_goal_joint" />
-	<param name="state_joint_current" type="string" value="state_joint_current" />
+
+
+
+        <param name="current_state" type="string" value="status" />
+
+        <param name="set_position_joint" type="string"
+                                    value="servo_jp" />
+
+        <param name="state_joint_current" type="string"
+                                    value="measured_js" />
+
 	<param name="set_position_cartesian" type="string"
-									 value="set_position_cartesian" />
+                                    value="servo_cp" />
+
 	<param name="position_cartesian_current" type="string"
-								 value="position_cartesian_current" />
-	<param name="set_position_jaw" type="string" value="set_position_jaw" />
-	<param name="state_jaw_current" type="string" value="state_jaw_current" />
+                                    value="measured_cp" />
+
+        <param name="set_position_jaw" type="string"
+                                    value="jaw/servo_jp" />
+
+        <param name="state_jaw_current" type="string"
+                                    value="jaw/measured_js" />
+
 	<param name="error" type="string" value="error" />
+
 	<param name="warning" type="string" value="warning" />
+
+
 	
 	</group>
 	

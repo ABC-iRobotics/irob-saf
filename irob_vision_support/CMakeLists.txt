@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(irob_vision_support)
 set(CMAKE_CXX_FLAGS -std=c++11)
 
@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
 	roscpp
 	rospy
 	roslib
+        dynamic_reconfigure
 	geometry_msgs
 	std_msgs
 	sensor_msgs
@@ -24,8 +25,12 @@ find_package(catkin REQUIRED
 	)
 
 
+<<<<<<< HEAD
 #  find_package(PCL REQUIRED)
 #  include_directories(${PCL_INCLUDE_DIRS})
+=======
+  find_package(REQUIRED)
+>>>>>>> devel
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -77,10 +82,9 @@ find_package(catkin REQUIRED
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/Fiducials.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -148,7 +152,6 @@ add_executable(dummy_target_publisher
 
 add_executable(camera_preprocessor
     src/camera_preprocessor.cpp)
-
   
 
     add_executable(serial_test
@@ -159,7 +162,7 @@ add_executable(camera_preprocessor
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(fiducial_detector.py ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 
@@ -207,6 +210,8 @@ target_link_libraries(camera_preprocessor
 ## in contrast to setup.py, you can choose the destination
  install(PROGRAMS
    scripts/aruco_detector_realsense.py
+   scripts/fiducial_detector.py
+   scripts/hand_eye_registrator.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

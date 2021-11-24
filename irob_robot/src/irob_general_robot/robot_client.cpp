@@ -98,14 +98,14 @@ void RobotClient::waitForActionServer()
 }
 
 
-Pose RobotClient::getPoseCurrent()
+ToolPose RobotClient::getPoseCurrent()
 {
   while (position_cartesian_current.header.seq == 0)
   {
     ros::spinOnce();
     ros::Duration(0.05).sleep();
   }
-  Pose ret(position_cartesian_current);
+  ToolPose ret(position_cartesian_current);
   return ret;
 }
 
@@ -140,20 +140,6 @@ std::string RobotClient::getName()
 /*
  *  Robot motions
  */
-
-/**
- * Initialize robot arm.
- *
- */
-void RobotClient::initArm(bool move_allowed)
-{
-  // Send a goal to the action
-  irob_msgs::RobotGoal goal;
-  goal.action = irob_msgs::RobotGoal::INIT_ARM;
-
-  goal.move_allowed = move_allowed;
-  ac.sendGoal(goal);
-}
 
 /**
  * Reset position of the instrument.
@@ -191,15 +177,15 @@ void RobotClient::stop()
  */
 void RobotClient::moveJaws(double angle, double speed)
 {
-  Pose p1 = getPoseCurrent();
+  ToolPose p1 = getPoseCurrent();
 
   double angle_rad = degToRad(std::abs(angle));
   double speed_rad = degToRad(std::abs(speed));
 
-  Pose p2 = p1;
+  ToolPose p2 = p1;
   p2.jaw = angle_rad;
 
-  Trajectory<Pose> tr = TrajectoryFactory::
+  Trajectory<ToolPose> tr = TrajectoryFactory::
       linearTrajectoryWithSmoothAcceleration(
         p1,
         p2,
@@ -225,16 +211,16 @@ void RobotClient::moveJaws(double angle, double speed)
  * @param waypoints move through a vector of waypoints
  * @param interp_method method used to interpolate between positions
  */
-void RobotClient::moveTool(Pose target, double speed,
-                           std::vector<Pose> waypoints /* = empty vector */,
+void RobotClient::moveTool(ToolPose target, double speed,
+                           std::vector<ToolPose> waypoints /* = empty vector */,
                            InterpolationMethod interp_method /* = LINEAR */)
 {
-  Pose p1 = getPoseCurrent();
-  Trajectory<Pose> tr;
+  ToolPose p1 = getPoseCurrent();
+  Trajectory<ToolPose> tr;
 
   // Jaw cannot be changed!
   target.jaw = p1.jaw;
-  for (Pose &p : waypoints)
+  for (ToolPose &p : waypoints)
     p.jaw = p1.jaw;
 
   if (waypoints.empty()) {

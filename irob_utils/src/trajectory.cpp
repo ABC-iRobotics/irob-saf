@@ -10,20 +10,20 @@
 namespace saf {
 
 template <>
-Trajectory<Pose>::Trajectory(const irob_msgs::TrajectoryToolPose& other): dt(other.dt)
+Trajectory<ToolPose>::Trajectory(const irob_msgs::TrajectoryToolPose& other): dt(other.dt)
 {
-	for (irob_msgs::ToolPose tp : other.poses)
-		points.push_back(Pose(tp));
+  for (irob_msgs::ToolPose tp : other.toolposes)
+		points.push_back(ToolPose(tp));
 }
 
 
 // TODO This method is called frequently, is it effective enough?
 template<>
-void Trajectory<Pose>::copyToRosTrajectory(
+void Trajectory<ToolPose>::copyToRosTrajectory(
 			irob_msgs::TrajectoryToolPose& ros_tr)
 {
-  	for (Pose p : points)
-  		ros_tr.poses.push_back(p.toRosToolPose());
+  	for (ToolPose p : points)
+      ros_tr.toolposes.push_back(p.toRosToolPose());
   	ros_tr.dt = dt;
 }
 

@@ -1,0 +1,14 @@
+<!-- Launch file to RealSense fiducial detector-->
+
+<launch>
+
+    <group ns="saf">
+
+
+    <node name="fiducial_detector" pkg="irob_vision_support"
+            type="fiducial_detector.py" output="screen" >
+
+    </node>
+    </group>
+</launch>
+

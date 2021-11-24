@@ -72,7 +72,7 @@ void Camera::moveCam()
 
       ROS_INFO_STREAM("Marker position received: " << m);
       ROS_INFO_STREAM("Desired position: " << d);
-      ROS_INFO_STREAM("Camera position " << arms[0] -> getPoseCurrent().position);
+      ROS_INFO_STREAM("Camera position " << arms[0] -> getPoseCurrent().transform.translation());
 
       if (distanceEuler(m,d) > marker_threshold) {
 

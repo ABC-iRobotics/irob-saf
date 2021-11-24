@@ -3,4 +3,4 @@
 
 float64 dt
 
-ToolPose[] poses
+ToolPose[] toolposes
