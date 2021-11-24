@@ -1015,7 +1015,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
   // Calculate desired changes in agles and zoom
   // Aplha rotates around x axis, beta around y axis
 
-  double delta_theta = (theta_M - theta_D);
+  double delta_theta = -(theta_M - theta_D);
   double delta_phi = (phi_M - phi_D);
   double delta_r = (r_M - r_D);
 
@@ -1041,10 +1041,10 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
 
   ToolPose p_ori = q_x * q_y * Trans_zoom * p;
-  ToolPose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * Trans_zoom * p;
+  ToolPose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * p;//Trans_zoom * p;
 
 
-  while (ros::ok()) {
+  /*while (ros::ok()) {
     geometry_msgs::TransformStamped transformStamped_ori;
 
     transformStamped_ori.header.stamp = ros::Time::now();
@@ -1053,6 +1053,7 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
     transformStamped_ori.transform =
         wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(
           Eigen::Scaling(0.001) * p_ori.transform);
+
 
     br_ori.sendTransform(transformStamped_ori);
 
@@ -1065,10 +1066,12 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
         wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(
           Eigen::Scaling(0.001) * p_new.transform);
 
+
     br_new.sendTransform(transformStamped_new);
+
     ros::Duration(0.1).sleep();
 
-}
+  }*/
 
 
   // Start action

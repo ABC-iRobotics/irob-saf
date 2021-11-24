@@ -25,12 +25,8 @@ find_package(catkin REQUIRED
 	)
 
 
-<<<<<<< HEAD
-#  find_package(PCL REQUIRED)
-#  include_directories(${PCL_INCLUDE_DIRS})
-=======
   find_package(REQUIRED)
->>>>>>> devel
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed

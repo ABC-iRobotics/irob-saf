@@ -1,6 +1,6 @@
 <!-- Launch file to store the names of dVRK topics -->
 <launch>
-	<group ns="dvrk_topics">
+        <group ns="dvrk_topics">
 
 
 
@@ -12,10 +12,10 @@
         <param name="state_joint_current" type="string"
                                     value="measured_js" />
 
-	<param name="set_position_cartesian" type="string"
+        <param name="set_position_cartesian" type="string"
                                     value="servo_cp" />
 
-	<param name="position_cartesian_current" type="string"
+        <param name="position_cartesian_current" type="string"
                                     value="measured_cp" />
 
         <param name="set_position_jaw" type="string"
@@ -24,12 +24,12 @@
         <param name="state_jaw_current" type="string"
                                     value="jaw/measured_js" />
 
-	<param name="error" type="string" value="error" />
+        <param name="error" type="string" value="error" />
 
-	<param name="warning" type="string" value="warning" />
+        <param name="warning" type="string" value="warning" />
 
 
-	
-	</group>
-	
+
+        </group>
+
 </launch>
