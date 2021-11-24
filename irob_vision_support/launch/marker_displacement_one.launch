@@ -10,7 +10,7 @@
             type="marker_displacement_one.py" output="screen" >
             <param name="marker_size_ratio"
                             type="double" value="$(arg marker_size_ratio)" />
-                <remap from="qrkam" to="qrkam" />
+                <remap from="qrkam" to="vision/target" />
 
 
 

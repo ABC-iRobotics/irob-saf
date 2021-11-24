@@ -64,7 +64,7 @@ class marker_displacement:
           kp1.z=marker_area/frame_area
          
       
-          print(kp1)
+          #print(kp1)
 
           #publicate to qrkam
           self.pos_pub.publish(kp1)

@@ -37,6 +37,7 @@ void Camera::moveCam()
   // NaN pose received, until the vision node starts
   Eigen::Vector3d m = makeNaN<Eigen::Vector3d>();
   Eigen::Vector3d d(0.0, 0.0, marker_dist_desired);
+  ROS_INFO_STREAM("d: " << d);
   Eigen::Vector3d camera_offset(camera_offset_x, camera_offset_y, 0.0);
   //ROS_INFO_STREAM("offset: " << camera_offset);
 
@@ -46,24 +47,23 @@ void Camera::moveCam()
   while (ros::ok()){
 
 
-    //m = vision.getResult();
-    m = Eigen::Vector3d(0.03, -0.04, marker_dist_desired);
-    Eigen::Transform<double,3,Eigen::Affine> T_tcp_cam(
-          Eigen::AngleAxis<double>(M_PI, Eigen::Vector3d::UnitZ()));
-    Eigen::Transform<double,3,Eigen::Affine> S(
-          Eigen::Scaling(1000.0));
-    m = T_tcp_cam * S * m;
-    d = T_tcp_cam * S * d;
+    m = vision.getResult();
+    //m = Eigen::Vector3d(0.03, -0.04, marker_dist_desired);
+    //Eigen::Transform<double,3,Eigen::Affine> T_tcp_cam(Eigen::AngleAxis<double>(M_PI, Eigen::Vector3d::UnitZ()));
+    //Eigen::Transform<double,3,Eigen::Affine> S(
+    //      Eigen::Scaling(1000.0));
+    //m = T_tcp_cam * m;
+    //d = T_tcp_cam * S * d;
     //ROS_INFO_STREAM("m without offset: " << m);
 
-    //m -= camera_offset;
+    m -= camera_offset;
 
 
 
 
     //Eigen::Transform<double,3,Eigen::Affine> R(
      //     (arms[0] -> getPoseCurrent()).toTransform().rotation());
-    //Eigen::Transform<double,3,Eigen::Affine> R2(
+   // Eigen::Transform<double,3,Eigen::Affine> R2(
      //     Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()));
     //Eigen::Transform<double,3,Eigen::Affine> t;
     //t = Eigen::Translation3d((arms[0] -> getPoseCurrent()).toTransform().translation());

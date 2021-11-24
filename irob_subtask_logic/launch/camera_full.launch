@@ -6,9 +6,8 @@
 
     <include file="$(find irob_motion)/launch/surgeme_server.launch"/>
     <include file="$(find irob_subtask_logic)/launch/camera.launch"/>
-    <include file="$(find irob_vision_support)/launch/stereo_cam_blackmagic_raw.launch"/>
-    <include file="$(find irob_vision_support)/launch/aruco_detector.launch"/>
-    <include file="$(find irob_vision_support)/launch/marker_displacement_two.launch"/>
+    <include file="$(find irob_vision_support)/launch/aruco_detector_realsense.launch"/>
+    <include file="$(find irob_vision_support)/launch/marker_displacement_one.launch"/>
 
 
 
