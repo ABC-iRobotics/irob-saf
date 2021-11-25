@@ -66,6 +66,10 @@ Setup environment:
 
     python3 -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 
+#### Install the Point Cloud Library (PCL)
+
+    sudo apt install libpcl-dev
+
 ### Install Eigen
 
 This sowfware is using the [Eigen C++ template library](http://eigen.tuxfamily.org/index.php?title=Main_Page) for matrix and vector classes and algorithms. Install Eigen as follows:

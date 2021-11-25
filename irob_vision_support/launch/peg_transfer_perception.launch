@@ -1,0 +1,14 @@
+<!-- Launch file to RealSense peg transfer perception-->
+
+<launch>
+
+    <group ns="saf">
+
+
+    <node name="peg_transfer_perception" pkg="irob_vision_support"
+            type="peg_transfer_perception.py" output="screen" >
+
+    </node>
+    </group>
+</launch>
+
