@@ -7,10 +7,10 @@
 
         <arg name="speed_cartesian" default="10.0"/>
         <arg name="speed_jaw" default="20.0"/>
-        <arg name="marker_dist_desired" default="0.3"/>
+        <arg name="marker_dist_desired" default="200"/> <!-- mm -->
         <arg name="camera_offset_x" default="0.0"/>
         <arg name="camera_offset_y" default="0.0"/>
-        <arg name="marker_threshold" default="0.02"/>
+        <arg name="marker_threshold" default="20"/> <!-- mm -->
 
         <node name="camera" pkg="irob_subtask_logic"
             type="camera" output="screen">
@@ -24,7 +24,7 @@
                 <rosparam param="arm_names">["arm_1"]</rosparam>
 
 
-        <remap from="target" to="vision/target" />
+        <remap from="vision_objects" to="vision/vision_objects" />
     </node>
     </group>
 </launch>

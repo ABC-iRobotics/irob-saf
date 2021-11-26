@@ -54,6 +54,7 @@ add_message_files(
 	ToolPoseStamped.msg
 	TrajectoryToolPose.msg
 	VisionObject.msg
+        VisionObjectArray.msg
 	InstrumentJawPart.msg
 	InstrumentInfo.msg
 	FloatArray.msg

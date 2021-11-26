@@ -24,7 +24,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 
-#include <geometry_msgs/Point.h>
+#include <irob_msgs/VisionObject.h>
+#include <irob_msgs/VisionObjectArray.h>
 
 #include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
@@ -42,7 +43,7 @@ class Camera : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Point,Eigen::Vector3d> vision;
+  VisionClient<irob_msgs::VisionObjectArray,irob_msgs::VisionObjectArray> vision;
   double speed_carthesian;
   double marker_dist_threshold;
   double marker_dist_desired;

@@ -31,6 +31,7 @@
 #include <irob_msgs/ToolPose.h>
 #include <irob_msgs/ToolPoseStamped.h>
 #include <irob_msgs/Environment.h>
+#include <irob_msgs/VisionObjectArray.h>
 
 namespace saf {
 
@@ -122,7 +123,6 @@ inline Eigen::Vector3d unwrapMsg(const geometry_msgs::Point& msg){
 }
 
 
-
 template <>
 inline Eigen::Quaterniond unwrapMsg(const geometry_msgs::Quaternion& msg){
   Eigen::Quaterniond ret(msg.w, msg.x, msg.y, msg.z);
@@ -141,6 +141,11 @@ inline Eigen::Affine3d unwrapMsg(const geometry_msgs::Transform& msg){
   Eigen::Translation3d t(msg.translation.x, msg.translation.y, msg.translation.z);
   Eigen::Affine3d ret(t * q);
   return ret;
+}
+
+template <>
+inline irob_msgs::VisionObjectArray unwrapMsg(const irob_msgs::VisionObjectArray& msg){
+  return msg;
 }
 
 // Conversion to ROS msg
@@ -315,6 +320,21 @@ inline geometry_msgs::Transform makeNaN(){
   msg.rotation.y = std::numeric_limits<double>::quiet_NaN();
   msg.rotation.z = std::numeric_limits<double>::quiet_NaN();
   msg.rotation.w = std::numeric_limits<double>::quiet_NaN();
+  return msg;
+}
+
+template <>
+inline irob_msgs::VisionObjectArray makeNaN(){
+  irob_msgs::VisionObjectArray msg;
+  msg.objects.push_back(irob_msgs::VisionObject());
+  msg.objects[0].transform.translation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.objects[0].transform.translation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.objects[0].transform.translation.z = std::numeric_limits<double>::quiet_NaN();
+
+  msg.objects[0].transform.rotation.x = std::numeric_limits<double>::quiet_NaN();
+  msg.objects[0].transform.rotation.y = std::numeric_limits<double>::quiet_NaN();
+  msg.objects[0].transform.rotation.z = std::numeric_limits<double>::quiet_NaN();
+  msg.objects[0].transform.rotation.w = std::numeric_limits<double>::quiet_NaN();
   return msg;
 }
 

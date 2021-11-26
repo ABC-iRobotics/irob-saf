@@ -997,7 +997,13 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
 
   // Conversion to spherical coordinates r, phi, theta
   double r_M = m_base.norm();
-  double phi_M = atan2(m_base.y(), m_base.x());
+
+  double phi_M = M_PI / 2.0;
+  if (m_base.x() > 0.001)
+    phi_M = atan2(m_base.y(), m_base.x());
+  else if (m_base.x() < 0.001)
+    phi_M = atan2(m_base.y(), m_base.x());
+
   double theta_M = acos(m_base.z() / r_M);
 
   ROS_INFO_STREAM("theta_M: " << theta_M << std::endl <<
@@ -1005,7 +1011,13 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
                   "r_M: " << r_M);
 
   double r_D = d_base.norm();
-  double phi_D = atan2(d_base.y(), d_base.x());
+  double phi_D = M_PI / 2.0;
+
+  if (d_base.x() > 0.001)
+    phi_D = atan2(d_base.y(), d_base.x());
+  else if (d_base.x() < 0.001)
+    phi_D = atan2(d_base.y(), d_base.x());
+
   double theta_D = acos(d_base.z() / r_D);
 
   ROS_INFO_STREAM("theta_D: " << theta_D << std::endl <<
@@ -1026,22 +1038,22 @@ void SurgemeServer::move_cam(Eigen::Vector3d marker_pos_tcp,
   // Calculate rotation matrices
   Eigen::Affine3d R_cam_base(p.transform.rotation());
   Eigen::Affine3d q_x(
-              Eigen::AngleAxis<double>(-delta_theta, Eigen::Vector3d::UnitX()));
-  //q_x = q_x * T_sp_base.inverse();
-  Eigen::Affine3d q_z(
-             Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitZ()));
+              Eigen::AngleAxis<double>(delta_theta, Eigen::Vector3d::UnitX()));
   Eigen::Affine3d q_y(
              Eigen::AngleAxis<double>(delta_phi, Eigen::Vector3d::UnitY()));
-  //q_z = q_z * T_sp_base.inverse();
+
+  q_x =  q_x ;
+  q_y =  q_y;
   Eigen::Vector3d t_z(0, 0, delta_r);
-  t_z = R_cam_base * t_z;
+  t_z = R_cam_base.inverse() *  t_z;
   Eigen::Affine3d Trans_zoom(Eigen::Translation3d(t_z.x(), t_z.y(), t_z.z()));
+
 
   //Pose p_new =  (T_corr.inverse() * Trans_zoom * q_x * q_z) * p;
   //Pose p_new =  (q_x * q_z * Trans_zoom) * p;
 
-  ToolPose p_ori = q_x * q_y * Trans_zoom * p;
-  ToolPose p_new =  T_sp_base.inverse() * q_x * q_z * T_sp_base * p;//Trans_zoom * p;
+  ToolPose p_ori = T_sp_base.inverse() * q_x * q_y *  T_sp_base * Trans_zoom * p;
+  ToolPose p_new =  T_sp_base.inverse() * q_x * q_y * Trans_zoom * p;//Trans_zoom * p;
 
 
   /*while (ros::ok()) {
