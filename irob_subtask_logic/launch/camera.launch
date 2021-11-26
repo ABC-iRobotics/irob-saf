@@ -7,10 +7,10 @@
 
         <arg name="speed_cartesian" default="10.0"/>
         <arg name="speed_jaw" default="20.0"/>
-        <arg name="marker_dist_desired" default="200"/> <!-- mm -->
-        <arg name="camera_offset_x" default="0.0"/>
-        <arg name="camera_offset_y" default="0.0"/>
-        <arg name="marker_threshold" default="20"/> <!-- mm -->
+        <arg name="marker_dist_desired" default="180"/> <!-- mm -->
+        <arg name="camera_offset_x" default="0"/>
+        <arg name="camera_offset_y" default="0"/>
+        <arg name="marker_threshold" default="10"/> <!-- mm -->
 
         <node name="camera" pkg="irob_subtask_logic"
             type="camera" output="screen">

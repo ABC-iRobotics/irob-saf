@@ -36,10 +36,10 @@ void Camera::moveCam()
 
   // NaN pose received, until the vision node starts
   irob_msgs::VisionObjectArray vision_objects = irob_msgs::VisionObjectArray();
-  Eigen::Vector3d d(0.0, 0.0, marker_dist_desired);
+  Eigen::Vector3d d(camera_offset_x, camera_offset_y, marker_dist_desired);
   //Eigen::Vector3d d(0.0, 0.0, 170);
   ROS_INFO_STREAM("d: " << d);
-  Eigen::Vector3d camera_offset(camera_offset_x, camera_offset_y, 0.0);
+  Eigen::Vector3d camera_offset(0.0, 0.0, 0.0);
   //ROS_INFO_STREAM("offset: " << camera_offset);
 
 

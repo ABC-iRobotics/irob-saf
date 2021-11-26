@@ -59,7 +59,7 @@ class aruco_detector_realsense:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        self.exposure = 150.0
+        self.exposure = 100.0
         #self.exposure = 150.0 #1800.0 #1000.0
 
         self.context = rs.context()
