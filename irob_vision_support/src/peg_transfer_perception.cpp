@@ -40,6 +40,7 @@ PegTransferPerception::PegTransferPerception(ros::NodeHandle nh, std::string ply
 
   pcl_pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
+
 }
 
 
