@@ -85,6 +85,29 @@ void PegTransferPerception::runPerception()
     pcl::toROSMsg(*cloud_filtered, msg);
     msg.header.frame_id = "base";
     pcl_pub.publish(msg);
+
+
+    // ICP
+    sensor_msgs::PointCloud2 scene_Cloud_libpointmatcher;
+    PointMatcher<float>::DataPoints scene =
+        PointMatcher_ros::rosMsgToPointMatcherCloud<float>(
+                          msg, false);
+    sensor_msgs::PointCloud2 obj_Cloud_libpointmatcher;
+    PointMatcher<float>::DataPoints object = PointMatcher_ros::rosMsgToPointMatcherCloud<float>(obj_Cloud_libpointmatcher, false);
+
+    PointMatcher<float>::ICP icp;
+    icp.setDefault();
+    PointMatcher<float>::TransformationParameters T = icp(object, scene);
+
+    std::cout << "Transformation Matrix = \n" << T << std::endl;
+    PointMatcher<float>::DataPoints transformed_object(object);
+    icp.transformations.apply(transformed_object, T);
+
+    sensor_msgs::PointCloud2 transformed_pcd = PointMatcher_ros::pointMatcherCloudToRosMsg<float>(transformed_object, "/camera_frame_id", ros::Time::now());
+
+
+
+
   }
   pipe.stop();
 
@@ -99,7 +122,7 @@ int main(int argc, char * argv[]) try
   ros::init (argc, argv, "peg_transfer_perception");
   ros::NodeHandle nh;
 
-  PegTransferPerception ptp(nh);
+  PegTransferPerception ptp(nh, "foo");
   ptp.runPerception();
 
   return 1;

@@ -25,6 +25,13 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/pfh.h>
 
+#include "pointmatcher/PointMatcher.h"
+
+#include "pointmatcher_ros/point_cloud.h"
+#include "pointmatcher_ros/transform.h"
+#include "pointmatcher_ros/get_params_from_server.h"
+#include "pointmatcher_ros/ros_logger.h"
+
 namespace saf {
 
 class PegTransferPerception
@@ -32,7 +39,7 @@ class PegTransferPerception
 private:
   ros::NodeHandle nh;
   ros::Publisher pcl_pub;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr model(new pcl::PointCloud<pcl::PointXYZ>);
+  //pcl::PointCloud<pcl::PointXYZ>::Ptr model(new pcl::PointCloud<pcl::PointXYZ>);
 
 
 public:

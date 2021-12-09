@@ -24,11 +24,13 @@ find_package(catkin REQUIRED
 	irob_msgs
 	irob_utils
         pcl_ros
+        libpointmatcher_ros
 	)
 
 
 find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 find_package(realsense2 REQUIRED)
+find_package(libpointmatcher 1.1.0 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -120,6 +122,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 add_definitions(${PCL_DEFINITIONS})
 
+include_directories("${libpointmatcher_INCLUDE_DIRS}")
+
 ## Declare a C++ library
 
 file(GLOB irob_vision_support_lib_src
@@ -207,6 +211,7 @@ target_link_libraries(peg_transfer_perception
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${realsense2_LIBRARY}
+        ${libpointmatcher_LIBRARIES}
         irob_vision_support_lib
         )
 

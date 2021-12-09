@@ -6,7 +6,7 @@
 
 
     <node name="peg_transfer_perception" pkg="irob_vision_support"
-            type="peg_transfer_perception" output="screen" >
+            type="peg_transfer_perception.py" output="screen" >
 
     </node>
     </group>
