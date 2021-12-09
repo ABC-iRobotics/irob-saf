@@ -39,8 +39,10 @@ pcl_ptr points_to_pcl(const rs2::points& points)
 }
 
 
-PegTransferPerception::PegTransferPerception(ros::NodeHandle nh, std::string ply_filename):
-  nh(nh), ply_filename(ply_filename)
+PegTransferPerception::PegTransferPerception(ros::NodeHandle nh,
+                                             std::string ply_filename,
+                                             std::string configfile):
+  nh(nh), ply_filename(ply_filename), configfile(configfile)
 {
 
   pcl_pub = nh.advertise<sensor_msgs::PointCloud2> ("point_cloud", 1);
@@ -107,7 +109,15 @@ void PegTransferPerception::runPerception()
                           msg, false);
 
     PointMatcher<float>::ICP icp;
-    icp.setDefault();
+
+    std::ifstream ifs(configfile.c_str());
+    if (!ifs.good())
+    {
+      ROS_INFO_STREAM("Cannot open config file ");
+    }
+    icp.loadFromYaml(ifs);
+
+    //icp.setDefault();
     PointMatcher<float>::TransformationParameters T = icp(object, scene);
 
     std::cout << "Transformation Matrix = \n" << T << std::endl;
@@ -142,7 +152,10 @@ int main(int argc, char * argv[]) try
   std::string ply_filename;
   priv_nh.getParam("ply_filename", ply_filename);
 
-  PegTransferPerception ptp(nh, ply_filename);
+  std::string configfile;
+  priv_nh.getParam("configfile", configfile);
+
+  PegTransferPerception ptp(nh, ply_filename, configfile);
   ptp.runPerception();
 
   return 1;

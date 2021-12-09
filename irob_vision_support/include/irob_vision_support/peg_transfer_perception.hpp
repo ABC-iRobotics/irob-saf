@@ -41,11 +41,12 @@ private:
   ros::Publisher pcl_pub;
   ros::Publisher obj_pub;
   std::string ply_filename;
+  std::string configfile;
   //pcl::PointCloud<pcl::PointXYZ>::Ptr model(new pcl::PointCloud<pcl::PointXYZ>);
 
 
 public:
-  PegTransferPerception(ros::NodeHandle, std::string);
+  PegTransferPerception(ros::NodeHandle, std::string, std::string);
   void runPerception();
 
 };
