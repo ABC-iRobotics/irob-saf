@@ -39,6 +39,8 @@ class PegTransferPerception
 private:
   ros::NodeHandle nh;
   ros::Publisher pcl_pub;
+  ros::Publisher obj_pub;
+  std::string ply_filename;
   //pcl::PointCloud<pcl::PointXYZ>::Ptr model(new pcl::PointCloud<pcl::PointXYZ>);
 
 

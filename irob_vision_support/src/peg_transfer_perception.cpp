@@ -1,6 +1,10 @@
 #include <irob_vision_support/peg_transfer_perception.hpp>
 
 using namespace saf;
+using namespace PointMatcherSupport;
+
+typedef PointMatcher<float> PM;
+typedef PM::DataPoints DP;
 
 // Struct for managing rotation of pointcloud view
 struct state {
@@ -10,6 +14,7 @@ struct state {
 };
 
 using pcl_ptr = pcl::PointCloud<pcl::PointXYZ>::Ptr;
+
 
 
 pcl_ptr points_to_pcl(const rs2::points& points)
@@ -35,10 +40,11 @@ pcl_ptr points_to_pcl(const rs2::points& points)
 
 
 PegTransferPerception::PegTransferPerception(ros::NodeHandle nh, std::string ply_filename):
-  nh(nh)
+  nh(nh), ply_filename(ply_filename)
 {
 
-  pcl_pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
+  pcl_pub = nh.advertise<sensor_msgs::PointCloud2> ("point_cloud", 1);
+  obj_pub = nh.advertise<sensor_msgs::PointCloud2> ("object", 1);
 
 
 }
@@ -57,7 +63,11 @@ void PegTransferPerception::runPerception()
   // Start streaming with default recommended configuration
   pipe.start();
 
+  DP object(DP::load(ply_filename));
+  ROS_INFO_STREAM("object read: ");
+
   // Wait for the next set of frames from the camera
+  int n = 0;
   while(ros::ok())
   {
     auto frames = pipe.wait_for_frames();
@@ -87,13 +97,14 @@ void PegTransferPerception::runPerception()
     pcl_pub.publish(msg);
 
 
+    if (n == 30) {
+    n = -1;
     // ICP
+    ROS_INFO_STREAM("before icp");
     sensor_msgs::PointCloud2 scene_Cloud_libpointmatcher;
     PointMatcher<float>::DataPoints scene =
         PointMatcher_ros::rosMsgToPointMatcherCloud<float>(
                           msg, false);
-    sensor_msgs::PointCloud2 obj_Cloud_libpointmatcher;
-    PointMatcher<float>::DataPoints object = PointMatcher_ros::rosMsgToPointMatcherCloud<float>(obj_Cloud_libpointmatcher, false);
 
     PointMatcher<float>::ICP icp;
     icp.setDefault();
@@ -103,9 +114,14 @@ void PegTransferPerception::runPerception()
     PointMatcher<float>::DataPoints transformed_object(object);
     icp.transformations.apply(transformed_object, T);
 
-    sensor_msgs::PointCloud2 transformed_pcd = PointMatcher_ros::pointMatcherCloudToRosMsg<float>(transformed_object, "/camera_frame_id", ros::Time::now());
+    sensor_msgs::PointCloud2 transformed_pcd = PointMatcher_ros::pointMatcherCloudToRosMsg<float>(transformed_object, "base", ros::Time::now());
 
+    ROS_INFO_STREAM("after icp");
+    obj_pub.publish(transformed_pcd);
 
+    }
+    ros::Duration(0.01).sleep();
+    n++;
 
 
   }
@@ -121,8 +137,12 @@ int main(int argc, char * argv[]) try
   // Initialize ROS
   ros::init (argc, argv, "peg_transfer_perception");
   ros::NodeHandle nh;
+  ros::NodeHandle priv_nh("~");
 
-  PegTransferPerception ptp(nh, "foo");
+  std::string ply_filename;
+  priv_nh.getParam("ply_filename", ply_filename);
+
+  PegTransferPerception ptp(nh, ply_filename);
   ptp.runPerception();
 
   return 1;
