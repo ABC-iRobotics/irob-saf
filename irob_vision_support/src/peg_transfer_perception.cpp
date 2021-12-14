@@ -14,7 +14,32 @@ struct state {
 };
 
 using pcl_ptr = pcl::PointCloud<pcl::PointXYZ>::Ptr;
+using pcl_rgb_ptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr;
 
+
+std::tuple<int, int, int> RGB_Texture(rs2::video_frame texture, rs2::texture_coordinate Texture_XY)
+{
+    // Get Width and Height coordinates of texture
+    int width  = texture.get_width();  // Frame width in pixels
+    int height = texture.get_height(); // Frame height in pixels
+
+    // Normals to Texture Coordinates conversion
+    int x_value = std::min(std::max(int(Texture_XY.u * width  + .5f), 0), width - 1);
+    int y_value = std::min(std::max(int(Texture_XY.v * height + .5f), 0), height - 1);
+
+    int bytes = x_value * texture.get_bytes_per_pixel();   // Get # of bytes per pixel
+    int strides = y_value * texture.get_stride_in_bytes(); // Get line width in bytes
+    int Text_Index =  (bytes + strides);
+
+    const auto New_Texture = reinterpret_cast<const uint8_t*>(texture.get_data());
+
+    // RGB components to save in tuple
+    int NT1 = New_Texture[Text_Index];
+    int NT2 = New_Texture[Text_Index + 1];
+    int NT3 = New_Texture[Text_Index + 2];
+
+    return std::tuple<int, int, int>(NT1, NT2, NT3);
+}
 
 
 pcl_ptr points_to_pcl(const rs2::points& points)
@@ -37,6 +62,52 @@ pcl_ptr points_to_pcl(const rs2::points& points)
 
     return cloud;
 }
+
+pcl_rgb_ptr points_to_rgb_pcl(const rs2::points& points, const rs2::video_frame& RGB)
+{
+    pcl_rgb_ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    // Declare Tuple for RGB value Storage (<t0>, <t1>, <t2>)
+    std::tuple<uint8_t, uint8_t, uint8_t> RGB_Color;
+
+    //================================
+    // PCL Cloud Object Configuration
+    //================================
+    // Convert data captured from Realsense camera to Point Cloud
+    auto sp = points.get_profile().as<rs2::video_stream_profile>();
+
+    cloud->width  = static_cast<uint32_t>( sp.width()  );
+    cloud->height = static_cast<uint32_t>( sp.height() );
+    cloud->is_dense = false;
+    cloud->points.resize( points.size() );
+
+    auto Texture_Coord = points.get_texture_coordinates();
+    auto Vertex = points.get_vertices();
+
+    // Iterating through all points and setting XYZ coordinates
+    // and RGB values
+    for (int i = 0; i < points.size(); i++)
+    {
+        //===================================
+        // Mapping Depth Coordinates
+        // - Depth data stored as XYZ values
+        //===================================
+        cloud->points[i].x = Vertex[i].x;
+        cloud->points[i].y = Vertex[i].y;
+        cloud->points[i].z = Vertex[i].z;
+
+        // Obtain color texture for specific point
+        RGB_Color = RGB_Texture(RGB, Texture_Coord[i]);
+
+        // Mapping Color (BGR due to Camera Model)
+        cloud->points[i].b = std::get<2>(RGB_Color); // Reference tuple<2>
+        cloud->points[i].g = std::get<1>(RGB_Color); // Reference tuple<1>
+        cloud->points[i].r = std::get<0>(RGB_Color); // Reference tuple<0>r
+    }
+
+   return cloud; // PCL RGB Point Cloud generated
+}
+
 
 
 PegTransferPerception::PegTransferPerception(ros::NodeHandle nh,
@@ -76,21 +147,42 @@ void PegTransferPerception::runPerception()
     ROS_INFO_STREAM("Pointcloud recieved.");
 
     auto depth = frames.get_depth_frame();
+    auto RGB = frames.get_color_frame();
 
-    // Generate the pointcloud and texture mappings
-    points = pc.calculate(depth);
+    // Map Color texture to each point
+    pc.map_to(RGB);
 
-    auto pcl_points = points_to_pcl(points);
+    // Generate Point Cloud
+    auto points = pc.calculate(depth);
 
-    pcl_ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PassThrough<pcl::PointXYZ> pass;
-    pass.setInputCloud(pcl_points);
-    pass.setFilterFieldName("z");
-    pass.setFilterLimits(0.0, 1.0);
-    pass.filter(*cloud_filtered);
+    // Convert generated Point Cloud to PCL Formatting
+    pcl_rgb_ptr rgb_cloud = points_to_rgb_pcl(points, RGB);
 
-    std::vector<pcl_ptr> layers;
-    layers.push_back(pcl_points);
+
+    pcl_rgb_ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    pcl::ConditionalRemoval<pcl::PointXYZRGB> color_filter;
+
+    pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr
+        red_condition(new pcl::PackedRGBComparison<pcl::PointXYZRGB>(
+                                            "r", pcl::ComparisonOps::GT, 90));
+    pcl::ConditionAnd<pcl::PointXYZRGB>::Ptr color_cond(
+                        new pcl::ConditionAnd<pcl::PointXYZRGB> ());
+
+    pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr
+        blue_condition(new pcl::PackedRGBComparison<pcl::PointXYZRGB>(
+                                            "b", pcl::ComparisonOps::LT, 90));
+
+    color_cond->addComparison (red_condition);
+    color_cond->addComparison (blue_condition);
+
+    // Build the filter
+    color_filter.setInputCloud(rgb_cloud);
+    color_filter.setCondition (color_cond);
+    color_filter.filter(*cloud_filtered);
+
+    std::vector<pcl_rgb_ptr> layers;
+    layers.push_back(rgb_cloud);
     layers.push_back(cloud_filtered);
 
     sensor_msgs::PointCloud2 msg;

@@ -17,6 +17,7 @@
 #include "irob_utils/abstract_directions.hpp"
 
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
+#include <librealsense2/rsutil.h>
 
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
@@ -24,6 +25,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/pfh.h>
+#include <pcl/filters/conditional_removal.h>
+#include <pcl/io/pcd_grabber.h>
 
 #include "pointmatcher/PointMatcher.h"
 
