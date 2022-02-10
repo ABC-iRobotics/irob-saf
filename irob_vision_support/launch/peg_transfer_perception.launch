@@ -1,0 +1,19 @@
+<!-- Launch file to RealSense peg transfer perception-->
+
+<launch>
+
+    <group ns="saf">
+
+    <arg name="ply_filename" default="/home/tamas/data/3d_models/block_small.pcd" />
+    <arg name="configfile" default="$(find irob_vision_support)/config/icp_conf_default.yaml" />
+
+
+    <node name="peg_transfer_perception" pkg="irob_vision_support"
+            type="peg_transfer_perception" output="screen" >
+            <param name="ply_filename" type="string" value="$(arg ply_filename)" />
+            <param name="configfile" type="string" value="$(arg configfile)" />
+
+    </node>
+    </group>
+</launch>
+

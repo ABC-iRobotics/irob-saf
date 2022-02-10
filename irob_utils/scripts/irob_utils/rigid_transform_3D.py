@@ -25,7 +25,7 @@
 # Implementation of "Least-Squares Fitting of Two 3-D Point Sets", Arun, K. S. and Huang, T. S. and Blostein,
 # S. D, IEEE Transactions on Pattern Analysis and Machine Intelligence, Volume 9 Issue 5, May 1987
 
-# import numpy as np
+import numpy as np
 
 # Input: expects 3xN matrix of points
 # Returns R,t
