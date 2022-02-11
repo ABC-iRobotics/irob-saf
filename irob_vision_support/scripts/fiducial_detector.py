@@ -7,6 +7,7 @@ from geometry_msgs.msg import Transform, TransformStamped
 import message_filters
 from cv_bridge import CvBridge
 import cv2
+import pyrealsense2 as rs
 
 import numpy as np
 import math

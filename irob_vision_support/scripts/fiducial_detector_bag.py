@@ -21,6 +21,8 @@ import rosbag
 from dynamic_reconfigure.server import Server
 from irob_vision_support.cfg import FiducialsConfig
 
+
+
 #from irob_utils import rigid_transform_3D
 #import irob_utils
 
