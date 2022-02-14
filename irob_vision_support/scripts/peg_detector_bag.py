@@ -42,7 +42,7 @@ class PegDetector:
 
 
         # Open3d
-        source = o3d.io.read_point_cloud(model)
+        self.source = o3d.io.read_point_cloud(model)
         #target = o3d.io.read_point_cloud("../../test_data/ICP/cloud_bin_1.pcd")
         #threshold = 0.02
         #trans_init = np.asarray([[0.862, 0.011, -0.507, 0.5],
@@ -82,8 +82,8 @@ class PegDetector:
         align = rs.align(align_to)
         colorizer = rs.colorizer()
 
-        vis = o3d.visualization.Visualizer()
-        vis.create_window("Tests")
+        #vis = o3d.visualization.Visualizer()
+        #vis.create_window("Tests")
         pcd = o3d.geometry.PointCloud()
 
         # Streaming loop
@@ -129,12 +129,13 @@ class PegDetector:
                 pc.map_to(color_frame)
                 points = pc.calculate(aligned_depth_frame)
 
-                vtx = np.asanyarray(points.get_vertices())
+                vtx = np.asanyarray(points.get_vertices(2))
                 print(np.shape(vtx))
                 pcd.points = o3d.utility.Vector3dVector(vtx)
-                vis.update_geometry()
-                vis.poll_events()
-                vis.update_renderer()
+                #vis.update_geometry([pcd])
+                #vis.poll_events()
+                #vis.update_renderer()
+                o3d.visualization.draw_geometries([pcd])
 
 
 
