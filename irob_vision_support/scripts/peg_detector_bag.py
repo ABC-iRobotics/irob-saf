@@ -17,6 +17,7 @@ import rosbag
 import pyrealsense2 as rs
 
 import open3d as o3d
+import copy
 
 
 class PegDetector:
@@ -43,6 +44,14 @@ class PegDetector:
 
         # Open3d
         self.source = o3d.io.read_point_cloud(model)
+
+        self.threshold = 0.02
+        self.trans_init = np.asarray([  [1.0, 0.0, 0.0, 0.05],
+                                        [0.0, 1.0, 0.0, 0.0],
+                                        [0.0, 0.0, 1.0, 0.27],
+                                        [0.0, 0.0, 0.0, 1.0]])
+        #self.source.transform(self.trans_init)
+
         #target = o3d.io.read_point_cloud("../../test_data/ICP/cloud_bin_1.pcd")
         #threshold = 0.02
         #trans_init = np.asarray([[0.862, 0.011, -0.507, 0.5],
@@ -132,18 +141,45 @@ class PegDetector:
                 points = pc.calculate(aligned_depth_frame)
 
                 vtx = np.asanyarray(points.get_vertices(2))
-                print(np.shape(vtx))
+                #print(np.shape(vtx))
                 pcd.points = o3d.utility.Vector3dVector(vtx)
+
+                # Registration
+                print("Initial alignment")
+                evaluation = o3d.pipelines.registration.evaluate_registration(
+                    self.source, pcd, self.threshold, self.trans_init)
+                print(evaluation)
+
+                print("Apply point-to-point ICP")
+                reg_p2p = o3d.pipelines.registration.registration_icp(
+                    self.source, pcd, self.threshold, self.trans_init,
+                    o3d.pipelines.registration.TransformationEstimationPointToPoint())
+                print(reg_p2p)
+                print("Transformation is:")
+                print(reg_p2p.transformation)
+
+
+
+                # Visualization
+                source_temp = copy.deepcopy(self.source)
+                source_temp.transform(reg_p2p.transformation)
+
+                source_temp.paint_uniform_color([1, 0.706, 0])
+                pcd.paint_uniform_color([0, 0.651, 0.929])
 
                 if not inited:
                     vis.add_geometry(pcd)
+                    vis.add_geometry(source_temp)
                     inited = True
                 else:
+                    vis.update_geometry(source_temp)
                     vis.update_geometry(pcd)
                 if not vis.poll_events():
                     break
                 vis.update_renderer()
                 #o3d.visualization.draw_geometries([pcd])
+
+                self.source.transform(reg_p2p.transformation)
 
 
 
