@@ -82,9 +82,11 @@ class PegDetector:
         align = rs.align(align_to)
         colorizer = rs.colorizer()
 
-        #vis = o3d.visualization.Visualizer()
-        #vis.create_window("Tests")
+        vis = o3d.visualization.Visualizer()
+        vis.create_window("Tests", width = 600, height = 600, left = 200, top = 200)
         pcd = o3d.geometry.PointCloud()
+        #vis.set_full_screen(False)
+        inited = False
 
         # Streaming loop
         try:
@@ -132,15 +134,22 @@ class PegDetector:
                 vtx = np.asanyarray(points.get_vertices(2))
                 print(np.shape(vtx))
                 pcd.points = o3d.utility.Vector3dVector(vtx)
-                #vis.update_geometry([pcd])
-                #vis.poll_events()
-                #vis.update_renderer()
-                o3d.visualization.draw_geometries([pcd])
+
+                if not inited:
+                    vis.add_geometry(pcd)
+                    inited = True
+                else:
+                    vis.update_geometry(pcd)
+                if not vis.poll_events():
+                    break
+                vis.update_renderer()
+                #o3d.visualization.draw_geometries([pcd])
 
 
 
         finally:
             self.pipeline.stop()
+            vis.destroy_window()
 
 
 
