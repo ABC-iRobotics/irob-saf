@@ -141,46 +141,36 @@ class PegDetector:
                 points = pc.calculate(aligned_depth_frame)
 
                 vtx = np.asanyarray(points.get_vertices(2))
-                #print(np.shape(vtx))
+                print(np.shape(vtx))
                 pcd.points = o3d.utility.Vector3dVector(vtx)
 
-                # Registration
-                print("Initial alignment")
-                evaluation = o3d.pipelines.registration.evaluate_registration(
-                    self.source, pcd, self.threshold, self.trans_init)
-                print(evaluation)
+                # Plane segmentation
 
-                print("Apply point-to-point ICP")
-                reg_p2p = o3d.pipelines.registration.registration_icp(
-                    self.source, pcd, self.threshold, self.trans_init,
-                    o3d.pipelines.registration.TransformationEstimationPointToPoint())
-                print(reg_p2p)
-                print("Transformation is:")
-                print(reg_p2p.transformation)
+                plane_model, inliers = pcd.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
+                [a, b, c, d] = plane_model
+                print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
 
+                inlier_cloud = pcd.select_by_index(inliers)
+                inlier_cloud.paint_uniform_color([1.0, 0, 0])
+                outlier_cloud = pcd.select_by_index(inliers, invert=True)
 
 
                 # Visualization
-                source_temp = copy.deepcopy(self.source)
-                source_temp.transform(reg_p2p.transformation)
 
-                source_temp.paint_uniform_color([1, 0.706, 0])
-                pcd.paint_uniform_color([0, 0.651, 0.929])
 
                 if not inited:
-                    vis.add_geometry(pcd)
-                    vis.add_geometry(source_temp)
+                    vis.add_geometry(inlier_cloud)
+                    vis.add_geometry(outlier_cloud)
                     inited = True
                 else:
-                    vis.update_geometry(source_temp)
-                    vis.update_geometry(pcd)
+                    vis.update_geometry(inlier_cloud)
+                    vis.update_geometry(outlier_cloud)
                 if not vis.poll_events():
                     break
                 vis.update_renderer()
                 #o3d.visualization.draw_geometries([pcd])
-
-                self.source.transform(reg_p2p.transformation)
-
 
 
         finally:
