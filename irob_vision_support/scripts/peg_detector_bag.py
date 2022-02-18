@@ -91,8 +91,8 @@ class PegDetector:
         align = rs.align(align_to)
         colorizer = rs.colorizer()
 
-        vis = o3d.visualization.Visualizer()
-        vis.create_window("Tests", width = 600, height = 600, left = 200, top = 200)
+        #vis = o3d.visualization.Visualizer()
+        #vis.create_window("Tests", width = 600, height = 600, left = 200, top = 200)
         pcd = o3d.geometry.PointCloud()
         #vis.set_full_screen(False)
         inited = False
@@ -101,7 +101,8 @@ class PegDetector:
         try:
             while not rospy.is_shutdown():
                 # Get frameset of color and depth
-                frames = self.pipeline.wait_for_frames()
+                for i in range(100):
+                    frames = self.pipeline.wait_for_frames()
 
                 # Align the depth frame to color frame
                 aligned_frames = align.process(frames)
@@ -156,26 +157,51 @@ class PegDetector:
                 inlier_cloud.paint_uniform_color([1.0, 0, 0])
                 outlier_cloud = pcd.select_by_index(inliers, invert=True)
 
+                plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
 
+
+                inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
+                inlier_cloud_board.paint_uniform_color([0, 1.0, 0])
+                outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+
+
+                # CLustering
+
+                #with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
+                #    labels = np.array(outlier_cloud.cluster_dbscan(eps=0.02, min_points=10, print_progress=True))
+
+                #max_label = labels.max()
+                #print(f"point cloud has {max_label + 1} clusters")
+                #colors = plt.get_cmap("tab20")(labels / (max_label if max_label > 0 else 1))
+                #colors[labels < 0] = 0
+                #outlier_cloud.colors = o3d.utility.Vector3dVector(colors[:, :3])
+                o3d.visualization.draw_geometries([inlier_cloud_board, outlier_cloud, inlier_cloud], zoom=0.8,
+                                                  front=[0.0, -1.0,-1.0],
+                                                  lookat=[0.0, 0.1, -0.1],
+                                                  up=[0.0, 1.0, 0.0])
+
+                break
                 # Visualization
 
 
-                if not inited:
-                    vis.add_geometry(inlier_cloud)
-                    vis.add_geometry(outlier_cloud)
-                    inited = True
-                else:
-                    vis.update_geometry(inlier_cloud)
-                    vis.update_geometry(outlier_cloud)
-                if not vis.poll_events():
-                    break
-                vis.update_renderer()
+               # if not inited:
+                    #vis.add_geometry(inlier_cloud)
+                    #vis.add_geometry(outlier_cloud)
+                   # inited = True
+               # else:
+                    #vis.update_geometry(inlier_cloud)
+                   # vis.update_geometry(outlier_cloud)
+               # if not vis.poll_events():
+                 #   break
+                #vis.update_renderer()
                 #o3d.visualization.draw_geometries([pcd])
 
 
         finally:
             self.pipeline.stop()
-            vis.destroy_window()
+            #vis.destroy_window()
 
 
 
