@@ -7,14 +7,17 @@
     <arg name="ply_filename" default="/home/tamas/data/3d_models/block_small_empty.pcd" />
     <arg name="configfile" default="$(find irob_vision_support)/config/icp_conf_default.yaml" />
     <arg name="hue_lower" default="0" />
-    <arg name="hue_upper" default="80" />
-    <arg name="saturation_lower" default="20" />
+    <arg name="hue_upper" default="50" />
+    <arg name="saturation_lower" default="50" />
     <arg name="saturation_upper" default="255" />
 
     <node name="peg_transfer_perception" pkg="irob_vision_support"
             type="peg_transfer_perception" output="screen" >
             <param name="ply_filename" type="string" value="$(arg ply_filename)" />
             <param name="configfile" type="string" value="$(arg configfile)" />
+
+            <param name="hue_lower" type="int" value="$(arg hue_lower)" />
+            <param name="hue_upper" type="int" value="$(arg hue_upper)" />
 
             <param name="saturation_lower" type="int" value="$(arg saturation_lower)" />
             <param name="saturation_upper" type="int" value="$(arg saturation_upper)" />

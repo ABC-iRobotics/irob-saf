@@ -139,8 +139,18 @@ void PegTransferPerception::runPerception()
 
   // Declare RealSense pipeline, encapsulating the actual device and sensors
   rs2::pipeline pipe;
+
+  // BAG
+  rs2::config cfg;
+  cfg.enable_device_from_file("/home/tamas/data/pegtransfer/block_highres_1.bag", false);
+
+  pipe.start(cfg);
+
+
+  // BAG
+
   // Start streaming with default recommended configuration
-  pipe.start();
+  //pipe.start();
 
   DP object(DP::load(ply_filename));
   ROS_INFO_STREAM("object read: ");
@@ -154,6 +164,9 @@ void PegTransferPerception::runPerception()
 
     auto depth = frames.get_depth_frame();
     auto RGB = frames.get_color_frame();
+
+    if ((!depth) || (!RGB))
+            continue;
 
     // Map Color texture to each point
     pc.map_to(RGB);
@@ -211,7 +224,7 @@ void PegTransferPerception::runPerception()
     pcl_pub.publish(msg);
 
 
-    if (n == 30) {
+    if (n == 1) {
     n = -1;
     // ICP
     ROS_INFO_STREAM("before icp");
