@@ -112,8 +112,14 @@ pcl_rgb_ptr points_to_rgb_pcl(const rs2::points& points, const rs2::video_frame&
 
 PegTransferPerception::PegTransferPerception(ros::NodeHandle nh,
                                              std::string ply_filename,
-                                             std::string configfile):
-  nh(nh), ply_filename(ply_filename), configfile(configfile)
+                                             std::string configfile,
+                                             int hue_lower,
+                                             int hue_upper,
+                                             int saturation_lower,
+                                             int saturation_upper):
+  nh(nh), ply_filename(ply_filename), configfile(configfile),
+  hue_lower(hue_lower), hue_upper(hue_upper), saturation_lower(saturation_lower),
+  saturation_upper(saturation_upper)
 {
 
   pcl_pub = nh.advertise<sensor_msgs::PointCloud2> ("point_cloud", 1);
@@ -163,18 +169,32 @@ void PegTransferPerception::runPerception()
 
     pcl::ConditionalRemoval<pcl::PointXYZRGB> color_filter;
 
-    pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr
-        red_condition(new pcl::PackedRGBComparison<pcl::PointXYZRGB>(
-                                            "r", pcl::ComparisonOps::GT, 90));
+    pcl::PackedHSIComparison<pcl::PointXYZRGB>::Ptr
+        hue_condition_1(new pcl::PackedHSIComparison<pcl::PointXYZRGB>(
+                                            "h", pcl::ComparisonOps::GT,   hue_lower));
+
     pcl::ConditionAnd<pcl::PointXYZRGB>::Ptr color_cond(
                         new pcl::ConditionAnd<pcl::PointXYZRGB> ());
 
-    pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr
-        blue_condition(new pcl::PackedRGBComparison<pcl::PointXYZRGB>(
-                                            "b", pcl::ComparisonOps::LT, 90));
+    pcl::PackedHSIComparison<pcl::PointXYZRGB>::Ptr
+        hue_condition_2(new pcl::PackedHSIComparison<pcl::PointXYZRGB>(
+                                            "h", pcl::ComparisonOps::LT,   hue_upper));
 
-    color_cond->addComparison (red_condition);
-    color_cond->addComparison (blue_condition);
+    pcl::PackedHSIComparison<pcl::PointXYZRGB>::Ptr
+        saturation_condition_1(new pcl::PackedHSIComparison<pcl::PointXYZRGB>(
+                                            "s", pcl::ComparisonOps::GT,
+                                            saturation_lower));
+
+
+    pcl::PackedHSIComparison<pcl::PointXYZRGB>::Ptr
+        saturation_condition_2(new pcl::PackedHSIComparison<pcl::PointXYZRGB>(
+                                            "s", pcl::ComparisonOps::LT,
+                                            saturation_upper));
+
+    color_cond->addComparison (hue_condition_1);
+    color_cond->addComparison (hue_condition_2);
+    color_cond->addComparison (saturation_condition_1);
+    color_cond->addComparison (saturation_condition_2);
 
     // Build the filter
     color_filter.setInputCloud(rgb_cloud);
@@ -247,7 +267,20 @@ int main(int argc, char * argv[]) try
   std::string configfile;
   priv_nh.getParam("configfile", configfile);
 
-  PegTransferPerception ptp(nh, ply_filename, configfile);
+  int hue_lower;
+  priv_nh.getParam("hue_lower", hue_lower);
+
+  int hue_upper;
+  priv_nh.getParam("hue_upper", hue_upper);
+
+
+  int saturation_lower;
+  priv_nh.getParam("saturation_lower", saturation_lower);
+
+  int saturation_upper;
+  priv_nh.getParam("saturation_upper", saturation_upper);
+
+  PegTransferPerception ptp(nh, ply_filename, configfile, hue_lower, hue_upper, saturation_lower, saturation_upper);
   ptp.runPerception();
 
   return 1;

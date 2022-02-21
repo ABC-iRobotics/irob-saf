@@ -45,11 +45,15 @@ private:
   ros::Publisher obj_pub;
   std::string ply_filename;
   std::string configfile;
+  int hue_lower;
+  int hue_upper;
+  int saturation_lower;
+  int saturation_upper;
   //pcl::PointCloud<pcl::PointXYZ>::Ptr model(new pcl::PointCloud<pcl::PointXYZ>);
 
 
 public:
-  PegTransferPerception(ros::NodeHandle, std::string, std::string);
+  PegTransferPerception(ros::NodeHandle, std::string, std::string, int, int, int, int);
   void runPerception();
 
 };
