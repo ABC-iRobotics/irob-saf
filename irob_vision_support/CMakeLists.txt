@@ -233,6 +233,7 @@ target_link_libraries(peg_transfer_perception
    scripts/hand_eye_registrator.py
    scripts/peg_transfer_perception.py
    scripts/peg_detector_bag.py
+   scripts/block_detector_bag.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

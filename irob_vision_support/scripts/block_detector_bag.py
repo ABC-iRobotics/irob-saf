@@ -21,12 +21,17 @@ import rosbag
 from dynamic_reconfigure.server import Server
 from irob_vision_support.cfg import FiducialsConfig
 
+from skimage import data, color, img_as_ubyte
+from skimage.feature import canny
+from skimage.transform import hough_ellipse
+from skimage.draw import ellipse_perimeter
+
 
 
 #from irob_utils import rigid_transform_3D
 #import irob_utils
 
-class FiducialDetector:
+class BlockDetector:
 
 
     def __init__(self, bagfile):
@@ -38,7 +43,7 @@ class FiducialDetector:
         self.upper_red = (180, 255, 255)
         self.lower_darkred = (0, 100, 50)
         self.upper_darkred = (7, 255, 255)
-        self.lower_yellow = (20, 100, 100)
+        self.lower_yellow = (20, 0, 0)
         self.upper_yellow = (60, 255, 255)
         #self.lower_green = (40, 120, 0)
         #self.upper_green = (70, 255, 255)
@@ -65,7 +70,7 @@ class FiducialDetector:
         self.width = 640
         self.height = 480
         self.fps = 30 #30
-        self.clipping_distance_in_meters = 0.30
+        self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
         self.exposure = 1800.0 #1000.0
 
@@ -87,7 +92,7 @@ class FiducialDetector:
         self.config.enable_device_from_file(self.bagfile)
 
 
-        rospy.init_node('fiducial_detector', anonymous=True)
+        rospy.init_node('block_detector', anonymous=True)
         srv = Server(FiducialsConfig, self.cb_config)
         self.bridge = CvBridge()
 
@@ -140,6 +145,12 @@ class FiducialDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
+                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+
+                cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
+                cv2.imshow('Color image', color_image)
+                cv2.waitKey(1)
+
 
                 # Remove background - Set pixels further than clipping_distance to grey
                 grey_color = 0
@@ -156,7 +167,7 @@ class FiducialDetector:
                 images = np.hstack((bg_removed, depth_colormap))
 
                 #self.kmeans_segmentation(bg_removed)
-                fiducials, output = self.find_fiducials_locations(bg_removed)
+                block = self.mask_block(color_image, "yellow")
                 #cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
                 #cv2.imshow('Align Example', images)
                 #cv2.waitKey(1)
@@ -172,23 +183,18 @@ class FiducialDetector:
                 #print(profile.camera_info)
                 #break
 
+                #print(color_image.shape)
 
-                fid_position = {}
-                for color in fiducials:
-                    for i in range(len(fiducials[color])):
-                        fid_position[color] = []
-                        if (fiducials[color] and fiducials[color]):
-                            res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
-                                                                                w_h, intrinsics, output)
-                            fid_position[color].append(res)
+
+
 
                             #print(color + ": " + str(fid_posistion[color]))
 
 
                 #self.calc_pose(fid_position, output)
 
-                cv2.imshow("Output",  output)
-                cv2.waitKey(1)
+                #cv2.imshow("Output",  output)
+                #cv2.waitKey(1)
 
 
         finally:
@@ -250,83 +256,30 @@ class FiducialDetector:
         return config
 
 
-    # Synced callback function for images
-    def cb_images(self,image_msg,depth_msg,camera_info):
-       try:
-           image = self.bridge.imgmsg_to_cv2(image_msg,
-                            desired_encoding=image_msg.encoding)
-           image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-           depth = self.bridge.imgmsg_to_cv2(depth_msg,
-                            desired_encoding=depth_msg.encoding)
-       except CvBridgeError as e:
-           print(e)
-
-       #cv2.imshow("Image", image)
-       #cv2.waitKey(1)
-       #print()
-       #print("Image")
-       #print(image_msg.header)
-       #print(image_msg.encoding)
-       #print("Depth")
-       #print(depth_msg.header)
-       #print(depth_msg.encoding)
-       #print("Info")
-       #print(camera_info)
-
-       self.find_fiducials_locations(image)
-       #self.kmeans_segmentation(image)
-
-    def kmeans_segmentation(self, image):
-
-        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
-        mask_background = 255 - mask_background
-
-        hsv_img = cv2.bitwise_and(hsv_img, hsv_img, mask=mask_background)
 
 
-        pixel_values = hsv_img.reshape((-1, 3))
-        pixel_values = np.float32(pixel_values)
 
-        # define stopping criteria
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.2)
+    def mask_block(self, image, col):
 
-        k = 8
-        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-        centers = np.uint8(centers)
-
-        labels = labels.flatten()
-        segmented_image = centers[labels.flatten()]
-        # reshape back to the original image dimension
-        segmented_image = segmented_image.reshape(image.shape)
-        # show the image
-        segmented_image_bgr = cv2.cvtColor(segmented_image, cv2.COLOR_HSV2BGR)
-        cv2.imshow("KMeans", segmented_image_bgr)
-        cv2.waitKey(1)
-
-
-    def mask_fiducial(self, image, color):
-
-        if color == 'red':
+        if col == 'red':
             hsv_lower = self.lower_red
             hsv_upper = self.upper_red
             hsv_lower_2 = self.lower_darkred
             hsv_upper_2 = self.upper_darkred
             n = 1
-        elif color == 'yellow':
+        elif col == 'yellow':
             hsv_lower = self.lower_yellow
             hsv_upper = self.upper_yellow
             n = 2
-        elif color == 'green':
+        elif col == 'green':
             hsv_lower = self.lower_green
             hsv_upper = self.upper_green
             n = 1
-        elif color == 'orange':
+        elif col == 'orange':
             hsv_lower = self.lower_orange
             hsv_upper = self.upper_orange
             n = 1
-        elif color == 'purple':
+        elif col == 'purple':
             hsv_lower = self.lower_purple
             hsv_upper = self.upper_purple
             hsv_lower_2 = self.lower_darkpurple
@@ -356,14 +309,48 @@ class FiducialDetector:
 
         result = cv2.bitwise_and(image, image, mask=mask)
         #if color == 'purple':
-        #    cv2.imshow("Mask", result)
-        #    cv2.waitKey(1)
+
+
+        result_gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        # Defining all the parameters
+        t_lower = 100 # Lower Threshold
+        t_upper = 230 # Upper threshold
+        aperture_size = 5 # Aperture size
+        L2Gradient = False # Boolean
+
+        # Applying the Canny Edge filter
+        # with Aperture Size and L2Gradient
+        edge = cv2.Canny(result_gray, t_lower, t_upper,
+                         apertureSize = aperture_size,
+                         L2gradient = L2Gradient )
+
+
+
+        lines = cv2.HoughLinesP(
+                    edge, # Input edge image
+                    1, # Distance resolution in pixels
+                    np.pi/180, # Angle resolution in radians
+                    threshold=20, # Min number of votes for valid line
+                    minLineLength=5, # Min allowed length of line
+                    maxLineGap=10 # Max allowed gap between line for joining them
+                    )
+
+        # Iterate over points
+        for points in lines:
+              # Extracted points nested in the list
+            x1,y1,x2,y2=points[0]
+            # Draw the lines joing the points
+            # On the original image
+            cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+
+
+        cv2.imshow('edge', result)
+        cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
                     mask, 4, cv2.CV_32S)
         (numLabels, labels, stats, centroids) = output
-
 
         ret = []
         for i in range(numLabels):
@@ -423,7 +410,7 @@ if __name__ == '__main__':
     print("Node started")
     #help(cv2.aruco)
 
-    detector = FiducialDetector("/home/tamas/data/pegtransfer/pegboard1.bag")
+    detector = BlockDetector("/home/tamas/data/pegtransfer/highres_yellow_3.bag")
 
     detector.start_and_process_stream()
 
