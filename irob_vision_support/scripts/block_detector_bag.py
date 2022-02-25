@@ -312,6 +312,8 @@ class BlockDetector:
 
 
         result_gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        kernel = np.ones((5,5),np.float32)/25
+        result_gray = cv2.filter2D(result_gray,-1,kernel)
         # Defining all the parameters
         t_lower = 100 # Lower Threshold
         t_upper = 230 # Upper threshold
@@ -326,25 +328,47 @@ class BlockDetector:
 
 
 
+
         lines = cv2.HoughLinesP(
                     edge, # Input edge image
                     1, # Distance resolution in pixels
                     np.pi/180, # Angle resolution in radians
-                    threshold=20, # Min number of votes for valid line
+                    threshold=18, # Min number of votes for valid line
                     minLineLength=5, # Min allowed length of line
                     maxLineGap=10 # Max allowed gap between line for joining them
                     )
 
+
+
         # Iterate over points
-        for points in lines:
+       # for points in lines:
               # Extracted points nested in the list
-            x1,y1,x2,y2=points[0]
+        #    x1,y1,x2,y2=points[0]
             # Draw the lines joing the points
             # On the original image
-            cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+       #     cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
 
 
-        cv2.imshow('edge', result)
+        circles = cv2.HoughCircles(result_gray,
+            cv2.HOUGH_GRADIENT, 1, 30,
+            param1=100, param2=10, minRadius=0, maxRadius=10)
+
+        # ensure at least some circles were found
+        if circles is not None:
+                # convert the (x, y) coordinates and radius of the circles to integers
+                print("Ciercles found")
+                circles = np.round(circles[0, :]).astype("int")
+
+                # loop over the (x, y) coordinates and radius of the circles
+                for (x, y, r) in circles:
+                        # draw the circle in the output image, then draw a rectangle
+                        # corresponding to the center of the circle
+                        cv2.circle(result, (x, y), r, (0, 255, 0), 4)
+                        cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+
+
+
+        cv2.imshow('result', result)
         cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
@@ -410,7 +434,7 @@ if __name__ == '__main__':
     print("Node started")
     #help(cv2.aruco)
 
-    detector = BlockDetector("/home/tamas/data/pegtransfer/highres_yellow_3.bag")
+    detector = BlockDetector("/home/tamas/data/pegtransfer/highres_yellow_1.bag")
 
     detector.start_and_process_stream()
 
