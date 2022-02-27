@@ -167,10 +167,19 @@ class BlockDetector:
                 images = np.hstack((bg_removed, depth_colormap))
 
                 #self.kmeans_segmentation(bg_removed)
-                block = self.mask_block(color_image, "yellow")
-                #cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
-                #cv2.imshow('Align Example', images)
-                #cv2.waitKey(1)
+                #block = self.mask_block(color_image, "yellow")
+
+                segmented_blocks = self.segment_blocks(color_image, "yellow", 6)
+
+                detected_blocks= []
+                for i in range(len(segmented_blocks)):
+                    detected_blocks.append(self.detect_block(segmented_blocks[i]))
+
+                detected_blocks_stacked = cv2.hconcat(detected_blocks)
+
+                cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
+                cv2.imshow('Segmented', detected_blocks_stacked)
+                cv2.waitKey(1)
 
                 intrinsics = (aligned_depth_frame.profile
                             .as_video_stream_profile().get_intrinsics())
@@ -259,32 +268,15 @@ class BlockDetector:
 
 
 
-    def mask_block(self, image, col):
 
-        if col == 'red':
-            hsv_lower = self.lower_red
-            hsv_upper = self.upper_red
-            hsv_lower_2 = self.lower_darkred
-            hsv_upper_2 = self.upper_darkred
-            n = 1
-        elif col == 'yellow':
+
+
+    def segment_blocks(self, image, col, n):
+
+
+        if col == 'yellow':
             hsv_lower = self.lower_yellow
             hsv_upper = self.upper_yellow
-            n = 2
-        elif col == 'green':
-            hsv_lower = self.lower_green
-            hsv_upper = self.upper_green
-            n = 1
-        elif col == 'orange':
-            hsv_lower = self.lower_orange
-            hsv_upper = self.upper_orange
-            n = 1
-        elif col == 'purple':
-            hsv_lower = self.lower_purple
-            hsv_upper = self.upper_purple
-            hsv_lower_2 = self.lower_darkpurple
-            hsv_upper_2 = self.upper_darkpurple
-            n = 1
         else:
             return
 
@@ -303,15 +295,52 @@ class BlockDetector:
 
         kernel = np.ones((3,3), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
-        mask = cv2.dilate(mask, kernel, iterations=1)
 
 
 
-        result = cv2.bitwise_and(image, image, mask=mask)
-        #if color == 'purple':
+
+        blobs = cv2.connectedComponentsWithStats(
+                    mask, 4, cv2.CV_32S)
+        (numLabels, labels, stats, centroids) = blobs
 
 
-        result_gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+        ret_r = []
+        ret_im = []
+        for i in range(numLabels):
+            w = stats[i, cv2.CC_STAT_WIDTH]
+            h = stats[i, cv2.CC_STAT_HEIGHT]
+            x = stats[i, cv2.CC_STAT_LEFT] + (w/2.0)
+            y = stats[i, cv2.CC_STAT_TOP] + (h/2.0)
+            area = stats[i, cv2.CC_STAT_AREA]
+            e = math.sqrt(abs((w**2)-(h**2)))/w
+            r = (w+h)/4.0
+
+            if area > 80 and area < 10000 and e < 0.98and w < 150 and h < 150:
+                ret_r.append(r)
+                mask_ret=np.where(labels == i, np.uint8(1), np.uint8(0))
+                mask_ret = cv2.dilate(mask_ret, kernel, iterations=1)
+                ret_im.append(cv2.bitwise_and(image, image, mask = mask_ret))
+
+
+        while len(ret_r) > n:
+            min_r = float('inf')
+            min_r_i = 0
+            for i in range(len(ret)):
+                if ret_r[i] < min_r:
+                    min_r = ret_r[i]
+                    min_r_i = i
+            ret_r.pop(min_r_i)
+            ret_im.pop(min_r_i)
+
+        return ret_im
+
+
+
+
+
+    def detect_block(self, segmented_block):
+
+        result_gray = cv2.cvtColor(segmented_block, cv2.COLOR_BGR2GRAY)
         kernel = np.ones((5,5),np.float32)/25
         result_gray = cv2.filter2D(result_gray,-1,kernel)
         # Defining all the parameters
@@ -339,18 +368,19 @@ class BlockDetector:
                     )
 
 
+        result = segmented_block.copy()
 
         # Iterate over points
-       # for points in lines:
+        for points in lines:
               # Extracted points nested in the list
-        #    x1,y1,x2,y2=points[0]
+            x1,y1,x2,y2=points[0]
             # Draw the lines joing the points
             # On the original image
-       #     cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+            cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
 
 
         circles = cv2.HoughCircles(result_gray,
-            cv2.HOUGH_GRADIENT, 1, 30,
+            cv2.HOUGH_GRADIENT, 1, 20,
             param1=100, param2=10, minRadius=0, maxRadius=10)
 
         # ensure at least some circles were found
@@ -368,37 +398,12 @@ class BlockDetector:
 
 
 
-        cv2.imshow('result', result)
-        cv2.waitKey(1)
+        #cv2.imshow('result', result)
+        #cv2.waitKey(1)
 
-        # apply connected component analysis to the thresholded image
-        output = cv2.connectedComponentsWithStats(
-                    mask, 4, cv2.CV_32S)
-        (numLabels, labels, stats, centroids) = output
 
-        ret = []
-        for i in range(numLabels):
-            w = stats[i, cv2.CC_STAT_WIDTH]
-            h = stats[i, cv2.CC_STAT_HEIGHT]
-            x = stats[i, cv2.CC_STAT_LEFT] + (w/2.0)
-            y = stats[i, cv2.CC_STAT_TOP] + (h/2.0)
-            area = stats[i, cv2.CC_STAT_AREA]
-            e = math.sqrt(abs((w**2)-(h**2)))/w
-            r = (w+h)/4.0
 
-            if area > 80 and area < 10000 and e < 0.98and w < 150 and h < 150:
-                ret.append([x,y,r])
-
-        while len(ret) > n:
-            min_r = float('inf')
-            min_r_i = 0
-            for i in range(len(ret)):
-                if ret[i][2] < min_r:
-                    min_r = ret[i][2]
-                    min_r_i = i
-            ret.pop(min_r_i)
-
-        return ret
+        return result
 
 
 
