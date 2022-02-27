@@ -31,6 +31,18 @@ from skimage.draw import ellipse_perimeter
 #from irob_utils import rigid_transform_3D
 #import irob_utils
 
+def dist_line_from_point(x0, y0, xp1, yp1, xp2, yp2):
+    return (abs(((xp2-xp1) * (yp1-y0)) - ((xp1-x0) * (yp2-yp1)))
+            / math.sqrt(((xp2-xp1)**2) + ((yp2-yp1)**2)))
+
+
+def angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
+    m1 = (yp2-yp1) / (xp2-xp1)
+    m2 = (yp4-yp3) / (xp4-xp3)
+    return
+
+
+
 class BlockDetector:
 
 
@@ -362,7 +374,7 @@ class BlockDetector:
                     edge, # Input edge image
                     1, # Distance resolution in pixels
                     np.pi/180, # Angle resolution in radians
-                    threshold=18, # Min number of votes for valid line
+                    threshold=16, # Min number of votes for valid line
                     minLineLength=5, # Min allowed length of line
                     maxLineGap=10 # Max allowed gap between line for joining them
                     )
@@ -371,12 +383,12 @@ class BlockDetector:
         result = segmented_block.copy()
 
         # Iterate over points
-        for points in lines:
+        #for points in lines:
               # Extracted points nested in the list
-            x1,y1,x2,y2=points[0]
+            #x1,y1,x2,y2=points[0]
             # Draw the lines joing the points
             # On the original image
-            cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+            #cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
 
 
         circles = cv2.HoughCircles(result_gray,
@@ -386,15 +398,47 @@ class BlockDetector:
         # ensure at least some circles were found
         if circles is not None:
                 # convert the (x, y) coordinates and radius of the circles to integers
-                print("Ciercles found")
+                #print("Ciercles found")
                 circles = np.round(circles[0, :]).astype("int")
 
                 # loop over the (x, y) coordinates and radius of the circles
+
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
                         cv2.circle(result, (x, y), r, (0, 255, 0), 4)
                         cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                        print("Dist")
+                        distances = []
+                        for i in range(len(lines)):
+                                      # Extracted points nested in the list
+                                    x1,y1,x2,y2=lines[i][0]
+                                    distances.append((i, dist_line_from_point(x, y, x1, y1, x2, y2)))
+
+                        print(distances)
+
+                        distances.sort(key=lambda distance: distance[1])
+                        print(distances)
+
+                        dist_threshold = 10
+                        diff_threshold = 1.0
+                        line_idxs = []
+                        for j in range(len(distances) - 1):
+                            if (abs(distances[j][1] - distances[j+1][1]) <= diff_threshold
+                                            and distances[j][1] >= dist_threshold
+                                            and distances[j+1][1] >= dist_threshold):
+
+                                if len(line_idxs) < 2:
+                                    line_idxs.append(j)
+                                    line_idxs.append(j+1)
+                                elif line_idxs[-1] == j:
+                                    line_idxs.append(j+1)
+                                    break
+                        for j in line_idxs:
+                                x1,y1,x2,y2=lines[distances[j][0]][0]
+                                # Draw the lines joing the points
+                                # On the original image
+                                cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
 
 
 
