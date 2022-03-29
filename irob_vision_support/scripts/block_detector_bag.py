@@ -420,9 +420,9 @@ class BlockDetector:
                         distances.sort(key=lambda distance: distance[1])
                         print(distances)
 
-                        dist_threshold = 5
-                        diff_threshold = 10.0
-                        angle_threshold = 40.0
+                        dist_threshold = 10
+                        diff_threshold = 5.0
+                        angle_threshold = 50.0
                         line_idxs = []
                         for j in range(len(distances) - 1):
                             xp1,yp1,xp2,yp2=lines[distances[j][0]][0]
@@ -439,8 +439,12 @@ class BlockDetector:
                                     line_idxs.append(j)
                                     line_idxs.append(j+1)
                                 elif line_idxs[-1] == j:
-                                    line_idxs.append(j+1)
-                                    break
+                                    xp1,yp1,xp2,yp2=lines[distances[line_idxs[0]][0]][0]
+                                    angle = abs(angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4))
+                                    if (angle >= angle_threshold):
+                                        line_idxs.append(j+1)
+                                        break
+
                         for j in line_idxs:
                                 x1,y1,x2,y2=lines[distances[j][0]][0]
                                 # Draw the lines joing the points
