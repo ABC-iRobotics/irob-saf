@@ -39,7 +39,7 @@ def dist_line_from_point(x0, y0, xp1, yp1, xp2, yp2):
 def angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
     m1 = (yp2-yp1) / (xp2-xp1)
     m2 = (yp4-yp3) / (xp4-xp3)
-    return
+    return math.degrees(math.atan((m1-m2) / (1 + (m1 * m2))))
 
 
 
@@ -420,13 +420,20 @@ class BlockDetector:
                         distances.sort(key=lambda distance: distance[1])
                         print(distances)
 
-                        dist_threshold = 10
-                        diff_threshold = 1.0
+                        dist_threshold = 5
+                        diff_threshold = 10.0
+                        angle_threshold = 40.0
                         line_idxs = []
                         for j in range(len(distances) - 1):
+                            xp1,yp1,xp2,yp2=lines[distances[j][0]][0]
+                            xp3,yp3,xp4,yp4=lines[distances[j+1][0]][0]
+                            angle = abs(angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4))
+                            print("angle")
+                            print(angle)
                             if (abs(distances[j][1] - distances[j+1][1]) <= diff_threshold
                                             and distances[j][1] >= dist_threshold
-                                            and distances[j+1][1] >= dist_threshold):
+                                            and distances[j+1][1] >= dist_threshold
+                                            and angle >= angle_threshold):
 
                                 if len(line_idxs) < 2:
                                     line_idxs.append(j)
