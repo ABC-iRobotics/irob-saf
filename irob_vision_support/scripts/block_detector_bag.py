@@ -41,6 +41,17 @@ def angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
     m2 = (yp4-yp3) / (xp4-xp3)
     return math.degrees(math.atan((m1-m2) / (1 + (m1 * m2))))
 
+def intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
+
+    t = (((xp1-xp3)*(yp3-yp4)) - ((yp1-yp3)*(xp3-xp4))) / (((xp1-xp2)*(yp3-yp4)) - ((yp1-yp2)*(xp3-xp4)))
+
+    #u = (((xp1-xp3)*(yp1-yp2)) - ((yp1-yp3)*(xp1-xp2)))
+    #    / (((xp1-xp2)*(yp3-yp4)) - ((yp1-yp2)*(xp3-xp4)))
+
+    Px = xp1 + (t*(xp2-xp1))
+    Py = yp1 + (t*(yp2-yp1))
+    return Px, Py
+
 
 
 class BlockDetector:
@@ -445,11 +456,29 @@ class BlockDetector:
                                         line_idxs.append(j+1)
                                         break
 
-                        for j in line_idxs:
-                                x1,y1,x2,y2=lines[distances[j][0]][0]
+                        if len(line_idxs) == 3:
+                            xa1,ya1,xa2,ya2=lines[distances[line_idxs[0]][0]][0]
+                            xb1,yb1,xb2,yb2=lines[distances[line_idxs[1]][0]][0]
+                            xc1,yc1,xc2,yc2=lines[distances[line_idxs[2]][0]][0]
+                            Ax,Ay = intersection_of_lines(xb1, yb1, xb2, yb2, xc1, yc1, xc2, yc2)
+                            Bx,By = intersection_of_lines(xa1, ya1, xa2, ya2, xc1, yc1, xc2, yc2)
+                            Cx,Cy = intersection_of_lines(xb1, yb1, xb2, yb2, xa1, ya1, xa2, ya2)
+                            Ax = int(round(Ax))
+                            Ay = int(round(Ay))
+                            Bx = int(round(Bx))
+                            By = int(round(By))
+                            Cx = int(round(Cx))
+                            Cy = int(round(Cy))
+                            cv2.line(result,(Ax,Ay),(Bx,By),(0,255,0),2)
+                            cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
+                            cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
+
+
+                        #for j in line_idxs:
+                                #x1,y1,x2,y2=lines[distances[j][0]][0]
                                 # Draw the lines joing the points
                                 # On the original image
-                                cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+                                #cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
 
 
 
