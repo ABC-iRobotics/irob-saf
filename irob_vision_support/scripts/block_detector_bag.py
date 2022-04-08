@@ -26,6 +26,14 @@ from skimage.feature import canny
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
 
+from skimage import data
+from skimage.util import img_as_float
+from skimage.feature import (corner_harris, corner_subpix, corner_peaks, plot_matches)
+from skimage.transform import warp, AffineTransform
+from skimage.exposure import rescale_intensity
+from skimage.color import rgb2gray
+from skimage.measure import ransac
+
 
 
 #from irob_utils import rigid_transform_3D
@@ -413,23 +421,23 @@ class BlockDetector:
                 circles = np.round(circles[0, :]).astype("int")
 
                 # loop over the (x, y) coordinates and radius of the circles
-
+                triangles = []
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
                         cv2.circle(result, (x, y), r, (0, 255, 0), 4)
                         cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-                        print("Dist")
+                        #print("Dist")
                         distances = []
                         for i in range(len(lines)):
                                       # Extracted points nested in the list
                                     x1,y1,x2,y2=lines[i][0]
                                     distances.append((i, dist_line_from_point(x, y, x1, y1, x2, y2)))
 
-                        print(distances)
+                        #print(distances)
 
                         distances.sort(key=lambda distance: distance[1])
-                        print(distances)
+                        #print(distances)
 
                         dist_threshold = 10
                         diff_threshold = 5.0
@@ -439,8 +447,8 @@ class BlockDetector:
                             xp1,yp1,xp2,yp2=lines[distances[j][0]][0]
                             xp3,yp3,xp4,yp4=lines[distances[j+1][0]][0]
                             angle = abs(angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4))
-                            print("angle")
-                            print(angle)
+                            #print("angle")
+                            #print(angle)
                             if (abs(distances[j][1] - distances[j+1][1]) <= diff_threshold
                                             and distances[j][1] >= dist_threshold
                                             and distances[j+1][1] >= dist_threshold
@@ -472,18 +480,69 @@ class BlockDetector:
                             cv2.line(result,(Ax,Ay),(Bx,By),(0,255,0),2)
                             cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                             cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
+                            triangles.append(np.array([[Ax, Ay], [Bx, By], [Cx, Cy]]))
 
 
-                        #for j in line_idxs:
-                                #x1,y1,x2,y2=lines[distances[j][0]][0]
-                                # Draw the lines joing the points
-                                # On the original image
-                                #cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+        # End triangles detection
+        # Start fine grasp point estimation using RANSAC
+        
+        
+        # find correspondences using simple weighted sum of squared differences
+        if (len(triangles)) > 0:
+            #print(triangles)
+
+            src = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
+            dst = triangles[0]
+
+            print("Before arrange")
+            print(dst)
+
+            # Arrange points so the first will be with the smallest x value
+            while dst[0][0] > dst[1][0] or dst[0][0] > dst[2][0]:
+                swap = dst[0].copy()
+                dst[0] = dst[1].copy()
+                dst[1] = dst[2].copy()
+                dst[2] = swap.copy()
+
+            print("Arrange 1")
+            print(dst)
+
+            if dst[1][1] < dst[2][1]:
+                swap = dst[1].copy()
+                dst[1] = dst[2].copy()
+                dst[2] = swap.copy()
+        
+            print("Arrange 1")
+            print(dst)
 
 
+            # estimate affine transform model using all coordinates
+            model = AffineTransform()
+            model.estimate(src, dst)
+        
 
-        #cv2.imshow('result', result)
-        #cv2.waitKey(1)
+            # compare "true" and estimated transform parameters
+
+            if not np.isnan(model.translation[0]):
+
+                print("Affine transform:")
+                print(f'Scale: ({model.scale[0]:.4f}, {model.scale[1]:.4f}), '
+                    f'Translation: ({model.translation[0]:.4f}, '
+                    f'{model.translation[1]:.4f}), '
+                    f'Rotation: {model.rotation:.4f}')
+
+
+                tform = AffineTransform(scale=(100, 100), rotation=0.0, translation=(0, 0))
+                src_tformed = model(src)
+
+                print(src_tformed)
+                for i in range(len(src_tformed)):
+                    cv2.line(result,(int(round(src_tformed[i][0])),int(round(src_tformed[i][1]))),
+                                     (int(round(src_tformed[(i+1)%3][0])),int(round(src_tformed[(i+1)%3][1]))),(0,0,255),2)
+                #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
+                #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
+              
+              
 
 
 
