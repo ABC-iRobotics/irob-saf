@@ -107,6 +107,14 @@ class BlockDetector:
 
         self.z_offset = 0.004   # m
 
+        self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
+        self.src_grasp_im_coords = np.array([[0.36, 0.8],
+                                             [0.62, 0.8],
+                                             [0.75, 0.62],
+                                             [0.62, 0.37],
+                                             [0.35, 0.37],
+                                             [0.27, 0.62]])
+
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
         #info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
@@ -425,8 +433,8 @@ class BlockDetector:
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
-                        cv2.circle(result, (x, y), r, (0, 255, 0), 4)
-                        cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                        #cv2.circle(result, (x, y), r, (0, 255, 0), 4)
+                        #cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
                         #print("Dist")
                         distances = []
                         for i in range(len(lines)):
@@ -491,7 +499,7 @@ class BlockDetector:
         if (len(triangles)) > 0:
             #print(triangles)
 
-            src = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
+
             dst = triangles[0]
 
             print("Before arrange")
@@ -518,7 +526,7 @@ class BlockDetector:
 
             # estimate affine transform model using all coordinates
             model = AffineTransform()
-            model.estimate(src, dst)
+            model.estimate(self.src_triangle_im_coords, dst)
         
 
             # compare "true" and estimated transform parameters
@@ -533,12 +541,20 @@ class BlockDetector:
 
 
                 tform = AffineTransform(scale=(100, 100), rotation=0.0, translation=(0, 0))
-                src_tformed = model(src)
+                src_triangle_im_coords_tfromed = model(self.src_triangle_im_coords)
+                grasp_im_coords_tfromed = model(self.src_grasp_im_coords)
 
-                print(src_tformed)
-                for i in range(len(src_tformed)):
-                    cv2.line(result,(int(round(src_tformed[i][0])),int(round(src_tformed[i][1]))),
-                                     (int(round(src_tformed[(i+1)%3][0])),int(round(src_tformed[(i+1)%3][1]))),(0,0,255),2)
+
+                #print(src_triangle_im_coords_tfromed)
+                for i in range(len(src_triangle_im_coords_tfromed)):
+                    cv2.line(result,(int(round(src_triangle_im_coords_tfromed[i][0])),int(round(src_triangle_im_coords_tfromed[i][1]))),
+                                     (int(round(src_triangle_im_coords_tfromed[(i+1)%3][0])),int(round(src_triangle_im_coords_tfromed[(i+1)%3][1]))),(0,0,255),2)
+
+
+
+                for p in grasp_im_coords_tfromed:
+                    cv2.circle(result, (int(round(p[0])), int(round(p[1]))), 2, (255, 0, 0), 4)
+
                 #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                 #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
               
@@ -563,11 +579,11 @@ class BlockDetector:
                 x = f[0]
                 y = f[1]
                 r = f[2]
-                cv2.circle(output, (int(x), int(y)), int(r),
-                                                (0, 255, 0), 4)
-                cv2.rectangle(output, (int(x) - 5, int(y) - 5),
-                                                (int(x) + 5, int(y) + 5),
-                                                (0, 128, 255), -1)
+                #cv2.circle(output, (int(x), int(y)), int(r),
+                #                                (0, 255, 0), 4)
+                #cv2.rectangle(output, (int(x) - 5, int(y) - 5),
+                #                                (int(x) + 5, int(y) + 5),
+                #                                (0, 128, 255), -1)
 
         #print(fiducials)
         #cv2.imshow("Output",  output)
