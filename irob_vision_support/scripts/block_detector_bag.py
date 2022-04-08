@@ -34,6 +34,8 @@ from skimage.exposure import rescale_intensity
 from skimage.color import rgb2gray
 from skimage.measure import ransac
 
+import open3d as o3d
+
 
 
 #from irob_utils import rigid_transform_3D
@@ -142,6 +144,11 @@ class BlockDetector:
     # realsense
     def start_and_process_stream(self):
 
+        # Declare pointcloud object, for calculating pointclouds and texture mappings
+        pc = rs.pointcloud()
+        # We want the points object to be persistent so we can display the last cloud when a frame drops
+        points = rs.points()
+
         # Start streaming
         self.profile = self.pipeline.start(self.config)
         #self.set_exposure(self.exposure)
@@ -161,7 +168,11 @@ class BlockDetector:
         # The "align_to" is the stream type to which we plan to align depth frames.
         align_to = rs.stream.color
         align = rs.align(align_to)
+        colorizer = rs.colorizer()
 
+        pcd = o3d.geometry.PointCloud()
+        #vis.set_full_screen(False)
+        inited = False
 
 
         # Streaming loop
@@ -212,7 +223,8 @@ class BlockDetector:
 
                 detected_blocks= []
                 for i in range(len(segmented_blocks)):
-                    detected_blocks.append(self.detect_block(segmented_blocks[i]))
+                    result, grasp_im_coords = self.detect_block(segmented_blocks[i])
+                    detected_blocks.append(result)
 
                 detected_blocks_stacked = cv2.hconcat(detected_blocks)
 
@@ -223,6 +235,51 @@ class BlockDetector:
                 intrinsics = (aligned_depth_frame.profile
                             .as_video_stream_profile().get_intrinsics())
                 w_h = depth_image.shape
+
+                pc.map_to(color_frame)
+                points = pc.calculate(aligned_depth_frame)
+
+                vtx = np.asanyarray(points.get_vertices(2))
+                print(np.shape(vtx))
+                pcd.points = o3d.utility.Vector3dVector(vtx)
+
+                # Plane segmentation
+
+                plane_model, inliers = pcd.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
+                [a, b, c, d] = plane_model
+                print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
+
+                inlier_cloud = pcd.select_by_index(inliers)
+                inlier_cloud.paint_uniform_color([1.0, 0, 0])
+                outlier_cloud = pcd.select_by_index(inliers, invert=True)
+
+                plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
+
+
+                inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
+                inlier_cloud_board.paint_uniform_color([0, 1.0, 0])
+                outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+
+
+                # CLustering
+
+                #with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
+                #    labels = np.array(outlier_cloud.cluster_dbscan(eps=0.02, min_points=10, print_progress=True))
+
+                #max_label = labels.max()
+                #print(f"point cloud has {max_label + 1} clusters")
+                #colors = plt.get_cmap("tab20")(labels / (max_label if max_label > 0 else 1))
+                #colors[labels < 0] = 0
+                #outlier_cloud.colors = o3d.utility.Vector3dVector(colors[:, :3])
+                o3d.visualization.draw_geometries([inlier_cloud_board, outlier_cloud, inlier_cloud], zoom=0.8,
+                                                  front=[0.0, -1.0,-1.0],
+                                                  lookat=[0.0, 0.1, -0.1],
+                                                  up=[0.0, 1.0, 0.0])
+
 
                 #print("intrinsics")
                 #print(intrinsics)
@@ -382,6 +439,7 @@ class BlockDetector:
         result_gray = cv2.cvtColor(segmented_block, cv2.COLOR_BGR2GRAY)
         kernel = np.ones((5,5),np.float32)/25
         result_gray = cv2.filter2D(result_gray,-1,kernel)
+        grasp_im_coords_tfromed = []
         # Defining all the parameters
         t_lower = 100 # Lower Threshold
         t_upper = 230 # Upper threshold
@@ -393,7 +451,6 @@ class BlockDetector:
         edge = cv2.Canny(result_gray, t_lower, t_upper,
                          apertureSize = aperture_size,
                          L2gradient = L2Gradient )
-
 
 
 
@@ -558,11 +615,8 @@ class BlockDetector:
                 #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                 #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
               
-              
 
-
-
-        return result
+        return result, grasp_im_coords_tfromed
 
 
 
@@ -589,6 +643,9 @@ class BlockDetector:
         #cv2.imshow("Output",  output)
         #cv2.waitKey(1)
         return fiducials, output
+
+
+
 
 
 
