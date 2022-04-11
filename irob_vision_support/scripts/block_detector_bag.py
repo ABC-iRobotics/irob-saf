@@ -3,6 +3,7 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
 import message_filters
+from irob_msgs.msg import GraspObject, Environment
 
 from geometry_msgs.msg import Pose2D
 
