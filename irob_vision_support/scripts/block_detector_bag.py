@@ -109,6 +109,9 @@ class BlockDetector:
 
         self.z_offset = 0.004   # m
 
+        self.plane_detect_frames_N = 100
+        self.detect_plane = False
+
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
         self.src_grasp_im_coords = np.array([[0.36, 0.8],
                                              [0.62, 0.8],
@@ -174,6 +177,9 @@ class BlockDetector:
         #vis.set_full_screen(False)
         inited = False
 
+        plane_detect_frames_cnt = self.plane_detect_frames_N
+        plane_model = []
+
 
         # Streaming loop
         try:
@@ -219,81 +225,64 @@ class BlockDetector:
                 #self.kmeans_segmentation(bg_removed)
                 #block = self.mask_block(color_image, "yellow")
 
+
+                intrinsics = (aligned_depth_frame.profile
+                            .as_video_stream_profile().get_intrinsics())
+                w_h = depth_image.shape
+
+
+                # Point cloud
+                if self.detect_plane and plane_detect_frames_cnt >= self.plane_detect_frames_N:
+                    plane_detect_frames_cnt = 1
+                    pc.map_to(color_frame)
+                    points = pc.calculate(aligned_depth_frame)
+
+                    vtx = np.asanyarray(points.get_vertices(2))
+                    print(np.shape(vtx))
+                    pcd.points = o3d.utility.Vector3dVector(vtx)
+
+
+                    # Plane segmentation
+
+                    plane_model, inliers = pcd.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
+                    [a, b, c, d] = plane_model
+                    print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
+
+                    inlier_cloud = pcd.select_by_index(inliers)
+                    inlier_cloud.paint_uniform_color([1.0, 0, 0])
+                    outlier_cloud = pcd.select_by_index(inliers, invert=True)
+
+                    plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
+
+
+                    inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
+                    inlier_cloud_board.paint_uniform_color([0, 1.0, 0])
+                    outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+                else:
+                    plane_detect_frames_cnt = plane_detect_frames_cnt + 1
+
+
+                # Block detection
                 segmented_blocks = self.segment_blocks(color_image, "yellow", 6)
 
                 detected_blocks= []
                 for i in range(len(segmented_blocks)):
                     result, grasp_im_coords = self.detect_block(segmented_blocks[i])
                     detected_blocks.append(result)
+                    i = 0
+                    for p_im in grasp_im_coords:
+                        p, result = self.get_pixel_position_search_depth(p_im, aligned_depth_frame, w_h, intrinsics, result, i)
+                        i = i+1
 
                 detected_blocks_stacked = cv2.hconcat(detected_blocks)
 
                 cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
                 cv2.imshow('Segmented', detected_blocks_stacked)
                 cv2.waitKey(1)
-
-                intrinsics = (aligned_depth_frame.profile
-                            .as_video_stream_profile().get_intrinsics())
-                w_h = depth_image.shape
-
-                pc.map_to(color_frame)
-                points = pc.calculate(aligned_depth_frame)
-
-                vtx = np.asanyarray(points.get_vertices(2))
-                print(np.shape(vtx))
-                pcd.points = o3d.utility.Vector3dVector(vtx)
-
-                # Plane segmentation
-
-                plane_model, inliers = pcd.segment_plane(distance_threshold=0.005,
-                                                         ransac_n=3,
-                                                         num_iterations=1000)
-                [a, b, c, d] = plane_model
-                print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
-
-                inlier_cloud = pcd.select_by_index(inliers)
-                inlier_cloud.paint_uniform_color([1.0, 0, 0])
-                outlier_cloud = pcd.select_by_index(inliers, invert=True)
-
-                plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
-                                                         ransac_n=3,
-                                                         num_iterations=1000)
-
-
-                inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
-                inlier_cloud_board.paint_uniform_color([0, 1.0, 0])
-                outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
-
-
-                # CLustering
-
-                #with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
-                #    labels = np.array(outlier_cloud.cluster_dbscan(eps=0.02, min_points=10, print_progress=True))
-
-                #max_label = labels.max()
-                #print(f"point cloud has {max_label + 1} clusters")
-                #colors = plt.get_cmap("tab20")(labels / (max_label if max_label > 0 else 1))
-                #colors[labels < 0] = 0
-                #outlier_cloud.colors = o3d.utility.Vector3dVector(colors[:, :3])
-                o3d.visualization.draw_geometries([inlier_cloud_board, outlier_cloud, inlier_cloud], zoom=0.8,
-                                                  front=[0.0, -1.0,-1.0],
-                                                  lookat=[0.0, 0.1, -0.1],
-                                                  up=[0.0, 1.0, 0.0])
-
-
-                #print("intrinsics")
-                #print(intrinsics)
-
-                #print("camera_info")
-                #print(profile.camera_info)
-                #break
-
-                #print(color_image.shape)
-
-
-
-
-                            #print(color + ": " + str(fid_posistion[color]))
 
 
                 #self.calc_pose(fid_position, output)
@@ -306,40 +295,53 @@ class BlockDetector:
             self.pipeline.stop()
 
     #
-    def get_marker_position(self, img_coords, aligned_depth_frame, w_h, intrinsics, output):
-        x_c = int(round(img_coords[0]))
-        y_c = int(round(img_coords[1]))
-        r = int(round(img_coords[2]))
+    def get_pixel_position(self, img_coords, aligned_depth_frame, w_h, intrinsics, output):
+        x = int(round(img_coords[0]))
+        y = int(round(img_coords[1]))
 
-
-        N = 0
         pos = np.array([0.0, 0.0, 0.0])
-        a = max(1, int(round(math.sqrt(2.0 * r * r) - 10)))
-        #print("a: " + str(a))
 
-        for i in range(2*a+1):
-            for j in range(2*a+1):
-                x = (x_c - a) + i
-                y = (y_c - a) + j
-
-                if (x >= 0 and x < (w_h[1]-1) and y >=0 and y < (w_h[0]-1)):
-                    d = aligned_depth_frame.get_distance(x,y)
+        d = aligned_depth_frame.get_distance(x,y)
                     #print("x: "  + str(x) + ", y: " + str(y) + ", d: "  + str(d))
-
-                    if (d != 0 and d < self.clipping_distance_in_meters):
-                        res = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
-                        pos = pos + res
-                        N = N + 1
-
-        if N == 0:
-            return None, output
-        pos = (pos / N) - np.array([0.0,0.0,self.z_offset])
-
-        text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
-
-        output = cv2.putText(output, text, (x_c,y_c), cv2.FONT_HERSHEY_SIMPLEX,
+        if (d != 0 and d < self.clipping_distance_in_meters):
+            pos = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
+            text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
+            output = cv2.putText(output, text, (x,y), cv2.FONT_HERSHEY_SIMPLEX,
                            0.5, (255,255,255), 1, cv2.LINE_AA)
 
+            return pos, output
+        return None, output
+
+
+
+    #
+    def get_pixel_position_search_depth(self, img_coords, aligned_depth_frame, w_h, intrinsics, output, text_i = 0):
+        x = int(round(img_coords[0]))
+        y = int(round(img_coords[1]))
+
+        pos = np.array([0.0, 0.0, 0.0])
+
+        d = aligned_depth_frame.get_distance(x,y)
+        i = 1
+        while (d == 0 or d >= self.clipping_distance_in_meters):
+            for j in range(-i,i+1):
+                for k in range(-i,i+1):
+                    x_d = x+j
+                    y_d = y+k
+                    if (x_d >= 0 and x_d < (w_h[1]-1) and y_d >=0 and y_d < (w_h[0]-1)):
+                        d = aligned_depth_frame.get_distance(x_d,y_d)
+                        #print(d)
+                        if (d != 0 and d < self.clipping_distance_in_meters):
+                            #print("breaking")
+                            break
+            i = i + 1
+
+        #print(d)
+
+        pos = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
+        text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
+        output = cv2.putText(output, text, (10,20 + (text_i * 20)), cv2.FONT_HERSHEY_SIMPLEX,
+                           0.5, (255,255,255), 1, cv2.LINE_AA)
         return pos, output
 
 
@@ -610,7 +612,7 @@ class BlockDetector:
 
 
                 for p in grasp_im_coords_tfromed:
-                    cv2.circle(result, (int(round(p[0])), int(round(p[1]))), 2, (255, 0, 0), 4)
+                    cv2.circle(result, (int(round(p[0])), int(round(p[1]))), 3, (0, 255, 0), 2)
 
                 #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                 #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
