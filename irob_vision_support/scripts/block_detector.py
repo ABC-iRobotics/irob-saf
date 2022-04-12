@@ -68,7 +68,7 @@ def intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
 class BlockDetector:
 
 
-    def __init__(self, bagfile):
+    def __init__(self, offline = False, bagfile = ""):
 
         print("Init")
 
@@ -101,6 +101,7 @@ class BlockDetector:
         self.fiducial_colors = ['red', 'green', 'orange', 'purple']
         #self.fiducial_colors = ['red', 'yellow', 'green', 'orange', 'purple']
 
+        self.offline = offline
         self.bagfile = bagfile
 
         self.width = 640
@@ -108,7 +109,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 1800.0 #1000.0
+        self.exposure = 1000.0 #1000.0
 
         self.z_offset = 0.004   # m
 
@@ -140,7 +141,13 @@ class BlockDetector:
         self.pipeline = rs.pipeline()
         self.config = rs.config()
 
-        self.config.enable_device_from_file(self.bagfile)
+        if (self.offline):
+            self.config.enable_device_from_file(self.bagfile)
+        else:
+            self.config.enable_stream(rs.stream.depth, self.width,
+                                        self.height, rs.format.z16, self.fps)
+            self.config.enable_stream(rs.stream.color, self.width,
+                                        self.height, rs.format.bgr8, self.fps)
 
 
 
@@ -158,7 +165,8 @@ class BlockDetector:
 
         # Start streaming
         self.profile = self.pipeline.start(self.config)
-        #self.set_exposure(self.exposure)
+        if not self.offline:
+            self.set_exposure(self.exposure)
 
         # Getting the depth sensor's depth scale (see rs-align example for explanation)
         depth_sensor = self.profile.get_device().first_depth_sensor()
@@ -206,7 +214,7 @@ class BlockDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
-                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+                #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                 cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
                 cv2.imshow('Color image', color_image)
@@ -234,6 +242,7 @@ class BlockDetector:
                 intrinsics = (aligned_depth_frame.profile
                             .as_video_stream_profile().get_intrinsics())
                 w_h = depth_image.shape
+
 
 
                 # Point cloud
@@ -382,17 +391,6 @@ class BlockDetector:
         rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
         rgb_cam_sensor.set_option(rs.option.exposure, exposure)
 
-    #
-    def cb_config(self, config, level):
-        self.lower_background = (config.bg_l_h, config.bg_l_s, config.bg_l_v)
-        self.upper_background = (config.bg_u_h, config.bg_u_s, config.bg_u_v)
-        return config
-
-
-
-
-
-
 
 
     def segment_blocks(self, image, col, n):
@@ -449,7 +447,7 @@ class BlockDetector:
         while len(ret_r) > n:
             min_r = float('inf')
             min_r_i = 0
-            for i in range(len(ret)):
+            for i in range(len(ret_r)):
                 if ret_r[i] < min_r:
                     min_r = ret_r[i]
                     min_r_i = i
@@ -508,13 +506,14 @@ class BlockDetector:
             param1=100, param2=10, minRadius=0, maxRadius=10)
 
         # ensure at least some circles were found
+        triangles = []
         if circles is not None:
                 # convert the (x, y) coordinates and radius of the circles to integers
                 #print("Ciercles found")
                 circles = np.round(circles[0, :]).astype("int")
 
                 # loop over the (x, y) coordinates and radius of the circles
-                triangles = []
+
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
@@ -522,7 +521,8 @@ class BlockDetector:
                         #cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
                         #print("Dist")
                         distances = []
-                        for i in range(len(lines)):
+                        if lines is not None:
+                            for i in range(len(lines)):
                                       # Extracted points nested in the list
                                     x1,y1,x2,y2=lines[i][0]
                                     distances.append((i, dist_line_from_point(x, y, x1, y1, x2, y2)))
@@ -683,7 +683,8 @@ if __name__ == '__main__':
     print("Node started")
     #help(cv2.aruco)
 
-    detector = BlockDetector("/home/tamas/data/pegtransfer/highres_yellow_1.bag")
+    detector = BlockDetector(offline = False,
+                        bagfile="/home/tamas/data/pegtransfer/highres_yellow_1.bag")
 
     detector.start_and_process_stream()
 
