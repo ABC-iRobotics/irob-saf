@@ -4,10 +4,10 @@ from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
 import message_filters
 from irob_msgs.msg import GraspObject, Environment
+from geometry_msgs.msg import Point
 
 from geometry_msgs.msg import Pose2D
 
-from cv_bridge import CvBridge,  CvBridgeError
 import cv2
 import pyrealsense2 as rs
 # pip3 install pyrealsense2
@@ -73,6 +73,8 @@ class BlockDetector:
         print("Init")
 
 
+
+
         self.lower_red = (150, 100, 50)
         self.upper_red = (180, 255, 255)
         self.lower_darkred = (0, 100, 50)
@@ -128,6 +130,10 @@ class BlockDetector:
         #ts = message_filters.TimeSynchronizer([image_sub, depth_sub, info_sub], 10)
         #ts.registerCallback(self.cb_images)
 
+        # ROS
+        rospy.init_node('block_detector', anonymous=True)
+        self.blocks_pub = rospy.Publisher("blocks_grasp", Environment, queue_size=10)
+
 
         # Init RealSense
         self.context = rs.context()
@@ -137,9 +143,6 @@ class BlockDetector:
         self.config.enable_device_from_file(self.bagfile)
 
 
-        rospy.init_node('block_detector', anonymous=True)
-        srv = Server(FiducialsConfig, self.cb_config)
-        self.bridge = CvBridge()
 
         #rospy.spin()
 
@@ -180,6 +183,7 @@ class BlockDetector:
 
         plane_detect_frames_cnt = self.plane_detect_frames_N
         plane_model = []
+        seq = 0
 
 
         # Streaming loop
@@ -271,19 +275,40 @@ class BlockDetector:
                 segmented_blocks = self.segment_blocks(color_image, "yellow", 6)
 
                 detected_blocks= []
+                env_msg = Environment()
+                env_msg.valid = Environment.VALID
+                env_msg.header.stamp = rospy.Time.now()
+                env_msg.header.seq = seq
+                env_msg.header.frame_id = "camera"
                 for i in range(len(segmented_blocks)):
                     result, grasp_im_coords = self.detect_block(segmented_blocks[i])
                     detected_blocks.append(result)
-                    i = 0
+                    j = 0
+                    grasp_coords = []
                     for p_im in grasp_im_coords:
-                        p, result = self.get_pixel_position_search_depth(p_im, aligned_depth_frame, w_h, intrinsics, result, i)
-                        i = i+1
+                        p, result = self.get_pixel_position_search_depth(p_im, aligned_depth_frame, w_h, intrinsics, result, j)
+                        grasp_coords.append(p)
+                        j = j+1
+                    if (len(grasp_coords) > 0):
+                        block_msg = GraspObject()
+                        block_msg.grasp_position.x = grasp_coords[0][0]
+                        block_msg.grasp_position.y = grasp_coords[0][1]
+                        block_msg.grasp_position.z = grasp_coords[0][2]
+                        block_msg.id = i
+                        block_msg.name = "block#"+str(i)
+                        env_msg.objects.append(block_msg)
+
+
+                # Send grasp positions
+                self.blocks_pub.publish(env_msg)
 
                 detected_blocks_stacked = cv2.hconcat(detected_blocks)
+
 
                 cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
                 cv2.imshow('Segmented', detected_blocks_stacked)
                 cv2.waitKey(1)
+                seq = seq + 1
 
 
                 #self.calc_pose(fid_position, output)
@@ -388,8 +413,8 @@ class BlockDetector:
         #    mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
         #    mask = cv2.bitwise_or(mask, mask_2)
 
-        mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
-        mask_background = 255 - mask_background
+        #mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
+        #mask_background = 255 - mask_background
         #mask = cv2.bitwise_and(mask, mask_background)
 
         kernel = np.ones((3,3), np.uint8)
