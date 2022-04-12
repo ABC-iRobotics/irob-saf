@@ -418,15 +418,16 @@ class FiducialDetector:
         """
         output = image.copy()
         fiducials = {}
-        for color in fiducial_colors:
+        for color in self.fiducial_colors:
             fiducials[color] = self.mask_fiducial(image, color)
-            for f in fiducials[color]:
-                x = f[0]
-                y = f[1]
-                r = f[2]
-                cv2.circle(output, (int(x), int(y)), int(r),
+            if fiducials[color] is not None:
+                for f in fiducials[color]:
+                    x = f[0]
+                    y = f[1]
+                    r = f[2]
+                    cv2.circle(output, (int(x), int(y)), int(r),
                                                 (0, 255, 0), 4)
-                cv2.rectangle(output, (int(x) - 5, int(y) - 5),
+                    cv2.rectangle(output, (int(x) - 5, int(y) - 5),
                                                 (int(x) + 5, int(y) + 5),
                                                 (0, 128, 255), -1)
 

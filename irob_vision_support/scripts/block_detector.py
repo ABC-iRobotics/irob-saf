@@ -109,7 +109,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 1000.0 #1000.0
+        self.exposure = 600.0 #1000.0
 
         self.z_offset = 0.004   # m
 
@@ -121,8 +121,8 @@ class BlockDetector:
                                              [0.62, 0.8],
                                              [0.75, 0.62],
                                              [0.62, 0.37],
-                                             [0.35, 0.37],
-                                             [0.27, 0.62]])
+                                             [0.40, 0.37],
+                                             [0.26, 0.62]])
 
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
