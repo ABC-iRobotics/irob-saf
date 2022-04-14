@@ -50,7 +50,7 @@ class FiducialDetector:
         #self.lower_darkpurple = (150, 50, 0)
         #self.upper_darkpurple = (180, 170, 255)
         self.lower_purple = (105, 0, 0)
-        self.upper_purple = (130, 255, 255)
+        self.upper_purple = (150, 255, 255)
         self.lower_darkpurple = (180, 170,255)
         self.upper_darkpurple = (180, 170, 255)
         #self.lower_background = (90, 0, 0)
@@ -64,7 +64,7 @@ class FiducialDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        self.exposure = 800.0
+        self.exposure = 300.0
         #self.exposure = 150.0 #1800.0 #1000.0
         self.tr_seq = 0
 
@@ -189,12 +189,13 @@ class FiducialDetector:
 
                 fid_position = {}
                 for color in fiducials:
-                    for i in range(len(fiducials[color])):
-                        fid_position[color] = []
-                        if (fiducials[color] and fiducials[color][0]):
-                            res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
+                    if fiducials[color] is not None:
+                        for i in range(len(fiducials[color])):
+                            fid_position[color] = []
+                            if (fiducials[color] and fiducials[color][0]):
+                                res, output = self.get_marker_position(fiducials[color][i], aligned_depth_frame,
                                                                                 w_h, intrinsics, output)
-                            fid_position[color].append(res)
+                                fid_position[color].append(res)
 
                             #print(color + ": " + str(fid_posistion[color]))
 
@@ -346,17 +347,17 @@ class FiducialDetector:
             hsv_lower_2 = self.lower_darkred
             hsv_upper_2 = self.upper_darkred
             n = 1
-        elif color == 'yellow':
-            hsv_lower = self.lower_yellow
-            hsv_upper = self.upper_yellow
+        elif color == 'orange':
+            hsv_lower = self.lower_orange
+            hsv_upper = self.upper_orange
             n = 3
         elif color == 'green':
             hsv_lower = self.lower_green
             hsv_upper = self.upper_green
             n = 1
-        elif color == 'white':
-            hsv_lower = self.lower_white
-            hsv_upper = self.upper_white
+        elif color == 'purple':
+            hsv_lower = self.lower_purple
+            hsv_upper = self.upper_purple
             n = 1
         else:
             return
@@ -378,9 +379,9 @@ class FiducialDetector:
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         result = cv2.bitwise_and(image, image, mask=mask)
-        #if color == 'red':
-         #   cv2.imshow("Mask", result)
-         #   cv2.waitKey(1)
+        #if color == 'purple':
+        #    cv2.imshow("Mask", result)
+        #    cv2.waitKey(1)
 
         # apply connected component analysis to the thresholded image
         output = cv2.connectedComponentsWithStats(
@@ -434,7 +435,7 @@ class FiducialDetector:
         #print(fiducials)
         cv2.imshow("Output",  output)
         cv2.waitKey(1)
-        return fiducials
+        return fiducials, output
 
 
 if __name__ == '__main__':

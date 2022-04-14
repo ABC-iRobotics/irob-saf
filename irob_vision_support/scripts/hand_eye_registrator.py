@@ -139,9 +139,13 @@ class HandEyeRegistrator:
 
         # Check transformation
         points_transformed = np.zeros(self.robot_positions.shape)
+
         for i in range(self.robot_positions.shape[1]):
+
             p = np.dot(R, self.robot_positions[i,:].T) + t.T
+
             points_transformed[i,:] = p
+
 
         # Draw plot
         plt.ion()
@@ -152,17 +156,17 @@ class HandEyeRegistrator:
                                         points_transformed[2,:], marker='^')
 
 
+
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
 
+
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-
         # Save robot poses for auto registration
         if self.mode == "save":
             self.save_robot_poses()
-
         return R, t
 
 
@@ -183,7 +187,7 @@ class HandEyeRegistrator:
         with open(self.camera_registration_filename, 'w') as outfile:
             yaml.dump(data, outfile, default_flow_style=False)
             outfile.close()
-
+            input("Registration saved to file " + self.camera_registration_filename + ".")
 
 
 
@@ -368,6 +372,9 @@ if __name__ == '__main__':
         reg.save_registration(R, t)
     else:
         print("Please define a correct mode (simple, save, auto). Exiting...")
+
+
+    rospy.spin()
 
 
 
