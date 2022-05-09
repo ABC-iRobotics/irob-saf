@@ -63,6 +63,20 @@ def intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
     Py = yp1 + (t*(yp2-yp1))
     return Px, Py
 
+def rotation_matrix_from_vectors(vec1, vec2):
+    """ Find the rotation matrix that aligns vec1 to vec2
+    :param vec1: A 3d "source" vector
+    :param vec2: A 3d "destination" vector
+    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+    """
+    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
+    v = np.cross(a, b)
+    c = np.dot(a, b)
+    s = np.linalg.norm(v)
+    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+    return rotation_matrix
+
 
 
 class BlockDetector:
@@ -113,16 +127,17 @@ class BlockDetector:
 
         self.z_offset = 0.004   # m
 
-        self.plane_detect_frames_N = 100
-        self.detect_plane = False
+        self.plane_detect_frames_N = 30
+        self.detect_plane = True
+        self.board_height = 0.005
 
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
-        self.src_grasp_im_coords = np.array([[0.36, 0.8],
-                                             [0.62, 0.8],
-                                             [0.75, 0.62],
-                                             [0.62, 0.37],
-                                             [0.40, 0.37],
-                                             [0.26, 0.62]])
+        self.src_grasp_im_coords = np.array([[0.36, 0.78],
+                                             [0.62, 0.78],
+                                             [0.76, 0.58],
+                                             [0.65, 0.38],
+                                             [0.38, 0.38],
+                                             [0.26, 0.58]])
 
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
@@ -214,7 +229,7 @@ class BlockDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
-                #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                 cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
                 cv2.imshow('Color image', color_image)
@@ -268,14 +283,34 @@ class BlockDetector:
                     inlier_cloud.paint_uniform_color([1.0, 0, 0])
                     outlier_cloud = pcd.select_by_index(inliers, invert=True)
 
-                    plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
-                                                         ransac_n=3,
-                                                         num_iterations=1000)
 
 
-                    inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
-                    inlier_cloud_board.paint_uniform_color([0, 1.0, 0])
-                    outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+
+                    #plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
+                    #                                     ransac_n=3,
+                    #                                     num_iterations=1000)
+
+
+                    #inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
+                    #inlier_cloud_board.paint_uniform_color([1.0, 0.0, 0])
+                    #outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+
+                    # Find board
+                    R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
+                    center_bb = np.array([0.0, 0.0, -(d + self.board_height)])
+                    extent_bb = np.array([1.0, 1.0, 0.005])
+
+                    bb = o3d.geometry.OrientedBoundingBox(center_bb, R_bb, extent_bb)
+                    pcd_board = pcd.crop(bb)
+                    pcd_board.paint_uniform_color([0, 1.0, 0])
+
+                    bb_small = o3d.geometry.OrientedBoundingBox.create_from_points(pcd_board.points)
+                    print(bb_small)
+
+
+
+                    #o3d.visualization.draw_geometries([pcd,inlier_cloud, bb, pcd_board, bb_small])
+
                 else:
                     plane_detect_frames_cnt = plane_detect_frames_cnt + 1
 
@@ -311,16 +346,14 @@ class BlockDetector:
                 # Send grasp positions
                 self.blocks_pub.publish(env_msg)
 
-                detected_blocks_stacked = cv2.hconcat(detected_blocks)
+                #detected_blocks_stacked = cv2.hconcat(detected_blocks)
 
 
                 cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
-                cv2.imshow('Segmented', detected_blocks_stacked)
+                cv2.imshow('Segmented', detected_blocks[1])
                 cv2.waitKey(1)
                 seq = seq + 1
 
-
-                #self.calc_pose(fid_position, output)
 
                 #cv2.imshow("Output",  output)
                 #cv2.waitKey(1)
@@ -372,10 +405,13 @@ class BlockDetector:
             i = i + 1
 
         #print(d)
-
+        if text_i == 0:
+            title = "Block #1 grasp positions"
+            output = cv2.putText(output, title, (10,20), cv2.FONT_HERSHEY_SIMPLEX,
+                               0.5, (255,255,255), 1, cv2.LINE_AA)
         pos = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
         text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
-        output = cv2.putText(output, text, (10,20 + (text_i * 20)), cv2.FONT_HERSHEY_SIMPLEX,
+        output = cv2.putText(output, text, (10,20 + ((text_i+1) * 20)), cv2.FONT_HERSHEY_SIMPLEX,
                            0.5, (255,255,255), 1, cv2.LINE_AA)
         return pos, output
 
@@ -587,9 +623,6 @@ class BlockDetector:
 
             dst = triangles[0]
 
-            print("Before arrange")
-            print(dst)
-
             # Arrange points so the first will be with the smallest x value
             while dst[0][0] > dst[1][0] or dst[0][0] > dst[2][0]:
                 swap = dst[0].copy()
@@ -597,17 +630,13 @@ class BlockDetector:
                 dst[1] = dst[2].copy()
                 dst[2] = swap.copy()
 
-            print("Arrange 1")
-            print(dst)
+
 
             if dst[1][1] < dst[2][1]:
                 swap = dst[1].copy()
                 dst[1] = dst[2].copy()
                 dst[2] = swap.copy()
         
-            print("Arrange 1")
-            print(dst)
-
 
             # estimate affine transform model using all coordinates
             model = AffineTransform()
@@ -618,11 +647,11 @@ class BlockDetector:
 
             if not np.isnan(model.translation[0]):
 
-                print("Affine transform:")
-                print(f'Scale: ({model.scale[0]:.4f}, {model.scale[1]:.4f}), '
-                    f'Translation: ({model.translation[0]:.4f}, '
-                    f'{model.translation[1]:.4f}), '
-                    f'Rotation: {model.rotation:.4f}')
+                #print("Affine transform:")
+               # print(f'Scale: ({model.scale[0]:.4f}, {model.scale[1]:.4f}), '
+                #    f'Translation: ({model.translation[0]:.4f}, '
+                 #   f'{model.translation[1]:.4f}), '
+                 #   f'Rotation: {model.rotation:.4f}')
 
 
                 tform = AffineTransform(scale=(100, 100), rotation=0.0, translation=(0, 0))
@@ -683,7 +712,7 @@ if __name__ == '__main__':
     print("Node started")
     #help(cv2.aruco)
 
-    detector = BlockDetector(offline = False,
+    detector = BlockDetector(offline = True,
                         bagfile="/home/tamas/data/pegtransfer/highres_yellow_1.bag")
 
     detector.start_and_process_stream()
