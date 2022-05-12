@@ -4,7 +4,7 @@ from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
 import message_filters
 from irob_msgs.msg import GraspObject, Environment
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Transform
 
 from geometry_msgs.msg import Pose2D
 
@@ -30,10 +30,11 @@ from skimage.draw import ellipse_perimeter
 from skimage import data
 from skimage.util import img_as_float
 from skimage.feature import (corner_harris, corner_subpix, corner_peaks, plot_matches)
-from skimage.transform import warp, AffineTransform
+from skimage.transform import warp, AffineTransform, EuclideanTransform
 from skimage.exposure import rescale_intensity
 from skimage.color import rgb2gray
 from skimage.measure import ransac
+from scipy.spatial.transform import Rotation as R
 
 import open3d as o3d
 
@@ -139,6 +140,14 @@ class BlockDetector:
                                              [0.38, 0.38],
                                              [0.26, 0.58]])
 
+        self.src_board_top_corner_coords = np.array([[0.0, 0.0, 0.0],
+                                                     [0.05, 0.0, 0.0],
+                                                     [0.05, 0.025, 0.0],
+                                                     [0.0, 0.025, 0.0]])
+
+
+        self.tf_phantom = Transform()
+
         #image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
         #depth_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/image_raw', Image)
         #info_sub = message_filters.Subscriber('/camera/aligned_depth_to_color/camera_info', CameraInfo)
@@ -207,6 +216,8 @@ class BlockDetector:
         plane_detect_frames_cnt = self.plane_detect_frames_N
         plane_model = []
         seq = 0
+
+
 
 
         # Streaming loop
@@ -305,7 +316,32 @@ class BlockDetector:
                     pcd_board.paint_uniform_color([0, 1.0, 0])
 
                     bb_small = o3d.geometry.OrientedBoundingBox.create_from_points(pcd_board.points)
-                    print(bb_small)
+                    #print(np.asarray(bb_small.get_box_points()))
+                    bb_points = np.asarray(bb_small.get_box_points())
+
+                    # Could be the lower 4?
+                    dst_board_top_corner_coords = np.array([bb_points[0],
+                                                            bb_points[1],
+                                                            bb_points[2],
+                                                            bb_points[7]])
+                    print(dst_board_top_corner_coords)
+
+                    board_T = EuclideanTransform()
+                    board_T.estimate(self.src_board_top_corner_coords, dst_board_top_corner_coords)
+                    board_residuals = board_T.residuals(self.src_board_top_corner_coords, dst_board_top_corner_coords)
+
+                    board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
+
+                    board_R_quat = board_R_mat.as_quat()
+                    self.tf_phantom.rotation.x = board_R_quat[0]
+                    self.tf_phantom.rotation.y = board_R_quat[1]
+                    self.tf_phantom.rotation.z = board_R_quat[2]
+                    self.tf_phantom.rotation.w = board_R_quat[3]
+                    self.tf_phantom.translation.x = board_T.params[0,3]
+                    self.tf_phantom.translation.y = board_T.params[1,3]
+                    self.tf_phantom.translation.z = board_T.params[2,3]
+                    print(self.tf_phantom)
+
 
 
 
@@ -324,6 +360,7 @@ class BlockDetector:
                 env_msg.header.stamp = rospy.Time.now()
                 env_msg.header.seq = seq
                 env_msg.header.frame_id = "camera"
+                env_msg.tf_phantom = self.tf_phantom
                 for i in range(len(segmented_blocks)):
                     result, grasp_im_coords = self.detect_block(segmented_blocks[i])
                     detected_blocks.append(result)
