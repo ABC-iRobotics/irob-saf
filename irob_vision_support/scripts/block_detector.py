@@ -130,7 +130,7 @@ class BlockDetector:
 
         self.plane_detect_frames_N = 30
         self.detect_plane = True
-        self.board_height = 0.005
+        self.board_offset = 0.005
 
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
         self.src_grasp_im_coords = np.array([[0.36, 0.78],
@@ -141,9 +141,9 @@ class BlockDetector:
                                              [0.26, 0.58]])
 
         self.src_board_top_corner_coords = np.array([[0.0, 0.0, 0.0],
-                                                     [0.05, 0.0, 0.0],
-                                                     [0.05, 0.025, 0.0],
-                                                     [0.0, 0.025, 0.0]])
+                                                     [0.1011, 0.0, 0.0],
+                                                     [0.1011, 0.0628, 0.0],
+                                                     [0.0, 0.0628, 0.0]])
 
 
         self.tf_phantom = Transform()
@@ -308,7 +308,7 @@ class BlockDetector:
 
                     # Find board
                     R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
-                    center_bb = np.array([0.0, 0.0, -(d + self.board_height)])
+                    center_bb = np.array([0.0, 0.0, -(d + self.board_offset)])
                     extent_bb = np.array([1.0, 1.0, 0.005])
 
                     bb = o3d.geometry.OrientedBoundingBox(center_bb, R_bb, extent_bb)
@@ -322,13 +322,33 @@ class BlockDetector:
                     # Could be the lower 4?
                     dst_board_top_corner_coords = np.array([bb_points[0],
                                                             bb_points[1],
-                                                            bb_points[2],
-                                                            bb_points[7]])
-                    print(dst_board_top_corner_coords)
+                                                            bb_points[7],
+                                                            bb_points[2]])
+                    #print(dst_board_top_corner_coords)
 
                     board_T = EuclideanTransform()
                     board_T.estimate(self.src_board_top_corner_coords, dst_board_top_corner_coords)
                     board_residuals = board_T.residuals(self.src_board_top_corner_coords, dst_board_top_corner_coords)
+                    print(board_residuals)
+
+                    #val_board_corners = board_T(self.src_board_top_corner_coords)
+                    #print(val_board_corners)
+
+
+
+                    # Draw plot
+                    #plt.ion()
+                    #self.fig = plt.figure()
+                    #self.ax = self.fig.add_subplot(projection='3d')
+                    #self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
+                    #self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
+                    #                                dst_board_top_corner_coords.T[2,:], marker='^')
+                    #self.ax.set_xlabel('X')
+                    #self.ax.set_ylabel('Y')
+                    #self.ax.set_zlabel('Z')
+                    #self.fig.canvas.draw()
+                    #self.fig.canvas.flush_events()
+
 
                     board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
 
