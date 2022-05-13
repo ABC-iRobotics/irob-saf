@@ -79,6 +79,25 @@ def rotation_matrix_from_vectors(vec1, vec2):
     return rotation_matrix
 
 
+def point_distance_from_plane(x1, y1, z1, a, b, c, d):
+    """ https://mathinsight.org/distance_point_plane
+    """
+    return abs((a*x1) + (b*y1) + (c*z1) + d) / math.sqrt((a*a) + (b*b) + (c*c))
+
+
+def force_depth(point, plane, block_offset):
+    [a,b,c,d] = plane
+    dist = point_distance_from_plane(point[0], point[1], point[2],
+                                     a, b, c, d)
+    #print(dist)
+    norm_ori = np.array([a,b,c])
+    norm_unit = norm_ori / np.linalg.norm(norm_ori)
+    corr_dist = block_offset - dist
+    corr_point = point - (corr_dist * norm_unit)
+    return corr_point
+
+
+
 
 class BlockDetector:
 
@@ -130,7 +149,11 @@ class BlockDetector:
 
         self.plane_detect_frames_N = 30
         self.detect_plane = True
-        self.board_offset = 0.005
+        self.board_offset = 0.0135
+        self.board_bb_offset = 0.005
+        self.block_offset = 0.0285
+        self.approach_offset = 0.05
+        self.grasp_diameter = 0.002
 
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
         self.src_grasp_im_coords = np.array([[0.36, 0.78],
@@ -308,7 +331,7 @@ class BlockDetector:
 
                     # Find board
                     R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
-                    center_bb = np.array([0.0, 0.0, -(d + self.board_offset)])
+                    center_bb = np.array([0.0, 0.0, -(d + self.board_bb_offset)])
                     extent_bb = np.array([1.0, 1.0, 0.005])
 
                     bb = o3d.geometry.OrientedBoundingBox(center_bb, R_bb, extent_bb)
@@ -320,10 +343,12 @@ class BlockDetector:
                     bb_points = np.asarray(bb_small.get_box_points())
 
                     # Could be the lower 4?
-                    dst_board_top_corner_coords = np.array([bb_points[0],
-                                                            bb_points[1],
-                                                            bb_points[7],
-                                                            bb_points[2]])
+                    dst_board_top_corner_coords = np.array([force_depth(bb_points[0], plane_model, self.board_offset),
+                                                            force_depth(bb_points[1], plane_model, self.board_offset),
+                                                            force_depth(bb_points[7], plane_model, self.board_offset),
+                                                            force_depth(bb_points[2], plane_model, self.board_offset)])
+
+
                     #print(dst_board_top_corner_coords)
 
                     board_T = EuclideanTransform()
@@ -331,23 +356,19 @@ class BlockDetector:
                     board_residuals = board_T.residuals(self.src_board_top_corner_coords, dst_board_top_corner_coords)
                     print(board_residuals)
 
-                    #val_board_corners = board_T(self.src_board_top_corner_coords)
+                    val_board_corners = board_T(self.src_board_top_corner_coords)
                     #print(val_board_corners)
 
 
 
                     # Draw plot
-                    #plt.ion()
-                    #self.fig = plt.figure()
-                    #self.ax = self.fig.add_subplot(projection='3d')
-                    #self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
-                    #self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
-                    #                                dst_board_top_corner_coords.T[2,:], marker='^')
-                    #self.ax.set_xlabel('X')
-                    #self.ax.set_ylabel('Y')
-                    #self.ax.set_zlabel('Z')
-                    #self.fig.canvas.draw()
-                    #self.fig.canvas.flush_events()
+                    plt.ion()
+                    self.fig = plt.figure()
+                    self.ax = self.fig.add_subplot(projection='3d')
+                    self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
+                    self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
+                                                    dst_board_top_corner_coords.T[2,:], marker='^')
+
 
 
                     board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
@@ -386,24 +407,56 @@ class BlockDetector:
                     detected_blocks.append(result)
                     j = 0
                     grasp_coords = []
+                    approach_coords = []
+                    block_pos = np.array([0.0, 0.0, 0.0])
                     for p_im in grasp_im_coords:
                         p, result = self.get_pixel_position_search_depth(p_im, aligned_depth_frame, w_h, intrinsics, result, j)
-                        grasp_coords.append(p)
+                        p_b = force_depth(p, plane_model, self.block_offset)
+                        grasp_coords.append(p_b)
+
+                        p_a = force_depth(p, plane_model, self.approach_offset)
+                        approach_coords.append(p_a)
+
+                        self.ax.scatter(p_b[0], p_b[1], p_b[2], marker='o')
+
+                        block_pos = block_pos + p_b
                         j = j+1
+
                     if (len(grasp_coords) > 0):
                         block_msg = GraspObject()
                         block_msg.grasp_position.x = grasp_coords[0][0]
                         block_msg.grasp_position.y = grasp_coords[0][1]
                         block_msg.grasp_position.z = grasp_coords[0][2]
+
+                        block_msg.approach_position.x = approach_coords[0][0]
+                        block_msg.approach_position.y = approach_coords[0][1]
+                        block_msg.approach_position.z = approach_coords[0][2]
+
+                        block_pos = block_pos / j
+                        block_msg.position.x = block_pos[0]
+                        block_msg.position.y = block_pos[1]
+                        block_msg.position.z = block_pos[2]
+
+                        block_msg.grasp_diameter = self.grasp_diameter
+
                         block_msg.id = i
                         block_msg.name = "block#"+str(i)
                         env_msg.objects.append(block_msg)
+
 
 
                 # Send grasp positions
                 self.blocks_pub.publish(env_msg)
 
                 #detected_blocks_stacked = cv2.hconcat(detected_blocks)
+
+
+
+                self.ax.set_xlabel('X')
+                self.ax.set_ylabel('Y')
+                self.ax.set_zlabel('Z')
+                self.fig.canvas.draw()
+                self.fig.canvas.flush_events()
 
 
                 cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
