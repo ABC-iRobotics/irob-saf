@@ -403,7 +403,7 @@ class BlockDetector:
                 env_msg.header.frame_id = "camera"
                 env_msg.tf_phantom = self.tf_phantom
                 for i in range(len(segmented_blocks)):
-                    result, grasp_im_coords = self.detect_block(segmented_blocks[i])
+                    result, grasp_im_coords, block_rotation = self.detect_block(segmented_blocks[i])
                     detected_blocks.append(result)
                     j = 0
                     grasp_coords = []
@@ -424,13 +424,13 @@ class BlockDetector:
 
                     if (len(grasp_coords) > 0):
                         block_msg = GraspObject()
-                        block_msg.grasp_position.x = grasp_coords[0][0]
-                        block_msg.grasp_position.y = grasp_coords[0][1]
-                        block_msg.grasp_position.z = grasp_coords[0][2]
+                        block_msg.grasp_pose.position.x = grasp_coords[0][0]
+                        block_msg.grasp_pose.position.y = grasp_coords[0][1]
+                        block_msg.grasp_pose.position.z = grasp_coords[0][2]
 
-                        block_msg.approach_position.x = approach_coords[0][0]
-                        block_msg.approach_position.y = approach_coords[0][1]
-                        block_msg.approach_position.z = approach_coords[0][2]
+                        block_msg.approach_pose.position.x = approach_coords[0][0]
+                        block_msg.approach_pose.position.y = approach_coords[0][1]
+                        block_msg.approach_pose.position.z = approach_coords[0][2]
 
                         block_pos = block_pos / j
                         block_msg.position.x = block_pos[0]
@@ -758,10 +758,10 @@ class BlockDetector:
             if not np.isnan(model.translation[0]):
 
                 #print("Affine transform:")
-               # print(f'Scale: ({model.scale[0]:.4f}, {model.scale[1]:.4f}), '
+                #print(f'Scale: ({model.scale[0]:.4f}, {model.scale[1]:.4f}), '
                 #    f'Translation: ({model.translation[0]:.4f}, '
-                 #   f'{model.translation[1]:.4f}), '
-                 #   f'Rotation: {model.rotation:.4f}')
+                #    f'{model.translation[1]:.4f}), '
+                #   f'Rotation: {model.rotation:.4f}')
 
 
                 tform = AffineTransform(scale=(100, 100), rotation=0.0, translation=(0, 0))
@@ -783,7 +783,7 @@ class BlockDetector:
                 #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
               
 
-        return result, grasp_im_coords_tfromed
+        return result, grasp_im_coords_tfromed, model.rotation
 
 
 
