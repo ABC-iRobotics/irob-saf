@@ -32,6 +32,7 @@
 #include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_msgs/GraspObject.h>
+#include <irob_msgs/Environment.h>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
@@ -48,7 +49,7 @@ class PegTransfer : public AutosurgAgent {
 
 protected:
 
-  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
+  VisionClient<irob_msgs::Environment, irob_msgs::Environment> vision;
 
   Eigen::Vector3d board_t;
   std::vector<Eigen::Vector3d> peg_positions;

@@ -84,10 +84,10 @@ void PegTransfer::doPegTransfer()
   int peg_idx_to = 6;
   int increment = 1;
 
-  Eigen::Affine3d e;
+  irob_msgs::Environment e;
   // Read marker transform
   ROS_INFO_STREAM("Waiting for data from vision...");
-  e = makeNaN<Eigen::Affine3d>();
+  e = makeNaN<irob_msgs::Environment>();
   while (isnan(e) && ros::ok())
   {
     e = vision.getResult();
@@ -123,7 +123,7 @@ void PegTransfer::doPegTransfer()
     Eigen::Affine3d grasp_pose_on(
           grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_on]));
     grasp_pose_on = Eigen::Translation3d(grasp_translate_world) * grasp_pose_on;
-    grasp_pose_on = poseToCameraFrame(grasp_pose_on, e);
+    grasp_pose_on = poseToCameraFrame(grasp_pose_on, e.objects[peg_idx_on].grasp_pose);
 
     Eigen::Affine3d grasp_approach_pose_on(
           grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_on]));

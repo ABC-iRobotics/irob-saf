@@ -154,6 +154,7 @@ class BlockDetector:
         self.block_offset = 0.0285
         self.approach_offset = 0.05
         self.grasp_diameter = 0.002
+        self.plot_scatter = False
 
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
         self.src_grasp_im_coords = np.array([[0.36, 0.78],
@@ -239,6 +240,7 @@ class BlockDetector:
         plane_detect_frames_cnt = self.plane_detect_frames_N
         plane_model = []
         seq = 0
+        plane_normal = np.array([0.0, 0.0, 0.0])
 
 
 
@@ -312,6 +314,7 @@ class BlockDetector:
                                                          num_iterations=1000)
                     [a, b, c, d] = plane_model
                     print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
+                    plane_normal = np.array([a, b, c])
 
                     inlier_cloud = pcd.select_by_index(inliers)
                     inlier_cloud.paint_uniform_color([1.0, 0, 0])
@@ -362,11 +365,12 @@ class BlockDetector:
 
 
                     # Draw plot
-                    plt.ion()
-                    self.fig = plt.figure()
-                    self.ax = self.fig.add_subplot(projection='3d')
-                    self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
-                    self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
+                    if self.plot_scatter:
+                        plt.ion()
+                        self.fig = plt.figure()
+                        self.ax = self.fig.add_subplot(projection='3d')
+                        self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
+                        self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
                                                     dst_board_top_corner_coords.T[2,:], marker='^')
 
 
@@ -405,6 +409,14 @@ class BlockDetector:
                 for i in range(len(segmented_blocks)):
                     result, grasp_im_coords, block_rotation = self.detect_block(segmented_blocks[i])
                     detected_blocks.append(result)
+                    # Grasp orientation
+                    start_ori_vec = np.array([0.0, 0.0, -1.0])
+                    grasp_ori = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
+                    block_rot_in_img = R.from_euler('z', block_rotation, degrees=False)
+                    grasp_ori = block_rot_in_img * grasp_ori
+                    grasp_ori_quat = grasp_ori.as_quat()
+
+
                     j = 0
                     grasp_coords = []
                     approach_coords = []
@@ -416,8 +428,8 @@ class BlockDetector:
 
                         p_a = force_depth(p, plane_model, self.approach_offset)
                         approach_coords.append(p_a)
-
-                        self.ax.scatter(p_b[0], p_b[1], p_b[2], marker='o')
+                        if self.plot_scatter:
+                            self.ax.scatter(p_b[0], p_b[1], p_b[2], marker='o')
 
                         block_pos = block_pos + p_b
                         j = j+1
@@ -427,10 +439,18 @@ class BlockDetector:
                         block_msg.grasp_pose.position.x = grasp_coords[0][0]
                         block_msg.grasp_pose.position.y = grasp_coords[0][1]
                         block_msg.grasp_pose.position.z = grasp_coords[0][2]
+                        block_msg.grasp_pose.orientation.x = grasp_ori_quat[0]
+                        block_msg.grasp_pose.orientation.y = grasp_ori_quat[1]
+                        block_msg.grasp_pose.orientation.z = grasp_ori_quat[2]
+                        block_msg.grasp_pose.orientation.w = grasp_ori_quat[3]
 
                         block_msg.approach_pose.position.x = approach_coords[0][0]
                         block_msg.approach_pose.position.y = approach_coords[0][1]
                         block_msg.approach_pose.position.z = approach_coords[0][2]
+                        block_msg.approach_pose.orientation.x = grasp_ori_quat[0]
+                        block_msg.approach_pose.orientation.y = grasp_ori_quat[1]
+                        block_msg.approach_pose.orientation.z = grasp_ori_quat[2]
+                        block_msg.approach_pose.orientation.w = grasp_ori_quat[3]
 
                         block_pos = block_pos / j
                         block_msg.position.x = block_pos[0]
@@ -451,12 +471,12 @@ class BlockDetector:
                 #detected_blocks_stacked = cv2.hconcat(detected_blocks)
 
 
-
-                self.ax.set_xlabel('X')
-                self.ax.set_ylabel('Y')
-                self.ax.set_zlabel('Z')
-                self.fig.canvas.draw()
-                self.fig.canvas.flush_events()
+                if self.plot_scatter:
+                    self.ax.set_xlabel('X')
+                    self.ax.set_ylabel('Y')
+                    self.ax.set_zlabel('Z')
+                    self.fig.canvas.draw()
+                    self.fig.canvas.flush_events()
 
 
                 cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
@@ -727,6 +747,7 @@ class BlockDetector:
         
         
         # find correspondences using simple weighted sum of squared differences
+        block_rotation = 0.0
         if (len(triangles)) > 0:
             #print(triangles)
 
@@ -781,9 +802,10 @@ class BlockDetector:
 
                 #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                 #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
+                block_rotation = model.rotation
               
 
-        return result, grasp_im_coords_tfromed, model.rotation
+        return result, grasp_im_coords_tfromed, block_rotation
 
 
 

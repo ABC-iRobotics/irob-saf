@@ -432,6 +432,13 @@ inline bool isnan(const geometry_msgs::Quaternion& d)
           || std::isnan(d.w));
 }
 
+template <>
+inline bool isnan(const irob_msgs::Environment& d)
+{
+  return (d.valid == irob_msgs::Environment::INVALID);
+
+}
+
 // Unit vector + rotation to quat
 template<typename QuatT, typename VecT>
 inline QuatT vecToQuat(const VecT& vec, double angle);
