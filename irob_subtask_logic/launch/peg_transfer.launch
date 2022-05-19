@@ -19,7 +19,7 @@
                 <rosparam command="load"
                 file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
 
-        <remap from="target" to="vision/left/transform" />
+        <remap from="target" to="vision/blocks_grasp" />
 	</node>
   	</group>
 </launch>

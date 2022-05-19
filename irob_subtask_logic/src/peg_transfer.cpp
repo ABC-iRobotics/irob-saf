@@ -102,17 +102,6 @@ void PegTransfer::doPegTransfer()
   Eigen::Quaternion<double> grasp_ori_world(ori_world);
 
 
-  double grasp_translate_x = (object_d / 2.0) - (object_wall_d / 2.0);
-
-  Eigen::Vector3d grasp_translate_world(grasp_translate_x, 0.0, object_h);
-
-  Eigen::Vector3d approach_pre_grasp_translate_world(grasp_translate_x,
-                                                     0.0, object_h + 10.0);
-
-  Eigen::Vector3d approach_post_grasp_translate_world(grasp_translate_x,
-                                                      0.0, (2.0 * object_h) + 10.0);
-
-
 
   while(ros::ok())
   {
@@ -120,17 +109,13 @@ void PegTransfer::doPegTransfer()
     // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
 
-    Eigen::Affine3d grasp_pose_on(
-          grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_on]));
-    grasp_pose_on = Eigen::Translation3d(grasp_translate_world) * grasp_pose_on;
-    grasp_pose_on = poseToCameraFrame(grasp_pose_on, e.objects[peg_idx_on].grasp_pose);
+    Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
+                                                    e.objects[peg_idx_on].grasp_pose));
 
-    Eigen::Affine3d grasp_approach_pose_on(
-          grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_on]));
-    grasp_approach_pose_on =
-        Eigen::Translation3d(approach_pre_grasp_translate_world)
-        * grasp_approach_pose_on;
-    grasp_approach_pose_on = poseToCameraFrame(grasp_approach_pose_on, e);
+
+    Eigen::Affine3d grasp_approach_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
+                                             e.objects[peg_idx_on].approach_pose));
+
 
     arms[0]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
@@ -138,10 +123,13 @@ void PegTransfer::doPegTransfer()
       ros::Duration(0.1).sleep();
     }
 
+    ROS_INFO_STREAM("Grased object on rod " << peg_idx_on << "...");
+    ros::Duration(100.0).sleep();
+
     // Place to new rod
     ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
 
-    Eigen::Affine3d place_approach_pose_on(
+    /*Eigen::Affine3d place_approach_pose_on(
           grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_on]));
     place_approach_pose_on =
         Eigen::Translation3d(approach_post_grasp_translate_world)
@@ -203,7 +191,7 @@ void PegTransfer::doPegTransfer()
       peg_idx_to = 6;
 
       ros::Duration(1.0).sleep();
-    }
+    }*/
 
 
   }

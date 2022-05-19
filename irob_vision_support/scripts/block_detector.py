@@ -314,7 +314,7 @@ class BlockDetector:
                                                          num_iterations=1000)
                     [a, b, c, d] = plane_model
                     print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
-                    plane_normal = np.array([a, b, c])
+                    plane_normal = np.array([-a, -b, -c])
 
                     inlier_cloud = pcd.select_by_index(inliers)
                     inlier_cloud.paint_uniform_color([1.0, 0, 0])

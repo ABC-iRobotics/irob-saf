@@ -178,7 +178,7 @@ class HandEyeRegistrator:
         t -- translation vector
         """
         data = dict(
-            t = [float(t[0,0]), float(t[1,0]), float(t[1,0])],
+            t = [float(t[0,0]), float(t[1,0]), float(t[2,0])],
             R = [float(R[0,0]), float(R[0,1]), float(R[0,2]),
                 float(R[1,0]), float(R[1,1]), float(R[1,2]),
                 float(R[2,0]), float(R[2,1]), float(R[2,2])]
