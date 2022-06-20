@@ -143,11 +143,11 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 600.0 #1000.0
+        self.exposure = 600.0 #600.0
 
         self.z_offset = 0.004   # m
 
-        self.plane_detect_frames_N = 30
+        self.plane_detect_frames_N = 300
         self.detect_plane = True
         self.board_offset = 0.0135
         self.board_bb_offset = 0.005
@@ -406,8 +406,9 @@ class BlockDetector:
                 env_msg.header.seq = seq
                 env_msg.header.frame_id = "camera"
                 env_msg.tf_phantom = self.tf_phantom
+                result = color_image.copy()
                 for i in range(len(segmented_blocks)):
-                    result, grasp_im_coords, block_rotation = self.detect_block(segmented_blocks[i])
+                    result, grasp_im_coords, block_rotation = self.detect_block(segmented_blocks[i], result)
                     detected_blocks.append(result)
                     # Grasp orientation
                     start_ori_vec = np.array([0.0, 0.0, -1.0])
@@ -415,7 +416,7 @@ class BlockDetector:
                     block_rot_in_img = R.from_euler('z', block_rotation, degrees=False)
                     grasp_ori = block_rot_in_img * grasp_ori
                     grasp_ori_quat = grasp_ori.as_quat()
-                    #cv2.imshow("Output",  result)
+                    #cv2.imshow("Output1",  segmented_blocks[i])
                     #cv2.waitKey(1)
 
 
@@ -488,8 +489,8 @@ class BlockDetector:
                 seq = seq + 1
 
 
-                #cv2.imshow("Output",  output)
-                #cv2.waitKey(1)
+                cv2.imshow("Output",  result)
+                cv2.waitKey(1)
 
 
         finally:
@@ -629,16 +630,16 @@ class BlockDetector:
 
 
 
-    def detect_block(self, segmented_block):
+    def detect_block(self, segmented_block, result):
 
         result_gray = cv2.cvtColor(segmented_block, cv2.COLOR_BGR2GRAY)
-        kernel = np.ones((5,5),np.float32)/25
+        kernel = np.ones((3,3),np.float32)/25
         result_gray = cv2.filter2D(result_gray,-1,kernel)
         grasp_im_coords_tfromed = []
         # Defining all the parameters
         t_lower = 100 # Lower Threshold
         t_upper = 230 # Upper threshold
-        aperture_size = 5 # Aperture size
+        aperture_size = 7 # Aperture size
         L2Gradient = False # Boolean
 
         # Applying the Canny Edge filter
@@ -646,8 +647,8 @@ class BlockDetector:
         edge = cv2.Canny(result_gray, t_lower, t_upper,
                          apertureSize = aperture_size,
                          L2gradient = L2Gradient )
-
-
+        #cv2.imshow("Canny",  edge)
+        #cv2.waitKey(0)
 
         lines = cv2.HoughLinesP(
                     edge, # Input edge image
@@ -659,7 +660,7 @@ class BlockDetector:
                     )
 
 
-        result = segmented_block.copy()
+        #result = segmented_block.copy()
 
         # Iterate over points
         #for points in lines:
@@ -686,8 +687,8 @@ class BlockDetector:
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
-                        cv2.circle(result, (x, y), r, (0, 255, 0), 4)
-                        cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                        #cv2.circle(result, (x, y), r, (0, 255, 0), 4)
+                        #cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
                         #print("Dist")
                         distances = []
                         if lines is not None:
@@ -701,9 +702,9 @@ class BlockDetector:
                         distances.sort(key=lambda distance: distance[1])
                         #print(distances)
 
-                        dist_threshold = 2 #10
-                        diff_threshold = 20.0 #5.0
-                        angle_threshold = 30.0 #50.0
+                        dist_threshold = 5 #10
+                        diff_threshold = 4.0 #5.0
+                        angle_threshold = 55.0 #50.0
                         line_idxs = []
                         for j in range(len(distances) - 1):
                             xp1,yp1,xp2,yp2=lines[distances[j][0]][0]
