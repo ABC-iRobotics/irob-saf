@@ -265,7 +265,7 @@ class BlockDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
-                color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+                #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                 cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
                 cv2.imshow('Color image', color_image)
@@ -415,6 +415,8 @@ class BlockDetector:
                     block_rot_in_img = R.from_euler('z', block_rotation, degrees=False)
                     grasp_ori = block_rot_in_img * grasp_ori
                     grasp_ori_quat = grasp_ori.as_quat()
+                    #cv2.imshow("Output",  result)
+                    #cv2.waitKey(1)
 
 
                     j = 0
@@ -465,6 +467,7 @@ class BlockDetector:
 
 
 
+
                 # Send grasp positions
                 self.blocks_pub.publish(env_msg)
 
@@ -479,9 +482,9 @@ class BlockDetector:
                     self.fig.canvas.flush_events()
 
 
-                cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
-                cv2.imshow('Segmented', detected_blocks[1])
-                cv2.waitKey(1)
+                #cv2.namedWindow('Segmented', cv2.WINDOW_NORMAL)
+                #cv2.imshow('Segmented', detected_blocks[1])
+                #cv2.waitKey(1)
                 seq = seq + 1
 
 
@@ -683,8 +686,8 @@ class BlockDetector:
                 for (x, y, r) in circles:
                         # draw the circle in the output image, then draw a rectangle
                         # corresponding to the center of the circle
-                        #cv2.circle(result, (x, y), r, (0, 255, 0), 4)
-                        #cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+                        cv2.circle(result, (x, y), r, (0, 255, 0), 4)
+                        cv2.rectangle(result, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
                         #print("Dist")
                         distances = []
                         if lines is not None:
@@ -698,9 +701,9 @@ class BlockDetector:
                         distances.sort(key=lambda distance: distance[1])
                         #print(distances)
 
-                        dist_threshold = 10
-                        diff_threshold = 5.0
-                        angle_threshold = 50.0
+                        dist_threshold = 2 #10
+                        diff_threshold = 20.0 #5.0
+                        angle_threshold = 30.0 #50.0
                         line_idxs = []
                         for j in range(len(distances) - 1):
                             xp1,yp1,xp2,yp2=lines[distances[j][0]][0]
@@ -800,8 +803,8 @@ class BlockDetector:
                 for p in grasp_im_coords_tfromed:
                     cv2.circle(result, (int(round(p[0])), int(round(p[1]))), 3, (0, 255, 0), 2)
 
-                #cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
-                #cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
+                cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
+                cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
                 block_rotation = model.rotation
               
 
@@ -844,7 +847,7 @@ if __name__ == '__main__':
     print("Node started")
     #help(cv2.aruco)
 
-    detector = BlockDetector(offline = True,
+    detector = BlockDetector(offline = False,
                         bagfile="/home/tamas/data/pegtransfer/highres_yellow_1.bag")
 
     detector.start_and_process_stream()

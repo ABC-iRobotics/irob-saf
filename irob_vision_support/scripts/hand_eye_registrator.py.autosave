@@ -82,7 +82,7 @@ class HandEyeRegistrator:
         """Callback function when clutch button is pressed.
         Collect one sample from the positions.
         """
-        rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
+        #rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
         if self.fiducial_tf is not None and self.clutch_N > 0 and msg.buttons[0] == 0:
             self.gather_actual_position()
 
