@@ -32,6 +32,10 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
   priv_nh.getParam("object_d", object_d);
   priv_nh.getParam("object_wall_d", object_wall_d);
 
+  priv_nh.getParam("offs_x", offs_x);
+  priv_nh.getParam("offs_y", offs_y);
+  priv_nh.getParam("offs_z" , offs_z);
+
 
   std::vector<double> param_board_t;
   priv_nh.getParam("board_t", param_board_t);
@@ -101,7 +105,7 @@ void PegTransfer::doPegTransfer()
 
   Eigen::Quaternion<double> grasp_ori_world(ori_world);
 
-
+  Eigen::Translation3d offset = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
 
   while(ros::ok())
   {
@@ -112,10 +116,13 @@ void PegTransfer::doPegTransfer()
     Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                     e.objects[peg_idx_on].grasp_pose));
 
+    grasp_pose_on = offset * grasp_pose_on;
+
 
     Eigen::Affine3d grasp_approach_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                              e.objects[peg_idx_on].approach_pose));
 
+    grasp_approach_pose_on = offset * grasp_approach_pose_on;
 
     arms[0]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())

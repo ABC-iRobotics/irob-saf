@@ -153,8 +153,9 @@ class BlockDetector:
         self.board_bb_offset = 0.005
         self.block_offset = 0.0285
         self.approach_offset = 0.05
-        self.grasp_diameter = 0.002
+        self.grasp_diameter = 0.0001
         self.plot_scatter = False
+        self.grasp_idx = 1
 
         self.src_triangle_im_coords = np.array([[0.0, 0.866], [1.0, 0.866], [0.5, 0.0]])
         self.src_grasp_im_coords = np.array([[0.36, 0.78],
@@ -439,17 +440,17 @@ class BlockDetector:
 
                     if (len(grasp_coords) > 0):
                         block_msg = GraspObject()
-                        block_msg.grasp_pose.position.x = grasp_coords[0][0]*1000.0
-                        block_msg.grasp_pose.position.y = grasp_coords[0][1]*1000.0
-                        block_msg.grasp_pose.position.z = grasp_coords[0][2]*1000.0
+                        block_msg.grasp_pose.position.x = grasp_coords[self.grasp_idx][0]*1000.0
+                        block_msg.grasp_pose.position.y = grasp_coords[self.grasp_idx][1]*1000.0
+                        block_msg.grasp_pose.position.z = grasp_coords[self.grasp_idx][2]*1000.0
                         block_msg.grasp_pose.orientation.x = grasp_ori_quat[0]
                         block_msg.grasp_pose.orientation.y = grasp_ori_quat[1]
                         block_msg.grasp_pose.orientation.z = grasp_ori_quat[2]
                         block_msg.grasp_pose.orientation.w = grasp_ori_quat[3]
 
-                        block_msg.approach_pose.position.x = approach_coords[0][0]*1000.0
-                        block_msg.approach_pose.position.y = approach_coords[0][1]*1000.0
-                        block_msg.approach_pose.position.z = approach_coords[0][2]*1000.0
+                        block_msg.approach_pose.position.x = approach_coords[self.grasp_idx][0]*1000.0
+                        block_msg.approach_pose.position.y = approach_coords[self.grasp_idx][1]*1000.0
+                        block_msg.approach_pose.position.z = approach_coords[self.grasp_idx][2]*1000.0
                         block_msg.approach_pose.orientation.x = grasp_ori_quat[0]
                         block_msg.approach_pose.orientation.y = grasp_ori_quat[1]
                         block_msg.approach_pose.orientation.z = grasp_ori_quat[2]

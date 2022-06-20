@@ -6,6 +6,10 @@
         <arg name="board_descriptor"
         default="peg_transfer_board.yaml"/>
 
+        <arg name="offs_x" default="-9.0"/>
+        <arg name="offs_y" default="-8.0"/>
+        <arg name="offs_z" default="5.0"/>
+
         <arg name="speed_cartesian" default="20.0"/>
         <arg name="speed_jaw" default="20.0"/>
 
@@ -14,6 +18,9 @@
 
                 <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
                 <param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
+                <param name="offs_x" type="double" value="$(arg offs_x)" />
+                <param name="offs_y" type="double" value="$(arg offs_y)" />
+                <param name="offs_z" type="double" value="$(arg offs_z)" />
   		
 				<rosparam param="arm_names">["arm_1"]</rosparam>
                 <rosparam command="load"

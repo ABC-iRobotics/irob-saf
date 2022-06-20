@@ -58,6 +58,10 @@ protected:
   double object_d;
   double object_wall_d;
 
+  double offs_x;
+  double offs_y;
+  double offs_z;
+
 
   void loadBoardDescriptor(ros::NodeHandle);
   Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
