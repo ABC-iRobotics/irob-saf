@@ -82,7 +82,7 @@ class HandEyeRegistrator:
         """Callback function when clutch button is pressed.
         Collect one sample from the positions.
         """
-        rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
+        #rospy.loginfo(rospy.get_caller_id() + " I heard clutch %s", msg)
         if self.fiducial_tf is not None and self.clutch_N > 0 and msg.buttons[0] == 0:
             self.gather_actual_position()
 
@@ -135,12 +135,12 @@ class HandEyeRegistrator:
         """
         input("Collect data for registration. Press Enter when done...")
 
-        R, t = rigid_transform_3D(self.robot_positions.T, self.fiducial_positions.T)
+        R, t = rigid_transform_3D(self.fiducial_positions.T, self.robot_positions.T)
 
         # Check transformation
         points_transformed = np.zeros(self.robot_positions.shape)
 
-        for i in range(self.robot_positions.shape[1]):
+        for i in range(self.robot_positions.shape[0]):
 
             p = np.dot(R, self.robot_positions[i,:].T) + t.T
 

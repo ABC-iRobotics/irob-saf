@@ -143,7 +143,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 600.0 #600.0
+        self.exposure = 1000.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
@@ -267,9 +267,9 @@ class BlockDetector:
                 color_image = np.asanyarray(color_frame.get_data())
                 #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
-                cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
-                cv2.imshow('Color image', color_image)
-                cv2.waitKey(1)
+                #cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
+                #cv2.imshow('Color image', color_image)
+                #cv2.waitKey(1)
 
 
                 # Remove background - Set pixels further than clipping_distance to grey
@@ -382,9 +382,9 @@ class BlockDetector:
                     self.tf_phantom.rotation.y = board_R_quat[1]
                     self.tf_phantom.rotation.z = board_R_quat[2]
                     self.tf_phantom.rotation.w = board_R_quat[3]
-                    self.tf_phantom.translation.x = board_T.params[0,3]
-                    self.tf_phantom.translation.y = board_T.params[1,3]
-                    self.tf_phantom.translation.z = board_T.params[2,3]
+                    self.tf_phantom.translation.x = board_T.params[0,3]*1000.0
+                    self.tf_phantom.translation.y = board_T.params[1,3]*1000.0
+                    self.tf_phantom.translation.z = board_T.params[2,3]*1000.0
                     print(self.tf_phantom)
 
 
@@ -439,26 +439,26 @@ class BlockDetector:
 
                     if (len(grasp_coords) > 0):
                         block_msg = GraspObject()
-                        block_msg.grasp_pose.position.x = grasp_coords[0][0]
-                        block_msg.grasp_pose.position.y = grasp_coords[0][1]
-                        block_msg.grasp_pose.position.z = grasp_coords[0][2]
+                        block_msg.grasp_pose.position.x = grasp_coords[0][0]*1000.0
+                        block_msg.grasp_pose.position.y = grasp_coords[0][1]*1000.0
+                        block_msg.grasp_pose.position.z = grasp_coords[0][2]*1000.0
                         block_msg.grasp_pose.orientation.x = grasp_ori_quat[0]
                         block_msg.grasp_pose.orientation.y = grasp_ori_quat[1]
                         block_msg.grasp_pose.orientation.z = grasp_ori_quat[2]
                         block_msg.grasp_pose.orientation.w = grasp_ori_quat[3]
 
-                        block_msg.approach_pose.position.x = approach_coords[0][0]
-                        block_msg.approach_pose.position.y = approach_coords[0][1]
-                        block_msg.approach_pose.position.z = approach_coords[0][2]
+                        block_msg.approach_pose.position.x = approach_coords[0][0]*1000.0
+                        block_msg.approach_pose.position.y = approach_coords[0][1]*1000.0
+                        block_msg.approach_pose.position.z = approach_coords[0][2]*1000.0
                         block_msg.approach_pose.orientation.x = grasp_ori_quat[0]
                         block_msg.approach_pose.orientation.y = grasp_ori_quat[1]
                         block_msg.approach_pose.orientation.z = grasp_ori_quat[2]
                         block_msg.approach_pose.orientation.w = grasp_ori_quat[3]
 
                         block_pos = block_pos / j
-                        block_msg.position.x = block_pos[0]
-                        block_msg.position.y = block_pos[1]
-                        block_msg.position.z = block_pos[2]
+                        block_msg.position.x = block_pos[0]*1000.0
+                        block_msg.position.y = block_pos[1]*1000.0
+                        block_msg.position.z = block_pos[2]*1000.0
 
                         block_msg.grasp_diameter = self.grasp_diameter
 
