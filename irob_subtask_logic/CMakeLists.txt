@@ -136,9 +136,9 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(camera src/camera.cpp)
 add_executable(peg_transfer src/peg_transfer.cpp)
-add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
-add_executable(cut_vessel src/cut_vessel.cpp)
-add_executable(grasp src/grasp.cpp)
+#add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
+#add_executable(cut_vessel src/cut_vessel.cpp)
+#add_executable(grasp src/grasp.cpp)
 add_executable(accuracy_meas src/accuracy_meas.cpp)
 
 
@@ -168,21 +168,21 @@ target_link_libraries(camera
 	${catkin_LIBRARIES}
 	irob_subtask_logic_lib
 	)
-  target_link_libraries(peg_transfer_dual
-      ${catkin_LIBRARIES}
-      irob_subtask_logic_lib
-      )
+ # target_link_libraries(peg_transfer_dual
+ #     ${catkin_LIBRARIES}
+ #     irob_subtask_logic_lib
+ #     )
 
-    target_link_libraries(cut_vessel
-        ${catkin_LIBRARIES}
-        irob_subtask_logic_lib
-        )
+  #  target_link_libraries(cut_vessel
+ #       ${catkin_LIBRARIES}
+  #      irob_subtask_logic_lib
+  #      )
 
 
-target_link_libraries(grasp
-	${catkin_LIBRARIES}
-	irob_subtask_logic_lib
-	)
+#target_link_libraries(grasp
+#	${catkin_LIBRARIES}
+#	irob_subtask_logic_lib
+#	)
 
 
   target_link_libraries(accuracy_meas

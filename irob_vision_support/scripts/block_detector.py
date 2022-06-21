@@ -4,7 +4,7 @@ from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
 import message_filters
 from irob_msgs.msg import GraspObject, Environment
-from geometry_msgs.msg import Point, Transform
+from geometry_msgs.msg import Point, Transform, Pose
 
 from geometry_msgs.msg import Pose2D
 
@@ -266,7 +266,8 @@ class BlockDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
-                #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+                if self.offline:
+                    color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
 
                 #cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
                 #cv2.imshow('Color image', color_image)
@@ -440,21 +441,27 @@ class BlockDetector:
 
                     if (len(grasp_coords) > 0):
                         block_msg = GraspObject()
-                        block_msg.grasp_pose.position.x = grasp_coords[self.grasp_idx][0]*1000.0
-                        block_msg.grasp_pose.position.y = grasp_coords[self.grasp_idx][1]*1000.0
-                        block_msg.grasp_pose.position.z = grasp_coords[self.grasp_idx][2]*1000.0
-                        block_msg.grasp_pose.orientation.x = grasp_ori_quat[0]
-                        block_msg.grasp_pose.orientation.y = grasp_ori_quat[1]
-                        block_msg.grasp_pose.orientation.z = grasp_ori_quat[2]
-                        block_msg.grasp_pose.orientation.w = grasp_ori_quat[3]
+                        for k in range(6):
+                            grasp_pose = Pose()
+                            approach_pose = Pose()
+                            grasp_pose.position.x = grasp_coords[k][0]*1000.0
+                            grasp_pose.position.y = grasp_coords[k][1]*1000.0
+                            grasp_pose.position.z = grasp_coords[k][2]*1000.0
+                            grasp_pose.orientation.x = grasp_ori_quat[0]
+                            grasp_pose.orientation.y = grasp_ori_quat[1]
+                            grasp_pose.orientation.z = grasp_ori_quat[2]
+                            grasp_pose.orientation.w = grasp_ori_quat[3]
 
-                        block_msg.approach_pose.position.x = approach_coords[self.grasp_idx][0]*1000.0
-                        block_msg.approach_pose.position.y = approach_coords[self.grasp_idx][1]*1000.0
-                        block_msg.approach_pose.position.z = approach_coords[self.grasp_idx][2]*1000.0
-                        block_msg.approach_pose.orientation.x = grasp_ori_quat[0]
-                        block_msg.approach_pose.orientation.y = grasp_ori_quat[1]
-                        block_msg.approach_pose.orientation.z = grasp_ori_quat[2]
-                        block_msg.approach_pose.orientation.w = grasp_ori_quat[3]
+                            approach_pose.position.x = approach_coords[k][0]*1000.0
+                            approach_pose.position.y = approach_coords[k][1]*1000.0
+                            approach_pose.position.z = approach_coords[k][2]*1000.0
+                            approach_pose.orientation.x = grasp_ori_quat[0]
+                            approach_pose.orientation.y = grasp_ori_quat[1]
+                            approach_pose.orientation.z = grasp_ori_quat[2]
+                            approach_pose.orientation.w = grasp_ori_quat[3]
+
+                            block_msg.grasp_poses.append(grasp_pose)
+                            block_msg.approach_poses.append(approach_pose)
 
                         block_pos = block_pos / j
                         block_msg.position.x = block_pos[0]*1000.0

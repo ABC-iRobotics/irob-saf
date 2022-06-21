@@ -24,7 +24,7 @@ find_package(catkin REQUIRED
 	irob_msgs
 	irob_utils
         pcl_ros
-        libpointmatcher_ros
+        #libpointmatcher_ros
 	)
 
 
@@ -164,8 +164,8 @@ add_executable(camera_preprocessor
 add_executable(serial_test
     src/serial_test.cpp)
 
-add_executable(peg_transfer_perception
-    src/peg_transfer_perception.cpp)
+#add_executable(peg_transfer_perception
+#    src/peg_transfer_perception.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
@@ -207,13 +207,13 @@ target_link_libraries(serial_test
         irob_vision_support_lib
         )
 
-target_link_libraries(peg_transfer_perception
-        ${catkin_LIBRARIES}
-        ${PCL_LIBRARIES}
-        ${realsense2_LIBRARY}
-        ${libpointmatcher_LIBRARIES}
-        irob_vision_support_lib
-        )
+#target_link_libraries(peg_transfer_perception
+#        ${catkin_LIBRARIES}
+#        ${PCL_LIBRARIES}
+#        ${realsense2_LIBRARY}
+#        ${libpointmatcher_LIBRARIES}
+#        irob_vision_support_lib
+ #       )
 
 
 #############

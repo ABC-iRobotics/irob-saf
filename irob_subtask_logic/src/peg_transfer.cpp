@@ -114,13 +114,13 @@ void PegTransfer::doPegTransfer()
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
 
     Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
-                                                    e.objects[peg_idx_on].grasp_pose));
+                                                    e.objects[peg_idx_on].grasp_poses[0]));
 
     grasp_pose_on = offset * grasp_pose_on;
 
 
     Eigen::Affine3d grasp_approach_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
-                                             e.objects[peg_idx_on].approach_pose));
+                                             e.objects[peg_idx_on].approach_poses[0]));
 
     grasp_approach_pose_on = offset * grasp_approach_pose_on;
 
