@@ -7,7 +7,7 @@
         default="peg_transfer_board.yaml"/>
 
         <arg name="offs_x" default="-9.0"/>
-        <arg name="offs_y" default="-8.0"/>
+        <arg name="offs_y" default="-6.0"/>
         <arg name="offs_z" default="5.0"/>
 
         <arg name="speed_cartesian" default="20.0"/>

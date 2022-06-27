@@ -53,6 +53,7 @@ protected:
 
   Eigen::Vector3d board_t;
   std::vector<Eigen::Vector3d> peg_positions;
+  std::vector<Eigen::Vector3d> grasp_positions;
   double peg_h;
   double object_h;
   double object_d;
