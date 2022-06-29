@@ -143,7 +143,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 500.0 #600.0 #600.0
+        self.exposure = 800.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
@@ -379,12 +379,12 @@ class BlockDetector:
 
 
 
-                    #board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
+                    board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
                     #board_R_helper = R.from_euler('x', 90, degrees=True)
-
                     #board_R_mat = board_R_helper * board_R_mat
-                    start_ori_vec = np.array([0.0, 0.0, -1.0])
-                    board_R_mat = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
+
+                    #start_ori_vec = np.array([0.0, 0.0, -1.0])
+                    #board_R_mat = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
 
                     board_R_quat = board_R_mat.as_quat()
                     self.tf_phantom.rotation.x = board_R_quat[0]
