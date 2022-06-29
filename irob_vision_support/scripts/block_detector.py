@@ -49,9 +49,21 @@ def dist_line_from_point(x0, y0, xp1, yp1, xp2, yp2):
 
 
 def angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
-    m1 = (yp2-yp1) / (xp2-xp1)
-    m2 = (yp4-yp3) / (xp4-xp3)
-    return math.degrees(math.atan((m1-m2) / (1 + (m1 * m2))))
+    if xp2 != xp1:
+        m1 = float((yp2-yp1)) / float((xp2-xp1))
+    else:
+        m1 = (yp2-yp1) * 2.0
+
+    if xp4 != xp3:
+        m2 = float((yp4-yp3)) / float((xp4-xp3))
+    else:
+        m2 = (yp4-yp3) * 2.0
+
+    try:
+        ret = math.degrees(math.atan((m1-m2) / (1 + (m1 * m2))))
+    except ZeroDivisionError:
+        ret = math.degrees(math.atan((m1-m2) / (0.0000001)))
+    return ret
 
 def intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
 
@@ -108,9 +120,8 @@ class BlockDetector:
 
 
 
-
-        self.lower_red = (150, 100, 50)
-        self.upper_red = (180, 255, 255)
+        self.lower_red = (0, 150, 150)
+        self.upper_red = (80, 255, 255)
         self.lower_darkred = (0, 100, 50)
         self.upper_darkred = (7, 255, 255)
         self.lower_yellow = (20, 0, 0)
@@ -143,13 +154,14 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 800.0 #600.0 #600.0
+        self.exposure = 500.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
-        self.plane_detect_frames_N = 300
+        self.plane_detect_frames_N = 600
+        self.cv_frames_N = 10
         self.detect_plane = True
-        self.board_offset = 0.0135
+        self.board_offset = 0.014
         self.board_bb_offset = 0.005
         self.block_offset = 0.0285
         self.approach_offset = 0.05
@@ -167,10 +179,10 @@ class BlockDetector:
 
 
 
-        self.src_board_top_corner_coords = np.array([[0.0, 0.0, -0.008],
-                                                     [0.1011, 0.0, -0.008],
-                                                     [0.1011, 0.0628, -0.008],
-                                                     [0.0, 0.0628, -0.008]])
+        self.src_board_top_corner_coords = np.array([[0.00, 0.00, -0.00],
+                                                     [0.1011, 0.00, -0.00],
+                                                     [0.1011, 0.0628, -0.00],
+                                                     [0.00, 0.0628, -0.00]])
 
 
         self.tf_phantom = Transform()
@@ -241,11 +253,16 @@ class BlockDetector:
         inited = False
 
         plane_detect_frames_cnt = self.plane_detect_frames_N
+        cv_frames_cnt = self.cv_frames_N
         plane_model = []
         seq = 0
         plane_normal = np.array([0.0, 0.0, 0.0])
 
 
+        if self.plot_scatter:
+            plt.ion()
+            self.fig = plt.figure()
+            self.ax = self.fig.add_subplot(projection='3d')
 
 
         # Streaming loop
@@ -275,7 +292,11 @@ class BlockDetector:
                 #cv2.imshow('Color image', color_image)
                 #cv2.waitKey(1)
 
-
+                if not cv_frames_cnt >= self.cv_frames_N:
+                    cv_frames_cnt += 1
+                    plane_detect_frames_cnt = plane_detect_frames_cnt + 1
+                    continue
+                cv_frames_cnt = 1
                 # Remove background - Set pixels further than clipping_distance to grey
                 grey_color = 0
                 depth_image_3d = np.dstack((depth_image,depth_image,depth_image))
@@ -297,7 +318,7 @@ class BlockDetector:
                 intrinsics = (aligned_depth_frame.profile
                             .as_video_stream_profile().get_intrinsics())
                 w_h = depth_image.shape
-
+                result = color_image.copy()
 
 
                 # Point cloud
@@ -337,27 +358,50 @@ class BlockDetector:
                     #outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
 
                     # Find board
-                    R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
-                    center_bb = np.array([0.0, 0.0, -(d + self.board_bb_offset)])
-                    extent_bb = np.array([1.0, 1.0, 0.005])
+                    #R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
+                    #center_bb = np.array([0.0, 0.0, -(d + self.board_bb_offset)])
+                    #extent_bb = np.array([1.0, 1.0, 0.005])
 
-                    bb = o3d.geometry.OrientedBoundingBox(center_bb, R_bb, extent_bb)
-                    pcd_board = pcd.crop(bb)
-                    pcd_board.paint_uniform_color([0, 1.0, 0])
+                    #bb = o3d.geometry.OrientedBoundingBox(center_bb, R_bb, extent_bb)
+                    #pcd_board = pcd.crop(bb)
+                    #pcd_board.paint_uniform_color([0, 1.0, 0])
 
-                    bb_small = o3d.geometry.OrientedBoundingBox.create_from_points(pcd_board.points)
+                    #bb_small = o3d.geometry.OrientedBoundingBox.create_from_points(pcd_board.points)
                     #print(np.asarray(bb_small.get_box_points()))
-                    bb_points = np.asarray(bb_small.get_box_points())
+                    #bb_points = np.asarray(bb_small.get_box_points())
 
                     # Could be the lower 4?
-                    dst_board_top_corner_coords = np.array([force_depth(bb_points[0], plane_model, self.board_offset),
-                                                            force_depth(bb_points[1], plane_model, self.board_offset),
-                                                            force_depth(bb_points[7], plane_model, self.board_offset),
-                                                            force_depth(bb_points[2], plane_model, self.board_offset)])
+                    #dst_board_top_corner_coords = np.array([force_depth(bb_points[0], plane_model, self.board_offset),
+                    #                                        force_depth(bb_points[1], plane_model, self.board_offset),
+                    #                                        force_depth(bb_points[7], plane_model, self.board_offset),
+                    #                                        force_depth(bb_points[2], plane_model, self.board_offset)])
 
 
                     #print(dst_board_top_corner_coords)
+                else:
+                    plane_detect_frames_cnt = plane_detect_frames_cnt + 1
 
+
+                # Board detection
+                segmented_board, mask = self.segment_board(color_image, "red", 6)
+                #cv2.imshow("Board seg",  mask)
+                #cv2.waitKey(1)
+                result, dst = self.detect_board(segmented_board, result)
+
+
+                board_dst_coords = []
+                if dst is not None:
+                    for i in range(dst.shape[0]):
+                        p, result = self.get_pixel_position_search_depth(dst[i,:],
+                                               aligned_depth_frame, w_h, intrinsics, result, 0)
+                        p_b = force_depth(p, plane_model, self.board_offset)
+                        board_dst_coords.append(p_b)
+                    #print(board_dst_coords)
+                    #cv2.imshow("Board",  result_board)
+                    #cv2.waitKey(1)
+
+                    #
+                    dst_board_top_corner_coords = np.array(board_dst_coords)
                     board_T = EuclideanTransform()
                     board_T.estimate(self.src_board_top_corner_coords, dst_board_top_corner_coords)
                     board_residuals = board_T.residuals(self.src_board_top_corner_coords, dst_board_top_corner_coords)
@@ -370,39 +414,34 @@ class BlockDetector:
 
                     # Draw plot
                     if self.plot_scatter:
-                        plt.ion()
-                        self.fig = plt.figure()
-                        self.ax = self.fig.add_subplot(projection='3d')
-                        self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:], val_board_corners.T[2,:], marker='o')
+                        self.ax.scatter(val_board_corners.T[0,:], val_board_corners.T[1,:],
+                                                    val_board_corners.T[2,:], marker='o')
                         self.ax.scatter(dst_board_top_corner_coords.T[0,:], dst_board_top_corner_coords.T[1,:],
-                                                    dst_board_top_corner_coords.T[2,:], marker='^')
+                                                   dst_board_top_corner_coords.T[2,:], marker='^')
 
 
+                    if np.mean(board_residuals) < 0.005:
+                        board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
+                        #board_R_helper = R.from_euler('x', 90, degrees=True)
+                        #board_R_mat = board_R_helper * board_R_mat
 
-                    board_R_mat = R.from_matrix(board_T.params[0:3,0:3])
-                    #board_R_helper = R.from_euler('x', 90, degrees=True)
-                    #board_R_mat = board_R_helper * board_R_mat
-
-                    #start_ori_vec = np.array([0.0, 0.0, -1.0])
-                    #board_R_mat = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
-
-                    board_R_quat = board_R_mat.as_quat()
-                    self.tf_phantom.rotation.x = board_R_quat[0]
-                    self.tf_phantom.rotation.y = board_R_quat[1]
-                    self.tf_phantom.rotation.z = board_R_quat[2]
-                    self.tf_phantom.rotation.w = board_R_quat[3]
-                    self.tf_phantom.translation.x = board_T.params[0,3]*1000.0
-                    self.tf_phantom.translation.y = board_T.params[1,3]*1000.0
-                    self.tf_phantom.translation.z = board_T.params[2,3]*1000.0
-                    print(self.tf_phantom)
+                        #start_ori_vec = np.array([0.0, 0.0, -1.0])
+                        #board_R_mat = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
+                        board_R_quat = board_R_mat.as_quat()
+                        self.tf_phantom.rotation.x = board_R_quat[0]
+                        self.tf_phantom.rotation.y = board_R_quat[1]
+                        self.tf_phantom.rotation.z = board_R_quat[2]
+                        self.tf_phantom.rotation.w = board_R_quat[3]
+                        self.tf_phantom.translation.x = board_T.params[0,3]*1000.0
+                        self.tf_phantom.translation.y = board_T.params[1,3]*1000.0
+                        self.tf_phantom.translation.z = board_T.params[2,3]*1000.0
+                        print(self.tf_phantom)
 
 
 
 
                     #o3d.visualization.draw_geometries([pcd,inlier_cloud, bb, pcd_board, bb_small])
 
-                else:
-                    plane_detect_frames_cnt = plane_detect_frames_cnt + 1
 
 
                 # Block detection
@@ -415,7 +454,7 @@ class BlockDetector:
                 env_msg.header.seq = seq
                 env_msg.header.frame_id = "camera"
                 env_msg.tf_phantom = self.tf_phantom
-                result = color_image.copy()
+                #result = color_image.copy()
                 for i in range(len(segmented_blocks)):
                     result, grasp_im_coords, block_rotation = self.detect_block(segmented_blocks[i], result)
                     detected_blocks.append(result)
@@ -642,7 +681,164 @@ class BlockDetector:
         return ret_im
 
 
+    def segment_board(self, image, col, n):
 
+
+        if col == 'red':
+            hsv_lower = self.lower_red
+            hsv_upper = self.upper_red
+        else:
+            return
+
+        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv_img)
+
+        mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
+
+        #if color == 'red' or color == 'purple':
+        #    mask_2 = cv2.inRange(hsv_img, hsv_lower_2, hsv_upper_2)
+        #    mask = cv2.bitwise_or(mask, mask_2)
+
+        #mask_background = cv2.inRange(hsv_img, self.lower_background, self.upper_background)
+        #mask_background = 255 - mask_background
+        #mask = cv2.bitwise_and(mask, mask_background)
+
+        kernel = np.ones((3,3), np.uint8)
+        mask = cv2.erode(mask, kernel, iterations=1)
+
+
+
+
+        blobs = cv2.connectedComponentsWithStats(
+                    mask, 4, cv2.CV_32S)
+        (numLabels, labels, stats, centroids) = blobs
+
+
+        max_area = 0
+        max_area_i = 0
+        for i in range(numLabels):
+            area = stats[i, cv2.CC_STAT_AREA]
+            if area > max_area:
+                max_are = area
+                max_area_i = i
+
+        mask_ret = np.where(labels == max_area_i, np.uint8(1), np.uint8(0))
+        mask_ret = cv2.dilate(mask_ret, kernel, iterations=1)
+        #ret_im = image.copy()
+        ret_im = np.zeros(image.shape,dtype=np.uint8)
+        ret_im.fill(255)
+        ret_im = cv2.bitwise_and(ret_im, ret_im, mask = mask_ret)
+        return ret_im, mask
+
+
+    def detect_board(self, segmented_board, result):
+
+        result_gray = cv2.cvtColor(segmented_board, cv2.COLOR_BGR2GRAY)
+        kernel = np.ones((3,3),np.float32)/25
+        result_gray = cv2.filter2D(result_gray,-1,kernel)
+        grasp_im_coords_tfromed = []
+        # Defining all the parameters
+        t_lower = 2 # Lower Threshold
+        t_upper = 255 # Upper threshold
+        aperture_size = 7 # Aperture size
+        L2Gradient = False # Boolean
+
+        # Applying the Canny Edge filter
+        # with Aperture Size and L2Gradient
+        edge = cv2.Canny(result_gray, t_lower, t_upper,
+                         apertureSize = aperture_size,
+                         L2gradient = L2Gradient )
+        #cv2.imshow("Canny",  edge)
+        #cv2.waitKey(0)
+
+        lines = cv2.HoughLinesP(
+                    edge, # Input edge image
+                    1, # Distance resolution in pixels
+                    np.pi/360, # Angle resolution in radians
+                    threshold=50, # Min number of votes for valid line
+                    minLineLength=30, # Min allowed length of line
+                    maxLineGap=30 # Max allowed gap between line for joining them
+                    )
+
+
+        #result = segmented_block.copy()
+
+        # Iterate over points
+        #for points in lines:
+              # Extracted points nested in the list
+            #x1,y1,x2,y2=points[0]
+            # Draw the lines joing the points
+            # On the original image
+            #cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+
+
+
+
+        # ensure at least some circles were found
+        cornerX = []
+        cornerY = []
+        if lines is not None:
+            print(lines.shape[0])
+        if lines is not None and lines.shape[0] == 4:
+            for i in range(lines.shape[0] - 1):
+                for j in range(i + 1,lines.shape[0] ):
+                    xp1,yp1,xp2,yp2=lines[i][0]
+                    xp3,yp3,xp4,yp4=lines[j][0]
+                    angle = abs(angle_between_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4))
+                    #print(angle)
+                    if angle > 70 and angle < 100:
+                        Ax,Ay = intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4)
+                        print(Ax, Ay)
+                        cornerX.append(int(round(Ax)))
+                        cornerY.append(int(round(Ay)))
+
+
+        #cv2.imshow("Lines",  result)
+        #cv2.waitKey(0)
+
+        pre = np.array(([cornerX, cornerY])).T
+        dst = np.empty_like(pre)
+        print(pre)
+
+        left_i_1 = 0
+        left_i_2 = 1
+        min_avg_x = 10000
+        if pre.shape[0] != 4:
+            print("Board not found!")
+            return result, None
+        for i in range(3):
+            for j in range(1,4):
+                avg_x = (pre[i,0] + pre[j,0]) / 2
+                if avg_x < min_avg_x and i != j:
+                    left_i_1 = i
+                    left_i_2 = j
+                    min_avg_x = avg_x
+        idxs = [0,1,2,3]
+        idxs.remove(left_i_1)
+        idxs.remove(left_i_2)
+
+        if pre[left_i_1,1] > pre[left_i_2,1]:
+            dst[0,:] = pre[left_i_1,:]
+            dst[3,:] = pre[left_i_2,:]
+        else:
+            dst[3,:] = pre[left_i_1,:]
+            dst[0,:] = pre[left_i_2,:]
+
+        if pre[idxs[0],1] > pre[idxs[1],1]:
+            dst[1,:] = pre[idxs[0],:]
+            dst[2,:] = pre[idxs[1],:]
+        else:
+            dst[2,:] = pre[idxs[0],:]
+            dst[1,:] = pre[idxs[1],:]
+
+        for i in range(4):
+            cv2.line(result,(dst[i,0],dst[i,1]),(dst[(i+1)%4,0],dst[(i+1)%4,1]),(0,255,0),2)
+
+
+
+
+
+        return result, dst
 
 
     def detect_block(self, segmented_block, result):
