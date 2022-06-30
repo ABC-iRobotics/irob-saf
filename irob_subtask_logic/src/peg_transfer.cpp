@@ -17,6 +17,12 @@ PegTransfer::PegTransfer(ros::NodeHandle nh, ros::NodeHandle priv_nh,
   AutosurgAgent(nh, priv_nh, arm_names), vision(nh, "target")
 {
   loadBoardDescriptor(priv_nh);
+  for (int i = 0; i < blocks.size(); i++)
+  {
+    irob_msgs::GraspObject g_inv;
+    g_inv.id = -1;
+    blocks[i] = g_inv;
+  }
 }
 
 PegTransfer::~PegTransfer()
@@ -31,6 +37,7 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
   priv_nh.getParam("object_h", object_h);
   priv_nh.getParam("object_d", object_d);
   priv_nh.getParam("object_wall_d", object_wall_d);
+  priv_nh.getParam("on_dist_threshold", on_dist_threshold);
 
   priv_nh.getParam("offs_x", offs_x);
   priv_nh.getParam("offs_y", offs_y);
@@ -67,6 +74,67 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
         //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
+bool PegTransfer::isBlockOnPeg(const irob_msgs::GraspObject& g, int p)
+{
+  if (p < 0 || p > 11)
+    return false;
+  Eigen::Vector3d block_pos(
+          unwrapMsg<geometry_msgs::Point, Eigen::Vector3d>(g.position));
+  block_pos = positionToWorldFrame(block_pos, tf_board);
+  block_pos(2) = 0.0;
+  block_pos(1) = -block_pos(1);
+  //ROS_INFO_STREAM("block: " <<  block_pos);
+  //ROS_INFO_STREAM("peg: " <<  peg_positions[p]);
+  double dist = (block_pos - peg_positions[p]).norm();
+  //ROS_INFO_STREAM(p << " dist: " <<  dist);
+  return dist <= on_dist_threshold;
+}
+
+bool PegTransfer::storeBlock(const irob_msgs::GraspObject& g)
+{
+  bool found = false;
+  for (int i = 0; i < blocks.size(); i++)
+  {
+    if (isBlockOnPeg(g, i))
+    {
+      found = true;
+      blocks[i] = irob_msgs::GraspObject(g);
+    }
+  }
+  return found;
+}
+
+void PegTransfer::administerTransfer(int from, int to)
+{
+  //blocks[to] = irob_msgs::GraspObject(blocks[from]);
+  blocks[from].id = -1;
+}
+
+bool PegTransfer::isPegOccupied(int p)
+{
+  if (p < 0 || p > 11)
+    return false;
+  return blocks[p].id >= 0;
+}
+
+void PegTransfer::storeEnvironment(const irob_msgs::Environment& e)
+{
+  tf_board = Eigen::Affine3d(unwrapMsg<geometry_msgs::Transform, Eigen::Affine3d>(e.tf_phantom));
+
+  for (int i = 0; i < e.objects.size(); i++)
+  {
+    storeBlock(e.objects[i]);
+  }
+
+  /*OS_INFO_STREAM("Blocks:");
+  for (int i = 0; i < blocks.size(); i++)
+  {
+    if (isPegOccupied(i))
+      ROS_INFO_STREAM(blocks[i]);
+  }*/
+}
+
+
 Eigen::Affine3d PegTransfer::poseToCameraFrame(const Eigen::Affine3d& pose,
                                       const Eigen::Affine3d& tr)
 {
@@ -80,6 +148,25 @@ Eigen::Affine3d PegTransfer::poseToWorldFrame(const Eigen::Affine3d& pose,
                                    const Eigen::Affine3d& tr)
 {
   Eigen::Affine3d ret(pose);
+  ret = tr.inverse() * ret;
+  ret = Eigen::Translation3d(board_t).inverse() * ret;
+  return ret;
+
+}
+
+Eigen::Vector3d PegTransfer::positionToCameraFrame(const Eigen::Vector3d& pos,
+                                      const Eigen::Affine3d& tr)
+{
+  Eigen::Vector3d ret(pos);
+  ret = Eigen::Translation3d(board_t) * ret;
+  ret = tr * ret;  // Ori OK
+  return ret;
+}
+
+Eigen::Vector3d PegTransfer::positionToWorldFrame(const Eigen::Vector3d& pos,
+                                   const Eigen::Affine3d& tr)
+{
+  Eigen::Vector3d ret(pos);
   ret = tr.inverse() * ret;
   ret = Eigen::Translation3d(board_t).inverse() * ret;
   return ret;
@@ -110,6 +197,7 @@ void PegTransfer::doPegTransfer()
           || e.objects.size() == 0 || (isnan(e))) && ros::ok())
   {
     e = vision.getResult();
+    storeEnvironment(e);
     ros::Duration(0.1).sleep();
   }
 
@@ -134,26 +222,59 @@ void PegTransfer::doPegTransfer()
 
   while(ros::ok())
   {
+    // Step logic
+    while(!isPegOccupied(peg_idx_on) && peg_idx_on != 6 && peg_idx_on != 12)
+    {
+      peg_idx_on+=increment;
+      peg_idx_to+=increment;
+      ROS_INFO_STREAM("Searching object on rod " << peg_idx_on << "...");
+    }
+    if (peg_idx_on == 6) {
+      ROS_INFO_STREAM("All pegs transfered");
+      peg_idx_on = 6;
+      peg_idx_to = 0;
+
+      ros::Duration(1.0).sleep();
+    } else if (peg_idx_on == 12) {
+      ROS_INFO_STREAM("All pegs transfered");
+      peg_idx_on = 0;
+      peg_idx_to = 6;
+
+      ros::Duration(1.0).sleep();
+    }
+    if(!isPegOccupied(peg_idx_on))
+    {
+      e = vision.getResult();
+      storeEnvironment(e);
+      ros::Duration(0.1).sleep();
+      peg_idx_on+=increment;
+      peg_idx_to+=increment;
+      continue;
+    }
+
 
    // Grasp object
     ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
-    Eigen::Affine3d tf_board(unwrapMsg<geometry_msgs::Transform, Eigen::Affine3d>(e.tf_phantom));
+    irob_msgs::GraspObject block(blocks[peg_idx_on]);
+    administerTransfer(peg_idx_on, peg_idx_to);
 
     Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
-                                                    e.objects[peg_idx_on].grasp_poses[grasp_pos_idx]));
+                                                    block.grasp_poses[grasp_pos_idx]));
     //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
     grasp_pose_on = offset_cf * grasp_pose_on;
 
 
 
     Eigen::Affine3d grasp_approach_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
-                                             e.objects[peg_idx_on].approach_poses[grasp_pos_idx]));
+                                                    block.approach_poses[grasp_pos_idx]));
 
     grasp_approach_pose_on = offset_cf * grasp_approach_pose_on;
 
     arms[0]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
+      e = vision.getResult();
+      storeEnvironment(e);
       ros::Duration(0.1).sleep();
     }
 
@@ -166,11 +287,10 @@ void PegTransfer::doPegTransfer()
     ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
 
 
+    Eigen::Translation3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on, tf_board).translation());
+    place_approach_pose_on_wf = offset_peg_h.inverse() * place_approach_pose_on_wf;
 
-    Eigen::Affine3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on, tf_board));
-    place_approach_pose_on_wf = offset_peg_h * place_approach_pose_on_wf;
-
-    Eigen::Affine3d place_approach_pose_on_cf(poseToCameraFrame(place_approach_pose_on_wf, tf_board));
+    Eigen::Affine3d place_approach_pose_on_cf(poseToCameraFrame(Eigen::Affine3d(grasp_pose_on.rotation() * place_approach_pose_on_wf), tf_board));
     place_approach_pose_on_cf = offset_cf * place_approach_pose_on_cf;
 
     std::vector<Eigen::Affine3d> waypoints;
@@ -194,35 +314,16 @@ void PegTransfer::doPegTransfer()
                                        Eigen::Affine3d(grasp_ori_world * approach_pose_to_wf), tf_board));
     approach_pose_to_cf = offset_cf * approach_pose_to_cf;
 
-    // peg_top_cf
-
-    //Eigen::Affine3d peg_top_wf(grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_to]));
-    //peg_top_wf = offset_peg_h * peg_top_wf;
-
-    //Eigen::Affine3d peg_top_cf(poseToCameraFrame(peg_top_wf, tf_board));
-    //peg_top_cf = offset_cf * peg_top_cf;
-
-
-    //peg_approach_cf
-    //Eigen::Vector3d corner = Eigen::Vector3d(0, 0, 0);
-    //Eigen::Affine3d peg_approach_wf(grasp_ori_world * Eigen::Translation3d(corner));
-    //Eigen::Affine3d peg_approach_wf(peg_top_wf);
-    //peg_approach_wf = offset_block_h * peg_approach_wf;
-
-    //Eigen::Affine3d peg_approach_cf(poseToCameraFrame(peg_approach_wf, tf_board));
-    //peg_approach_cf = offset_cf * peg_approach_cf;
-
-
 
     arms[0] -> place(place_pose_to_cf, approach_pose_to_cf, speed_cartesian, waypoints);
-    //arms[0]->grasp(peg_top_cf, peg_top_cf, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
+      e = vision.getResult();
+      storeEnvironment(e);
       ros::Duration(0.1).sleep();
     }
-
-
     ros::Duration(1.0).sleep();
+
 
     // Release
     Eigen::Affine3d release_approach_pose_to(approach_pose_to_cf);
@@ -231,30 +332,18 @@ void PegTransfer::doPegTransfer()
     ROS_INFO_STREAM("Release object...");
     while(!arms[0] -> isSurgemeDone() && ros::ok())
     {
+      e = vision.getResult();
+      storeEnvironment(e);
       ros::Duration(0.1).sleep();
     }
 
     ROS_INFO_STREAM("Peg-transfer subtask done");
      ros::Duration(1.0).sleep();
 
-    /*
+
     // Set new traget
     peg_idx_on+=increment;
     peg_idx_to+=increment;
-    if (peg_idx_to == 12) {
-      ROS_INFO_STREAM("All pegs transfered");
-      peg_idx_on = 6;
-      peg_idx_to = 0;
-
-      ros::Duration(1.0).sleep();
-    } else if (peg_idx_to == 6) {
-      ROS_INFO_STREAM("All pegs transfered");
-      peg_idx_on = 0;
-      peg_idx_to = 6;
-
-      ros::Duration(1.0).sleep();
-    }*/
-
 
   }
 
