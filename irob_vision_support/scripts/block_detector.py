@@ -120,7 +120,7 @@ class BlockDetector:
 
 
 
-        self.lower_red = (0, 150, 150)
+        self.lower_red = (0, 0, 150)
         self.upper_red = (80, 255, 255)
         self.lower_darkred = (0, 100, 50)
         self.upper_darkred = (7, 255, 255)
@@ -154,11 +154,11 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 500.0 #600.0 #600.0
+        self.exposure = 400.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
-        self.plane_detect_frames_N = 600
+        self.plane_detect_frames_N = 100
         self.cv_frames_N = 10
         self.detect_plane = True
         self.board_offset = 0.014
@@ -179,10 +179,10 @@ class BlockDetector:
 
 
 
-        self.src_board_top_corner_coords = np.array([[0.00, 0.00, -0.00],
-                                                     [0.1011, 0.00, -0.00],
-                                                     [0.1011, 0.0628, -0.00],
-                                                     [0.00, 0.0628, -0.00]])
+        self.src_board_top_corner_coords = np.array([[0.00, 0.00, -0.005],
+                                                     [0.1011, 0.00, -0.005],
+                                                     [0.1011, 0.0628, -0.005],
+                                                     [0.00, 0.0628, -0.005]])
 
 
         self.tf_phantom = Transform()
@@ -348,14 +348,14 @@ class BlockDetector:
 
 
 
-                    #plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
-                    #                                     ransac_n=3,
-                    #                                     num_iterations=1000)
+                    plane_model_board, inliers_board = outlier_cloud.segment_plane(distance_threshold=0.005,
+                                                         ransac_n=3,
+                                                         num_iterations=1000)
 
 
-                    #inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
-                    #inlier_cloud_board.paint_uniform_color([1.0, 0.0, 0])
-                    #outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
+                    inlier_cloud_board = outlier_cloud.select_by_index(inliers_board)
+                    inlier_cloud_board.paint_uniform_color([1.0, 0.0, 0])
+                    outlier_cloud = outlier_cloud.select_by_index(inliers_board, invert=True)
 
                     # Find board
                     #R_bb = rotation_matrix_from_vectors([0.0, 0.0, 1.0], [a,b,c])
@@ -372,9 +372,9 @@ class BlockDetector:
 
                     # Could be the lower 4?
                     #dst_board_top_corner_coords = np.array([force_depth(bb_points[0], plane_model, self.board_offset),
-                    #                                        force_depth(bb_points[1], plane_model, self.board_offset),
-                    #                                        force_depth(bb_points[7], plane_model, self.board_offset),
-                    #                                        force_depth(bb_points[2], plane_model, self.board_offset)])
+                     #                                       force_depth(bb_points[1], plane_model, self.board_offset),
+                     #                                       force_depth(bb_points[7], plane_model, self.board_offset),
+                     #                                       force_depth(bb_points[2], plane_model, self.board_offset)])
 
 
                     #print(dst_board_top_corner_coords)
@@ -384,9 +384,9 @@ class BlockDetector:
 
                 # Board detection
                 segmented_board, mask = self.segment_board(color_image, "red", 6)
-                #cv2.imshow("Board seg",  mask)
+                #cv2.imshow("Board seg",  segmented_board)
                 #cv2.waitKey(1)
-                result, dst = self.detect_board(segmented_board, result)
+                result, dst = self.detect_board(segmented_board, mask, result)
 
 
                 board_dst_coords = []
@@ -405,7 +405,7 @@ class BlockDetector:
                     board_T = EuclideanTransform()
                     board_T.estimate(self.src_board_top_corner_coords, dst_board_top_corner_coords)
                     board_residuals = board_T.residuals(self.src_board_top_corner_coords, dst_board_top_corner_coords)
-                    print(board_residuals)
+                    print("Residuals:", board_residuals)
 
                     val_board_corners = board_T(self.src_board_top_corner_coords)
                     #print(val_board_corners)
@@ -704,7 +704,8 @@ class BlockDetector:
         #mask = cv2.bitwise_and(mask, mask_background)
 
         kernel = np.ones((3,3), np.uint8)
-        mask = cv2.erode(mask, kernel, iterations=1)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
 
 
@@ -716,24 +717,29 @@ class BlockDetector:
 
         max_area = 0
         max_area_i = 0
-        for i in range(numLabels):
+        for i in range(1, numLabels):
             area = stats[i, cv2.CC_STAT_AREA]
+            #print(area)
             if area > max_area:
-                max_are = area
+                max_area = area
                 max_area_i = i
 
+        #print(max_area_i)
         mask_ret = np.where(labels == max_area_i, np.uint8(1), np.uint8(0))
-        mask_ret = cv2.dilate(mask_ret, kernel, iterations=1)
+        kernel = np.ones((3,3),np.uint8)
+
+        #mask_ret = cv2.dilate(mask_ret, kernel, iterations=1)
         #ret_im = image.copy()
         ret_im = np.zeros(image.shape,dtype=np.uint8)
         ret_im.fill(255)
         ret_im = cv2.bitwise_and(ret_im, ret_im, mask = mask_ret)
-        return ret_im, mask
+        return ret_im, mask_ret
 
 
-    def detect_board(self, segmented_board, result):
+    def detect_board(self, segmented_board, mask, result):
 
         result_gray = cv2.cvtColor(segmented_board, cv2.COLOR_BGR2GRAY)
+        result_gray = np.zeros(result_gray.shape,dtype=np.uint8)
         kernel = np.ones((3,3),np.float32)/25
         result_gray = cv2.filter2D(result_gray,-1,kernel)
         grasp_im_coords_tfromed = []
@@ -745,31 +751,31 @@ class BlockDetector:
 
         # Applying the Canny Edge filter
         # with Aperture Size and L2Gradient
-        edge = cv2.Canny(result_gray, t_lower, t_upper,
-                         apertureSize = aperture_size,
-                         L2gradient = L2Gradient )
-        #cv2.imshow("Canny",  edge)
+        #edge = cv2.Canny(result_gray, t_lower, t_upper,
+        #                 apertureSize = aperture_size,
+        #                 L2gradient = L2Gradient )
+
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        #cv2.imshow("Contours",  im2)
         #cv2.waitKey(0)
+        cv2.drawContours(result_gray, contours, -1, (255), 1)
+        #cv2.imshow("Contours",  result)
+        #cv2.waitKey(1)
+
 
         lines = cv2.HoughLinesP(
-                    edge, # Input edge image
+                    result_gray, # Input edge image
                     1, # Distance resolution in pixels
                     np.pi/360, # Angle resolution in radians
-                    threshold=50, # Min number of votes for valid line
-                    minLineLength=30, # Min allowed length of line
-                    maxLineGap=30 # Max allowed gap between line for joining them
+                    threshold=65, # Min number of votes for valid line
+                    minLineLength=50, # Min allowed length of line
+                    maxLineGap=500 # Max allowed gap between line for joining them
                     )
 
 
         #result = segmented_block.copy()
 
-        # Iterate over points
-        #for points in lines:
-              # Extracted points nested in the list
-            #x1,y1,x2,y2=points[0]
-            # Draw the lines joing the points
-            # On the original image
-            #cv2.line(result,(x1,y1),(x2,y2),(0,255,0),2)
+
 
 
 
@@ -779,6 +785,13 @@ class BlockDetector:
         cornerY = []
         if lines is not None:
             print(lines.shape[0])
+            # Iterate over points
+            #for points in lines:
+                  # Extracted points nested in the list
+             #   x1,y1,x2,y2=points[0]
+                # Draw the lines joing the points
+                # On the original image
+             #   cv2.line(result,(x1,y1),(x2,y2),(255,0,0),1)
         if lines is not None and lines.shape[0] == 4:
             for i in range(lines.shape[0] - 1):
                 for j in range(i + 1,lines.shape[0] ):
@@ -794,7 +807,7 @@ class BlockDetector:
 
 
         #cv2.imshow("Lines",  result)
-        #cv2.waitKey(0)
+        #cv2.waitKey(1)
 
         pre = np.array(([cornerX, cornerY])).T
         dst = np.empty_like(pre)
