@@ -154,7 +154,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 1800.0 #600.0 #600.0
+        self.exposure = 800.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
@@ -767,7 +767,7 @@ class BlockDetector:
                     result_gray, # Input edge image
                     1, # Distance resolution in pixels
                     np.pi/360, # Angle resolution in radians
-                    threshold=65, # Min number of votes for valid line
+                    threshold=50, # Min number of votes for valid line
                     minLineLength=50, # Min allowed length of line
                     maxLineGap=500 # Max allowed gap between line for joining them
                     )
