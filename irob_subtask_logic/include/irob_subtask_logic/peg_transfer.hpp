@@ -70,8 +70,8 @@ protected:
 
 
   void loadBoardDescriptor(ros::NodeHandle);
-  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
-  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
+  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&);
+  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&);
 
   Eigen::Vector3d positionToCameraFrame(const Eigen::Vector3d&, const Eigen::Affine3d&);
   Eigen::Vector3d positionToWorldFrame(const Eigen::Vector3d&, const Eigen::Affine3d&);
