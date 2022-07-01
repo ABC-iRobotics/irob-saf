@@ -8,11 +8,11 @@
 
         <arg name="offs_x" default="-5.0"/>
         <arg name="offs_y" default="-8.0"/>
-        <arg name="offs_z" default="5.0"/>
+        <arg name="offs_z" default="7.0"/>
         <arg name="on_dist_threshold" default="5.0"/>
 
-        <arg name="speed_cartesian" default="20.0"/>
-        <arg name="speed_jaw" default="20.0"/>
+        <arg name="speed_cartesian" default="40.0"/>
+        <arg name="speed_jaw" default="60.0"/>
 
         <node name="peg_transfer" pkg="irob_subtask_logic"
             type="peg_transfer" output="screen">

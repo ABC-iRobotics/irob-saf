@@ -51,6 +51,8 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
   priv_nh.getParam("peg_positions", param_peg_positions);
   std::vector<double> param_grasp_positions;
   priv_nh.getParam("grasp_positions", param_grasp_positions);
+  std::vector<double> param_park_position;
+  priv_nh.getParam("park_position", param_park_position);
 
   for (int i = 0; i < board_t.rows(); i++)
     board_t(i) = param_board_t[i];
@@ -68,6 +70,10 @@ void PegTransfer::loadBoardDescriptor(ros::NodeHandle priv_nh)
                                 param_grasp_positions[i * 3],
                                 param_grasp_positions[(i * 3) + 1],
                                 param_grasp_positions[(i * 3) + 2]));
+
+  park_position = Eigen::Vector3d(param_park_position[0],
+                             param_park_position[1],
+                             param_park_position[2]);
 
   ROS_INFO_STREAM(
         "Board descriptor read.");
@@ -132,6 +138,32 @@ void PegTransfer::storeEnvironment(const irob_msgs::Environment& e)
     if (isPegOccupied(i))
       ROS_INFO_STREAM(blocks[i]);
   }*/
+}
+
+int PegTransfer::choseGraspOnBlock(int p)
+{
+  if (p < 0 || p > 11 || !isPegOccupied(p))
+    return 0;
+
+  int max_d_i = 0;
+  double max_d = -1.0;
+  for (int i = 0; i < blocks[p].grasp_poses.size(); i++)
+  {
+    Eigen::Affine3d block_pose(
+          unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(blocks[p].grasp_poses[i]));
+    Eigen::Vector3d block_pos(block_pose.translation());
+    block_pos = positionToWorldFrame(block_pos, tf_board);
+    block_pos(2) = 0.0;
+    block_pos(1) = -block_pos(1);
+    double dist = (block_pos - peg_positions[p]).norm();
+    if (dist > max_d)
+    {
+      max_d = dist;
+      max_d_i = i;
+    }
+  }
+  ROS_INFO_STREAM(max_d_i);
+  return max_d_i;
 }
 
 
@@ -222,17 +254,18 @@ void PegTransfer::doPegTransfer()
 
   while(ros::ok())
   {
-    while(!isPegOccupied(peg_idx_on))
+    do
     {
       e = vision.getResult();
       storeEnvironment(e);
       ros::Duration(0.1).sleep();
-    }
+    } while(!isPegOccupied(peg_idx_on));
 
     // Grasp object
         ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
         Eigen::Affine3d tf_board(unwrapMsg<geometry_msgs::Transform, Eigen::Affine3d>(e.tf_phantom));
 
+        //grasp_pos_idx = choseGraspOnBlock(peg_idx_on);
         Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                         blocks[peg_idx_on].grasp_poses[grasp_pos_idx]));
         //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
@@ -248,17 +281,19 @@ void PegTransfer::doPegTransfer()
         arms[0]->grasp(grasp_pose_on, grasp_approach_pose_on, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
         while(!arms[0] -> isSurgemeDone() && ros::ok())
         {
+          e = vision.getResult();
+          storeEnvironment(e);
           ros::Duration(0.1).sleep();
         }
 
         ROS_INFO_STREAM("Grasped object on rod " << peg_idx_on << "...");
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.1).sleep();
 
 
 
         // Place to new rod
         ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
-
+        place_grasp_pos_idx = grasp_pos_idx;// % 2;
 
 
         Eigen::Affine3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on, tf_board));
@@ -288,35 +323,18 @@ void PegTransfer::doPegTransfer()
                                            Eigen::Affine3d(grasp_ori_world * approach_pose_to_wf), tf_board));
         approach_pose_to_cf = offset_cf * approach_pose_to_cf;
 
-        // peg_top_cf
-
-        //Eigen::Affine3d peg_top_wf(grasp_ori_world * Eigen::Translation3d(peg_positions[peg_idx_to]));
-        //peg_top_wf = offset_peg_h * peg_top_wf;
-
-        //Eigen::Affine3d peg_top_cf(poseToCameraFrame(peg_top_wf, tf_board));
-        //peg_top_cf = offset_cf * peg_top_cf;
-
-
-        //peg_approach_cf
-        //Eigen::Vector3d corner = Eigen::Vector3d(0, 0, 0);
-        //Eigen::Affine3d peg_approach_wf(grasp_ori_world * Eigen::Translation3d(corner));
-        //Eigen::Affine3d peg_approach_wf(peg_top_wf);
-        //peg_approach_wf = offset_block_h * peg_approach_wf;
-
-        //Eigen::Affine3d peg_approach_cf(poseToCameraFrame(peg_approach_wf, tf_board));
-        //peg_approach_cf = offset_cf * peg_approach_cf;
-
-
 
         arms[0] -> place(place_pose_to_cf, approach_pose_to_cf, speed_cartesian, waypoints);
         //arms[0]->grasp(peg_top_cf, peg_top_cf, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
         while(!arms[0] -> isSurgemeDone() && ros::ok())
         {
+          e = vision.getResult();
+          storeEnvironment(e);
           ros::Duration(0.1).sleep();
         }
 
 
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.1).sleep();
 
         // Release
         Eigen::Affine3d release_approach_pose_to(approach_pose_to_cf);
@@ -325,14 +343,32 @@ void PegTransfer::doPegTransfer()
         ROS_INFO_STREAM("Release object...");
         while(!arms[0] -> isSurgemeDone() && ros::ok())
         {
+          e = vision.getResult();
+          storeEnvironment(e);
           ros::Duration(0.1).sleep();
         }
         administerTransfer(peg_idx_on, peg_idx_to);
         ROS_INFO_STREAM("Peg-transfer subtask done");
+
+
+
+         // Park
+         Eigen::Translation3d pask_pose_wf(park_position);
+         Eigen::Affine3d pask_pose_cf(poseToCameraFrame(
+                                            Eigen::Affine3d(grasp_ori_world * pask_pose_wf), tf_board));
+         pask_pose_cf = offset_cf * pask_pose_cf;
+
+         arms[0] -> nav_to_pos(pask_pose_cf, speed_cartesian);
+         ROS_INFO_STREAM("Navigating to parking position...");
+         while(!arms[0] -> isSurgemeDone() && ros::ok())
+         {
+           e = vision.getResult();
+           storeEnvironment(e);
+           ros::Duration(0.1).sleep();
+         }
          ros::Duration(1.0).sleep();
          peg_idx_on += increment;
          peg_idx_to += increment;
-
 
   }
 }

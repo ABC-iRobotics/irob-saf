@@ -54,6 +54,7 @@ protected:
   Eigen::Vector3d board_t;
   std::vector<Eigen::Vector3d> peg_positions;
   std::vector<Eigen::Vector3d> grasp_positions;
+  Eigen::Vector3d park_position;
   double peg_h;
   double object_h;
   double object_d;
@@ -84,6 +85,7 @@ public:
   void administerTransfer(int, int);
   bool isPegOccupied(int);
   void storeEnvironment(const irob_msgs::Environment&);
+  int choseGraspOnBlock(int);
 
 };
 
