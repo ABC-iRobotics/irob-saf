@@ -6,8 +6,8 @@
         <arg name="board_descriptor"
         default="peg_transfer_board.yaml"/>
 
-        <arg name="offs_x" default="-2.0"/>
-        <arg name="offs_y" default="-8.0"/>
+        <arg name="offs_x" default="-6.0"/>
+        <arg name="offs_y" default="-10.0"/>
         <arg name="offs_z" default="7.0"/>
         <arg name="on_dist_threshold" default="5.0"/>
 

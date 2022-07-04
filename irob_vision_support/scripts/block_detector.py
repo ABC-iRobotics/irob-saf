@@ -154,7 +154,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 150.0 #600.0 #600.0
+        self.exposure = 1500.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
@@ -561,9 +561,9 @@ class BlockDetector:
                     #print("x: "  + str(x) + ", y: " + str(y) + ", d: "  + str(d))
         if (d != 0 and d < self.clipping_distance_in_meters):
             pos = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
-            text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
-            output = cv2.putText(output, text, (x,y), cv2.FONT_HERSHEY_SIMPLEX,
-                           0.5, (255,255,255), 1, cv2.LINE_AA)
+            #text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
+            #output = cv2.putText(output, text, (x,y), cv2.FONT_HERSHEY_SIMPLEX,
+            #               0.5, (255,255,255), 1, cv2.LINE_AA)
 
             return pos, output
         return None, output
@@ -595,12 +595,12 @@ class BlockDetector:
         #print(d)
         if text_i == 0:
             title = "Block #1 grasp positions"
-            output = cv2.putText(output, title, (10,20), cv2.FONT_HERSHEY_SIMPLEX,
-                               0.5, (255,255,255), 1, cv2.LINE_AA)
+            #output = cv2.putText(output, title, (10,20), cv2.FONT_HERSHEY_SIMPLEX,
+            #                   0.5, (255,255,255), 1, cv2.LINE_AA)
         pos = rs.rs2_deproject_pixel_to_point(intrinsics, [x,y], d)
         text = "(" + str(int(round(pos[0]*1000.0))) + "," + str(int(round(pos[1]*1000.0))) + "," + str(int(round(pos[2]*1000.0))) + ")"
-        output = cv2.putText(output, text, (10,20 + ((text_i+1) * 20)), cv2.FONT_HERSHEY_SIMPLEX,
-                           0.5, (255,255,255), 1, cv2.LINE_AA)
+        #output = cv2.putText(output, text, (10,20 + ((text_i+1) * 20)), cv2.FONT_HERSHEY_SIMPLEX,
+        #                   0.5, (255,255,255), 1, cv2.LINE_AA)
         return pos, output
 
 

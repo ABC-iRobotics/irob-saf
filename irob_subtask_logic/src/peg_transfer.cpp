@@ -221,8 +221,8 @@ void PegTransfer::doPegTransfer()
   int peg_idx_on = 0;
   int peg_idx_to = 6;
   int increment = 1;
-  int grasp_pos_idx = 0;
-  int place_grasp_pos_idx = 0;
+  int grasp_pos_idx = 1;
+  int place_grasp_pos_idx = 1;
 
   irob_msgs::Environment e;
   // Read marker transform
