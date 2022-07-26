@@ -31,6 +31,11 @@ void PegTransferDual::loadBoardDescriptor(ros::NodeHandle priv_nh)
   priv_nh.getParam("object_h", object_h);
   priv_nh.getParam("object_d", object_d);
   priv_nh.getParam("object_wall_d", object_wall_d);
+  priv_nh.getParam("on_dist_threshold", on_dist_threshold);
+
+  priv_nh.getParam("offs_x", offs_x);
+  priv_nh.getParam("offs_y", offs_y);
+  priv_nh.getParam("offs_z" , offs_z);
 
 
   std::vector<double> param_board_t;
@@ -38,20 +43,35 @@ void PegTransferDual::loadBoardDescriptor(ros::NodeHandle priv_nh)
 
   std::vector<double> param_peg_positions;
   priv_nh.getParam("peg_positions", param_peg_positions);
+  std::vector<double> param_grasp_positions;
+  priv_nh.getParam("grasp_positions", param_grasp_positions);
+  std::vector<double> param_park_position;
+  priv_nh.getParam("park_position", param_park_position);
 
-  board_t = Eigen::Translation3d(
-        param_board_t[0],param_board_t[1],param_board_t[2]);
+  for (int i = 0; i < board_t.rows(); i++)
+    board_t(i) = param_board_t[i];
 
   double rows = param_peg_positions.size() / 3;
   for (int i = 0; i < rows; i++)
-    peg_positions.push_back(Eigen::Translation3d(
-                              param_peg_positions[i * 3],
-                            param_peg_positions[(i * 3) + 1],
-        param_peg_positions[(i * 3) + 2]));
+     peg_positions.push_back(Eigen::Vector3d(
+                                param_peg_positions[i * 3],
+                                param_peg_positions[(i * 3) + 1],
+                                param_peg_positions[(i * 3) + 2]));
+
+  rows = param_grasp_positions.size() / 3;
+  for (int i = 0; i < rows; i++)
+     grasp_positions.push_back(Eigen::Vector3d(
+                                param_grasp_positions[i * 3],
+                                param_grasp_positions[(i * 3) + 1],
+                                param_grasp_positions[(i * 3) + 2]));
+
+  park_position = Eigen::Vector3d(param_park_position[0],
+                             param_park_position[1],
+                             param_park_position[2]);
 
   ROS_INFO_STREAM(
         "Board descriptor read.");
-  //: "<< std::endl << board_t << std::endl << peg_positions);
+        //: "<< std::endl << board_t << std::endl << peg_positions);
 }
 
 Eigen::Affine3d PegTransferDual::poseToCameraFrame(const Eigen::Affine3d& pose,

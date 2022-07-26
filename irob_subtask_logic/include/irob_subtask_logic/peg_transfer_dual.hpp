@@ -49,11 +49,18 @@ protected:
   VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
 
   Eigen::Translation3d board_t;
-  std::vector<Eigen::Translation3d> peg_positions;
+  std::vector<Eigen::Vector3d> peg_positions;
+  std::vector<Eigen::Vector3d> grasp_positions;
+  Eigen::Vector3d park_position;
   double peg_h;
   double object_h;
   double object_d;
   double object_wall_d;
+  double on_dist_threshold;
+
+  double offs_x;
+  double offs_y;
+  double offs_z;
 
 
   void loadBoardDescriptor(ros::NodeHandle);
