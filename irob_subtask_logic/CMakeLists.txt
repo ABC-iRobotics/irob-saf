@@ -135,7 +135,8 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 add_executable(camera src/camera.cpp)
-add_executable(peg_transfer src/peg_transfer.cpp)
+add_executable(peg_transfer_unilateral src/peg_transfer_unilateral.cpp)
+add_executable(peg_transfer_bilateral src/peg_transfer_bilateral.cpp)
 #add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 #add_executable(cut_vessel src/cut_vessel.cpp)
 #add_executable(grasp src/grasp.cpp)
@@ -158,8 +159,12 @@ target_link_libraries(irob_subtask_logic_lib
 	${catkin_LIBRARIES}
 	)
 
+target_link_libraries(peg_transfer_unilateral
+        ${catkin_LIBRARIES}
+        irob_subtask_logic_lib
+        )
 
-target_link_libraries(peg_transfer
+target_link_libraries(peg_transfer_bilateral
 	${catkin_LIBRARIES}
 	irob_subtask_logic_lib
 	)
