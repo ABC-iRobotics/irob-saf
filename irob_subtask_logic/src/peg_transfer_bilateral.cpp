@@ -96,7 +96,7 @@ void PegTransferBilateral::doPegTransfer()
         //grasp_pos_idx = choseGraspOnBlock(peg_idx_on);
         Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                         blocks[peg_idx_on].grasp_poses[grasp_pos_idx]));
-        //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
+        grasp_ori_world = poseToWorldFrame(grasp_pose_on).rotation();
         grasp_pose_on = offset_cf * grasp_pose_on;
 
 
@@ -117,35 +117,25 @@ void PegTransferBilateral::doPegTransfer()
                         grasp_pose_on.translation().y() << ", " <<
                         grasp_pose_on.translation().z());
 
-        ROS_INFO_STREAM("Grasped object on rod " << peg_idx_on << "...");
+        ROS_INFO_STREAM("Grasped object on peg " << peg_idx_on << "...");
         ros::Duration(0.1).sleep();
 
 
 
-        // Place to new rod
-        ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
-        place_grasp_pos_idx = grasp_pos_idx;// % 2;
+        // Navigate to Pass position
+        ROS_INFO_STREAM("Navigating to pass position...");
+        place_grasp_pos_idx = grasp_pos_idx + 2;// % 2;
 
 
         Eigen::Affine3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on));
-        ROS_INFO_STREAM(place_approach_pose_on_wf.translation().x() << ", " <<
-                        place_approach_pose_on_wf.translation().y() << ", " <<
-                        place_approach_pose_on_wf.translation().z());
         place_approach_pose_on_wf = offset_peg_h * place_approach_pose_on_wf;
 
-
-        ROS_INFO_STREAM(place_approach_pose_on_wf.translation().x() << ", " <<
-                        place_approach_pose_on_wf.translation().y() << ", " <<
-                        place_approach_pose_on_wf.translation().z());
 
         Eigen::Affine3d place_approach_pose_on_cf(poseToCameraFrame(place_approach_pose_on_wf));
         place_approach_pose_on_cf = offset_cf * place_approach_pose_on_cf;
 
         std::vector<Eigen::Affine3d> waypoints;
         waypoints.push_back(place_approach_pose_on_cf);
-        ROS_INFO_STREAM(place_approach_pose_on_cf.translation().x() << ", " <<
-                        place_approach_pose_on_cf.translation().y() << ", " <<
-                        place_approach_pose_on_cf.translation().z());
 
 
         Eigen::Translation3d place_pose_to_wf(peg_positions[peg_idx_to]);
@@ -165,6 +155,14 @@ void PegTransferBilateral::doPegTransfer()
                                            Eigen::Affine3d(grasp_ori_world * approach_pose_to_wf)));
         approach_pose_to_cf = offset_cf * approach_pose_to_cf;
 
+        //Transfer location
+        Eigen::Translation3d pass_arm_1_pose_wf(place_approach_pose_on_wf.translation());
+        pass_arm_1_pose_wf = approach_pose_to_wf* pass_arm_1_pose_wf;
+
+
+
+        Eigen::Translation3d pass_arm_1_approach_pose_wf(pass_arm_1_pose_wf);
+        pass_arm_1_approach_pose_wf =  offset_peg_h.inverse() * pass_arm_1_approach_pose_wf;
 
         arms[0] -> place(place_pose_to_cf, approach_pose_to_cf, speed_cartesian, waypoints);
         //arms[0]->grasp(peg_top_cf, peg_top_cf, object_wall_d, compress_rate, speed_cartesian, speed_jaw);
