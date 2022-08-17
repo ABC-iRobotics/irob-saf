@@ -12,6 +12,9 @@
 namespace saf {
 
 
+/**
+ * Constructor
+ */
 PegTransferUnilateral::PegTransferUnilateral(ros::NodeHandle nh, ros::NodeHandle priv_nh,
                          std::vector<std::string> arm_names):
   PegTransferLogic(nh, priv_nh, arm_names)
@@ -23,8 +26,22 @@ PegTransferUnilateral::PegTransferUnilateral(ros::NodeHandle nh, ros::NodeHandle
     g_inv.id = -1;
     blocks[i] = g_inv;
   }
+
+  std::vector<double> offset_arm_1;
+  priv_nh.getParam("offset_arm_1", offset_arm_1);
+  offs_x = offset_arm_1[0];
+  offs_y = offset_arm_1[1];
+  offs_z = offset_arm_1[2];
+
+  priv_nh.getParam("offset_filename_arm_1", offset_filename_arm_1);
+
+
 }
 
+
+/**
+ * Destructor
+ */
 PegTransferUnilateral::~PegTransferUnilateral()
 {
   // TODO Auto-generated destructor stub
@@ -32,6 +49,94 @@ PegTransferUnilateral::~PegTransferUnilateral()
 
 
 
+/**
+ * Offset calibration
+ */
+void PegTransferUnilateral::calibrateOffset()
+{
+  irob_msgs::Environment e;
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  e = makeNaN<irob_msgs::Environment>();
+
+  while (((abs(e.tf_phantom.translation.x) < 0.000001
+           && abs(e.tf_phantom.translation.y) < 0.000001
+           && abs(e.tf_phantom.translation.z) < 0.000001)
+          || e.objects.size() == 0 || (isnan(e))) && ros::ok())
+  {
+    e = vision.getResult();
+    storeEnvironment(e);
+    ros::Duration(0.1).sleep();
+  }
+
+  //Vision data received
+  Eigen::Quaternion<double> ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_SIDEWAYS;
+
+  Eigen::Quaternion<double> grasp_ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_FORWARD;
+
+
+  ROS_INFO_STREAM("Navigating to corner..");
+
+  Eigen::Translation3d corner_pos_wf =  Eigen::Translation3d(0.0, 0.0, -9.5);
+
+  Eigen::Affine3d corner_pose_cf(poseToCameraFrame(
+                                     Eigen::Affine3d(grasp_ori_world * corner_pos_wf)));
+
+  arms[0] -> nav_to_pos(corner_pose_cf, speed_cartesian);
+  while(!arms[0] -> isSurgemeDone() && ros::ok())
+  {
+    e = vision.getResult();
+    storeEnvironment(e);
+    ros::Duration(0.1).sleep();
+  }
+
+  Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
+
+
+  ROS_INFO_STREAM("Move arm to target position and press Enter...");
+  std::cout << "Press enter to continue ...";
+  std::cin.get();
+
+
+  ROS_INFO_STREAM("Saving target position");
+  ros::spinOnce();
+  Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
+
+  Eigen::Translation3d offset(corr_pose.translation() - uncorr_pose.translation());
+
+  std::ofstream offsfile;
+  offsfile.open (offset_filename_arm_1);
+  offsfile << "offset_arm_1: [" << offset.x() << ", " << offset.y() << ", " << offset.z() << "]\n";
+  offsfile.close();
+
+}
+
+
+/**
+ * Accuracy measurement on blocks
+ */
+void PegTransferUnilateral::measureAccuracyBlocks()
+{
+
+}
+
+
+/**
+ * Accuracy measurement on pegs
+ */
+void PegTransferUnilateral::measureAccuracyPegs()
+{
+
+}
+
+
+
+/**
+ * Execute peg transfer
+ */
 void PegTransferUnilateral::doPegTransfer()
 {
 
@@ -91,7 +196,6 @@ void PegTransferUnilateral::doPegTransfer()
 
     // Grasp object
         ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
-        Eigen::Affine3d tf_board(unwrapMsg<geometry_msgs::Transform, Eigen::Affine3d>(e.tf_phantom));
 
         //grasp_pos_idx = choseGraspOnBlock(peg_idx_on);
         Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
@@ -122,8 +226,8 @@ void PegTransferUnilateral::doPegTransfer()
 
 
 
-        // Place to new rod
-        ROS_INFO_STREAM("Placing object to rod " << peg_idx_to << "...");
+        // Place to new peg
+        ROS_INFO_STREAM("Placing object to peg " << peg_idx_to << "...");
         place_grasp_pos_idx = grasp_pos_idx;// % 2;
 
 
@@ -232,12 +336,25 @@ int main(int argc, char **argv)
   std::vector<std::string> arm_names;
   priv_nh.getParam("arm_names", arm_names);
 
+  std::string mode;
+  priv_nh.getParam("mode", mode);
+
 
   // Start autonomous agent
   try {
     PegTransferUnilateral pnp(nh ,  priv_nh, arm_names);
 
-    pnp.doPegTransfer();
+    if (mode == "execution")
+      pnp.doPegTransfer();
+    else if (mode == "calibration")
+      pnp.calibrateOffset();
+    else if (mode == "acc_blocks")
+      pnp.measureAccuracyBlocks();
+    else if (mode == "acc_pegs")
+      pnp.measureAccuracyPegs();
+    else
+      ROS_INFO_STREAM("Mode invalid. Valid modes are: [execution, calibration, acc_blocks, acc_pegs].");
+
 
     ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
 

@@ -60,10 +60,6 @@ protected:
   double object_wall_d;
   double on_dist_threshold;
 
-  double offs_x;
-  double offs_y;
-  double offs_z;
-
   Eigen::Affine3d tf_board;
   std::array<irob_msgs::GraspObject, 12> blocks;
 
@@ -95,11 +91,6 @@ public:
     priv_nh.getParam("object_d", object_d);
     priv_nh.getParam("object_wall_d", object_wall_d);
     priv_nh.getParam("on_dist_threshold", on_dist_threshold);
-
-    priv_nh.getParam("offs_x", offs_x);
-    priv_nh.getParam("offs_y", offs_y);
-    priv_nh.getParam("offs_z" , offs_z);
-
 
     std::vector<double> param_board_t;
     priv_nh.getParam("board_t", param_board_t);
@@ -269,6 +260,9 @@ public:
   }
 
   void doPegTransfer();
+  void calibrateOffset();
+  void measureAccuracyBlocks();
+  void measureAccuracyPegs();
 
 };
 

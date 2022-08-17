@@ -12,6 +12,9 @@
 namespace saf {
 
 
+/**
+ * Constructor
+ */
 PegTransferBilateral::PegTransferBilateral(ros::NodeHandle nh, ros::NodeHandle priv_nh,
                          std::vector<std::string> arm_names):
   PegTransferLogic(nh, priv_nh, arm_names)
@@ -23,15 +26,66 @@ PegTransferBilateral::PegTransferBilateral(ros::NodeHandle nh, ros::NodeHandle p
     g_inv.id = -1;
     blocks[i] = g_inv;
   }
+
+  std::vector<double> offset_arm_1;
+  priv_nh.getParam("offset_arm_1", offset_arm_1);
+  offs_1_x = offset_arm_1[0];
+  offs_1_y = offset_arm_1[1];
+  offs_1_z = offset_arm_1[2];
+
+  std::vector<double> offset_arm_2;
+  priv_nh.getParam("offset_arm_2", offset_arm_2);
+  offs_2_x = offset_arm_1[0];
+  offs_2_y = offset_arm_1[1];
+  offs_2_z = offset_arm_1[2];
+
+
+
+
 }
 
+
+/**
+ * Destructor
+ */
 PegTransferBilateral::~PegTransferBilateral()
 {
   // TODO Auto-generated destructor stub
 }
 
+/**
+ * Offset calibration
+ */
+void PegTransferBilateral::calibrateOffset()
+{
 
 
+
+}
+
+
+/**
+ * Accuracy measurement on blocks
+ */
+void PegTransferBilateral::measureAccuracyBlocks()
+{
+
+}
+
+
+/**
+ * Accuracy measurement on pegs
+ */
+void PegTransferBilateral::measureAccuracyPegs()
+{
+
+}
+
+
+
+/**
+ * Execute peg transfer
+ */
 void PegTransferBilateral::doPegTransfer()
 {
 
@@ -61,7 +115,7 @@ void PegTransferBilateral::doPegTransfer()
 
   //Vision data received
 
-  Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
+  Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_1_x, offs_1_y, offs_1_z));
 
   Eigen::Translation3d offset_peg_h =
                                 Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, peg_h));
@@ -230,12 +284,25 @@ int main(int argc, char **argv)
   std::vector<std::string> arm_names;
   priv_nh.getParam("arm_names", arm_names);
 
+  std::string mode;
+  priv_nh.getParam("mode", mode);
+
 
   // Start autonomous agent
   try {
     PegTransferBilateral pnp(nh ,  priv_nh, arm_names);
 
-    pnp.doPegTransfer();
+    if (mode == "execution")
+      pnp.doPegTransfer();
+    else if (mode == "calibration")
+      pnp.calibrateOffset();
+    else if (mode == "acc_blocks")
+      pnp.measureAccuracyBlocks();
+    else if (mode == "acc_pegs")
+      pnp.measureAccuracyPegs();
+    else
+      ROS_INFO_STREAM("Mode invalid. Valid modes are: [execution, calibration, acc_blocks, acc_pegs].");
+
 
     ROS_INFO_STREAM("Program finished succesfully, shutting down ...");
 

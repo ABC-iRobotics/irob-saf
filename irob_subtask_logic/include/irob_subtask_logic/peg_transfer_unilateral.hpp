@@ -22,6 +22,7 @@
 #include <ros/package.h>
 #include <cmath>
 #include <limits>
+#include <fstream>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -47,10 +48,19 @@ namespace saf {
 
 class PegTransferUnilateral : public PegTransferLogic {
 
+  double offs_x;
+  double offs_y;
+  double offs_z;
+
+  std::string offset_filename_arm_1;
+
 public:
   PegTransferUnilateral(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
   ~PegTransferUnilateral();
   void doPegTransfer();
+  void calibrateOffset();
+  void measureAccuracyBlocks();
+  void measureAccuracyPegs();
 
 };
 

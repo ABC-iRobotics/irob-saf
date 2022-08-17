@@ -154,7 +154,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 1500.0 #600.0 #600.0
+        self.exposure = 400.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 

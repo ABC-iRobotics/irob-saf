@@ -44,11 +44,20 @@ namespace saf {
 
 class PegTransferBilateral : public PegTransferLogic {
 
+  double offs_1_x;
+  double offs_1_y;
+  double offs_1_z;
+  double offs_2_x;
+  double offs_2_y;
+  double offs_2_z;
 
 public:
   PegTransferBilateral(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
   ~PegTransferBilateral();
   void doPegTransfer();
+  void calibrateOffset();
+  void measureAccuracyBlocks();
+  void measureAccuracyPegs();
 
 
 };

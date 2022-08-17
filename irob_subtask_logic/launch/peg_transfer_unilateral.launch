@@ -3,30 +3,35 @@
 <launch>
 	<group ns="saf">
 
+        <arg name="mode" default="execution"/>
+            <!-- execution, calibration, acc_blocks, acc_pegs-->
+
         <arg name="board_descriptor"
         default="peg_transfer_board.yaml"/>
 
-        <arg name="offs_x" default="-6.0"/>
-        <arg name="offs_y" default="-10.0"/>
-        <arg name="offs_z" default="7.0"/>
+        <arg name="offset_arm_1"
+        default="offset_psm1.yaml"/>
+
         <arg name="on_dist_threshold" default="5.0"/>
 
         <arg name="speed_cartesian" default="40.0"/>
         <arg name="speed_jaw" default="60.0"/>
 
-        <node name="peg_transfer" pkg="irob_subtask_logic"
-            type="peg_transfer" output="screen">
+        <node name="peg_transfer_unilateral" pkg="irob_subtask_logic"
+            type="peg_transfer_unilateral" output="screen">
 
                 <param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
                 <param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
-                <param name="offs_x" type="double" value="$(arg offs_x)" />
-                <param name="offs_y" type="double" value="$(arg offs_y)" />
-                <param name="offs_z" type="double" value="$(arg offs_z)" />
                 <param name="on_dist_threshold" type="double" value="$(arg on_dist_threshold)" />
-  		
-				<rosparam param="arm_names">["arm_1"]</rosparam>
+                <param name="mode" type="string" value="$(arg mode)" />
+  		<rosparam param="arm_names">["arm_1"]</rosparam>
+                <param name="offset_filename_arm_1" type="string" value="$(find irob_subtask_logic)/config/$(arg offset_arm_1)" />
+
                 <rosparam command="load"
                 file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
+
+                <rosparam command="load"
+                file="$(find irob_subtask_logic)/config/$(arg offset_arm_1)"/>
 
         <remap from="target" to="vision/blocks_grasp" />
 	</node>
