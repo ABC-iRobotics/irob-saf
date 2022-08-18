@@ -150,7 +150,7 @@ void PegTransferBilateral::doPegTransfer()
         //grasp_pos_idx = choseGraspOnBlock(peg_idx_on);
         Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                         blocks[peg_idx_on].grasp_poses[grasp_pos_idx]));
-        grasp_ori_world = poseToWorldFrame(grasp_pose_on).rotation();
+        grasp_ori_world = poseCf2Wf(grasp_pose_on).rotation();
         grasp_pose_on = offset_cf * grasp_pose_on;
 
 
@@ -181,11 +181,11 @@ void PegTransferBilateral::doPegTransfer()
         place_grasp_pos_idx = grasp_pos_idx + 2;// % 2;
 
 
-        Eigen::Affine3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on));
+        Eigen::Affine3d place_approach_pose_on_wf(poseCf2Wf(grasp_pose_on));
         place_approach_pose_on_wf = offset_peg_h * place_approach_pose_on_wf;
 
 
-        Eigen::Affine3d place_approach_pose_on_cf(poseToCameraFrame(place_approach_pose_on_wf));
+        Eigen::Affine3d place_approach_pose_on_cf(poseWf2Cf(place_approach_pose_on_wf));
         place_approach_pose_on_cf = offset_cf * place_approach_pose_on_cf;
 
         std::vector<Eigen::Affine3d> waypoints;
@@ -201,11 +201,11 @@ void PegTransferBilateral::doPegTransfer()
         approach_pose_to_wf =  offset_peg_h.inverse() * approach_pose_to_wf;
 
 
-        Eigen::Affine3d place_pose_to_cf(poseToCameraFrame(
+        Eigen::Affine3d place_pose_to_cf(poseWf2Cf(
                                            Eigen::Affine3d(grasp_ori_world * place_pose_to_wf)));
         place_pose_to_cf = offset_cf * place_pose_to_cf;
 
-        Eigen::Affine3d approach_pose_to_cf(poseToCameraFrame(
+        Eigen::Affine3d approach_pose_to_cf(poseWf2Cf(
                                            Eigen::Affine3d(grasp_ori_world * approach_pose_to_wf)));
         approach_pose_to_cf = offset_cf * approach_pose_to_cf;
 

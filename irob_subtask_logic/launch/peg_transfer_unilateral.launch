@@ -17,6 +17,10 @@
         <arg name="speed_cartesian" default="40.0"/>
         <arg name="speed_jaw" default="60.0"/>
 
+
+        <arg name="measurement_filename"
+            default="/home/tamas/data/pegransfer_block_err/block_err_1.csv"/>
+
         <node name="peg_transfer_unilateral" pkg="irob_subtask_logic"
             type="peg_transfer_unilateral" output="screen">
 
@@ -24,6 +28,7 @@
                 <param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
                 <param name="on_dist_threshold" type="double" value="$(arg on_dist_threshold)" />
                 <param name="mode" type="string" value="$(arg mode)" />
+                <param name="measurement_filename" type="string" value="$(arg measurement_filename)" />
   		<rosparam param="arm_names">["arm_1"]</rosparam>
                 <param name="offset_filename_arm_1" type="string" value="$(find irob_subtask_logic)/config/$(arg offset_arm_1)" />
 

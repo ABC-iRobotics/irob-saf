@@ -34,6 +34,7 @@ PegTransferUnilateral::PegTransferUnilateral(ros::NodeHandle nh, ros::NodeHandle
   offs_z = offset_arm_1[2];
 
   priv_nh.getParam("offset_filename_arm_1", offset_filename_arm_1);
+  priv_nh.getParam("measurement_filename", measurement_filename);
 
 
 }
@@ -68,6 +69,15 @@ void PegTransferUnilateral::calibrateOffset()
     ros::Duration(0.1).sleep();
   }
 
+  std::vector<Eigen::Affine3d> waypoints;
+  waypoints.push_back(arms[0] -> getPoseCurrent().transform);
+
+  std::vector<Eigen::Translation3d> corner_pos_wf_arr;
+  corner_pos_wf_arr.push_back(Eigen::Translation3d(0.0, 0.0, -9.5));
+  corner_pos_wf_arr.push_back(Eigen::Translation3d(101.1, 0.0, -9.5));
+  corner_pos_wf_arr.push_back(Eigen::Translation3d(101.1, -62.8, -9.5));
+  corner_pos_wf_arr.push_back(Eigen::Translation3d(0.0, -62.8, -9.5));
+
   //Vision data received
   Eigen::Quaternion<double> ori_world =
           BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
@@ -77,40 +87,49 @@ void PegTransferUnilateral::calibrateOffset()
           BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
           DOWN_FORWARD;
 
+  Eigen::Translation3d offset_sum(0.0, 0.0, 0.0);
 
-  ROS_INFO_STREAM("Navigating to corner..");
+  ROS_INFO_STREAM("Starting calibration...");
+  for(Eigen::Translation3d corner_pos_wf : corner_pos_wf_arr)
+  {
+    ROS_INFO_STREAM("Navigating to corner..");
 
-  Eigen::Translation3d corner_pos_wf =  Eigen::Translation3d(0.0, 0.0, -9.5);
-
-  Eigen::Affine3d corner_pose_cf(poseToCameraFrame(
+    Eigen::Affine3d corner_pose_cf(poseWf2Cf(
                                      Eigen::Affine3d(grasp_ori_world * corner_pos_wf)));
 
-  arms[0] -> nav_to_pos(corner_pose_cf, speed_cartesian);
-  while(!arms[0] -> isSurgemeDone() && ros::ok())
-  {
-    e = vision.getResult();
-    storeEnvironment(e);
-    ros::Duration(0.1).sleep();
+    arms[0] -> nav_to_pos(corner_pose_cf, speed_cartesian, waypoints);
+    while(!arms[0] -> isSurgemeDone() && ros::ok())
+    {
+      e = vision.getResult();
+      storeEnvironment(e);
+      ros::Duration(0.1).sleep();
+    }
+
+    Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
+
+
+    ROS_INFO_STREAM("Move arm to target position and press Enter...");
+    std::cout << "Press enter to continue ...";
+    std::cin.get();
+
+
+    ROS_INFO_STREAM("Saving target position");
+    ros::spinOnce();
+    Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
+
+    Eigen::Translation3d offset(corr_pose.translation() - uncorr_pose.translation());
+    offset_sum = offset * offset_sum;
   }
 
-  Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
 
 
-  ROS_INFO_STREAM("Move arm to target position and press Enter...");
-  std::cout << "Press enter to continue ...";
-  std::cin.get();
-
-
-  ROS_INFO_STREAM("Saving target position");
-  ros::spinOnce();
-  Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
-
-  Eigen::Translation3d offset(corr_pose.translation() - uncorr_pose.translation());
-
+  ROS_INFO_STREAM("Writing offset to file " << offset_filename_arm_1 << "...");
   std::ofstream offsfile;
   offsfile.open (offset_filename_arm_1);
-  offsfile << "offset_arm_1: [" << offset.x() << ", " << offset.y() << ", " << offset.z() << "]\n";
+  offsfile << "offset_arm_1: [" << (offset_sum.x() / 4.0) << ", " << (offset_sum.y() / 4.0)
+           << ", " << (offset_sum.z() / 4.0) << "]\n";
   offsfile.close();
+  ROS_INFO_STREAM("Offset wrote to file successfully.");
 
 }
 
@@ -120,8 +139,112 @@ void PegTransferUnilateral::calibrateOffset()
  */
 void PegTransferUnilateral::measureAccuracyBlocks()
 {
+  int peg_idx_on = 0;
+  int peg_idx_to = 6;
+  int increment = 1;
+  int grasp_pos_idx = 1;
+  int place_grasp_pos_idx = 1;
+  double jaw_len = 9.5;
 
+  irob_msgs::Environment e;
+  // Read marker transform
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  e = makeNaN<irob_msgs::Environment>();
+
+  while (((abs(e.tf_phantom.translation.x) < 0.000001
+           && abs(e.tf_phantom.translation.y) < 0.000001
+           && abs(e.tf_phantom.translation.z) < 0.000001)
+          || e.objects.size() == 0 || (isnan(e))) && ros::ok())
+  {
+    e = vision.getResult();
+    storeEnvironment(e);
+    ros::Duration(0.1).sleep();
+  }
+
+  std::vector<Eigen::Affine3d> waypoints;
+  waypoints.push_back(arms[0] -> getPoseCurrent().transform);
+
+  //Vision data received
+
+  Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
+
+  Eigen::Translation3d offset_jaw_h =
+                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, -jaw_len));
+
+  //Vision data received
+    Eigen::Quaternion<double> ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_SIDEWAYS;
+
+    Eigen::Quaternion<double> grasp_ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_FORWARD;
+
+  std::vector<Eigen::Vector3d> err_arr;
+  while(ros::ok() && peg_idx_on < 6)
+  {
+    do
+    {
+      e = vision.getResult();
+      storeEnvironment(e);
+      ros::Duration(0.1).sleep();
+    } while(!isPegOccupied(peg_idx_on));
+
+    //ROS_INFO_STREAM("blocks[peg_idx_on]: "<<   blocks[peg_idx_on]);
+
+    // Grasp object
+        ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
+
+        //grasp_pos_idx = choseGraspOnBlock(peg_idx_on);
+        Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
+                                                        blocks[peg_idx_on].grasp_poses[grasp_pos_idx]));
+
+        //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
+        grasp_pose_on = offset_cf * translationWf2Cf(offset_jaw_h) * grasp_pose_on;
+
+
+        arms[0] -> nav_to_pos(grasp_pose_on, speed_cartesian, waypoints);
+        while(!arms[0] -> isSurgemeDone() && ros::ok())
+        {
+          e = vision.getResult();
+          storeEnvironment(e);
+          ros::Duration(0.1).sleep();
+        }
+
+        // Correction
+        Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
+
+        ROS_INFO_STREAM("Move arm to target position and press Enter...");
+        std::cout << "Press enter to continue ...";
+        std::cin.get();
+
+
+        ROS_INFO_STREAM("Saving target position");
+        ros::spinOnce();
+        Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
+        err_arr.push_back(Eigen::Vector3d(corr_pose.translation() - uncorr_pose.translation()));
+
+
+        ros::Duration(0.1).sleep();
+
+        administerTransfer(peg_idx_on, peg_idx_to);
+        ROS_INFO_STREAM("Block measured.");
+
+        ros::Duration(1.0).sleep();
+        peg_idx_on += increment;
+        peg_idx_to += increment;
+
+  }
+
+  ROS_INFO_STREAM("Writing measurement to file " << measurement_filename << "...");
+  std::ofstream measfile;
+  measfile.open(measurement_filename, std::ios_base::app);
+  for (Eigen::Vector3d err : err_arr)
+    measfile << err.x() << ";" <<  err.y() << ";" <<  err.z() << "\n";
+  measfile.close();
+  ROS_INFO_STREAM("Measurement wrote to file successfully.");
 }
+
 
 
 /**
@@ -231,7 +354,7 @@ void PegTransferUnilateral::doPegTransfer()
         place_grasp_pos_idx = grasp_pos_idx;// % 2;
 
 
-        Eigen::Affine3d place_approach_pose_on_wf(poseToWorldFrame(grasp_pose_on));
+        Eigen::Affine3d place_approach_pose_on_wf(poseCf2Wf(grasp_pose_on));
         ROS_INFO_STREAM(place_approach_pose_on_wf.translation().x() << ", " <<
                         place_approach_pose_on_wf.translation().y() << ", " <<
                         place_approach_pose_on_wf.translation().z());
@@ -242,7 +365,7 @@ void PegTransferUnilateral::doPegTransfer()
                         place_approach_pose_on_wf.translation().y() << ", " <<
                         place_approach_pose_on_wf.translation().z());
 
-        Eigen::Affine3d place_approach_pose_on_cf(poseToCameraFrame(place_approach_pose_on_wf));
+        Eigen::Affine3d place_approach_pose_on_cf(poseWf2Cf(place_approach_pose_on_wf));
         place_approach_pose_on_cf = offset_cf * place_approach_pose_on_cf;
 
         std::vector<Eigen::Affine3d> waypoints;
@@ -261,11 +384,11 @@ void PegTransferUnilateral::doPegTransfer()
         approach_pose_to_wf =  offset_peg_h.inverse() * approach_pose_to_wf;
 
 
-        Eigen::Affine3d place_pose_to_cf(poseToCameraFrame(
+        Eigen::Affine3d place_pose_to_cf(poseWf2Cf(
                                            Eigen::Affine3d(grasp_ori_world * place_pose_to_wf)));
         place_pose_to_cf = offset_cf * place_pose_to_cf;
 
-        Eigen::Affine3d approach_pose_to_cf(poseToCameraFrame(
+        Eigen::Affine3d approach_pose_to_cf(poseWf2Cf(
                                            Eigen::Affine3d(grasp_ori_world * approach_pose_to_wf)));
         approach_pose_to_cf = offset_cf * approach_pose_to_cf;
 

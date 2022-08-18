@@ -53,6 +53,7 @@ class PegTransferUnilateral : public PegTransferLogic {
   double offs_z;
 
   std::string offset_filename_arm_1;
+  std::string measurement_filename;
 
 public:
   PegTransferUnilateral(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);

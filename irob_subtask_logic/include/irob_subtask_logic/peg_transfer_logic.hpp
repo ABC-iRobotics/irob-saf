@@ -134,7 +134,7 @@ public:
       return false;
     Eigen::Vector3d block_pos(
             unwrapMsg<geometry_msgs::Point, Eigen::Vector3d>(g.position));
-    block_pos = positionToWorldFrame(block_pos, tf_board);
+    block_pos = positionCf2Wf(block_pos);
     block_pos(2) = 0.0;
     block_pos(1) = -block_pos(1);
     //ROS_INFO_STREAM("block: " <<  block_pos);
@@ -205,7 +205,7 @@ public:
       Eigen::Affine3d block_pose(
             unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(blocks[p].grasp_poses[i]));
       Eigen::Vector3d block_pos(block_pose.translation());
-      block_pos = positionToWorldFrame(block_pos, tf_board);
+      block_pos = positionCf2Wf(block_pos);
       block_pos(2) = 0.0;
       block_pos(1) = -block_pos(1);
       double dist = (block_pos - peg_positions[p]).norm();
@@ -220,14 +220,14 @@ public:
   }
 
 
-  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d& pose)
+  Eigen::Affine3d poseWf2Cf(const Eigen::Affine3d& pose)
   {
     Eigen::Affine3d ret(pose);
     ret = tf_board * ret;
     return ret;
   }
 
-  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d& pose)
+  Eigen::Affine3d poseCf2Wf(const Eigen::Affine3d& pose)
   {
     Eigen::Affine3d ret(pose);
     ROS_INFO_STREAM(tf_board.translation().x() << ", " <<
@@ -240,24 +240,38 @@ public:
 
   }
 
-  Eigen::Vector3d positionToCameraFrame(const Eigen::Vector3d& pos,
-                                        const Eigen::Affine3d& tr)
+  Eigen::Vector3d positionWf2Cf(const Eigen::Vector3d& pos)
   {
     Eigen::Vector3d ret(pos);
-    ret = Eigen::Translation3d(board_t) * ret;
-    ret = tr * ret;  // Ori OK
+    ret = tf_board * ret;
     return ret;
   }
 
-  Eigen::Vector3d positionToWorldFrame(const Eigen::Vector3d& pos,
-                                     const Eigen::Affine3d& tr)
+  Eigen::Vector3d positionCf2Wf(const Eigen::Vector3d& pos)
   {
     Eigen::Vector3d ret(pos);
-    ret = tr.inverse() * ret;
-    ret = Eigen::Translation3d(board_t).inverse() * ret;
+    ret = tf_board.inverse() * ret;
     return ret;
 
   }
+
+
+  Eigen::Translation3d translationWf2Cf(const Eigen::Translation3d& pos)
+  {
+    Eigen::Vector3d ret(pos.x(), pos.y(), pos.z());
+    ret = tf_board.rotation() * ret;
+    return Eigen::Translation3d(ret);
+  }
+
+  Eigen::Translation3d translationCf2Wf(const Eigen::Translation3d& pos)
+  {
+    Eigen::Vector3d ret(pos.x(), pos.y(), pos.z());
+    ret = tf_board.inverse().rotation() * ret;
+    return Eigen::Translation3d(ret);
+
+  }
+
+
 
   void doPegTransfer();
   void calibrateOffset();
