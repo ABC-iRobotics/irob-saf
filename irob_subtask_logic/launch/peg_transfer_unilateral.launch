@@ -19,7 +19,7 @@
 
 
         <arg name="measurement_filename"
-            default="/home/tamas/data/pegransfer_block_err/block_err_1.csv"/>
+            default="/home/tamas/data/pegransfer_block_err/peg_err_1.csv"/>
 
         <node name="peg_transfer_unilateral" pkg="irob_subtask_logic"
             type="peg_transfer_unilateral" output="screen">

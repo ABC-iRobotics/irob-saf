@@ -144,7 +144,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
   int increment = 1;
   int grasp_pos_idx = 1;
   int place_grasp_pos_idx = 1;
-  double jaw_len = 9.5;
+  double jaw_len = 14.5;
 
   irob_msgs::Environment e;
   // Read marker transform
@@ -169,7 +169,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
   Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
 
   Eigen::Translation3d offset_jaw_h =
-                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, -jaw_len));
+                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, jaw_len));
 
   //Vision data received
     Eigen::Quaternion<double> ori_world =
@@ -181,6 +181,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
           DOWN_FORWARD;
 
   std::vector<Eigen::Vector3d> err_arr;
+  ROS_INFO_STREAM("Size: " << err_arr.size());
   while(ros::ok() && peg_idx_on < 6)
   {
     do
@@ -212,6 +213,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
         }
 
         // Correction
+        ros::spinOnce();
         Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
 
         ROS_INFO_STREAM("Move arm to target position and press Enter...");
@@ -223,6 +225,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
         ros::spinOnce();
         Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
         err_arr.push_back(Eigen::Vector3d(corr_pose.translation() - uncorr_pose.translation()));
+        ROS_INFO_STREAM("Size: " << err_arr.size());
 
 
         ros::Duration(0.1).sleep();
@@ -239,6 +242,7 @@ void PegTransferUnilateral::measureAccuracyBlocks()
   ROS_INFO_STREAM("Writing measurement to file " << measurement_filename << "...");
   std::ofstream measfile;
   measfile.open(measurement_filename, std::ios_base::app);
+  ROS_INFO_STREAM("Size: " << err_arr.size());
   for (Eigen::Vector3d err : err_arr)
     measfile << err.x() << ";" <<  err.y() << ";" <<  err.z() << "\n";
   measfile.close();
@@ -252,7 +256,107 @@ void PegTransferUnilateral::measureAccuracyBlocks()
  */
 void PegTransferUnilateral::measureAccuracyPegs()
 {
+  int peg_idx_on = 0;
+  int increment = 1;
+  double jaw_len = 9.5;
+  peg_h = 26.5;
 
+  irob_msgs::Environment e;
+  // Read marker transform
+  ROS_INFO_STREAM("Waiting for data from vision...");
+  e = makeNaN<irob_msgs::Environment>();
+
+  while (((abs(e.tf_phantom.translation.x) < 0.000001
+           && abs(e.tf_phantom.translation.y) < 0.000001
+           && abs(e.tf_phantom.translation.z) < 0.000001)
+          || e.objects.size() == 0 || (isnan(e))) && ros::ok())
+  {
+    e = vision.getResult();
+    storeEnvironment(e);
+    ros::Duration(0.1).sleep();
+  }
+
+  std::vector<Eigen::Affine3d> waypoints;
+  waypoints.push_back(arms[0] -> getPoseCurrent().transform);
+
+  //Vision data received
+
+  Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
+
+  Eigen::Translation3d offset_jaw_h =
+                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, -jaw_len));
+  Eigen::Translation3d offset_peg_h =
+                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, -peg_h));
+
+  //Vision data received
+    Eigen::Quaternion<double> ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_SIDEWAYS;
+
+    Eigen::Quaternion<double> grasp_ori_world =
+          BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::
+          DOWN_FORWARD;
+
+  std::vector<Eigen::Vector3d> err_arr;
+  ROS_INFO_STREAM("Size: " << err_arr.size());
+  while(ros::ok() && peg_idx_on < 12)
+  {
+      e = vision.getResult();
+      storeEnvironment(e);
+
+
+        ROS_INFO_STREAM("Touchuing peg " << peg_idx_on << "...");
+
+        Eigen::Translation3d peg_pos_wf(peg_positions[peg_idx_on]);
+        peg_pos_wf = offset_jaw_h * offset_peg_h * peg_pos_wf;
+
+
+        Eigen::Affine3d peg_pose_cf(poseWf2Cf(Eigen::Affine3d(grasp_ori_world *peg_pos_wf)));
+        peg_pose_cf = offset_cf * peg_pose_cf;
+        //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
+
+
+
+        arms[0] -> nav_to_pos(peg_pose_cf, speed_cartesian, waypoints);
+        while(!arms[0] -> isSurgemeDone() && ros::ok())
+        {
+          e = vision.getResult();
+          storeEnvironment(e);
+          ros::Duration(0.1).sleep();
+        }
+
+        // Correction
+        ros::spinOnce();
+        Eigen::Affine3d uncorr_pose = arms[0] -> getPoseCurrent().transform;
+
+        ROS_INFO_STREAM("Move arm to target position and press Enter...");
+        std::cout << "Press enter to continue ...";
+        std::cin.get();
+
+
+        ROS_INFO_STREAM("Saving target position");
+        ros::spinOnce();
+        Eigen::Affine3d corr_pose = arms[0] -> getPoseCurrent().transform;
+        err_arr.push_back(Eigen::Vector3d(corr_pose.translation() - uncorr_pose.translation()));
+        ROS_INFO_STREAM("Size: " << err_arr.size());
+
+
+        ros::Duration(0.1).sleep();
+        ROS_INFO_STREAM("Block measured.");
+
+        ros::Duration(1.0).sleep();
+        peg_idx_on += increment;
+
+  }
+
+  ROS_INFO_STREAM("Writing measurement to file " << measurement_filename << "...");
+  std::ofstream measfile;
+  measfile.open(measurement_filename, std::ios_base::app);
+  ROS_INFO_STREAM("Size: " << err_arr.size());
+  for (Eigen::Vector3d err : err_arr)
+    measfile << err.x() << ";" <<  err.y() << ";" <<  err.z() << "\n";
+  measfile.close();
+  ROS_INFO_STREAM("Measurement wrote to file successfully.");
 }
 
 
