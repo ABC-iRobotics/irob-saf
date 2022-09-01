@@ -49,8 +49,8 @@ class FiducialDetector:
         #self.upper_purple = (10, 170, 255)
         #self.lower_darkpurple = (150, 50, 0)
         #self.upper_darkpurple = (180, 170, 255)
-        self.lower_purple = (150, 0, 0)
-        self.upper_purple = (180, 150, 255)
+        self.lower_purple = (100, 80, 0)
+        self.upper_purple = (150, 255, 255)
         self.lower_darkpurple = (180, 170,255)
         self.upper_darkpurple = (180, 170, 255)
         #self.lower_background = (90, 0, 0)
@@ -64,7 +64,7 @@ class FiducialDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        self.exposure = 800.0#300.0
+        self.exposure = 1800.0#300.0
         #self.exposure = 150.0 #1800.0 #1000.0
         self.tr_seq = 0
 
