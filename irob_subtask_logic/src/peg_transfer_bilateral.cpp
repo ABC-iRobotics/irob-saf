@@ -19,15 +19,6 @@ PegTransferBilateral::PegTransferBilateral(ros::NodeHandle nh, ros::NodeHandle p
                          std::vector<std::string> arm_names):
   PegTransferLogic(nh, priv_nh, arm_names)
 {
-  /*loadBoardDescriptor(priv_nh);
-  for (int i = 0; i < blocks.size(); i++)
-  {
-    irob_msgs::GraspObject g_inv;
-    g_inv.id = -1;
-    blocks[i] = g_inv;
-  }*/
-
-  ROS_INFO_STREAM("Here");
 
   std::vector<double> offset_arm_1;
   priv_nh.getParam("offset_arm_1", offset_arm_1);
@@ -40,7 +31,7 @@ PegTransferBilateral::PegTransferBilateral(ros::NodeHandle nh, ros::NodeHandle p
   offs_2_x = offset_arm_2[0];
   offs_2_y = offset_arm_2[1];
   offs_2_z = offset_arm_2[2];
-  ROS_INFO_STREAM("Here2");
+
 
 
 
@@ -125,15 +116,18 @@ void PegTransferBilateral::doPegTransfer()
 
   std::vector<Eigen::Translation3d> offset_cf;
   offset_cf.push_back(Eigen::Translation3d(Eigen::Vector3d(
-                                    offs_1_x, offs_1_y, offs_1_z)));
-  offset_cf.push_back(Eigen::Translation3d(Eigen::Vector3d(
                                     offs_2_x, offs_2_y, offs_2_z)));
+  offset_cf.push_back(Eigen::Translation3d(Eigen::Vector3d(
+                                    offs_1_x, offs_1_y, offs_1_z)));
 
   Eigen::Translation3d offset_peg_h =
                                 Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, peg_h));
 
   Eigen::Translation3d offset_tool_l =
                                 Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, tool_l));
+
+  Eigen::Translation3d offset_sag_h=
+                                Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, sag_h));
 
   Eigen::Translation3d offset_block_h =
                                 Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, object_h));
@@ -146,10 +140,10 @@ void PegTransferBilateral::doPegTransfer()
     std::vector<Eigen::Quaternion<double>> grasp_ori_world;
     grasp_ori_world.push_back(BaseOrientations<CoordinateFrame::ROBOT,
                               Eigen::Quaternion<double>>::DOWN_FORWARD);
-    grasp_ori_world.push_back(Eigen::AngleAxisd(0.33*M_PI, Eigen::Vector3d::UnitZ()) *
+    grasp_ori_world.push_back(Eigen::AngleAxisd(-0.33*M_PI, Eigen::Vector3d::UnitZ()) *
                               (BaseOrientations<CoordinateFrame::ROBOT,
                                Eigen::Quaternion<double>>::DOWN_FORWARD));
-    grasp_ori_world.push_back(Eigen::AngleAxisd(-0.33*M_PI, Eigen::Vector3d::UnitZ()) *
+    grasp_ori_world.push_back(Eigen::AngleAxisd(0.33*M_PI, Eigen::Vector3d::UnitZ()) *
                               (BaseOrientations<CoordinateFrame::ROBOT,
                                Eigen::Quaternion<double>>::DOWN_FORWARD));
   while(ros::ok())
@@ -178,6 +172,9 @@ void PegTransferBilateral::doPegTransfer()
     Eigen::Affine3d grasper_grasp_pose(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                     blocks[peg_idx_on].grasp_poses[grasper_grasp_pos_idx]));
     Eigen::Quaternion<double> grasped_grasp_ori_world(poseCf2Wf(grasper_grasp_pose).rotation());
+
+    Eigen::Affine3d grasper_grasp_leave_pose_wf(poseCf2Wf(grasper_grasp_pose));
+
     grasper_grasp_pose = offset_cf[grasper_arm_idx] * grasper_grasp_pose;
 
 
@@ -187,7 +184,7 @@ void PegTransferBilateral::doPegTransfer()
     grasper_grasp_approach_pose = offset_cf[grasper_arm_idx] * grasper_grasp_approach_pose;
 
         // grasper_grasp_leave_pose_wf
-    Eigen::Affine3d grasper_grasp_leave_pose_wf(poseCf2Wf(grasper_grasp_pose));
+
     grasper_grasp_leave_pose_wf = offset_peg_h * grasper_grasp_leave_pose_wf;
     Eigen::Affine3d grasper_grasp_leave_pose_cf(poseWf2Cf(grasper_grasp_leave_pose_wf));
     grasper_grasp_leave_pose_cf = offset_cf[grasper_arm_idx] * grasper_grasp_leave_pose_cf;
@@ -197,19 +194,23 @@ void PegTransferBilateral::doPegTransfer()
       //Place
 
         // placer_place_pose_cf
-    Eigen::Translation3d placer_place_pose_wf(peg_positions[peg_idx_to]);
+    Eigen::Translation3d placer_place_pose_wf(Eigen::Vector3d(peg_positions[peg_idx_to].x()
+                                              ,-peg_positions[peg_idx_to].y()
+                                              ,peg_positions[peg_idx_to].z()));
     placer_place_pose_wf
-        = Eigen::Translation3d(grasp_positions[placer_grasp_pos_idx]) * offset_block_h.inverse()
-                                       * placer_place_pose_wf;
+        = Eigen::Translation3d(Eigen::Vector3d( grasp_positions[placer_grasp_pos_idx].x()
+                                               ,- grasp_positions[placer_grasp_pos_idx].y()
+                                               , grasp_positions[placer_grasp_pos_idx].z()))
+                               * offset_block_h * placer_place_pose_wf;
     Eigen::Affine3d placer_place_pose_cf(poseWf2Cf(
-                                       Eigen::Affine3d(grasp_ori_world[1] * placer_place_pose_wf)));
+                                       Eigen::Affine3d(placer_place_pose_wf * grasp_ori_world[1])));
     placer_place_pose_cf = offset_cf[placer_arm_idx] * placer_place_pose_cf;
 
       // placer_place_approach_pose_wf
     Eigen::Translation3d placer_place_approach_pose_wf(placer_place_pose_wf);
-    placer_place_approach_pose_wf =  offset_peg_h.inverse() * placer_place_approach_pose_wf;
+    placer_place_approach_pose_wf =  offset_peg_h * placer_place_approach_pose_wf;
     Eigen::Affine3d placer_place_approach_pose_cf(poseWf2Cf(
-                                       Eigen::Affine3d(grasp_ori_world[1] * placer_place_approach_pose_wf)));
+                                       Eigen::Affine3d(placer_place_approach_pose_wf * grasp_ori_world[1])));
     placer_place_approach_pose_cf = offset_cf[placer_arm_idx] * placer_place_approach_pose_cf;
 
 
@@ -224,41 +225,101 @@ void PegTransferBilateral::doPegTransfer()
 
         // grasper_pass_pose_cf
     Eigen::Translation3d grasper_pass_pose_wf(grasper_grasp_leave_pose_wf.translation());
-    grasper_pass_pose_wf = placer_place_approach_pose_wf* grasper_pass_pose_wf;
+    grasper_pass_pose_wf = placer_place_approach_pose_wf * grasper_pass_pose_wf;
     grasper_pass_pose_wf = Eigen::Translation3d((Eigen::Scaling(0.5) * grasper_pass_pose_wf).translation());
     Eigen::Affine3d grasper_pass_pose_cf(poseWf2Cf(
-                                       Eigen::Affine3d(grasp_ori_world[0] * grasper_pass_pose_wf)));
+                                       Eigen::Affine3d(grasper_pass_pose_wf * grasp_ori_world[0] )));
     grasper_pass_pose_cf = offset_cf[grasper_arm_idx] * grasper_pass_pose_cf;
 
         // pass_pose
     Eigen::Translation3d pass_pose(grasper_pass_pose_wf);
-    pass_pose = Eigen::Translation3d(grasp_positions[grasper_grasp_pos_idx]).inverse() * pass_pose;
+    pass_pose = Eigen::Translation3d(Eigen::Vector3d( grasp_positions[grasper_grasp_pos_idx].x()
+                                                      ,- grasp_positions[grasper_grasp_pos_idx].y()
+                                                      , grasp_positions[grasper_grasp_pos_idx].z())).inverse() * pass_pose;
 
         // placer_pass_pose_cf
     Eigen::Translation3d placer_pass_pose_wf(pass_pose);
-    placer_pass_pose_wf = Eigen::Translation3d(grasp_positions[placer_grasp_pos_idx]) * placer_pass_pose_wf;
+    placer_pass_pose_wf = Eigen::Translation3d(Eigen::Vector3d( grasp_positions[placer_grasp_pos_idx].x()
+                                                                ,- grasp_positions[placer_grasp_pos_idx].y()
+                                                                , grasp_positions[placer_grasp_pos_idx].z())) * placer_pass_pose_wf;
+    placer_pass_pose_wf =  offset_sag_h.inverse() * placer_pass_pose_wf;
     Eigen::Affine3d placer_pass_pose_cf(poseWf2Cf(
-                                       Eigen::Affine3d(grasp_ori_world[1] * placer_pass_pose_wf)));
+                                       Eigen::Affine3d(placer_pass_pose_wf * grasp_ori_world[1])));
     placer_pass_pose_cf = offset_cf[placer_arm_idx] * placer_pass_pose_cf;
 
         // grasper_pass_release_pose_cf
     Eigen::Translation3d grasper_pass_release_pose_wf(grasper_pass_pose_wf);
-    grasper_pass_release_pose_wf =  offset_tool_l.inverse() * grasper_pass_release_pose_wf;
+    grasper_pass_release_pose_wf =  offset_tool_l * grasper_pass_release_pose_wf;
     Eigen::Affine3d grasper_pass_release_pose_cf(poseWf2Cf(
-                                           Eigen::Affine3d(grasper_pass_pose_cf.rotation()
-                                                           * grasper_pass_release_pose_wf)));
+                                           Eigen::Affine3d(grasper_pass_release_pose_wf * grasp_ori_world[0])));
     grasper_pass_release_pose_cf = offset_cf[grasper_arm_idx] * grasper_pass_release_pose_cf;
 
       // placer_pass_approach_pose_cf
     Eigen::Translation3d placer_pass_approach_pose_wf(placer_pass_pose_wf);
-    placer_pass_approach_pose_wf =  offset_tool_l.inverse() * placer_pass_approach_pose_wf;
+    placer_pass_approach_pose_wf =  offset_tool_l * placer_pass_approach_pose_wf;
     Eigen::Affine3d placer_pass_approach_pose_cf(poseWf2Cf(
-                                       Eigen::Affine3d(placer_pass_pose_cf.rotation()
-                                                       * placer_pass_approach_pose_wf)));
+                                       Eigen::Affine3d(placer_pass_approach_pose_wf * grasp_ori_world[1])));
     placer_pass_approach_pose_cf = offset_cf[placer_arm_idx] * placer_pass_approach_pose_cf;
 
 
     //
+
+    ROS_INFO_STREAM("grasper_grasp_leave_pose_wf");
+    ROS_INFO_STREAM(grasper_grasp_leave_pose_wf.translation().x() << ", " <<
+                    grasper_grasp_leave_pose_wf.translation().y() << ", " <<
+                    grasper_grasp_leave_pose_wf.translation().z());
+
+    ROS_INFO_STREAM("grasper_grasp_leave_pose_cf");
+    ROS_INFO_STREAM(grasper_grasp_leave_pose_cf.translation().x() << ", " <<
+                    grasper_grasp_leave_pose_cf.translation().y() << ", " <<
+                    grasper_grasp_leave_pose_cf.translation().z());
+
+    ROS_INFO_STREAM("grasper_pass_pose_wf");
+    ROS_INFO_STREAM(grasper_pass_pose_wf.translation().x() << ", " <<
+                    grasper_pass_pose_wf.translation().y() << ", " <<
+                    grasper_pass_pose_wf.translation().z());
+
+    ROS_INFO_STREAM("grasper_pass_pose_cf");
+    ROS_INFO_STREAM(grasper_pass_pose_cf.translation().x() << ", " <<
+                    grasper_pass_pose_cf.translation().y() << ", " <<
+                    grasper_pass_pose_cf.translation().z());
+
+    ROS_INFO_STREAM("pass_pose");
+    ROS_INFO_STREAM(pass_pose.translation().x() << ", " <<
+                    pass_pose.translation().y() << ", " <<
+                    pass_pose.translation().z());
+
+    ROS_INFO_STREAM("placer_pass_pose_wf");
+    ROS_INFO_STREAM(placer_pass_pose_wf.translation().x() << ", " <<
+                    placer_pass_pose_wf.translation().y() << ", " <<
+                    placer_pass_pose_wf.translation().z());
+
+    ROS_INFO_STREAM("placer_pass_pose_cf");
+    ROS_INFO_STREAM(placer_pass_pose_cf.translation().x() << ", " <<
+                    placer_pass_pose_cf.translation().y() << ", " <<
+                    placer_pass_pose_cf.translation().z());
+
+    ROS_INFO_STREAM("placer_place_approach_pose_wf");
+    ROS_INFO_STREAM(placer_place_approach_pose_wf.translation().x() << ", " <<
+                    placer_place_approach_pose_wf.translation().y() << ", " <<
+                    placer_place_approach_pose_wf.translation().z());
+
+    ROS_INFO_STREAM("placer_place_approach_pose_cf");
+    ROS_INFO_STREAM(placer_place_approach_pose_cf.translation().x() << ", " <<
+                    placer_place_approach_pose_cf.translation().y() << ", " <<
+                    placer_place_approach_pose_cf.translation().z());
+
+    ROS_INFO_STREAM("placer_place_pose_wf");
+    ROS_INFO_STREAM(placer_place_pose_wf.translation().x() << ", " <<
+                    placer_place_pose_wf.translation().y() << ", " <<
+                    placer_place_pose_wf.translation().z());
+
+    ROS_INFO_STREAM("placer_place_pose_cf");
+    ROS_INFO_STREAM(placer_place_pose_cf.translation().x() << ", " <<
+                    placer_place_pose_cf.translation().y() << ", " <<
+                    placer_place_pose_cf.translation().z());
+
+
 
 
 

@@ -10,7 +10,7 @@
         default="peg_transfer_board.yaml"/>
 
         <arg name="offset_arm_1"
-        default="offset_psm2.yaml"/>
+        default="offset_psm1.yaml"/>
 
         <arg name="on_dist_threshold" default="5.0"/>
 
@@ -29,7 +29,7 @@
                 <param name="on_dist_threshold" type="double" value="$(arg on_dist_threshold)" />
                 <param name="mode" type="string" value="$(arg mode)" />
                 <param name="measurement_filename" type="string" value="$(arg measurement_filename)" />
-                <rosparam param="arm_names">["arm_2"]</rosparam>
+                <rosparam param="arm_names">["arm_1"]</rosparam>
                 <param name="offset_filename_arm_1" type="string" value="$(find irob_subtask_logic)/config/$(arg offset_arm_1)" />
 
                 <rosparam command="load"

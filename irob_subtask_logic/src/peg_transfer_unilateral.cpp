@@ -19,22 +19,22 @@ PegTransferUnilateral::PegTransferUnilateral(ros::NodeHandle nh, ros::NodeHandle
                          std::vector<std::string> arm_names):
   PegTransferLogic(nh, priv_nh, arm_names)
 {
-  loadBoardDescriptor(priv_nh);
-  for (int i = 0; i < blocks.size(); i++)
-  {
-    irob_msgs::GraspObject g_inv;
-    g_inv.id = -1;
-    blocks[i] = g_inv;
-  }
 
+  ROS_INFO_STREAM("d");
   std::vector<double> offset_arm_1;
-  priv_nh.getParam("offset_arm_1", offset_arm_1);
+   ROS_INFO_STREAM("f");
+  priv_nh.getParam("offset_arm_2", offset_arm_1);
+   ROS_INFO_STREAM("g");
   offs_x = offset_arm_1[0];
   offs_y = offset_arm_1[1];
   offs_z = offset_arm_1[2];
+   ROS_INFO_STREAM("h");
 
   priv_nh.getParam("offset_filename_arm_1", offset_filename_arm_1);
+   ROS_INFO_STREAM("i");
   priv_nh.getParam("measurement_filename", measurement_filename);
+
+  ROS_INFO_STREAM("1");
 
 
 }
@@ -55,9 +55,12 @@ PegTransferUnilateral::~PegTransferUnilateral()
  */
 void PegTransferUnilateral::calibrateOffset()
 {
+  ROS_INFO_STREAM("a");
   irob_msgs::Environment e;
   ROS_INFO_STREAM("Waiting for data from vision...");
   e = makeNaN<irob_msgs::Environment>();
+
+  ROS_INFO_STREAM("b");
 
   while (((abs(e.tf_phantom.translation.x) < 0.000001
            && abs(e.tf_phantom.translation.y) < 0.000001
@@ -88,6 +91,7 @@ void PegTransferUnilateral::calibrateOffset()
           DOWN_FORWARD;
 
   Eigen::Translation3d offset_sum(0.0, 0.0, 0.0);
+
 
   ROS_INFO_STREAM("Starting calibration...");
   for(Eigen::Translation3d corner_pos_wf : corner_pos_wf_arr)
@@ -428,6 +432,7 @@ void PegTransferUnilateral::doPegTransfer()
         Eigen::Affine3d grasp_pose_on(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(
                                                         blocks[peg_idx_on].grasp_poses[grasp_pos_idx]));
         //grasp_ori_world = poseToWorldFrame(grasp_pose_on, tf_board).rotation();
+        Eigen::Affine3d place_approach_pose_on_wf(poseCf2Wf(grasp_pose_on));
         grasp_pose_on = offset_cf * grasp_pose_on;
 
 
@@ -458,7 +463,7 @@ void PegTransferUnilateral::doPegTransfer()
         place_grasp_pos_idx = grasp_pos_idx;// % 2;
 
 
-        Eigen::Affine3d place_approach_pose_on_wf(poseCf2Wf(grasp_pose_on));
+
         ROS_INFO_STREAM(place_approach_pose_on_wf.translation().x() << ", " <<
                         place_approach_pose_on_wf.translation().y() << ", " <<
                         place_approach_pose_on_wf.translation().z());
@@ -570,12 +575,14 @@ int main(int argc, char **argv)
   // Start autonomous agent
   try {
     PegTransferUnilateral pnp(nh ,  priv_nh, arm_names);
+    ROS_INFO_STREAM("2");
 
     if (mode == "execution")
       pnp.doPegTransfer();
-    else if (mode == "calibration")
+    else if (mode == "calibration") {
+      ROS_INFO_STREAM("3");
       pnp.calibrateOffset();
-    else if (mode == "acc_blocks")
+    }else if (mode == "acc_blocks")
       pnp.measureAccuracyBlocks();
     else if (mode == "acc_pegs")
       pnp.measureAccuracyPegs();

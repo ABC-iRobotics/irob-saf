@@ -27,8 +27,10 @@ grasp_positions: [  -2.45  , 3.5455, 0,
 
 park_position:    [100.0 , 30.0, -100.0]
 
-peg_h: 36.5
-tool_l: 15.0
+peg_h: 46.0
+tool_l: 20.0
+
+sag_h: 7.0
 
 object_h: 15.0
 

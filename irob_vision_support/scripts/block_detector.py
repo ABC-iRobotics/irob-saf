@@ -154,7 +154,7 @@ class BlockDetector:
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
         #self.exposure = 1500.0
-        self.exposure = 800.0 #400.0 #600.0 #600.0
+        self.exposure = 600.0 #400.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
@@ -972,8 +972,8 @@ class BlockDetector:
 
         # End triangles detection
         # Start fine grasp point estimation using RANSAC
-        
-        
+
+
         # find correspondences using simple weighted sum of squared differences
         block_rotation = 0.0
         if (len(triangles)) > 0:
@@ -995,12 +995,12 @@ class BlockDetector:
                 swap = dst[1].copy()
                 dst[1] = dst[2].copy()
                 dst[2] = swap.copy()
-        
+
 
             # estimate affine transform model using all coordinates
             model = AffineTransform()
             model.estimate(self.src_triangle_im_coords, dst)
-        
+
 
             # compare "true" and estimated transform parameters
 
@@ -1031,7 +1031,7 @@ class BlockDetector:
                 cv2.line(result,(Ax,Ay),(Cx,Cy),(0,255,0),2)
                 cv2.line(result,(Cx,Cy),(Bx,By),(0,255,0),2)
                 block_rotation = model.rotation
-              
+
 
         return result, grasp_im_coords_tfromed, block_rotation
 

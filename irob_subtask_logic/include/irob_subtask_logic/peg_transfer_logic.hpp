@@ -57,6 +57,7 @@ protected:
   double peg_h;
   double tool_l;
   double object_h;
+  double sag_h;
   double object_d;
   double object_wall_d;
   double on_dist_threshold;
@@ -88,6 +89,7 @@ public:
   {
 
     priv_nh.getParam("peg_h", peg_h);
+    priv_nh.getParam("sag_h", sag_h);
     priv_nh.getParam("tool_l", tool_l);
     priv_nh.getParam("object_h", object_h);
     priv_nh.getParam("object_d", object_d);
