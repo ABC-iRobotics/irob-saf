@@ -10,7 +10,7 @@
         default="peg_transfer_board.yaml"/>
 
         <arg name="offset_arm_1"
-        default="offset_psm1.yaml"/>
+        default="offset_psm_1_uni.yaml"/>
 
         <arg name="on_dist_threshold" default="5.0"/>
 

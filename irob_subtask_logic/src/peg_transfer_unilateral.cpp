@@ -23,7 +23,7 @@ PegTransferUnilateral::PegTransferUnilateral(ros::NodeHandle nh, ros::NodeHandle
   ROS_INFO_STREAM("d");
   std::vector<double> offset_arm_1;
    ROS_INFO_STREAM("f");
-  priv_nh.getParam("offset_arm_2", offset_arm_1);
+  priv_nh.getParam("offset_arm_1", offset_arm_1);
    ROS_INFO_STREAM("g");
   offs_x = offset_arm_1[0];
   offs_y = offset_arm_1[1];
@@ -425,6 +425,7 @@ void PegTransferUnilateral::doPegTransfer()
 
     //ROS_INFO_STREAM("blocks[peg_idx_on]: "<<   blocks[peg_idx_on]);
 
+
     // Grasp object
         ROS_INFO_STREAM("Grasping object on rod " << peg_idx_on << "...");
 
@@ -455,7 +456,6 @@ void PegTransferUnilateral::doPegTransfer()
 
         ROS_INFO_STREAM("Grasped object on rod " << peg_idx_on << "...");
         ros::Duration(0.1).sleep();
-
 
 
         // Place to new peg
@@ -513,6 +513,7 @@ void PegTransferUnilateral::doPegTransfer()
 
 
         ros::Duration(0.1).sleep();
+
 
         // Release
         Eigen::Affine3d release_approach_pose_to(approach_pose_to_cf);
