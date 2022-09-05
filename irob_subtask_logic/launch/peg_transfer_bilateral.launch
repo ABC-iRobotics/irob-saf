@@ -1,0 +1,41 @@
+<!-- Launch file for peg-transfer training excercise -->
+
+<launch>
+    <group ns="saf">
+
+        <arg name="board_descriptor"
+        default="peg_transfer_board.yaml"/>
+
+<arg name="offset_arm_1"
+default="offset_psm2.yaml"/>
+<arg name="offset_arm_2"
+default="offset_psm1.yaml"/>
+
+<arg name="on_dist_threshold" default="5.0"/>
+
+<arg name="speed_cartesian" default="40.0"/>
+<arg name="speed_jaw" default="60.0"/>
+
+
+        <node name="peg_transfer_bilateral" pkg="irob_subtask_logic"
+            type="peg_transfer_bilateral" output="screen">
+
+<param name="speed_cartesian" type="double" value="$(arg speed_cartesian)" />
+<param name="speed_jaw" type="double" value="$(arg speed_jaw)" />
+<param name="on_dist_threshold" type="double" value="$(arg on_dist_threshold)" />
+<rosparam param="arm_names">["arm_2", "arm_1"]</rosparam>
+<param name="offset_filename_arm_1" type="string" value="$(find irob_subtask_logic)/config/$(arg offset_arm_1)" />
+<param name="offset_filename_arm_2" type="string" value="$(find irob_subtask_logic)/config/$(arg offset_arm_2)" />
+<rosparam command="load"
+file="$(find irob_subtask_logic)/config/$(arg board_descriptor)"/>
+
+<rosparam command="load"
+file="$(find irob_subtask_logic)/config/$(arg offset_arm_1)"/>
+
+<rosparam command="load"
+file="$(find irob_subtask_logic)/config/$(arg offset_arm_2)"/>
+
+<remap from="target" to="vision/blocks_grasp" />
+    </node>
+    </group>
+</launch>

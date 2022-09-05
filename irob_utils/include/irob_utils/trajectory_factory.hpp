@@ -185,7 +185,14 @@ public:
 
     int N_full = (int)round(t_full / dt)+1;
     int N_acc = (int)round(t_acc / dt)+1;
-    Trajectory<double> acc_ramp = smoothenedRamp(N_full, N_acc, 0);
+    Trajectory<double> acc_ramp;
+    try
+    {
+      acc_ramp = smoothenedRamp(N_full, N_acc, 0);
+    }
+    catch  (std::runtime_error e)
+    { //acc_ramp stays empty
+    }
 
     for (int i = 0; i < acc_ramp.size(); i++)
     {
@@ -218,7 +225,14 @@ public:
     N_full = (int)round(t_full / dt)+1;
     N_acc = (int)round(t_acc / dt)+1;
 
-    Trajectory<double> decc_ramp = smoothenedRamp(N_full, 0, N_acc);
+    Trajectory<double> decc_ramp;
+    try
+    {
+      decc_ramp = smoothenedRamp(N_full, 0, N_acc);
+    }
+    catch  (std::runtime_error e)
+    { //decc_ramp stays empty
+    }
     for (int i = 0; i < decc_ramp.size(); i++)
     {
       tr.addPoint(interpolate(decc_ramp[i],

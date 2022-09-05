@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PEG_TRASNFER_DUAL_HPP
-#define PEG_TRASNFER_DUAL_HPP
+#ifndef PEG_TRANSFER_BILATERAL_HPP
+#define PEG_TRANSFER_BILATERAL_HPP
 
 
 #include <iostream>
@@ -37,37 +37,31 @@
 #include <irob_vision_support/vision_client.hpp>
 
 #include <irob_subtask_logic/autosurg_agent.hpp>
+#include <irob_subtask_logic/peg_transfer_logic.hpp>
 
 
 namespace saf {
 
-class PegTransferDual : public AutosurgAgent {
+class PegTransferBilateral : public PegTransferLogic {
 
-
-protected:
-
-  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
-
-  Eigen::Translation3d board_t;
-  std::vector<Eigen::Translation3d> peg_positions;
-  double peg_h;
-  double object_h;
-  double object_d;
-  double object_wall_d;
-
-
-  void loadBoardDescriptor(ros::NodeHandle);
-  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
-  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
-
+  double offs_1_x;
+  double offs_1_y;
+  double offs_1_z;
+  double offs_2_x;
+  double offs_2_y;
+  double offs_2_z;
 
 public:
-  PegTransferDual(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
-  ~PegTransferDual();
+  PegTransferBilateral(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
+  ~PegTransferBilateral();
   void doPegTransfer();
+  void calibrateOffset();
+  void measureAccuracyBlocks();
+  void measureAccuracyPegs();
+
 
 };
 
 }
 
-#endif // PEG_TRASNFER_DUAL_HPP
+#endif // PEG_TRANSFER_BILATERAL_HPP

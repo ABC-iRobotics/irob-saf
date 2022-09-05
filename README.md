@@ -46,18 +46,36 @@ Setup environment:
     echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
     source ~/.bashrc
 
+### Install dependencies
+
 #### Install dependencies for building packages
 
     sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential python-catkin-tools
 
-#### ROS webcam support	
 
-    sudo apt install ros-noetic-cv-camera
-    sudo apt install ros-noetic-camera-calibration
+#### Support for RealSense cameras
 
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+    sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+    sudo apt-get install librealsense2-dkms
+    sudo apt-get install librealsense2-utils
+    sudo apt-get install librealsense2-dev
+    sudo apt-get install librealsense2-utils
+    sudo apt install ros-noetic-librealsense2
+    sudo apt install ros-noetic-realsense2-camera
+    sudo apt install ros-noetic-realsense2-description
+    pip3 install pyrealsense2
 
+#### Install Scipy
 
-### Install Eigen
+    sudo apt install python3-pip
+    pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
+
+#### Install the Point Cloud Library (PCL)
+
+    sudo apt install libpcl-dev
+
+#### Install Eigen
 
 This sowfware is using the [Eigen C++ template library](http://eigen.tuxfamily.org/index.php?title=Main_Page) for matrix and vector classes and algorithms. Install Eigen as follows:
 
@@ -83,12 +101,53 @@ ROS packages using the Eigen library have to list the /usr/include/eigen3 in the
     include_directories(include ${catkin_INCLUDE_DIRS} 
           /usr/include/eigen3
     )
-   
+
+#### Install libnabo
+
+Libnabo is required by libpointmatcher, see [here](https://github.com/ethz-asl/libpointmatcher/blob/master/doc/CompilationUbuntu.md).
+
+    mkdir ~/Libraries/
+    cd ~/Libraries
+    git clone https://github.com/ethz-asl/libnabo.git
+    cd libnabo
+    SRC_DIR=$PWD
+    BUILD_DIR=${SRC_DIR}/build
+    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
+    make
+    sudo make install
+
+#### Install libpintmatcher
+
+    cd ~/Libraries/
+    git clone https://github.com/ethz-asl/libpointmatcher.git
+    cd libpointmatcher
+    SRC_DIR=${PWD}
+    BUILD_DIR=${SRC_DIR}/build
+    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+    cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
+    make -j N   #Replace N by the number of parallel jobs you want to compile
+    sudo make install
+    
+#### Download and build libpointmatcher_ros
+
+    cd ~/catkin_ws/src
+    git clone https://github.com/ethz-asl/ethzasl_icp_mapping
+    cd ~/catkin_ws
+    catkin build libpointmatcher_ros
+    
+    
+
 ### Build dVRK
  
 The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps:
 
 * install `cisst-saw` and `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
+
+
+
+
+
 
 ### Build irob-saf using `catkin build` and `rosinstall`
 

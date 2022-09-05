@@ -143,6 +143,15 @@ inline Eigen::Affine3d unwrapMsg(const geometry_msgs::Transform& msg){
   return ret;
 }
 
+template <>
+inline Eigen::Affine3d unwrapMsg(const geometry_msgs::Pose& msg){
+  Eigen::Quaterniond q(msg.orientation.w, msg.orientation.x,
+                            msg.orientation.y,msg.orientation.z);
+  Eigen::Translation3d t(msg.position.x, msg.position.y, msg.position.z);
+  Eigen::Affine3d ret(t * q);
+  return ret;
+}
+
 // Conversion to ROS msg
 template<typename MsgT, typename DataT>
 inline MsgT wrapToMsg(const DataT& data);
@@ -430,6 +439,13 @@ inline bool isnan(const geometry_msgs::Quaternion& d)
           || std::isnan(d.y)
           || std::isnan(d.z)
           || std::isnan(d.w));
+}
+
+template <>
+inline bool isnan(const irob_msgs::Environment& d)
+{
+  return (d.valid == irob_msgs::Environment::INVALID);
+
 }
 
 // Unit vector + rotation to quat

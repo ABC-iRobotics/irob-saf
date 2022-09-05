@@ -5,7 +5,7 @@ string name
 geometry_msgs/Point position
 
 # Grasping parameters
-geometry_msgs/Point grasp_position
-geometry_msgs/Point approach_position
+geometry_msgs/Pose[] grasp_poses
+geometry_msgs/Pose[] approach_poses
 float64 grasp_diameter
 

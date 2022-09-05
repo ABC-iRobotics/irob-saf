@@ -380,7 +380,7 @@ SurgemeServer::SurgemeSetting SurgemeServer::calcSurgemeSetting(
         * (180.0 / M_PI);
 
     g.jaw_open_angle = (2.0 * atan(((target_diameter / 2.0)
-                                    * 3.5) / dist))
+                                    * 2.0) / dist))
         * (180.0 / M_PI);
 
     if (surgeme_type == irob_msgs::SurgemeGoal::CUT)

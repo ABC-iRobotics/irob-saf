@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef PEG_TRASNFER_HPP
-#define PEG_TRASNFER_HPP
+#ifndef PEG_TRANSFER_UNILATERAL_HPP
+#define PEG_TRANSFER_UNILATERAL_HPP
 
 
 #include <iostream>
@@ -22,6 +22,7 @@
 #include <ros/package.h>
 #include <cmath>
 #include <limits>
+#include <fstream>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -32,44 +33,38 @@
 #include <irob_utils/tool_pose.hpp>
 #include <irob_utils/utils.hpp>
 #include <irob_msgs/GraspObject.h>
+#include <irob_msgs/Environment.h>
 #include <irob_utils/abstract_directions.hpp>
 #include <irob_motion/surgeme_client.hpp>
 #include <irob_vision_support/vision_client.hpp>
 
 #include <irob_subtask_logic/autosurg_agent.hpp>
+#include <irob_subtask_logic/peg_transfer_logic.hpp>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
 
 namespace saf {
 
-class PegTransfer : public AutosurgAgent {
+class PegTransferUnilateral : public PegTransferLogic {
 
+  double offs_x;
+  double offs_y;
+  double offs_z;
 
-protected:
-
-  VisionClient<geometry_msgs::Transform, Eigen::Affine3d> vision;
-
-  Eigen::Vector3d board_t;
-  std::vector<Eigen::Vector3d> peg_positions;
-  double peg_h;
-  double object_h;
-  double object_d;
-  double object_wall_d;
-
-
-  void loadBoardDescriptor(ros::NodeHandle);
-  Eigen::Affine3d poseToCameraFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
-  Eigen::Affine3d poseToWorldFrame(const Eigen::Affine3d&, const Eigen::Affine3d&);
-
+  std::string offset_filename_arm_1;
+  std::string measurement_filename;
 
 public:
-  PegTransfer(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
-  ~PegTransfer();
+  PegTransferUnilateral(ros::NodeHandle, ros::NodeHandle, std::vector<std::string>);
+  ~PegTransferUnilateral();
   void doPegTransfer();
+  void calibrateOffset();
+  void measureAccuracyBlocks();
+  void measureAccuracyPegs();
 
 };
 
 }
 
-#endif // PEG_TRASNFER_HPP
+#endif // PEG_TRANSFER_UNILATERAL_HPP

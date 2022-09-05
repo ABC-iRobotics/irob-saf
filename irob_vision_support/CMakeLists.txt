@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(irob_vision_support)
-set(CMAKE_CXX_FLAGS -std=c++11)
+set(CMAKE_CXX_FLAGS -std=c++14)
+#set(PCL_DIR "/usr/lib/x86_64-linux-gnu/cmake/pcl/")
 
 
 ## Find catkin macros and libraries
@@ -11,6 +12,7 @@ find_package(catkin REQUIRED
 	roscpp
 	rospy
 	roslib
+        dynamic_reconfigure
 	geometry_msgs
 	std_msgs
 	sensor_msgs
@@ -21,10 +23,14 @@ find_package(catkin REQUIRED
 	camera_info_manager
 	irob_msgs
 	irob_utils
+        pcl_ros
+        #libpointmatcher_ros
 	)
 
 
-  find_package(REQUIRED)
+find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+find_package(realsense2 REQUIRED)
+find_package(libpointmatcher 1.1.0 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -76,10 +82,9 @@ find_package(catkin REQUIRED
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/Fiducials.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -94,7 +99,7 @@ catkin_package(
 	INCLUDE_DIRS include
 	LIBRARIES irob_vision_support_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime irob_msgs irob_utils
+        message_runtime irob_msgs irob_utils pcl_ros
 	#DEPENDS system_lib
 	)
 
@@ -110,6 +115,14 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 	)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
+
+include_directories(${PCL_INCLUDE_DIRS})
+
+link_directories(${PCL_LIBRARY_DIRS})
+
+add_definitions(${PCL_DEFINITIONS})
+
+include_directories("${libpointmatcher_INCLUDE_DIRS}")
 
 ## Declare a C++ library
 
@@ -139,25 +152,26 @@ set_target_properties( irob_vision_support_lib  PROPERTIES LINKER_LANGUAGE CXX)
 #add_executable(play_logged_trajectory src/play_logged_trajectory.cpp)
 
 
-add_executable(vision_server_test_dummy 
-	src/vision_server_test_dummy.cpp)
+add_executable(vision_server_test_dummy
+    src/vision_server_test_dummy.cpp)
 
-add_executable(dummy_target_publisher 
-	src/dummy_target_publisher.cpp)
+add_executable(dummy_target_publisher
+    src/dummy_target_publisher.cpp)
 
 add_executable(camera_preprocessor
     src/camera_preprocessor.cpp)
 
+add_executable(serial_test
+    src/serial_test.cpp)
 
-
-    add_executable(serial_test
-        src/serial_test.cpp)
+#add_executable(peg_transfer_perception
+#    src/peg_transfer_perception.cpp)
 
 #add_executable(auto_dissection src/auto_dissection.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(irob_dvrk_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(fiducial_detector.py ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 
@@ -184,15 +198,22 @@ target_link_libraries(dummy_target_publisher
 target_link_libraries(camera_preprocessor
 	${catkin_LIBRARIES}
 	irob_vision_support_lib
-    )
+        )
 
 
 
-  target_link_libraries(serial_test
-      ${catkin_LIBRARIES}
-      irob_vision_support_lib
-      )
+target_link_libraries(serial_test
+        ${catkin_LIBRARIES}
+        irob_vision_support_lib
+        )
 
+#target_link_libraries(peg_transfer_perception
+#        ${catkin_LIBRARIES}
+#        ${PCL_LIBRARIES}
+#        ${realsense2_LIBRARY}
+#        ${libpointmatcher_LIBRARIES}
+#        irob_vision_support_lib
+ #       )
 
 
 #############
@@ -204,10 +225,17 @@ target_link_libraries(camera_preprocessor
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ catkin_install_python(PROGRAMS
+   scripts/fiducial_detector.py
+   scripts/peg_detector.py
+   scripts/record_realsense_bag.py
+   scripts/fiducial_detector_bag.py
+   scripts/hand_eye_registrator.py
+   scripts/peg_transfer_perception.py
+   scripts/peg_detector_bag.py
+   scripts/block_detector.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS irob_dvrk irob_dvrk_node
