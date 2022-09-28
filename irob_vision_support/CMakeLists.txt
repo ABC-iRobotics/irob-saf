@@ -227,12 +227,8 @@ target_link_libraries(serial_test
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
    scripts/fiducial_detector.py
-   scripts/peg_detector.py
    scripts/record_realsense_bag.py
-   scripts/fiducial_detector_bag.py
    scripts/hand_eye_registrator.py
-   scripts/peg_transfer_perception.py
-   scripts/peg_detector_bag.py
    scripts/block_detector.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )

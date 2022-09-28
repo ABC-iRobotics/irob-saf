@@ -213,6 +213,8 @@ Then follow the instructions suggested by rosgenmsg (savepath works only in sudo
 
 Autonomous surgical subtasks can be assembled from the ROS nodes of the framework based on the example in the figure below. To build a custom solution, you should first look at the packages of the framework.
 
+### Grasp in simulator
+
 An example using the dVRK PSM simulation and a dummy target can be launched easily however. First, start the simulator:
 
     roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/$(whoami)/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
@@ -241,9 +243,16 @@ And finally, start the subtask-level logic node:
     
 After the last node was launched, you should see how the instrument grasps the green sphere.  
   
-    
 
 ![alt tag](docs/irob-autosurg-blockdiagram.png)
+
+### Unilateral peg transfer
+
+TODO
+
+### Bilateral peg transfer
+
+TODO
 
 ## Contact
 
