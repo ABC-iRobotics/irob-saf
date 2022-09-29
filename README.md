@@ -248,11 +248,62 @@ After the last node was launched, you should see how the instrument grasps the g
 
 ### Unilateral peg transfer
 
-TODO
+The follwoing example shows how to launch the example *Unilateral peg transfer* on the physical robot and DVRK.  
+
+
+First, wire and power up the DVRK controller for PSM1. Disconnect, and then reconnect Firewire (physically). Then open a terminal and type:
+
+    roscore
+    
+In a separate terminal:
+
+    cd ~/catkin_ws/share
+    rosrun dvrk_robot dvrk_console_json -j <CALIBRATION_FOLDER>/console-PSM1.json 
+
+Home the robot using the DVRK console.  
+    
+In separate terminals: 
+  
+    roslaunch irob_vision_support peg_transfer_perception.launch 
+ 
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM1 camera_registration_file:=registration_psm1.yaml instrument_info_file:=large_needle_driver.yaml
+    
+    roslaunch irob_motion surgeme_server.launch
+
+    roslaunch irob_subtask_logic peg_transfer_unilateral.launch mode:=execution
+    
+
 
 ### Bilateral peg transfer
 
-TODO
+The follwoing example shows how to launch the example *Bilateral peg transfer* on the physical robot and DVRK.  
+
+
+First, wire and power up the DVRK controller for PSM1 and PSM2. Disconnect, and then reconnect Firewire (physically). Then open a terminal and type:
+
+    roscore
+    
+In a separate terminal:
+
+    cd ~/catkin_ws/share
+    rosrun dvrk_robot dvrk_console_json -j <CALIBRATION_FOLDER>/console-PSM1-PSM2.json
+
+Home the robot using the DVRK console.  
+    
+In separate terminals: 
+  
+    roslaunch irob_vision_support peg_transfer_perception.launch 
+ 
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM1 camera_registration_file:=registration_psm1.yaml instrument_info_file:=large_needle_driver.yaml
+
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM2 camera_registration_file:=registration_psm2.yaml instrument_info_file:=large_needle_driver.yaml arm_name:=arm_2
+    
+    roslaunch irob_motion surgeme_server.launch arm_name:=arm_1
+
+    roslaunch irob_motion surgeme_server.launch arm_name:=arm_2
+
+    roslaunch irob_subtask_logic peg_transfer_bilateral.launch
+    
 
 ## Contact
 
