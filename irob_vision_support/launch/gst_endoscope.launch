@@ -1,0 +1,3 @@
+<launch>
+    <node name="stereo_endoscope" pkg="irob_vision_support" type="gst_endoscope.sh" />
+</launch>
