@@ -227,22 +227,19 @@ target_link_libraries(serial_test
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
    scripts/fiducial_detector.py
-   scripts/peg_detector.py
    scripts/record_realsense_bag.py
-   scripts/fiducial_detector_bag.py
    scripts/hand_eye_registrator.py
-   scripts/peg_transfer_perception.py
-   scripts/peg_detector_bag.py
    scripts/block_detector.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS irob_dvrk irob_dvrk_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+    scripts/gst_endoscope.sh
+   #ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   #LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -252,10 +249,8 @@ target_link_libraries(serial_test
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# install(PROGRAMS
+##    scripts/gst_endoscope.sh
 # )
 
 #############

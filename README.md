@@ -213,6 +213,8 @@ Then follow the instructions suggested by rosgenmsg (savepath works only in sudo
 
 Autonomous surgical subtasks can be assembled from the ROS nodes of the framework based on the example in the figure below. To build a custom solution, you should first look at the packages of the framework.
 
+### Grasp in simulator
+
 An example using the dVRK PSM simulation and a dummy target can be launched easily however. First, start the simulator:
 
     roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/$(whoami)/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
@@ -241,9 +243,67 @@ And finally, start the subtask-level logic node:
     
 After the last node was launched, you should see how the instrument grasps the green sphere.  
   
-    
 
 ![alt tag](docs/irob-autosurg-blockdiagram.png)
+
+### Unilateral peg transfer
+
+The follwoing example shows how to launch the example *Unilateral peg transfer* on the physical robot and DVRK.  
+
+
+First, wire and power up the DVRK controller for PSM1. Disconnect, and then reconnect Firewire (physically). Then open a terminal and type:
+
+    roscore
+    
+In a separate terminal:
+
+    cd ~/catkin_ws/share
+    rosrun dvrk_robot dvrk_console_json -j <CALIBRATION_FOLDER>/console-PSM1.json 
+
+Home the robot using the DVRK console.  
+    
+In separate terminals: 
+  
+    roslaunch irob_vision_support peg_transfer_perception.launch 
+ 
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM1 camera_registration_file:=registration_psm1.yaml instrument_info_file:=large_needle_driver.yaml
+    
+    roslaunch irob_motion surgeme_server.launch
+
+    roslaunch irob_subtask_logic peg_transfer_unilateral.launch mode:=execution
+    
+
+
+### Bilateral peg transfer
+
+The follwoing example shows how to launch the example *Bilateral peg transfer* on the physical robot and DVRK.  
+
+
+First, wire and power up the DVRK controller for PSM1 and PSM2. Disconnect, and then reconnect Firewire (physically). Then open a terminal and type:
+
+    roscore
+    
+In a separate terminal:
+
+    cd ~/catkin_ws/share
+    rosrun dvrk_robot dvrk_console_json -j <CALIBRATION_FOLDER>/console-PSM1-PSM2.json
+
+Home the robot using the DVRK console.  
+    
+In separate terminals: 
+  
+    roslaunch irob_vision_support peg_transfer_perception.launch 
+ 
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM1 camera_registration_file:=registration_psm1.yaml instrument_info_file:=large_needle_driver.yaml
+
+    roslaunch irob_robot dvrk_server.launch arm_typ:=PSM2 camera_registration_file:=registration_psm2.yaml instrument_info_file:=large_needle_driver.yaml arm_name:=arm_2
+    
+    roslaunch irob_motion surgeme_server.launch arm_name:=arm_1
+
+    roslaunch irob_motion surgeme_server.launch arm_name:=arm_2
+
+    roslaunch irob_subtask_logic peg_transfer_bilateral.launch
+    
 
 ## Contact
 
