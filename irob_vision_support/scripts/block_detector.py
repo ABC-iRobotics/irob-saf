@@ -110,8 +110,8 @@ class BlockDetector:
         self.upper_red = (80, 255, 255)
         self.lower_darkred = (0, 100, 50)
         self.upper_darkred = (7, 255, 255)
-        self.lower_yellow = (20, 0, 0)
-        self.upper_yellow = (60, 255, 255)
+        self.lower_yellow = (20, 50, 50)
+        self.upper_yellow = (40, 255, 255)
         self.lower_green = (60, 120, 0)
         self.upper_green = (90, 255, 255)
         self.lower_orange = (8, 100, 100)
@@ -129,11 +129,11 @@ class BlockDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
-        self.exposure = 800.0 #400.0 #600.0 #600.0
+        self.exposure = 1200.0 #400.0 #600.0 #600.0
 
         self.z_offset = 0.004   # m
 
-        self.plane_detect_frames_N = 100
+        self.plane_detect_frames_N = 240
         self.cv_frames_N = 10
         self.detect_plane = True
         self.board_offset = 0.014
@@ -239,7 +239,7 @@ class BlockDetector:
                 color_image = np.asanyarray(color_frame.get_data())
                 if self.offline:
                     color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
-
+                self.auto_exposure(color_image)
                 #cv2.namedWindow('Color image', cv2.WINDOW_NORMAL)
                 #cv2.imshow('Color image', color_image)
                 #cv2.waitKey(1)
@@ -493,6 +493,51 @@ class BlockDetector:
         rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
         rgb_cam_sensor.set_option(rs.option.exposure, exposure)
 
+    def auto_exposure(self, image):
+       (rows, cols, channels) = image.shape
+       brightness_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)[:,:,2]
+
+       crop_size = 10
+       brightness_image = brightness_image[rows-crop_size:rows+crop_size, cols-crop_size:cols+crop_size]
+       (rows, cols) = brightness_image.shape
+
+       hist = cv2.calcHist([brightness_image],[0],None,[5],[0,256])
+
+       mean_sample_value = 0
+       for i in range(len(hist)):
+           mean_sample_value += hist[i]*(i+1)
+
+       mean_sample_value /= (rows*cols)
+
+
+       #focus_region = brightness_image[rows/2-10:rows/2+10, cols/2-10:cols/2+10]
+       #brightness_value = numpy.mean(focus_region)
+
+       # Middle value MSV is 2.5, range is 0-5
+       # Note: You may need to retune the PI gains if you change this
+
+
+       # Don't change exposure if we're close enough. Changing too often slows
+       # down the data rate of the camera.
+       if mean_sample_value > 4.9:
+           self.exposure = self.exposure - 100
+           self.set_exposure(self.exposure)
+           print("Sample value: ", mean_sample_value)
+           print("Exposure: ", self.exposure)
+       elif mean_sample_value > 3.0:
+           self.exposure = self.exposure - 5
+           self.set_exposure(self.exposure)
+           print("Sample value: ", mean_sample_value)
+           print("Exposure: ", self.exposure)
+       elif mean_sample_value < 2.7:
+           self.exposure = self.exposure + 5
+           self.set_exposure(self.exposure)
+           print("Sample value: ", mean_sample_value)
+           print("Exposure: ", self.exposure)
+       if self.exposure < 1.0:
+           self.exposure = 1200.0
+
+
 
     # Segmentation of the graspable blocks by color
     def segment_blocks(self, image, col, n):
@@ -509,6 +554,8 @@ class BlockDetector:
 
         kernel = np.ones((3,3), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
+        #cv2.imshow("Mask", mask)
+        #cv2.waitKey(1)
 
         blobs = cv2.connectedComponentsWithStats(
                     mask, 4, cv2.CV_32S)

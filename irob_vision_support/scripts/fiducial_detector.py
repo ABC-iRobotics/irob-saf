@@ -32,18 +32,18 @@ class FiducialDetector:
         self.fiducial_pub = rospy.Publisher("fiducial_tf", TransformStamped,
                                                         queue_size=10)
         print("Init")
-        self.lower_red = (150, 100, 50)
-        self.upper_red = (180, 255, 255)
-        self.lower_darkred = (0, 100, 50)
-        self.upper_darkred = (7, 255, 255)
+        self.lower_red = (2, 200, 240)
+        self.upper_red = (10, 255, 255)
+        self.lower_darkred = (0, 0, 0)
+        self.upper_darkred = (255, 255, 255)
         self.lower_yellow = (20, 100, 100)
         self.upper_yellow = (60, 255, 255)
-        self.lower_green = (60, 120, 0)
-        self.upper_green = (90, 255, 255)
-        self.lower_orange = (8, 100, 100)
+        self.lower_green = (30, 120, 0)
+        self.upper_green = (70, 255, 255)
+        self.lower_orange = (8, 100, 150)
         self.upper_orange = (20, 255, 255)
-        self.lower_purple = (120, 50, 0)
-        self.upper_purple = (160, 150, 255)
+        self.lower_purple = (0, 90, 50)
+        self.upper_purple = (10, 160, 200)
         self.lower_darkpurple = (180, 170,255)
         self.upper_darkpurple = (180, 170, 255)
 
@@ -53,7 +53,7 @@ class FiducialDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.30
-        self.exposure = 600.0#300.0
+        self.exposure = 1200.0#300.0
         self.tr_seq = 0
 
         self.z_offset = 0.004   # m
@@ -129,6 +129,7 @@ class FiducialDetector:
 
                 depth_image = np.asanyarray(aligned_depth_frame.get_data())
                 color_image = np.asanyarray(color_frame.get_data())
+                self.auto_exposure(color_image)
 
                 # Remove background - Set pixels further than clipping_distance to grey
                 grey_color = 0
@@ -286,6 +287,51 @@ class FiducialDetector:
         rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
         rgb_cam_sensor.set_option(rs.option.exposure, exposure)
 
+    def auto_exposure(self, image):
+        (rows, cols, channels) = image.shape
+        brightness_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)[:,:,2]
+
+        crop_size = 10
+        brightness_image = brightness_image[rows-crop_size:rows+crop_size, cols-crop_size:cols+crop_size]
+        (rows, cols) = brightness_image.shape
+
+        hist = cv2.calcHist([brightness_image],[0],None,[5],[0,256])
+
+        mean_sample_value = 0
+        for i in range(len(hist)):
+            mean_sample_value += hist[i]*(i+1)
+
+        mean_sample_value /= (rows*cols)
+
+
+        #focus_region = brightness_image[rows/2-10:rows/2+10, cols/2-10:cols/2+10]
+        #brightness_value = numpy.mean(focus_region)
+
+        # Middle value MSV is 2.5, range is 0-5
+        # Note: You may need to retune the PI gains if you change this
+
+
+        # Don't change exposure if we're close enough. Changing too often slows
+        # down the data rate of the camera.
+        if mean_sample_value > 4.9:
+            self.exposure = self.exposure - 100
+            self.set_exposure(self.exposure)
+            print("Sample value: ", mean_sample_value)
+            print("Exposure: ", self.exposure)
+        elif mean_sample_value > 3.0:
+            self.exposure = self.exposure - 10
+            self.set_exposure(self.exposure)
+            print("Sample value: ", mean_sample_value)
+            print("Exposure: ", self.exposure)
+        elif mean_sample_value < 2.5:
+            self.exposure = self.exposure + 10
+            self.set_exposure(self.exposure)
+            print("Sample value: ", mean_sample_value)
+            print("Exposure: ", self.exposure)
+
+
+
+
 
     def mask_fiducial(self, image, color):
         """Segmentation of fiducial markers by color.
@@ -323,7 +369,7 @@ class FiducialDetector:
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         result = cv2.bitwise_and(image, image, mask=mask)
-        if color == 'purple':
+        if color == 'orange':
             cv2.imshow("Mask", result)
             cv2.waitKey(1)
 

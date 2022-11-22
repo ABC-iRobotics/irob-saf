@@ -5,7 +5,7 @@
     <arg name="json_file" default="OE-daVinci/console-ECM-MTMR-PSM1-MTML-PSM2-Teleop.json"/>
 
     <node name="dvrk_console" pkg="dvrk_robot" type="dvrk_console_json"
-                args="-j $(find saw_intuitive_research_kit)/../share/$(arg json_file)" output="screen" />
+                args="-j $(find dvrk_config)/$(arg json_file)" output="screen" />
 
     <include
         file="$(find irob_vision_support)/launch/gst_endoscope.launch"
