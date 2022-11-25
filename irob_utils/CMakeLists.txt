@@ -205,6 +205,13 @@ install(DIRECTORY launch
 catkin_install_python(PROGRAMS ${python_scripts_DIR}
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
+install(DIRECTORY launch
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING PATTERN "*.launch"
+		)
+
+
+
 
 #############
 ## Testing ##

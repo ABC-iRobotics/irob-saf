@@ -181,7 +181,7 @@ target_link_libraries(surgeme_server
 # )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS irob_motion_lib
+ install(TARGETS irob_motion_lib surgeme_server mimic
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -200,6 +200,12 @@ target_link_libraries(surgeme_server
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING PATTERN "*.launch"
+		)
+
 
 #############
 ## Testing ##

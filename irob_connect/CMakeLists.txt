@@ -140,10 +140,16 @@ catkin_package(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+   		scripts/dvrk_rosbridge_upstream.py
+		 scripts/robot_arm_dvrk.py
+		 scripts/robot_arm_ecm.py
+		 scripts/robot_arm_psm.py
+		 scripts/robot_arm_suj_ecm.py
+		 scripts/robot_arm_suj_psm.py
+		 scripts/rosbridge_subscribe.py
+   		DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS irob_dvrk irob_dvrk_node
@@ -165,6 +171,12 @@ catkin_package(
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING PATTERN "*.launch"
+		)
+
 
 #############
 ## Testing ##

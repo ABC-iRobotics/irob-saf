@@ -191,7 +191,7 @@ target_link_libraries(robot_server_dvrk
 # )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS irob_dvrk_lib irob_general_robot_lib
+ install(TARGETS irob_dvrk_lib irob_general_robot_lib robot_server_dvrk
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -210,6 +210,18 @@ target_link_libraries(robot_server_dvrk
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING PATTERN "*.launch"
+		)
+
+install(DIRECTORY config
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING
+		PATTERN "*.yaml"
+		PATTERN "*.xml"
+		)
 
 #############
 ## Testing ##

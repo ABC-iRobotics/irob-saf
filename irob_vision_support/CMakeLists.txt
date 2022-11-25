@@ -233,15 +233,13 @@ target_link_libraries(serial_test
  )
 
 ## Mark executables and/or libraries for installation
-# install(PROGRAMS
- #   scripts/gst_endoscope.sh
-   #ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   #LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
- #  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+    scripts/gst_endoscope.sh
+		 DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+ )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS irob_vision_support_lib
+ install(TARGETS irob_vision_support_lib vision_server_test_dummy dummy_target_publisher camera_preprocessor serial_test
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -253,6 +251,26 @@ target_link_libraries(serial_test
    FILES_MATCHING PATTERN "*.hpp"
    PATTERN ".svn" EXCLUDE
  )
+
+install(DIRECTORY launch
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING
+		PATTERN "*.launch"
+		PATTERN "*.xml"
+		)
+
+install(DIRECTORY config
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING
+		PATTERN "*.yaml"
+		PATTERN "*.xml"
+		)
+
+install(DIRECTORY matlab
+		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+		FILES_MATCHING
+		PATTERN "*.m"
+		)
  
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(PROGRAMS
