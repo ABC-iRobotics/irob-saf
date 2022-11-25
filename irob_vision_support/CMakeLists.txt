@@ -12,7 +12,7 @@ find_package(catkin REQUIRED
 	roscpp
 	rospy
 	roslib
-        dynamic_reconfigure
+        #dynamic_reconfigure
 	geometry_msgs
 	std_msgs
 	sensor_msgs
@@ -28,9 +28,9 @@ find_package(catkin REQUIRED
 	)
 
 
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+#find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 find_package(realsense2 REQUIRED)
-find_package(libpointmatcher 1.1.0 REQUIRED)
+#find_package(libpointmatcher 1.1.0 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -82,9 +82,9 @@ find_package(libpointmatcher 1.1.0 REQUIRED)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-generate_dynamic_reconfigure_options(
-   cfg/Fiducials.cfg
-)
+#generate_dynamic_reconfigure_options(
+ #  cfg/Fiducials.cfg
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -111,7 +111,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 	/usr/include/eigen3
-    include
 	)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -122,7 +121,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 add_definitions(${PCL_DEFINITIONS})
 
-include_directories("${libpointmatcher_INCLUDE_DIRS}")
+#include_directories("${libpointmatcher_INCLUDE_DIRS}")
 
 ## Declare a C++ library
 
@@ -234,20 +233,27 @@ target_link_libraries(serial_test
  )
 
 ## Mark executables and/or libraries for installation
- install(PROGRAMS
-    scripts/gst_endoscope.sh
+# install(PROGRAMS
+ #   scripts/gst_endoscope.sh
    #ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    #LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ #  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark executables and/or libraries for installation
+ install(TARGETS irob_vision_support_lib
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
-
+ install(DIRECTORY include/${PROJECT_NAME}
+   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.hpp"
+   PATTERN ".svn" EXCLUDE
+ )
+ 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(PROGRAMS
 ##    scripts/gst_endoscope.sh

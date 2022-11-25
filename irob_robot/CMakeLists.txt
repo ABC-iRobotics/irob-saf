@@ -90,7 +90,7 @@ catkin_package(
 	INCLUDE_DIRS include
 	LIBRARIES irob_dvrk_lib irob_general_robot_lib
 	CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs sensor_msgs
-	message_runtime irob_msgs irob_utils actionlib_msgs
+	message_runtime irob_msgs irob_utils actionlib_msgs irob_utils
 	#DEPENDS system_lib
 	)
 
@@ -102,7 +102,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} 
 	/usr/include/eigen3
-	include
 	)
 
 ## Declare a C++ library
@@ -192,18 +191,18 @@ target_link_libraries(robot_server_dvrk
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS irob_dvrk irob_dvrk_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(TARGETS irob_dvrk_lib irob_general_robot_lib
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+ install(DIRECTORY include/irob_dvrk include/irob_general_robot
+   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.hpp"
+   PATTERN ".svn" EXCLUDE
+ )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
