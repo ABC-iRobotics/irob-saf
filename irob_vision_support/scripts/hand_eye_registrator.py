@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 import numpy as np
 import math
@@ -240,7 +241,7 @@ class HandEyeRegistrator:
 
     def reset_arm(self):
         t = Transform()
-        t.translation.x = 0.01
+        t.translation.x = -0.01
         t.translation.y = 0.0
         t.translation.z = -0.12
         t.rotation.x = 0.393899553586202

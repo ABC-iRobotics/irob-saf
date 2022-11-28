@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
@@ -18,8 +19,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib import colors
 import rosbag
-from dynamic_reconfigure.server import Server
-from irob_vision_support.cfg import FiducialsConfig
+#from dynamic_reconfigure.server import Server
+#from irob_vision_support.cfg import FiducialsConfig
 
 from skimage import data, color, img_as_ubyte
 from skimage.feature import canny
@@ -524,12 +525,12 @@ class BlockDetector:
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value > 3.0:
+       elif mean_sample_value > 3.3:
            self.exposure = self.exposure - 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value < 2.7:
+       elif mean_sample_value < 3.1:
            self.exposure = self.exposure + 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
