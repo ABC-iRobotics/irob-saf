@@ -525,12 +525,12 @@ class BlockDetector:
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value > 3.3:
+       elif mean_sample_value > 3.2:
            self.exposure = self.exposure - 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value < 3.1:
+       elif mean_sample_value < 3.0:
            self.exposure = self.exposure + 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
