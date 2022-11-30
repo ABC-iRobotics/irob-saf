@@ -68,6 +68,7 @@ def intersection_of_lines(xp1, yp1, xp2, yp2, xp3, yp3, xp4, yp4):
     Py = yp1 + (t*(yp2-yp1))
     return Px, Py
 
+
 # Rotation matrix that aligns two vectors
 def rotation_matrix_from_vectors(vec1, vec2):
     """ Find the rotation matrix that aligns vec1 to vec2
@@ -79,6 +80,7 @@ def rotation_matrix_from_vectors(vec1, vec2):
     v = np.cross(a, b)
     c = np.dot(a, b)
     s = np.linalg.norm(v)
+    #
     kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
     rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
     return rotation_matrix
