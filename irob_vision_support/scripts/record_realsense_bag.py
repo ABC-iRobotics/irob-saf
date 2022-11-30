@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import time
 from os import system, name
 from datetime import datetime

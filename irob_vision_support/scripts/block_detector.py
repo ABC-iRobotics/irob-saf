@@ -1,9 +1,12 @@
+#!/usr/bin/python3
+
 import rospy
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import CameraInfo
 import message_filters
 from irob_msgs.msg import GraspObject, Environment
+from irob_utils.rigid_transform_3D import rigid_transform_3D
 from geometry_msgs.msg import Point, Transform, Pose
 from geometry_msgs.msg import Pose2D
 
@@ -18,8 +21,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib import colors
 import rosbag
-from dynamic_reconfigure.server import Server
-from irob_vision_support.cfg import FiducialsConfig
 
 from skimage import data, color, img_as_ubyte
 from skimage.feature import canny

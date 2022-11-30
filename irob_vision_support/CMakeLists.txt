@@ -224,12 +224,14 @@ target_link_libraries(serial_test
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
- catkin_install_python(PROGRAMS
-   scripts/fiducial_detector.py
-   scripts/record_realsense_bag.py
-   scripts/hand_eye_registrator.py
-   scripts/block_detector.py
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+
+ 
+install(PROGRAMS
+ 	scripts/fiducial_detector.py
+   	scripts/record_realsense_bag.py
+   	scripts/hand_eye_registrator.py
+   	scripts/block_detector.py
+   	DESTINATION lib/${PROJECT_NAME}
  )
 
 ## Mark executables and/or libraries for installation

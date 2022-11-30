@@ -178,6 +178,11 @@ target_link_libraries(irob_utils_lib
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 #   )
 
+install(PROGRAMS
+		scripts/irob_utils/rigid_transform_3D.py
+		DESTINATION lib/${PROJECT_NAME}
+		)
+
 ## Mark executables and/or libraries for installation
  install(TARGETS irob_utils_lib
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

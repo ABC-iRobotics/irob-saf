@@ -140,15 +140,16 @@ catkin_package(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
- install(PROGRAMS
-   		scripts/dvrk_rosbridge_upstream.py
+
+  install(PROGRAMS 
+    	 scripts/dvrk_rosbridge_upstream.py
 		 scripts/robot_arm_dvrk.py
 		 scripts/robot_arm_ecm.py
 		 scripts/robot_arm_psm.py
 		 scripts/robot_arm_suj_ecm.py
 		 scripts/robot_arm_suj_psm.py
 		 scripts/rosbridge_subscribe.py
-   		DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+   DESTINATION lib/${PROJECT_NAME}
  )
 
 ## Mark executables and/or libraries for installation
