@@ -22,6 +22,7 @@ from matplotlib import cm
 from matplotlib import colors
 import rosbag
 
+
 from skimage import data, color, img_as_ubyte
 from skimage.feature import canny
 from skimage.transform import hough_ellipse
@@ -525,12 +526,12 @@ class BlockDetector:
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value > 3.0:
+       elif mean_sample_value > 3.2:
            self.exposure = self.exposure - 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
            print("Exposure: ", self.exposure)
-       elif mean_sample_value < 2.7:
+       elif mean_sample_value < 3.0:
            self.exposure = self.exposure + 5
            self.set_exposure(self.exposure)
            print("Sample value: ", mean_sample_value)
