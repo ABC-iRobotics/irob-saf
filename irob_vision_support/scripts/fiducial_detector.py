@@ -29,6 +29,7 @@ class FiducialDetector:
     def __init__(self):
         """Constructor."""
 
+
         print("Node started")
         rospy.init_node('fiducial_detector', anonymous=True)
         self.fiducial_pub = rospy.Publisher("fiducial_tf", TransformStamped,
