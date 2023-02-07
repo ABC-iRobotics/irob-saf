@@ -180,6 +180,7 @@ target_link_libraries(irob_utils_lib
 
 install(PROGRAMS
 		scripts/irob_utils/rigid_transform_3D.py
+		scripts/plot_dvrk_tcp.py
 		DESTINATION lib/${PROJECT_NAME}
 		)
 
