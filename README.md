@@ -162,7 +162,7 @@ If you installed dVRK by the `catkin build` and `rosinstall` method, you should 
     
 Setup environment:
 
-    echo "~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+    echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     
 
@@ -187,7 +187,7 @@ And build using `catkin build`:
 
 Setup environment:
 
-    echo "~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+    echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     
 ### Matlab

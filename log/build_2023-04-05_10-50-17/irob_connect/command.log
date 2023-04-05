@@ -1,0 +1,2 @@
+Invoking command in '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect': /usr/bin/cmake /home/tamas/ros1_ws/src/irob-saf/irob_connect -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCATKIN_SYMLINK_INSTALL=ON -DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_connect
+Invoked command in '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect' returned '1': /usr/bin/cmake /home/tamas/ros1_ws/src/irob-saf/irob_connect -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCATKIN_SYMLINK_INSTALL=ON -DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_connect

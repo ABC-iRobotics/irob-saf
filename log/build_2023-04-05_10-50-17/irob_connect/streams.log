@@ -1,0 +1,35 @@
+[0.010s] Invoking command in '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect': /usr/bin/cmake /home/tamas/ros1_ws/src/irob-saf/irob_connect -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCATKIN_SYMLINK_INSTALL=ON -DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_connect
+[0.369s] -- The C compiler identification is GNU 9.4.0
+[0.685s] -- The CXX compiler identification is GNU 9.4.0
+[0.691s] -- Check for working C compiler: /usr/bin/cc
+[0.743s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.745s] -- Detecting C compiler ABI info
+[0.797s] -- Detecting C compiler ABI info - done
+[0.809s] -- Detecting C compile features
+[0.810s] -- Detecting C compile features - done
+[0.813s] -- Check for working CXX compiler: /usr/bin/c++
+[0.873s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[0.875s] -- Detecting CXX compiler ABI info
+[0.936s] -- Detecting CXX compiler ABI info - done
+[0.948s] -- Detecting CXX compile features
+[0.949s] -- Detecting CXX compile features - done
+[0.960s] CMake Error at CMakeLists.txt:8 (find_package):
+[0.960s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[0.960s]   asked CMake to find a package configuration file provided by "catkin", but
+[0.960s]   CMake did not find one.
+[0.960s] 
+[0.960s]   Could not find a package configuration file provided by "catkin" with any
+[0.960s]   of the following names:
+[0.960s] 
+[0.960s]     catkinConfig.cmake
+[0.961s]     catkin-config.cmake
+[0.961s] 
+[0.961s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[0.961s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[0.961s]   provides a separate development package or SDK, be sure it has been
+[0.961s]   installed.
+[0.961s] 
+[0.962s] 
+[0.962s] -- Configuring incomplete, errors occurred!
+[0.962s] See also "/home/tamas/ros1_ws/src/irob-saf/build/irob_connect/CMakeFiles/CMakeOutput.log".
+[0.963s] Invoked command in '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect' returned '1': /usr/bin/cmake /home/tamas/ros1_ws/src/irob-saf/irob_connect -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCATKIN_SYMLINK_INSTALL=ON -DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_connect

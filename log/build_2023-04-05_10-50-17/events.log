@@ -1,0 +1,102 @@
+[0.000000] (-) TimerEvent: {}
+[0.000217] (irob_connect) JobQueued: {'identifier': 'irob_connect', 'dependencies': OrderedDict()}
+[0.000598] (irob_msgs) JobQueued: {'identifier': 'irob_msgs', 'dependencies': OrderedDict()}
+[0.000801] (irob_utils) JobQueued: {'identifier': 'irob_utils', 'dependencies': OrderedDict([('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs')])}
+[0.000839] (irob_robot) JobQueued: {'identifier': 'irob_robot', 'dependencies': OrderedDict([('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'), ('irob_utils', '/home/tamas/ros1_ws/src/irob-saf/install/irob_utils')])}
+[0.000871] (irob_vision_support) JobQueued: {'identifier': 'irob_vision_support', 'dependencies': OrderedDict([('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'), ('irob_utils', '/home/tamas/ros1_ws/src/irob-saf/install/irob_utils')])}
+[0.000890] (irob_motion) JobQueued: {'identifier': 'irob_motion', 'dependencies': OrderedDict([('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'), ('irob_utils', '/home/tamas/ros1_ws/src/irob-saf/install/irob_utils'), ('irob_robot', '/home/tamas/ros1_ws/src/irob-saf/install/irob_robot')])}
+[0.000914] (irob_subtask_logic) JobQueued: {'identifier': 'irob_subtask_logic', 'dependencies': OrderedDict([('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'), ('irob_utils', '/home/tamas/ros1_ws/src/irob-saf/install/irob_utils'), ('irob_robot', '/home/tamas/ros1_ws/src/irob-saf/install/irob_robot'), ('irob_vision_support', '/home/tamas/ros1_ws/src/irob-saf/install/irob_vision_support'), ('irob_motion', '/home/tamas/ros1_ws/src/irob-saf/install/irob_motion')])}
+[0.002109] (irob-saf) JobQueued: {'identifier': 'irob-saf', 'dependencies': OrderedDict([('irob_connect', '/home/tamas/ros1_ws/src/irob-saf/install/irob_connect'), ('irob_msgs', '/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'), ('irob_utils', '/home/tamas/ros1_ws/src/irob-saf/install/irob_utils'), ('irob_robot', '/home/tamas/ros1_ws/src/irob-saf/install/irob_robot'), ('irob_vision_support', '/home/tamas/ros1_ws/src/irob-saf/install/irob_vision_support'), ('irob_motion', '/home/tamas/ros1_ws/src/irob-saf/install/irob_motion'), ('irob_subtask_logic', '/home/tamas/ros1_ws/src/irob-saf/install/irob_subtask_logic')])}
+[0.002175] (irob_msgs) JobStarted: {'identifier': 'irob_msgs'}
+[0.013507] (irob_connect) JobStarted: {'identifier': 'irob_connect'}
+[0.017330] (irob_msgs) JobProgress: {'identifier': 'irob_msgs', 'progress': 'cmake'}
+[0.017567] (irob_msgs) Command: {'cmd': ['/usr/bin/cmake', '/home/tamas/ros1_ws/src/irob-saf/irob_msgs', '-DCATKIN_INSTALL_INTO_PREFIX_ROOT=0', '-DCATKIN_SYMLINK_INSTALL=ON', '-DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_msgs'], 'cwd': '/home/tamas/ros1_ws/src/irob-saf/build/irob_msgs', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'tamas'), ('LC_TIME', 'hu_HU.UTF-8'), ('SSH_AGENT_PID', '2231'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/tamas'), ('CONDA_SHLVL', '0'), ('OLDPWD', '/home/tamas/ros1_ws'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'hu_HU.UTF-8'), ('MANAGERPID', '2044'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('_CE_M', ''), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator23558193cd9818af7fe4d2c2f5bd9d00f'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '6825'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('IM_CONFIG_PHASE', '1'), ('LOGNAME', 'tamas'), ('JOURNAL_STREAM', '8:52650'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'tamas'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('_CE_CONDA', ''), ('WINDOWPATH', '2'), ('PATH', '/home/tamas/miniconda3/condabin:/home/tamas/scripts/:/home/tamas/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/dvrk-desktop:@/tmp/.ICE-unix/2265,unix/dvrk-desktop:/tmp/.ICE-unix/2265'), ('INVOCATION_ID', '4c41e1eccf6b40a79b39170d9fb8daa8'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'hu_HU.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'hu_HU.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('CONDA_PYTHON_EXE', '/home/tamas/miniconda3/bin/python'), ('SHELL', '/bin/bash'), ('LC_NAME', 'hu_HU.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:5af0e9a0-4951-4547-b533-8c9e0908b780'), ('QT_ACCESSIBILITY', '1'), ('ROS_MASTER_URI', 'http://localhost:11311'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'hu_HU.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'hu_HU.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/tamas/ros1_ws/src/irob-saf/build/irob_msgs'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('CONDA_EXE', '/home/tamas/miniconda3/bin/conda'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('LC_NUMERIC', 'hu_HU.UTF-8'), ('LC_PAPER', 'hu_HU.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003')]), 'shell': False}
+[0.021201] (irob_connect) JobProgress: {'identifier': 'irob_connect', 'progress': 'cmake'}
+[0.021467] (irob_connect) Command: {'cmd': ['/usr/bin/cmake', '/home/tamas/ros1_ws/src/irob-saf/irob_connect', '-DCATKIN_INSTALL_INTO_PREFIX_ROOT=0', '-DCATKIN_SYMLINK_INSTALL=ON', '-DCMAKE_INSTALL_PREFIX=/home/tamas/ros1_ws/src/irob-saf/install/irob_connect'], 'cwd': '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'tamas'), ('LC_TIME', 'hu_HU.UTF-8'), ('SSH_AGENT_PID', '2231'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('HOME', '/home/tamas'), ('CONDA_SHLVL', '0'), ('OLDPWD', '/home/tamas/ros1_ws'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'hu_HU.UTF-8'), ('MANAGERPID', '2044'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('_CE_M', ''), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator23558193cd9818af7fe4d2c2f5bd9d00f'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '6825'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu.mandatory.path'), ('IM_CONFIG_PHASE', '1'), ('LOGNAME', 'tamas'), ('JOURNAL_STREAM', '8:52650'), ('_', '/usr/bin/colcon'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu.default.path'), ('USERNAME', 'tamas'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('_CE_CONDA', ''), ('WINDOWPATH', '2'), ('PATH', '/home/tamas/miniconda3/condabin:/home/tamas/scripts/:/home/tamas/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/dvrk-desktop:@/tmp/.ICE-unix/2265,unix/dvrk-desktop:/tmp/.ICE-unix/2265'), ('INVOCATION_ID', '4c41e1eccf6b40a79b39170d9fb8daa8'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'hu_HU.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'hu_HU.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('CONDA_PYTHON_EXE', '/home/tamas/miniconda3/bin/python'), ('SHELL', '/bin/bash'), ('LC_NAME', 'hu_HU.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:5af0e9a0-4951-4547-b533-8c9e0908b780'), ('QT_ACCESSIBILITY', '1'), ('ROS_MASTER_URI', 'http://localhost:11311'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'hu_HU.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'hu_HU.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/tamas/ros1_ws/src/irob-saf/build/irob_connect'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('CONDA_EXE', '/home/tamas/miniconda3/bin/conda'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('LC_NUMERIC', 'hu_HU.UTF-8'), ('LC_PAPER', 'hu_HU.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6003')]), 'shell': False}
+[0.099825] (-) TimerEvent: {}
+[0.200606] (-) TimerEvent: {}
+[0.301239] (-) TimerEvent: {}
+[0.381824] (irob_msgs) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.382116] (irob_connect) StdoutLine: {'line': b'-- The C compiler identification is GNU 9.4.0\n'}
+[0.401318] (-) TimerEvent: {}
+[0.501722] (-) TimerEvent: {}
+[0.602324] (-) TimerEvent: {}
+[0.697866] (irob_msgs) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.698164] (irob_connect) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.702378] (-) TimerEvent: {}
+[0.703985] (irob_msgs) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[0.704176] (irob_connect) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[0.756268] (irob_connect) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[0.756429] (irob_msgs) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc -- works\n'}
+[0.758016] (irob_connect) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.758102] (irob_msgs) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.802472] (-) TimerEvent: {}
+[0.810207] (irob_connect) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.810415] (irob_msgs) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.822297] (irob_msgs) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.822470] (irob_connect) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.822990] (irob_connect) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.823070] (irob_msgs) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.826308] (irob_connect) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[0.826392] (irob_msgs) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[0.886814] (irob_connect) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[0.887025] (irob_msgs) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[0.887803] (irob_msgs) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.888040] (irob_connect) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.902582] (-) TimerEvent: {}
+[0.949010] (irob_msgs) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.949153] (irob_connect) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.961488] (irob_msgs) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.961624] (irob_connect) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.962122] (irob_msgs) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.962347] (irob_connect) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.972143] (irob_msgs) StderrLine: {'line': b'CMake Error at CMakeLists.txt:8 (find_package):\n'}
+[0.972283] (irob_msgs) StderrLine: {'line': b'  By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has\n'}
+[0.972574] (irob_msgs) StderrLine: {'line': b'  asked CMake to find a package configuration file provided by "catkin", but\n'}
+[0.972710] (irob_msgs) StderrLine: {'line': b'  CMake did not find one.\n'}
+[0.972810] (irob_msgs) StderrLine: {'line': b'\n'}
+[0.972963] (irob_msgs) StderrLine: {'line': b'  Could not find a package configuration file provided by "catkin" with any\n'}
+[0.973023] (irob_msgs) StderrLine: {'line': b'  of the following names:\n'}
+[0.973076] (irob_msgs) StderrLine: {'line': b'\n'}
+[0.973126] (irob_msgs) StderrLine: {'line': b'    catkinConfig.cmake\n'}
+[0.973177] (irob_msgs) StderrLine: {'line': b'    catkin-config.cmake\n'}
+[0.973226] (irob_msgs) StderrLine: {'line': b'\n'}
+[0.973275] (irob_msgs) StderrLine: {'line': b'  Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set\n'}
+[0.973324] (irob_msgs) StderrLine: {'line': b'  "catkin_DIR" to a directory containing one of the above files.  If "catkin"\n'}
+[0.973373] (irob_msgs) StderrLine: {'line': b'  provides a separate development package or SDK, be sure it has been\n'}
+[0.973421] (irob_msgs) StderrLine: {'line': b'  installed.\n'}
+[0.973469] (irob_msgs) StderrLine: {'line': b'\n'}
+[0.973518] (irob_msgs) StderrLine: {'line': b'\n'}
+[0.973566] (irob_connect) StderrLine: {'line': b'CMake Error at CMakeLists.txt:8 (find_package):\n'}
+[0.973641] (irob_connect) StderrLine: {'line': b'  By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has\n'}
+[0.973694] (irob_connect) StderrLine: {'line': b'  asked CMake to find a package configuration file provided by "catkin", but\n'}
+[0.973743] (irob_connect) StderrLine: {'line': b'  CMake did not find one.\n'}
+[0.973792] (irob_connect) StderrLine: {'line': b'\n'}
+[0.973840] (irob_connect) StderrLine: {'line': b'  Could not find a package configuration file provided by "catkin" with any\n'}
+[0.973888] (irob_connect) StderrLine: {'line': b'  of the following names:\n'}
+[0.973936] (irob_connect) StderrLine: {'line': b'\n'}
+[0.973983] (irob_connect) StderrLine: {'line': b'    catkinConfig.cmake\n'}
+[0.974032] (irob_connect) StderrLine: {'line': b'    catkin-config.cmake\n'}
+[0.974081] (irob_connect) StderrLine: {'line': b'\n'}
+[0.974129] (irob_connect) StderrLine: {'line': b'  Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set\n'}
+[0.974177] (irob_connect) StderrLine: {'line': b'  "catkin_DIR" to a directory containing one of the above files.  If "catkin"\n'}
+[0.974394] (irob_connect) StderrLine: {'line': b'  provides a separate development package or SDK, be sure it has been\n'}
+[0.974571] (irob_connect) StderrLine: {'line': b'  installed.\n'}
+[0.974738] (irob_connect) StderrLine: {'line': b'\n'}
+[0.974909] (irob_connect) StderrLine: {'line': b'\n'}
+[0.975245] (irob_msgs) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.975446] (irob_msgs) StdoutLine: {'line': b'See also "/home/tamas/ros1_ws/src/irob-saf/build/irob_msgs/CMakeFiles/CMakeOutput.log".\n'}
+[0.975637] (irob_connect) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.975825] (irob_connect) StdoutLine: {'line': b'See also "/home/tamas/ros1_ws/src/irob-saf/build/irob_connect/CMakeFiles/CMakeOutput.log".\n'}
+[0.976028] (irob_connect) CommandEnded: {'returncode': 1}
+[0.977954] (irob_msgs) CommandEnded: {'returncode': 1}
+[1.000461] (irob_connect) JobEnded: {'identifier': 'irob_connect', 'rc': 1}
+[1.001319] (irob_msgs) JobEnded: {'identifier': 'irob_msgs', 'rc': 'SIGINT'}
+[1.002638] (-) TimerEvent: {}
+[1.011855] (irob_utils) JobSkipped: {'identifier': 'irob_utils'}
+[1.011919] (irob_robot) JobSkipped: {'identifier': 'irob_robot'}
+[1.011959] (irob_vision_support) JobSkipped: {'identifier': 'irob_vision_support'}
+[1.011982] (irob_motion) JobSkipped: {'identifier': 'irob_motion'}
+[1.012003] (irob_subtask_logic) JobSkipped: {'identifier': 'irob_subtask_logic'}
+[1.012023] (irob-saf) JobSkipped: {'identifier': 'irob-saf'}
+[1.012042] (-) EventReactorShutdown: {}
