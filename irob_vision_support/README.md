@@ -2,6 +2,80 @@
 
 This package supports for stereo vision used for surgical automation. See the yet interfaced devices, and hints for those usage and camera calibration below. Before interfacing the cameras, the *irob_autosurg* package should be compiled, see [here](https://github.com/ABC-iRobotics/irob-autosurg/blob/master/README.md).
 
+## Install dependencies
+
+### Support for RealSense cameras
+
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+    sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+    sudo apt-get install librealsense2-dkms
+    sudo apt-get install librealsense2-utils
+    sudo apt-get install librealsense2-dev
+    sudo apt-get install librealsense2-utils
+    sudo apt install ros-noetic-librealsense2
+    sudo apt install ros-noetic-realsense2-camera
+    sudo apt install ros-noetic-realsense2-description
+    pip3 install pyrealsense2
+
+### Install Scipy
+
+    sudo apt install python3-pip
+    pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
+
+### Install the Point Cloud Library (PCL)
+
+    sudo apt install libpcl-dev
+
+### Install libnabo
+
+Libnabo is required by libpointmatcher, see [here](https://github.com/ethz-asl/libpointmatcher/blob/master/doc/CompilationUbuntu.md).
+
+    mkdir ~/Libraries/
+    cd ~/Libraries
+    git clone https://github.com/ethz-asl/libnabo.git
+    cd libnabo
+    SRC_DIR=$PWD
+    BUILD_DIR=${SRC_DIR}/build
+    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
+    make
+    sudo make install
+
+### Install libpintmatcher
+
+    cd ~/Libraries/
+    git clone https://github.com/ethz-asl/libpointmatcher.git
+    cd libpointmatcher
+    SRC_DIR=${PWD}
+    BUILD_DIR=${SRC_DIR}/build
+    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+    cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
+    make -j N   #Replace N by the number of parallel jobs you want to compile
+    sudo make install
+
+### Download and build libpointmatcher_ros
+
+    cd ~/catkin_ws/src
+    git clone https://github.com/ethz-asl/ethzasl_icp_mapping
+    cd ~/catkin_ws
+    catkin build libpointmatcher_ros
+
+### Matlab
+
+If you plan to use the framework in Matlab (some nodes of [irob_vision_support](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_vision_support) is runs in Matlab actually), you should generate the Matlab environment for the custom [irob_msgs](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_msgs) mesage types.
+
+#### Matlab custom message generation
+
+Install add-on "Robotics System Toolbox Interface for ROS Custom Messages" (use sudo matlab, elsehow nothing will happen).
+
+Relaunch Matlab in non-sudo mode, then type in Matlab console:
+
+    folderpath = fullfile('catkin_ws','src', 'irob-saf')
+    rosgenmsg(folderpath)
+
+Then follow the instructions suggested by rosgenmsg (savepath works only in sudo mode). For a more detailed guide see [https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html]().
+
+
 ## Usage with USB webcam pair
 
 Stereo cameras, consists of a pair of USB webcameras can be interfaced this way using the package:

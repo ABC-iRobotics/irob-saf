@@ -50,93 +50,23 @@ Setup environment:
 
 #### Install dependencies for building packages
 
-    sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential python-catkin-tools
+    sudo apt install python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-catkin-tools 
 
-
-#### Support for RealSense cameras
-
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
-    sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
-    sudo apt-get install librealsense2-dkms
-    sudo apt-get install librealsense2-utils
-    sudo apt-get install librealsense2-dev
-    sudo apt-get install librealsense2-utils
-    sudo apt install ros-noetic-librealsense2
-    sudo apt install ros-noetic-realsense2-camera
-    sudo apt install ros-noetic-realsense2-description
-    pip3 install pyrealsense2
-
-#### Install Scipy
-
-    sudo apt install python3-pip
-    pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
-
-#### Install the Point Cloud Library (PCL)
-
-    sudo apt install libpcl-dev
 
 #### Install Eigen
 
 This sowfware is using the [Eigen C++ template library](http://eigen.tuxfamily.org/index.php?title=Main_Page) for matrix and vector classes and algorithms. Install Eigen as follows:
 
-Clone the github repository in any folder of your choice (in this example we use the ~/Downloads folder):
+    sudo apt install libeigen3-dev
 
-    cd ~/Downloads
-    git clone https://github.com/eigenteam/eigen-git-mirror.git
-
-Make a build directory, build and install Eigen:
-
-     cd ~/Downloads/eigen-git-mirror
-     mkdir build_dir
-     cd build_dir
-     cmake ../
-     sudo make install
-
-Now the Eigen headers should be in your /usr/include/eigen3 directory. Since Eigen is in the eigen3 subdirectory, build commands should include the -I /usr/include/eigen3 option.
-
-ROS packages using the Eigen library have to list the /usr/include/eigen3 in the include_directories in the CMakelist.txt file of the package, for example:
+Now the Eigen headers should be in your /usr/include/eigen3 directory. ROS packages using the Eigen library have to list the /usr/include/eigen3 in the include_directories in the CMakelist.txt file of the package (already done for irob-saf packages), for example:
 
     ## Specify additional locations of header files
     ## Your package locations should be listed before other locations
     include_directories(include ${catkin_INCLUDE_DIRS} 
           /usr/include/eigen3
     )
-
-#### Install libnabo
-
-Libnabo is required by libpointmatcher, see [here](https://github.com/ethz-asl/libpointmatcher/blob/master/doc/CompilationUbuntu.md).
-
-    mkdir ~/Libraries/
-    cd ~/Libraries
-    git clone https://github.com/ethz-asl/libnabo.git
-    cd libnabo
-    SRC_DIR=$PWD
-    BUILD_DIR=${SRC_DIR}/build
-    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
-    make
-    sudo make install
-
-#### Install libpintmatcher
-
-    cd ~/Libraries/
-    git clone https://github.com/ethz-asl/libpointmatcher.git
-    cd libpointmatcher
-    SRC_DIR=${PWD}
-    BUILD_DIR=${SRC_DIR}/build
-    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-    cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo ${SRC_DIR}
-    make -j N   #Replace N by the number of parallel jobs you want to compile
-    sudo make install
-    
-#### Download and build libpointmatcher_ros
-
-    cd ~/catkin_ws/src
-    git clone https://github.com/ethz-asl/ethzasl_icp_mapping
-    cd ~/catkin_ws
-    catkin build libpointmatcher_ros
-    
-    
+ 
 
 ### Build dVRK
  
@@ -145,11 +75,11 @@ The library can be used stand-alone, but it was developed to use with the [da Vi
 * install `cisst-saw` and `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
 
 
+### Build irob-saf
 
+The `irob-saf` repository can be pulled using `rosinstall` or `git clone`. For the plain usage of the framework, `rosinstall` is an easy and convenient way; if you plan to modify the source code, the usage of `git clone` is the better choice. Regardless of the method of pulling the repo, it can be built using `catkin build`.
 
-
-
-### Build irob-saf using `catkin build` and `rosinstall`
+### A) Get and build irob-saf using `rosinstall` and `catkin build`
 
 If you installed dVRK by the `catkin build` and `rosinstall` method, you should already have a catkin_ws directory with `wstool` set-up properly. A `rosinstall` file is also provided to `irob-saf`, making the build process easier. So, if you used the `catkin build` and `rosinstall` to build dVRK, `irob-saf` can be built using the following commands:
 
@@ -164,9 +94,9 @@ Setup environment:
 
     echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
     source ~/.bashrc
-    
 
-### Build irob-saf using `calkin build` and `git clone` 
+
+### B) Get and build irob-saf using `calkin build` and `git clone` 
 
 The other option to build `irob-saf` is to simply clone the repository into your workspace. If your have installed dVRK, you should already have a catkin_ws directory set-up properly. Elsehow, do the following:
 
@@ -190,24 +120,12 @@ Setup environment:
     echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     
-### Matlab
-
-If you plan to use the framework in Matlab (some nodes of [irob_vision_support](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_vision_support) is runs in Matlab actually), you should generate the Matlab environment for the custom [irob_msgs](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_msgs) mesage types.
-
-#### Matlab custom message generation
-
-Install add-on "Robotics System Toolbox Interface for ROS Custom Messages" (use sudo matlab, elsehow nothing will happen).
-
-Relaunch Matlab in non-sudo mode, then type in Matlab console:
-
-    folderpath = fullfile('catkin_ws','src', 'irob-saf')
-    rosgenmsg(folderpath)
-        
-Then follow the instructions suggested by rosgenmsg (savepath works only in sudo mode). For a more detailed guide see [https://www.mathworks.com/help/robotics/ug/create-custom-messages-from-ros-package.html]().
-
 
     
-*And nothing left but to say congratulations, you have succesfully installed the `irob-saf` framework!*
+*And nothing left but to say congratulations, you have succesfully installed the `irob-saf` framework!*  
+
+The package `irob_vision_support` uses some additional dependencies. If some dependecies are missing during build or run, please see the `README` in the package `irob_vision_support`.
+
 
 ## Usage
 
