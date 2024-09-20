@@ -70,7 +70,7 @@ Now the Eigen headers should be in your /usr/include/eigen3 directory. ROS packa
 
 ### Build dVRK
  
-The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.1.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps (see the install `cisst-saw` and `dvrk-ros` at [https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build)
+The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.1.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps (see the install `cisst-saw` and `dvrk-ros` at [https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build)):
 
 
     mkdir ~/catkin_ws                  # create the catkin workspace
