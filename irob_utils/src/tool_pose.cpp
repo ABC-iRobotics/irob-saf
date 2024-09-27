@@ -61,6 +61,14 @@ ToolPose::ToolPose(const geometry_msgs::TransformStamped& msg, double jaw):
   transform(unwrapMsg<geometry_msgs::Transform,Eigen::Affine3d>(msg.transform)),
   jaw(jaw){}
 
+ToolPose::ToolPose(const geometry_msgs::Pose& msg, double jaw):
+  transform(unwrapMsg<geometry_msgs::Pose,Eigen::Affine3d>(msg)),
+  jaw(jaw){}
+
+ToolPose::ToolPose(const geometry_msgs::PoseStamped& msg, double jaw):
+  transform(unwrapMsg<geometry_msgs::Pose,Eigen::Affine3d>(msg.pose)),
+  jaw(jaw){}
+
 
 irob_msgs::ToolPose ToolPose::toRosToolPose() const
 {

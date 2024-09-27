@@ -46,7 +46,7 @@ protected:
   // States
   std_msgs::String status;
   sensor_msgs::JointState measured_js;
-  geometry_msgs::TransformStamped measured_cp;
+  geometry_msgs::PoseStamped measured_cp;
   std_msgs::String error;
   std_msgs::String warning;
 
@@ -80,7 +80,7 @@ public:
   void warning_cb(const std_msgs::String);
   void measured_js_cb(const sensor_msgs::JointStateConstPtr&);
   virtual void measured_cp_cb(
-      const geometry_msgs::TransformStampedConstPtr&);
+      const geometry_msgs::PoseStampedConstPtr&);
 
 
   void loadRegistration(std::string);

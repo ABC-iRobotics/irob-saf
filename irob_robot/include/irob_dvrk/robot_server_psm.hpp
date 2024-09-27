@@ -56,7 +56,7 @@ public:
   void resetPose(bool);
 
   void measured_cp_cb(
-      const geometry_msgs::TransformStampedConstPtr&) ;
+      const geometry_msgs::PoseStampedConstPtr&) ;
 
   void positionJawCurrentCB(
       const sensor_msgs::JointStateConstPtr&) ;

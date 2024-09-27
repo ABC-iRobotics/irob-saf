@@ -219,6 +219,24 @@ inline geometry_msgs::Transform wrapToMsg(
   return msg;
 }
 
+template <>
+inline geometry_msgs::Pose wrapToMsg(
+    const Eigen::Affine3d& data){
+  geometry_msgs::Pose msg;
+
+  Eigen::Vector3d translation(data.translation());
+  Eigen::Quaterniond rotation(data.rotation());
+  msg.position.x = translation.x();
+  msg.position.y = translation.y();
+  msg.position.z = translation.z();
+
+  msg.orientation.x = rotation.x();
+  msg.orientation.y = rotation.y();
+  msg.orientation.z = rotation.z();
+  msg.orientation.w = rotation.w();
+  return msg;
+}
+
 // NaN
 template<typename DataT>
 inline DataT makeNaN();
