@@ -6,6 +6,25 @@ The *iRob Surgical Automation Framework*---`irob-saf`--- is an open-source ROS-b
 
 **Compatible with dVRK 2.2.1**
 
+## Table of Contents
+- [Citation](#citation)
+- [List of Packages](#list-of-packages)
+- [Build manually](#build-manually)
+    - [Install ROS Noetic](#install-ros-noetic)
+    - [Install dependencies](#install-dependencies)
+    - [Build dVRK](#build-dvrk)
+    - [Build irob-saf](#build-irob-saf)
+        - [Using rosinstall](#a-get-and-build-irob-saf-using-rosinstall-and-catkin-build)
+        - [Using git clone](#b-get-and-build-irob-saf-using-catkin-build-and-git-clone)
+- [Build the Docker image](#build-the-docker-image)
+    - [Terminator config](#terminator-config)
+- [Usage](#usage)
+    - [Grasp in simulator](#grasp-in-simulator)
+    - [Unilateral peg transfer](#unilateral-peg-transfer)
+    - [Bilateral peg transfer](#bilateral-peg-transfer)
+- [Contact](#contact)
+- [Acknowledgement](#acknowledgement)
+
 ## Citation
 
 If you use this framework in your reserach, please cite the following paper:
@@ -23,7 +42,7 @@ Tamas D. Nagy and Tamas Haidegger, [“A DVRK-based Framework for Surgical Subta
 * [irob_subtask_logic](https://github.com/ABC-iRobotics/irob-saf/tree/master/irob_subtask_logic)
 
 
-## Build
+## Build manually
 
 The framework is tested on Ubuntu 20.04 LTS with ROS Noetic, so this platform is encouraged. The building process can be performed using catkin build tools for ROS (so use `catkin build`, but you should never `catkin_make`) by the following steps.
 
@@ -107,7 +126,7 @@ Setup environment:
     source ~/.bashrc
 
 
-### B) Get and build irob-saf using `calkin build` and `git clone` 
+### B) Get and build irob-saf using `catkin build` and `git clone` 
 
 The other option to build `irob-saf` is to simply clone the repository into your workspace. If your have installed dVRK, you should already have a catkin_ws directory set-up properly. Elsehow, do the following:
 
@@ -131,12 +150,113 @@ Setup environment:
     echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     
-
-    
 *And nothing left but to say congratulations, you have succesfully installed the `irob-saf` framework!*  
 
 The package `irob_vision_support` uses some additional dependencies. If some dependecies are missing during build or run, please see the `README` in the package `irob_vision_support`.
 
+## Build the Docker image
+To automate the process described above, and run the framework in a container, you can build a Docker image. Keep in mind that this build is designed for development purposes, and retains the source code and documentation included with the framework, as well as the cisst-saw and dVRK dependencies. Expect a build time on the order of 20 minutes, and an image size of about 14 GiB.
+    
+    docker build -t irob-saf:latest --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 https://github.com/ABC-iRobotics/irob-saf.git
+    docker run -dit --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --name irob-saf irob-saf
+
+To run GUI applications such as RViz, you will need to give the container access to the host OS's Xorg instance. 
+
+    xhost +local:`docker inspect --format='{{ .Config.Hostname }}' irob-saf`
+
+This approach of providing Xorg access is moderately secure, [alternatives can be found on the ROS Wiki](http://wiki.ros.org/docker/Tutorials/GUI).
+
+From there on, you can enter into the container by running
+
+    docker start -ai irob-saf
+
+### Terminator config
+Running multiple terminal windows attached to a container built this way is somewhat more involved than when running on bare metal. To simplify this process, it is recommended to use the Terminator terminal emulator with the following 4x2 layout added under `[layouts]` in your Terminator config, which is normally `~/.config/terminator/config`.
+
+<details>
+  <summary>4x2 layout</summary>
+
+    [[irob-saf]]
+    [[[root]]]
+      type = Window
+      parent = ""
+      size = 1920, 1080
+    [[[grandgrand]]]
+      type = HPaned
+      parent = root
+    [[[grandleft]]]
+      type = VPaned
+      parent = grandgrand
+    [[[leftleft]]]
+      type = VPaned
+      parent = grandleft
+    [[[term1]]]
+      profile = default
+      type = Terminal
+      order = 0
+      parent = leftleft
+      command = docker exec -it irob-saf bash
+    [[[term2]]]
+      profile = default
+      type = Terminal
+      order = 1
+      parent = leftleft
+      command = docker exec -it irob-saf bash
+    [[[leftright]]]
+      type = VPaned
+      parent = grandleft
+    [[[term3]]]
+      profile = default
+      type = Terminal
+      order = 0
+      parent = leftright
+      command = docker exec -it irob-saf bash
+    [[[term4]]]
+      profile = default
+      type = Terminal
+      order = 1
+      parent = leftright
+      command = docker exec -it irob-saf bash
+    [[[grandright]]]
+      type = VPaned
+      parent = grandgrand
+    [[[rightleft]]]
+      type = VPaned
+      parent = grandright
+    [[[term5]]]
+      profile = default
+      type = Terminal
+      order = 0
+      parent = rightleft
+      command = docker exec -it irob-saf bash
+    [[[term6]]]
+      profile = default
+      type = Terminal
+      order = 1
+      parent = rightleft
+      command = docker exec -it irob-saf bash
+    [[[rightright]]]
+      type = VPaned
+      parent = grandright
+    [[[term7]]]
+      profile = default
+      type = Terminal
+      order = 0
+      parent = rightright
+      command = docker exec -it irob-saf bash
+    [[[term8]]]
+      profile = default
+      type = Terminal
+      order = 1
+      parent = rightright
+      command = docker exec -it irob-saf bash
+</details>
+
+Afterwards, you can run the following script to launch Terminator in the above configuration,
+
+    xhost +local:`docker inspect --format='{{ .Config.Hostname }}' irob-saf`
+    docker start irob-saf
+    terminator -l irob-saf
 
 ## Usage
 
@@ -146,7 +266,7 @@ Autonomous surgical subtasks can be assembled from the ROS nodes of the framewor
 
 An example using the dVRK PSM simulation and a dummy target can be launched easily however. First, start the simulator:
 
-    roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=/home/$(whoami)/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
+    roslaunch dvrk_robot dvrk_arm_rviz.launch arm:=PSM1 config:=$HOME/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/console/console-PSM1_KIN_SIMULATED.json
     
 If the simulation is started, press *Home*.  
 Start a dummy target:
