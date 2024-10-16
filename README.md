@@ -155,10 +155,12 @@ Setup environment:
 The package `irob_vision_support` uses some additional dependencies. If some dependecies are missing during build or run, please see the `README` in the package `irob_vision_support`.
 
 ## Build the Docker image
-To automate the process described above, and run the framework in a container, you can build a Docker image. Keep in mind that this build is designed for development purposes, and retains the source code and documentation included with the framework, as well as the cisst-saw and dVRK dependencies. Expect a build time on the order of 20 minutes, and an image size of about 14 GiB.
+To automate the process described above, and run the framework in a container, you can build a Docker image. Keep in mind that this build is designed for development purposes, and retains the source code and documentation included with the framework, as well as that of the cisst-saw and dVRK dependencies. Expect a build time on the order of 20 minutes, and an image size of about 14 GiB.
     
     docker build -t irob-saf:latest --build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1 https://github.com/ABC-iRobotics/irob-saf.git
     docker run -dit --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --name irob-saf irob-saf
+
+The build command is also configured to retain source control information. Feel free to omit the `--build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1` argument if you do not wish to contribute.
 
 To run GUI applications such as RViz, you will need to give the container access to the host OS's Xorg instance. 
 
