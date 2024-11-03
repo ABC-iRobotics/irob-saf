@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM osrf/ros:noetic-desktop-full
+FROM osrf/ros:noetic-desktop-full AS build
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Add APT package deps
@@ -57,22 +57,59 @@ RUN mkdir -p /root/catkin_ws/src && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build --summary
 
-# Set up env on start
-RUN printf '#!/bin/bash\n\
-set -e\n\
-source /root/catkin_ws/devel/setup.bash\n\
-source /root/catkin_ws/devel/cisstvars.sh\n\
-exec "$@"\
-' > /ros_entrypoint.sh && \
-printf 'source /ros_entrypoint.sh' >> /root/.bashrc
-
-# RUN cd ~/catkin_ws/src && \
-#     git clone https://github.com/ABC-iRobotics/irob-saf.git && \
-#     cd ~/catkin_ws && \
-#     catkin build irob-saf
-
 # Add irob-saf
 WORKDIR /root/catkin_ws/
 RUN mkdir src/irob-saf
 COPY . ./src/irob-saf
 RUN cd /root/catkin_ws/ && catkin build irob-saf
+
+FROM ros:foxy-ros1-bridge-focal
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY --from=build /root/catkin_ws /root/catkin_ws
+
+RUN apt update && apt install -y ros-noetic-desktop-full
+
+# Single quotes around EOF so the variables don't get mangled
+COPY --chmod=777 <<'EOF' /ros_entrypoint.sh
+#!/bin/bash
+
+# unsetting ROS_DISTRO to silence ROS_DISTRO override warning
+unset ROS_DISTRO
+
+# Check if an argument was provided
+if [ -z "$1" ]; then
+    echo "No argument provided. Please provide 'none', 'ros1', 'ros2', or 'bridge'."
+    exit 1
+fi
+
+rosver="$1"
+
+case "$rosver" in
+    none)
+        echo "Neither ROS version is sourced."
+        ;;
+    ros1)
+        echo "ROS1 is sourced."
+        source "$HOME/catkin_ws/devel/setup.bash"
+        ;;
+    ros2)
+        echo "ROS2 is sourced."
+        source "/opt/ros/foxy/setup.bash"
+        ;;
+    bridge)
+        echo "ROS1 and ROS2 are sourced."
+        source "$HOME/catkin_ws/devel/setup.bash"
+        source "/opt/ros/foxy/setup.bash"
+        export ROS_MASTER_URI=http://localhost:11311
+        ;;
+    *)
+        echo "Invalid argument. Please provide 'none', 'ros1', 'ros2', or 'bridge'."
+        exit 1
+        ;;
+esac
+bash
+EOF
+
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+CMD ["none"]
