@@ -68,13 +68,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
+RUN apt update && apt install -y ros-noetic-desktop-full
+
 # Add ROS2 ports
 RUN mkdir -p /root/ros2_ws/src && \
     cd /root/ros2_ws/src && \
     git clone https://github.com/anderudp/irob-saf-ros2 && \
     cd /root/ros2_ws/ && colcon build --symlink-install
-
-RUN apt update && apt install -y ros-noetic-desktop-full
 
 #TODO: source /root/ros2_ws/install/setup.bash
 # Single quotes around EOF so the variables don't get mangled
