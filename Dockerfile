@@ -64,7 +64,7 @@ source /root/catkin_ws/devel/setup.bash\n\
 source /root/catkin_ws/devel/cisstvars.sh\n\
 exec "$@"\
 ' > /ros_entrypoint.sh && \
-printf 'source /ros_entrypoint.sh' > /root/.bashrc
+printf 'source /ros_entrypoint.sh' >> /root/.bashrc
 
 # RUN cd ~/catkin_ws/src && \
 #     git clone https://github.com/ABC-iRobotics/irob-saf.git && \
