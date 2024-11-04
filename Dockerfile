@@ -68,8 +68,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
+# Add ROS2 ports
+RUN mkdir -p /root/ros2_ws/src && \
+    git clone https://github.com/anderudp/irob-saf-ros2 && \
+    cd /root/ros2_ws/ && colcon build --symlink-install
+
 RUN apt update && apt install -y ros-noetic-desktop-full
 
+#TODO: source /root/ros2_ws/install/setup.bash
 # Single quotes around EOF so the variables don't get mangled
 COPY --chmod=777 <<'EOF' /ros_entrypoint.sh
 #!/bin/bash
@@ -91,16 +97,17 @@ case "$rosver" in
         ;;
     ros1)
         echo "ROS1 is sourced."
-        source "$HOME/catkin_ws/devel/setup.bash"
+        source "/root/catkin_ws/devel/setup.bash"
         ;;
     ros2)
         echo "ROS2 is sourced."
-        source "/opt/ros/foxy/setup.bash"
+        source "/root/ros2_ws/install/setup.bash"
         ;;
     bridge)
         echo "ROS1 and ROS2 are sourced."
-        source "$HOME/catkin_ws/devel/setup.bash"
-        source "/opt/ros/foxy/setup.bash"
+        source "/root/catkin_ws/devel/setup.bash"
+        #source "/opt/ros/foxy/setup.bash"
+        source "/root/ros2_ws/install/setup.bash"
         export ROS_MASTER_URI=http://localhost:11311
         ;;
     *)
