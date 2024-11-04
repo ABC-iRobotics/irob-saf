@@ -70,6 +70,7 @@ COPY --from=build /root/catkin_ws /root/catkin_ws
 
 # Add ROS2 ports
 RUN mkdir -p /root/ros2_ws/src && \
+    cd /root/ros2_ws/src && \
     git clone https://github.com/anderudp/irob-saf-ros2 && \
     cd /root/ros2_ws/ && colcon build --symlink-install
 
