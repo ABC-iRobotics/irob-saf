@@ -102,12 +102,13 @@ case "$rosver" in
         ;;
     ros2)
         echo "ROS2 is sourced."
+        source "/opt/ros/foxy/setup.bash"
         source "/root/ros2_ws/install/setup.bash"
         ;;
     bridge)
         echo "ROS1 and ROS2 are sourced."
         source "/root/catkin_ws/devel/setup.bash"
-        #source "/opt/ros/foxy/setup.bash"
+        source "/opt/ros/foxy/setup.bash"
         source "/root/ros2_ws/install/setup.bash"
         export ROS_MASTER_URI=http://localhost:11311
         ;;
