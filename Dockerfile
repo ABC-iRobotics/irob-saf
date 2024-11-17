@@ -68,7 +68,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
-RUN apt update && apt install -y ros-noetic-desktop-full
+RUN apt update && apt install -y ros-noetic-desktop-full python3-pip
+
+RUN pip3 install scipy pyrealsense2 cv-bridge
 
 # Add ROS2 ports
 RUN mkdir -p /root/ros2_ws/src && \
