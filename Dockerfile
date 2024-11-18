@@ -68,7 +68,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
-RUN apt update && apt install -y ros-noetic-desktop-full python3-pip
+RUN apt update && apt install -y ros-noetic-desktop-full python3-pip apt-transport-https
+
+# Add librealsense
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -sSf https://librealsense.intel.com/Debian/librealsense.pgp | sudo tee /etc/apt/keyrings/librealsense.pgp > /dev/null && \
+    echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
+    tee /etc/apt/sources.list.d/librealsense.list && \
+    apt update && \
+    apt install librealsense2-dkms librealsense2-utils librealsense2-dev
 
 RUN pip3 install scipy pyrealsense2 cv-bridge
 
@@ -78,12 +86,11 @@ RUN mkdir -p /root/ros2_ws/src && \
     git clone https://github.com/anderudp/irob-saf-ros2 && \
     cd /root/ros2_ws/ && colcon build --symlink-install
 
-#TODO: source /root/ros2_ws/install/setup.bash
 # Single quotes around EOF so the variables don't get mangled
 COPY --chmod=777 <<'EOF' /ros_entrypoint.sh
 #!/bin/bash
 
-# unsetting ROS_DISTRO to silence ROS_DISTRO override warning
+# Unsetting ROS_DISTRO to silence ROS_DISTRO override warning
 unset ROS_DISTRO
 
 # Check if an argument was provided
