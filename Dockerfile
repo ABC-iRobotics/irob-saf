@@ -76,7 +76,7 @@ RUN mkdir -p /etc/apt/keyrings && \
     echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
     tee /etc/apt/sources.list.d/librealsense.list && \
     apt update && \
-    apt install librealsense2-dkms librealsense2-utils librealsense2-dev
+    apt install -y librealsense2-dkms librealsense2-utils librealsense2-dev
 
 RUN pip3 install scipy pyrealsense2 cv-bridge
 
