@@ -117,6 +117,7 @@ case "$rosver" in
     bridge)
         echo "ROS1 and ROS2 are sourced."
         source "/root/catkin_ws/devel/setup.bash"
+        unset ROS_DISTRO
         source "/opt/ros/foxy/setup.bash"
         source "/root/ros2_ws/install/setup.bash"
         export ROS_MASTER_URI=http://localhost:11311
