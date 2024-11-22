@@ -78,7 +78,7 @@ RUN mkdir -p /etc/apt/keyrings && \
     apt update && \
     apt install -y librealsense2-dkms librealsense2-utils librealsense2-dev ros-foxy-librealsense2
 
-RUN pip3 install scipy pyrealsense2 cv-bridge opencv-python natsort
+RUN pip3 install scipy pyrealsense2 cv-bridge opencv-python natsort scikit-spatial parse tqdm svgwrite
 
 # Add ROS2 ports
 RUN mkdir -p /root/ros2_ws/src && \
