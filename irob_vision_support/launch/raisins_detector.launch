@@ -1,0 +1,11 @@
+<launch>
+    <group ns="saf">
+    <param name="offline" type="bool" value="true" />
+    <param name="bag_file" type="string" value='/home/bence/Desktop/20231201_133036.bag'/>
+    <node name="raisins_detector" pkg="irob_vision_support"
+            type="raisins_detector.py" output="screen" >
+            <remap from="blocks_grasp" to="vision/blocks_grasp" />
+    </node>
+    </group>
+</launch>
+
