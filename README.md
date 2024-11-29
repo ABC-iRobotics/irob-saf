@@ -3,7 +3,8 @@
 ## About
 
 The *iRob Surgical Automation Framework*---`irob-saf`--- is an open-source ROS-based metapackage, built by the Antal Bejczy Center for Intelligent Robotics (iRob), for the aim to support the research of partial automation in robot-assisted surgery.  The packages of the framework implements basic functionalities, usable as universal building blocks in surgical automation, such as infrastructure to implement subtask-level logic, interfacing of stereo cameras, a hierarchic motion library with parameterizable surgemes, and high-level robot control. The framework were built and tested alongside the da Vinci Resarch Kit (dVRK), however it is easily portable to other platforms as well.
-**Compatible with dVRK 2.x.**
+
+**Compatible with dVRK 2.2.1**
 
 ## Citation
 
@@ -70,9 +71,19 @@ Now the Eigen headers should be in your /usr/include/eigen3 directory. ROS packa
 
 ### Build dVRK
  
-The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps:
+The library can be used stand-alone, but it was developed to use with the [da Vinci Reserach Kit 2.1.x](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki), icluding the [cisst-saw](https://github.com/jhu-cisst/cisst/wiki/Compiling-cisst-and-SAW-with-CMake#13-building-using-catkin-build-tools-for-ros) and the [dvrk-ros](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros) packages. To install these packages, use do the following steps (see the install `cisst-saw` and `dvrk-ros` at [https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#catkin-workspace-clone-and-build)):
 
-* install `cisst-saw` and `dvrk-ros` as seen in this [guide](https://github.com/jhu-dvrk/sawIntuitiveResearchKit/wiki/CatkinBuild#dvrk-ros)
+
+    mkdir ~/catkin_ws                  # create the catkin workspace
+    cd ~/catkin_ws                     # go in the workspace
+    catkin init                        # create files for catkin build tool
+    catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release # all code should be compiled in release mode
+    mkdir src
+    cd src                             # go in source directory to pull code
+    vcs import --recursive --workers 1 --input https://raw.githubusercontent.com/jhu-saw/vcs/main/ros1-dvrk-2.1.0.vcs    
+    cd ~/catkin_ws
+    catkin build --summary             # ... and finally compile everything
+
 
 
 ### Build irob-saf

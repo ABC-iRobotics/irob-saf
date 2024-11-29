@@ -173,7 +173,7 @@ void RobotServerDVRK::measured_js_cb(const sensor_msgs::JointStateConstPtr& msg)
 }
 
 void RobotServerDVRK::measured_cp_cb(
-    const geometry_msgs::TransformStampedConstPtr& msg)
+    const geometry_msgs::PoseStampedConstPtr& msg)
 {
   measured_cp = *msg;
   irob_msgs::ToolPoseStamped fwd;
@@ -212,7 +212,7 @@ void RobotServerDVRK::subscribeLowLevelTopics()
                               "dvrk_topics/state_joint_current"),
         1000, &RobotServerDVRK::measured_js_cb,this);
 
-  measured_cp_sub = nh.subscribe<geometry_msgs::TransformStamped>(
+  measured_cp_sub = nh.subscribe<geometry_msgs::PoseStamped>(
         TopicNameLoader::load(nh,
                               arm_typ.name,
                               "dvrk_topics/position_cartesian_current"),
@@ -240,7 +240,7 @@ void RobotServerDVRK::advertiseLowLevelTopics()
                               arm_typ.name,
                               "dvrk_topics/set_position_joint"),
         1000);
-  position_cartesian_pub = nh.advertise<geometry_msgs::TransformStamped>(
+  position_cartesian_pub = nh.advertise<geometry_msgs::PoseStamped>(
         TopicNameLoader::load(nh,
                               arm_typ.name,
                               "dvrk_topics/set_position_cartesian"),
@@ -280,19 +280,19 @@ std::vector<double> RobotServerDVRK::getJointStateCurrent()
 Eigen::Vector3d RobotServerDVRK::getPositionCartesianCurrent()
 {
   ros::spinOnce();
-  Eigen::Vector3d ret(measured_cp.transform.translation.x,
-                      measured_cp.transform.translation.y,
-                      measured_cp.transform.translation.z);
+  Eigen::Vector3d ret(measured_cp.pose.position.x,
+                      measured_cp.pose.position.y,
+                      measured_cp.pose.position.z);
   return ret;
 }
 
 Eigen::Quaternion<double> RobotServerDVRK::getOrientationCartesianCurrent()
 {
   ros::spinOnce();
-  Eigen::Quaternion<double> ret(measured_cp.transform.rotation.x,
-                                measured_cp.transform.rotation.y,
-                                measured_cp.transform.rotation.z,
-                                measured_cp.transform.rotation.w);
+  Eigen::Quaternion<double> ret(measured_cp.pose.orientation.x,
+                                measured_cp.pose.orientation.y,
+                                measured_cp.pose.orientation.z,
+                                measured_cp.pose.orientation.w);
   return ret;
 }
 
@@ -358,10 +358,10 @@ void RobotServerDVRK::moveCartesianRelative(Eigen::Translation3d movement, doubl
   ToolPose currPose = getPoseCurrent();
   ToolPose pose = currPose;
   pose = Eigen::Affine3d(movement) * pose;
-  geometry_msgs::Transform new_position_cartesian
-      = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
-  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
-  new_position_cartesian_stamped.transform=new_position_cartesian;
+  geometry_msgs::Pose new_position_cartesian
+      = wrapToMsg<geometry_msgs::Pose, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::PoseStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.pose=new_position_cartesian;
   // Safety
   try {
     checkErrors();
@@ -393,10 +393,10 @@ void RobotServerDVRK::moveCartesianAbsolute(ToolPose pose, double dt)
 {
   // Collect data
   ToolPose currPose = getPoseCurrent();
-  geometry_msgs::Transform new_position_cartesian
-      = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
-  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
-  new_position_cartesian_stamped.transform=new_position_cartesian;
+  geometry_msgs::Pose new_position_cartesian
+      = wrapToMsg<geometry_msgs::Pose, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::PoseStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.pose=new_position_cartesian;
   try {
     // Safety
     checkErrors();

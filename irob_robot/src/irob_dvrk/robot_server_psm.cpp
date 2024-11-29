@@ -100,7 +100,7 @@ void RobotServerPSM::advertiseLowLevelTopics()
  */
 
 void RobotServerPSM::measured_cp_cb(
-    const geometry_msgs::TransformStampedConstPtr& msg)
+    const geometry_msgs::PoseStampedConstPtr& msg)
 {
   measured_cp = *msg;
   irob_msgs::ToolPoseStamped fwd;
@@ -204,10 +204,10 @@ void RobotServerPSM::moveCartesianAbsolute(ToolPose pose, double dt)
 {
   // Collect data
   ToolPose currPose = getPoseCurrent();
-  geometry_msgs::Transform new_position_cartesian
-      = wrapToMsg<geometry_msgs::Transform, Eigen::Affine3d>(pose.transform);
-  geometry_msgs::TransformStamped new_position_cartesian_stamped(measured_cp);
-  new_position_cartesian_stamped.transform=new_position_cartesian;
+  geometry_msgs::Pose new_position_cartesian
+      = wrapToMsg<geometry_msgs::Pose, Eigen::Affine3d>(pose.transform);
+  geometry_msgs::PoseStamped new_position_cartesian_stamped(measured_cp);
+  new_position_cartesian_stamped.pose=new_position_cartesian;
   sensor_msgs::JointState new_position_jaw
       = wrapToMsg<sensor_msgs::JointState,double>(pose.jaw);
 

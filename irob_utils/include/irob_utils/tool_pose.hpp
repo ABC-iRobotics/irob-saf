@@ -63,6 +63,8 @@ class ToolPose {
     ToolPose(const Eigen::Translation3d&, const Eigen::Quaterniond&, double );
     ToolPose(const geometry_msgs::Transform&, double);
     ToolPose(const geometry_msgs::TransformStamped&, double);
+    ToolPose(const geometry_msgs::Pose&, double);
+    ToolPose(const geometry_msgs::PoseStamped&, double);
 
     irob_msgs::ToolPose toRosToolPose() const;
 
