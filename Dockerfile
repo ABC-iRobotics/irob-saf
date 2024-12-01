@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM osrf/ros:noetic-desktop-full
+FROM osrf/ros:noetic-desktop-full AS build
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Add APT package deps
@@ -56,20 +56,6 @@ RUN mkdir -p /root/catkin_ws/src && \
     vcs import --recursive --workers 1 --input https://raw.githubusercontent.com/jhu-saw/vcs/main/ros1-dvrk-2.2.1.vcs && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build --summary
-
-# Set up env on start
-RUN printf '#!/bin/bash\n\
-set -e\n\
-source /root/catkin_ws/devel/setup.bash\n\
-source /root/catkin_ws/devel/cisstvars.sh\n\
-exec "$@"\
-' > /ros_entrypoint.sh && \
-printf 'source /ros_entrypoint.sh' >> /root/.bashrc
-
-# RUN cd ~/catkin_ws/src && \
-#     git clone https://github.com/ABC-iRobotics/irob-saf.git && \
-#     cd ~/catkin_ws && \
-#     catkin build irob-saf
 
 # Add irob-saf
 WORKDIR /root/catkin_ws/
