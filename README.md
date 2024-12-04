@@ -161,7 +161,7 @@ To automate the process described above, and run the framework in a container, y
 
 For ROS2 development purposes, you can append `#foxy_bridge` to the previous command.
 
-    docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --device=/dev/fw0 --device=/dev/fw1 --device=/dev/fw2 --name irob-saf irob-saf
+    docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged -v /dev:/dev --name irob-saf irob-saf
 
 The build command is also configured to retain source control information. Feel free to omit the `--build-arg BUILDKIT_CONTEXT_KEEP_GIT_DIR=1` argument if you do not wish to contribute.
 
