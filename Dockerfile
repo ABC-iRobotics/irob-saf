@@ -75,7 +75,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
-RUN apt update && apt install -y ros-noetic-desktop-full python3-pip apt-transport-https ros-foxy-tf-transformations
+RUN apt update && apt install -y ros-noetic-desktop-full python3-pip apt-transport-https ros-foxy-tf-transformation
 
 # Add librealsense
 RUN mkdir -p /etc/apt/keyrings && \
@@ -84,6 +84,8 @@ RUN mkdir -p /etc/apt/keyrings && \
     tee /etc/apt/sources.list.d/librealsense.list && \
     apt update && \
     apt install -y librealsense2-dkms librealsense2-utils librealsense2-dev ros-foxy-librealsense2
+
+RUN apt install -y ros-foxy-realsense2-description ros-foxy-realsense2-camera
 
 RUN pip3 install scipy pyrealsense2 cv-bridge opencv-python natsort scikit-spatial parse tqdm svgwrite transforms3d
 
@@ -103,7 +105,7 @@ unset ROS_DISTRO
 # Check if an argument was provided
 if [ -z "$1" ]; then
     echo "No argument provided. Please provide 'none', 'ros1', 'ros2', or 'bridge'."
-    exit 1
+    exit 1ros-foxy-realsense2-description
 fi
 
 rosver="$1"
