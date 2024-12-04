@@ -66,3 +66,15 @@ RUN cd /root/catkin_ws/ && catkin build irob-saf
 # Add OE daVinci config files
 RUN cd /root/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/ && \
     git clone https://github.com/anderudp/OE-daVinci.git
+
+# Set up env on start
+RUN printf '#!/bin/bash\n\
+set -e\n\
+source /root/catkin_ws/devel/setup.bash\n\
+source /root/catkin_ws/devel/cisstvars.sh\n\
+exec "$@"\
+' > /ros_entrypoint.sh && \
+printf 'source /ros_entrypoint.sh' >> /root/.bashrc
+
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+CMD ["none"]
