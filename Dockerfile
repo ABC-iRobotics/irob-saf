@@ -75,7 +75,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=build /root/catkin_ws /root/catkin_ws
 
-RUN apt update && apt install -y ros-noetic-desktop-full python3-pip apt-transport-https ros-foxy-tf-transformation
+RUN apt update && apt install -y ros-noetic-desktop-full python3-pip apt-transport-https ros-foxy-tf-transformations
 
 # Add librealsense
 RUN mkdir -p /etc/apt/keyrings && \
