@@ -59,7 +59,7 @@ class MyDetector:
         self.height = 480
         self.fps = 30 #30
         self.clipping_distance_in_meters = 0.50
-        self.exposure = 800.0 #400.0 #600.0 #600.0
+        self.exposure = 200.0 #400.0 #600.0 #600.0
         self.z_offset = 0.004   # m
         self.approach_offset = 0.05
         self.pcd = o3d.geometry.PointCloud()
@@ -81,6 +81,10 @@ class MyDetector:
                                         self.height, rs.format.bgr8, self.fps)
             
         #self.tf_phantom = Transform() # skip
+
+    def set_exposure(self, exposure):
+        rgb_cam_sensor = self.pipeline.get_active_profile().get_device().query_sensors()[1]
+        rgb_cam_sensor.set_option(rs.option.exposure, exposure)
 
     def process_stream(self):
         self.profile = self.pipeline.start(self.config)
@@ -106,10 +110,16 @@ class MyDetector:
 
                 color_image = np.asanyarray(color_frame.get_data())
                 color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
-            
+
+     
+
                 plane_model, mask = self.calculate_plane_and_mask(color_frame=color_frame,
                                                                 color_image=color_image,
                                                                 aligned_depth_frame=aligned_depth_frame)
+                
+                if plane_model is None:
+                    continue
+
                 raisins = self.get_raisins_coordinates_v2(color_image)
 
                 img = self.draw_red_points(coordinates=raisins, image=color_image)
@@ -171,7 +181,7 @@ class MyDetector:
                     
                 self.blocks_pub.publish(env_msg)
 
-        except rs.error as e:
+        except Exception as e:
             rospy.logerr(f"RealSense error: {e}")
 
         finally:
@@ -256,10 +266,12 @@ class MyDetector:
         
         # create mask
         mask = np.zeros(color_image.shape[:2], dtype=np.uint8)
-        
         # Projecting points onto the image plane
         for point in points:
             pixel = rs.rs2_project_point_to_pixel(intrinsics, point)
+            if math.isnan(pixel[0]):
+                return None, None
+            
             x, y = int(pixel[0]), int(pixel[1])
             if 0 <= x < color_image.shape[1] and 0 <= y < color_image.shape[0]:
                 mask[y, x] = 255
