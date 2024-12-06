@@ -131,7 +131,7 @@ class MyDetector:
                 print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
                 plane_normal = np.array([-a, -b, -c])
 
-                start_ori_vec = np.array([0.0, 0.0, -1.0])
+                start_ori_vec = np.array([0.0, 0.0, 1.0])
                 grasp_ori = R.from_matrix(rotation_matrix_from_vectors(start_ori_vec, plane_normal))
                 grasp_ori_quat = grasp_ori.as_quat()
 
@@ -153,7 +153,7 @@ class MyDetector:
                     approach_pose = Pose()
                     grasp_pose.position.x = p[0]*1000.0
                     grasp_pose.position.y = p[1]*1000.0
-                    grasp_pose.position.z = -p[2]*1000.0 #negative conversion due to correct coordinate
+                    grasp_pose.position.z = p[2]*1000.0 #negative conversion due to correct coordinate
                     grasp_pose.orientation.x = grasp_ori_quat[0]
                     grasp_pose.orientation.y = grasp_ori_quat[1]
                     grasp_pose.orientation.z = grasp_ori_quat[2]
@@ -161,7 +161,7 @@ class MyDetector:
 
                     approach_pose.position.x = p_a[0]*1000.0
                     approach_pose.position.y = p_a[1]*1000.0
-                    approach_pose.position.z = -p_a[2]*1000.0 #negative conversion due to correct coordinate
+                    approach_pose.position.z = p_a[2]*1000.0 #negative conversion due to correct coordinate
                     #print("approach position: ", approach_pose.position)
                     approach_pose.orientation.x = grasp_ori_quat[0]
                     approach_pose.orientation.y = grasp_ori_quat[1]
@@ -173,7 +173,7 @@ class MyDetector:
 
                     grasp_msg.position.x = p[0]*1000.0
                     grasp_msg.position.y = p[1]*1000.0
-                    grasp_msg.position.z = -p[2]*1000.0 #negative conversion due to correct coordinate
+                    grasp_msg.position.z = p[2]*1000.0 #negative conversion due to correct coordinate
 
                     grasp_msg.id = i
                     grasp_msg.name = "block#"+str(i)
