@@ -164,6 +164,11 @@ add_executable(camera_preprocessor
 add_executable(serial_test
     src/serial_test.cpp)
 
+add_executable(dummy_raisins_target
+    src/dummy_raisins_target.cpp)
+
+add_executable(dummy_raisins_detector
+    src/dummy_raisins_detector.cpp)
 #add_executable(peg_transfer_perception
 #    src/peg_transfer_perception.cpp)
 
@@ -200,12 +205,21 @@ target_link_libraries(camera_preprocessor
 	irob_vision_support_lib
         )
 
-
-
 target_link_libraries(serial_test
         ${catkin_LIBRARIES}
         irob_vision_support_lib
         )
+
+target_link_libraries(dummy_raisins_target
+        ${catkin_LIBRARIES}
+        irob_vision_support_lib
+        )
+
+target_link_libraries(dummy_raisins_detector
+        ${catkin_LIBRARIES}
+        irob_vision_support_lib
+        )
+
 
 #target_link_libraries(peg_transfer_perception
 #        ${catkin_LIBRARIES}
@@ -230,6 +244,7 @@ target_link_libraries(serial_test
    scripts/record_realsense_bag.py
    scripts/hand_eye_registrator.py
    scripts/block_detector.py
+   scripts/raisins_detector.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
