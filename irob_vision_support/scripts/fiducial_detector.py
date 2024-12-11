@@ -43,7 +43,7 @@ class FiducialDetector:
         self.lower_orange = (8, 180, 150)
         self.upper_orange = (20, 255, 255)
         self.lower_purple = (0, 100, 50)
-        self.upper_purple = (20, 150, 150)
+        self.upper_purple = (20, 200, 250)
         self.lower_darkpurple = (180, 170,255)
         self.upper_darkpurple = (180, 170, 255)
 

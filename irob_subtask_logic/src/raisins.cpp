@@ -39,7 +39,7 @@ namespace saf
 
         ROS_INFO_STREAM("Vision data received.");
 
-        // Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
+        Eigen::Translation3d offset_cf = Eigen::Translation3d(Eigen::Vector3d(offs_x, offs_y, offs_z));
         //  Eigen::Translation3d offset_peg_h = Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, peg_h));
         //  Eigen::Translation3d offset_block_h = Eigen::Translation3d(Eigen::Vector3d(0.0, 0.0, object_h));
         Eigen::Quaternion<double> ori_world = BaseOrientations<CoordinateFrame::ROBOT, Eigen::Quaternion<double>>::DOWN_SIDEWAYS;
@@ -49,10 +49,11 @@ namespace saf
 
         Eigen::Affine3d grasp_pose(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(e.objects[object_idx].grasp_poses[0]));
         Eigen::Affine3d approach_pose(unwrapMsg<geometry_msgs::Pose, Eigen::Affine3d>(e.objects[object_idx].approach_poses[0]));
-        // approach_pose = offset_cf * approach_pose;
+        approach_pose = offset_cf * approach_pose;
 
         // modify by the orientation
         grasp_pose = grasp_pose * ori_world;
+        grasp_pose = offset_cf * grasp_pose;
         approach_pose = approach_pose * ori_world;
         ROS_INFO_STREAM("Approach pose");
         ROS_INFO_STREAM(approach_pose.translation().x() << ", " << approach_pose.translation().y() << ", " << approach_pose.translation().z());
@@ -62,7 +63,7 @@ namespace saf
 
         waypoints.push_back(approach_pose);
 
-        arms[0]->grasp(grasp_pose, approach_pose, 5.0, 0.95, 20.0, 20.0);
+        arms[0]->grasp(grasp_pose, approach_pose, 2.0, 0.95, 20.0, 20.0);
 
         while (!arms[0]->isSurgemeDone() && ros::ok())
         {
@@ -126,7 +127,7 @@ namespace saf
             std::vector<Eigen::Affine3d> waypoints;
             waypoints.push_back(approach_pose);
 
-            arms[0]->grasp(grasp_pose, approach_pose, 5.0, 0.95, 20.0, 20.0);
+            arms[0]->grasp(grasp_pose, approach_pose, 2.0, 0.95, 20.0, 20.0);
             while (!arms[0]->isSurgemeDone() && ros::ok())
             {
                 ros::Duration(0.1).sleep();
@@ -136,7 +137,7 @@ namespace saf
 
             if (isnan(collect_pose))
             {
-                collect_pose = grasp_pose;
+                collect_pose = approach_pose;
 
                 // offset with 50
                 Eigen::Translation3d collectOffset(0.0, 50, 0.0);
