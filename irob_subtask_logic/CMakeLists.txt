@@ -136,6 +136,7 @@ set_target_properties( irob_subtask_logic_lib  PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(camera src/camera.cpp)
 add_executable(peg_transfer_unilateral src/peg_transfer_unilateral.cpp)
+add_executable(raisins src/raisins.cpp)
 add_executable(peg_transfer_bilateral src/peg_transfer_bilateral.cpp)
 #add_executable(peg_transfer_dual src/peg_transfer_dual.cpp)
 #add_executable(cut_vessel src/cut_vessel.cpp)
@@ -160,6 +161,11 @@ target_link_libraries(irob_subtask_logic_lib
 	)
 
 target_link_libraries(peg_transfer_unilateral
+        ${catkin_LIBRARIES}
+        irob_subtask_logic_lib
+        )
+
+target_link_libraries(raisins
         ${catkin_LIBRARIES}
         irob_subtask_logic_lib
         )

@@ -1,0 +1,8 @@
+<launch>
+    <group ns="saf">
+        <node name="dummy_raisins_detector" pkg="irob_vision_support"
+                type="dummy_raisins_detector" output="screen" >
+            <remap from="blocks_grasp" to="vision/blocks_grasp" />
+        </node>
+    </group>
+</launch>

@@ -1,0 +1,24 @@
+<launch>
+	<group ns="saf">
+	
+	<arg name="rate" default="10" />
+	<arg name="amplitude" default="0" />
+	<arg name="T" default="5.0" />
+	
+	<arg name="frame_id" default="PSM1_psm_base_link"/>
+  	
+	<node name="dummy_raisins_target" pkg="irob_vision_support" 
+			type="dummy_raisins_target" output="screen" >
+  		
+				<param name="rate" type="double" value="$(arg rate)" />
+				<param name="amplitude" type="double" value="$(arg amplitude)" />
+				<param name="T" type="double" value="$(arg T)" />
+				<param name="frame_id" type="string" value="$(arg frame_id)" />
+				
+                                <rosparam param="centrum">[-0.05, -0.05, -0.19]</rosparam>
+					
+				<remap from="dummy_raisins_target" to="vision/dummy_raisins_target" />
+				
+	</node>
+  	</group>
+</launch>
