@@ -1,0 +1,15 @@
+# Dimensions are unaccurate, the jaws move in the direction
+# of the axis aproximately 2 mm while opening
+instrument:
+ name: 'Prograsp forceps'
+ basic_type: GRIPPER
+ jaw_length: 27.0
+ jaw_parts:
+  p0:
+   start: 0.0
+   end: 10.5
+   type: JOINT
+  p1:
+   start: 10.5
+   end: 27.0
+   type: GRIPPER

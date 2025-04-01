@@ -11,6 +11,8 @@
 
 
     <depend>irob_msgs</depend>
+    <depend>irob_utils</depend>
+    <depend>irob_robot</depend>
 
   <export>
       <metapackage/>

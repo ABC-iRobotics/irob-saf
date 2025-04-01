@@ -1,0 +1,13 @@
+instrument:
+ name: 'Large needle driver'
+ basic_type: GRIPPER
+ jaw_length: 9.5
+ jaw_parts:
+  p0:
+   start: 0.0
+   end: 3.0
+   type: JOINT
+  p1:
+   start: 3.0
+   end: 9.5
+   type: GRIPPER
