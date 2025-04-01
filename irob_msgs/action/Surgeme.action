@@ -1,0 +1,52 @@
+# Surgeme.action
+
+# Define the goal
+# Action types
+int8 STOP = 1
+int8 NAV_TO_POS = 2
+int8 GRASP = 3
+int8 CUT = 4
+int8 PUSH = 5
+int8 DISSECT = 6
+int8 PLACE = 7
+int8 MANIPULATE = 8		# Manipulate grasped soft tissue
+int8 RELEASE = 9
+int8 MOVE_CAM = 10
+
+# Interpolation methods
+int8 INTERPOLATION_LINEAR = 1
+int8 INTERPOLATION_BEZIER = 2
+
+
+int8 action
+
+# Params
+# All params are in mm and deg
+
+geometry_msgs/Transform	 target			# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
+geometry_msgs/Transform[] waypoints		# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
+int8 				 interpolation	# GRASP, CUT, PLACE, PUSH, DISSECT, NAV_TO_POS
+geometry_msgs/Transform	 approach_pose	# GRASP, CUT, PLACE, PUSH, DISSECT, RELEASE
+float64 		 	 target_diameter # GRASP, CUT, DISSECT,
+									 # PLACE, RELEASE, DISSECT
+float64 		 	 compression_rate # GRASP
+geometry_msgs/Vector3  displacement	# PUSH, DISSECT, MANIPULATE
+geometry_msgs/Vector3  marker	# MOVE_CAM
+geometry_msgs/Vector3  desired	# MOVE_CAM
+float64				 speed_cartesian
+									# NAV_TO_POS, GRASP, CUT, PUSH, PLACE, 
+									# DISSECT, MANIPULATE
+float64				 speed_jaw 		# GRASP, CUT, DISSECT, PUSH, RELEASE
+
+---
+
+# Define the result
+ToolPose pose
+string info
+
+---
+
+# Define a feedback message
+ToolPose pose
+string info
+
