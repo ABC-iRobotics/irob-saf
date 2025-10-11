@@ -6,7 +6,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Find dependencies
+# Dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -22,22 +22,33 @@ if(BUILD_TESTING)
     ament_lint_auto_find_test_dependencies()
 endif()
 
-# Find all source files
+# Source files
 file(GLOB irob_utils_lib_src "src/*.cpp")
 
-# Create the C++ library
+# Library
 add_library(irob_utils_lib SHARED ${irob_utils_lib_src})
-ament_target_dependencies(irob_utils_lib rclcpp geometry_msgs std_msgs sensor_msgs irob_msgs)
+ament_target_dependencies(irob_utils_lib
+        rclcpp
+        geometry_msgs
+        std_msgs
+        sensor_msgs
+        irob_msgs
+)
 
-# Export the library
-ament_export_libraries(irob_utils_lib)
+target_link_libraries(irob_utils_lib Eigen3::Eigen)
 
-# Install the library
+target_include_directories(irob_utils_lib PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        ${EIGEN3_INCLUDE_DIRS}
+)
+
+# Install library
 install(TARGETS irob_utils_lib
         DESTINATION lib
 )
 
-# Install header files
+# Install headers
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION include/${PROJECT_NAME}
         FILES_MATCHING PATTERN "*.hpp"
@@ -49,4 +60,7 @@ install(DIRECTORY launch
         FILES_MATCHING PATTERN "*.launch.py"
 )
 
+ament_export_include_directories(include)
+ament_export_dependencies(rclcpp std_msgs geometry_msgs sensor_msgs irob_msgs Eigen3)
+ament_export_libraries(irob_utils_lib)
 ament_package()
