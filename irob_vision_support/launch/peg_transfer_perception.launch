@@ -1,0 +1,17 @@
+<!-- Launch file to RealSense peg transfer perception-->
+
+<launch>
+
+    <group ns="saf">
+
+
+    <node name="peg_transfer_perception" pkg="irob_vision_support"
+            type="block_detector.py" output="screen" >
+
+            <remap from="blocks_grasp" to="vision/blocks_grasp" />
+
+
+    </node>
+    </group>
+</launch>
+

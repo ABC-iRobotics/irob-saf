@@ -1,0 +1,20 @@
+<!-- Launch file for camera nod using cv-camera -->
+
+<launch>
+
+    <arg name="cam" default="cam"/>
+    <arg name="device_id" default="1"/>
+    <arg name="calib_file"
+        default="camera_default.yaml"/>
+
+    <node name="cam" pkg="cv_camera"
+            type="cv_camera_node" output="screen">
+
+        <rosparam param="device_id" subst_value="true">$(arg device_id)</rosparam>
+        <rosparam param="camera_info_url" subst_value="true">file://$(find irob_vision_support)/config/camera_info/$(arg calib_file)</rosparam>
+        <remap from="cam/image" to="$(arg cam)/image"/>
+        <remap from="cam/camera_info" to="$(arg cam)/camera_info"/>
+
+    </node>
+
+</launch>
