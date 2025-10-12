@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>irob_saf</name>
+  <version>2.0.0</version>
+  <description>iRob Surgical Automation Framework — metapackage</description>
+
+  <maintainer email="tamas.levendovics@irob.uni-obuda.hu">Tamás Levendovics</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>irob_msgs</exec_depend>
+  <exec_depend>irob_utils</exec_depend>
+  <exec_depend>irob_robot</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+

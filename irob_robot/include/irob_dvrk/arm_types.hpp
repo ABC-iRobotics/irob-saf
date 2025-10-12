@@ -1,76 +1,45 @@
-/*
- * 	arm_types.hpp
- *
- *	Author(s): Tamas Levendovics
- *
- *
- */
+// include/irob_dvrk/arm_types.hpp
+#pragma once
 
-#ifndef DVRK_ARM_PARAMS_
-#define DVRK_ARM_PARAMS_
-
-#include <iostream>
 #include <string>
-#include <vector>
-#include <irob_utils/tool_pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
-namespace saf {
+namespace irob_dvrk
+{
 
-    class ArmTypes {
-    public:
-        // Enum value DECLARATIONS - they are defined later
-        static const ArmTypes MTML;
-        static const ArmTypes MTMR;
-        static const ArmTypes PSM1;
-        static const ArmTypes PSM2;
-        static const ArmTypes PSM3;
-        static const ArmTypes ECM;
+    enum class ArmType
+    {
+        PSM,
+        MTM,
+        ECM,
+        Unknown
+      };
 
-        // Attributes
-        const std::string name;
-        const int dof;
-        const ToolPose::Distance maxVelPose; // unit/sec
-        const std::vector<double> maxVelJoint; // unit/sec
+    inline ArmType from_string(const std::string &name)
+    {
+        if (name == "PSM" || name == "psm") return ArmType::PSM;
+        if (name == "MTM" || name == "mtm") return ArmType::MTM;
+        if (name == "ECM" || name == "ecm") return ArmType::ECM;
+        return ArmType::Unknown;
+    }
 
-    private:
-        ArmTypes( std::string name, int dof,
-                  ToolPose::Distance maxVelPose, std::vector<double> maxVelJoint):
-          name(name), dof(dof),
-          maxVelPose(maxVelPose),
-          maxVelJoint(maxVelJoint) { }
-
-    public:
-        static const ArmTypes typeForString(const std::string& name)
+    inline std::string to_string(ArmType t)
+    {
+        switch (t)
         {
-            if (name == MTML.name)
-                return MTML;
-            if (name == MTMR.name)
-                return MTMR;
-            if (name == PSM1.name)
-                return PSM1;
-            if (name == PSM2.name)
-                return PSM2;
-            if (name == PSM3.name)
-                return PSM3;
-            if (name == ECM.name)
-                return ECM;
-            return PSM1;
+        case ArmType::PSM: return "PSM";
+        case ArmType::MTM: return "MTM";
+        case ArmType::ECM: return "ECM";
+        default: return "Unknown";
         }
+    }
 
-        bool operator==(const ArmTypes& other) const
-        {
-            return name == other.name;
-        }
+    struct ArmState
+    {
+        geometry_msgs::msg::PoseStamped pose;
+        sensor_msgs::msg::JointState joints;
+        bool connected{false};
     };
 
-    // Static initialization of ArmTypes
-    const ArmTypes ArmTypes::MTML("MTML", 7, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    const ArmTypes ArmTypes::MTMR("MTMR", 7, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    const ArmTypes ArmTypes::PSM1("PSM1", 7, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    const ArmTypes ArmTypes::PSM2("PSM2", 7, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    const ArmTypes ArmTypes::PSM3("PSM3", 7, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-    const ArmTypes ArmTypes::ECM("ECM", 6, ToolPose::Distance(1.0), {0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-
-}  // namespace saf
-
-#endif  // DVRK_ARM_PARAMS_
+}  // namespace irob_dvrk
