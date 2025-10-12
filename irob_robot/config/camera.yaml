@@ -1,3 +1,5 @@
-instrument:
- name: 'Endoscopic camera'
- basic_type: CAMERA
+/**:
+  ros__parameters:
+    instrument:
+     name: 'Endoscopic camera'
+     basic_type: CAMERA

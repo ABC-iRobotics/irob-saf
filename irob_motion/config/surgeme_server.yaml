@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    arm_name: "psm1"
+    loop_rate_hz: 10.0
+    simulated: false

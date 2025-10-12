@@ -1,0 +1,19 @@
+# dVRK topics as parameters
+/**:
+  ros__parameters:
+    dvrk_topics:
+      current_state: "status"
+      set_position_joint: "servo_jp"
+      state_joint_current: "measured_js"
+      set_position_cartesian: "servo_cp"
+      state_cartesian_current: "measured_cp"
+      set_wrench_body: "body/servo_cf"
+      state_wrench_body_current: "body/measured_cf"
+      set_wrench_spatial: "spatial/servo_cf"
+      state_wrench_spatial_current: "spatial/measured_cf"
+      set_twist_body: "body/servo_cv"
+      state_twist_body_current: "body/measured_cv"
+      jaw_set_position_joint: "jaw/servo_jp"
+      state_jaw_current: "jaw/measured_js"
+      error: "error"
+      warning: "warning"

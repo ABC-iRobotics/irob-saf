@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="3">
+    <name>irob_motion</name>
+    <version>2.0.0</version>
+    <description>iRob Surgical Automation Framework — surgeme-level logic (ROS 2 port)</description>
+
+    <maintainer email="tamas.levendovics@irob.uni-obuda.hu">IROB</maintainer>
+    <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <!-- Core -->
+    <depend>rclcpp</depend>
+    <depend>rclcpp_action</depend>
+    <depend>rcpputils</depend>
+
+    <!-- Messages / geometry -->
+    <depend>std_msgs</depend>
+    <depend>sensor_msgs</depend>
+    <depend>geometry_msgs</depend>
+
+    <!-- TF2 -->
+    <depend>tf2</depend>
+    <depend>tf2_ros</depend>
+    <depend>tf2_geometry_msgs</depend>
+
+    <!-- Eigen (modern target) -->
+    <depend>Eigen3</depend>
+
+    <!-- Your own stacks -->
+    <depend>irob_msgs</depend>
+    <depend>irob_utils</depend>
+    <depend>irob_robot</depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

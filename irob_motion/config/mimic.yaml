@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    loop_rate_hz: 10.0
+    arm_in: "psm1"
+    arm_out: "psm2"

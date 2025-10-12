@@ -12,6 +12,7 @@
   <exec_depend>irob_msgs</exec_depend>
   <exec_depend>irob_utils</exec_depend>
   <exec_depend>irob_robot</exec_depend>
+  <exec_depend>irob_motion</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
