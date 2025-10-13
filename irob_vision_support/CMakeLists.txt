@@ -11,6 +11,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -28,11 +29,11 @@ ament_target_dependencies(camera_preprocessor_node
 
 add_executable(dummy_target_publisher_node src/dummy_target_publisher.cpp)
 ament_target_dependencies(dummy_target_publisher_node
-        rclcpp geometry_msgs tf2 tf2_ros)
+        rclcpp geometry_msgs visualization_msgs tf2 tf2_ros)
 
 add_executable(vision_server_test_dummy_node src/vision_server_test_dummy.cpp)
 ament_target_dependencies(vision_server_test_dummy_node
-        rclcpp sensor_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs Eigen3)
+        rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_ros tf2_geometry_msgs Eigen3)
 
 add_executable(serial_test_node src/serial_test.cpp)
 ament_target_dependencies(serial_test_node rclcpp)
@@ -50,9 +51,13 @@ install(DIRECTORY include/
         DESTINATION include
 )
 
+install(DIRECTORY launch config
+        DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 ament_export_dependencies(
-        rclcpp sensor_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs Eigen3
+        rclcpp sensor_msgs geometry_msgs visualization_msgs tf2 tf2_ros tf2_geometry_msgs Eigen3
 )
 
 ament_package()
