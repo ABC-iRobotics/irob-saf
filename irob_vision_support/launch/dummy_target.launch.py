@@ -27,11 +27,14 @@ def generate_launch_description():
             package='irob_vision_support',
             executable='dummy_target_publisher_node',
             name='dummy_target_publisher',
-            namespace='saf',
+            namespace='saf/vision',
             output='screen',
             parameters=[{
                 'frame_id': frame_id,
                 'rate_hz': rate_hz,
-            }]
+            }],
+            remappings=[
+                ('marker', 'dummy_target_marker')
+            ]
         ),
     ])

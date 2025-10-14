@@ -1,37 +1,17 @@
-<!-- Launch file to start a dummy vision node -->
+from launch import LaunchDescription
+from launch_ros.actions import Node
 
-<launch>
-	<group ns="saf">
-	
-		<arg name="rate" default="10"/>
-  	
-			<node name="dummy_vision" pkg="irob_vision_support" 
-			type="vision_server_test_dummy" output="screen">
-  		
-  				<param name="rate" 
-						type="double" value="$(arg rate)" />
-						
-				<remap from="left/color_image" 
-							to="stereo/left/image_rect_color" />				
-				<remap from="right/color_image" 
-							to="stereo/right/image_rect_color" />
-										
-				<remap from="left/image" 
-							to="stereo/left/image_rect" />			
-				<remap from="right/image" 
-							to="stereo/right/image_rect" />
-										
-				<remap from="disparity" 
-							to="stereo/disparity" />
-							
-				<remap from="result" 
-							to="vision/target" />
-							
-				<remap from="marker" 
-							to="vision/dummy_target_marker" />
-					
-					
-		
-	</node>
-  	</group>
-</launch>
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='irob_vision_support',
+            executable='dummy_image_processor_node',
+            name='dummy_vision',
+            namespace='saf/vision',
+            output='screen',
+            remappings=[
+                ('marker', 'dummy_target_marker'),
+                ('result', 'target'),
+            ]
+        )
+    ])
