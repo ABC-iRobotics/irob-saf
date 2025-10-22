@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(saf_vision_support)
+project(saf_vision)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

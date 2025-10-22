@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-    <name>saf_vision_support</name>
+    <name>saf_vision</name>
     <version>2.0.0</version>
-    <description>ROS 2 vision utilities for saf SAF: camera preprocessing, dummy vision server/client, target publisher.</description>
+    <description>ROS 2 vision utilities for iRob SAF: camera preprocessing, dummy vision server/client, target publisher.</description>
 
     <maintainer email="tamas.levendovics@irob.uni-obuda.hu">Tamas Levendovics</maintainer>
     <license>MIT</license>
