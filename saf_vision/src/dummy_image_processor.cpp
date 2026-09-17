@@ -1,5 +1,5 @@
 /*
-*  dummy_image_processor.cpp
+ *  dummy_image_processor.cpp
  *
  *  Author(s): Tamas Levendovics
  *  Created on: 2016-10-26
@@ -27,7 +27,7 @@ namespace saf {
                                 "marker", rclcpp::SensorDataQoS(),
                                 std::bind(&DummyImageProcessor::marker_cb_, this, std::placeholders::_1));
 
-				result_pub_ = this->create_publisher<geometry_msgs::msg::TransformStamped>("result", 10);
+				        result_pub_ = this->create_publisher<geometry_msgs::msg::TransformStamped>("result", 10);
                 RCLCPP_INFO(get_logger(), "dummy_image_processor running");
             }
 

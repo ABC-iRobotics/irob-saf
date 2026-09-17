@@ -83,43 +83,43 @@ inline double distanceEuler(const Eigen::Vector3d& x1,
 
 // Conversion from ROS msg
 template<typename MsgT, typename DataT>
-inline DataT unwrapMsg(const MsgT& msg);
+inline DataT fromMsg(const MsgT& msg);
 
 template <>
-inline saf_msgs::msg::Environment unwrapMsg(const saf_msgs::msg::Environment& msg){
+inline saf_msgs::msg::Environment fromMsg(const saf_msgs::msg::Environment& msg){
   return msg;
 }
 
 template <>
-inline double unwrapMsg(const std_msgs::msg::Float32& msg){
+inline double fromMsg(const std_msgs::msg::Float32& msg){
   return msg.data;
 }
 
 template <>
-inline Eigen::Vector3d unwrapMsg(const geometry_msgs::msg::Vector3& msg){
+inline Eigen::Vector3d fromMsg(const geometry_msgs::msg::Vector3& msg){
   Eigen::Vector3d ret(msg.x, msg.y, msg.z);
   return ret;
 }
 
 template <>
-inline Eigen::Vector3d unwrapMsg(const geometry_msgs::msg::Point& msg){
+inline Eigen::Vector3d fromMsg(const geometry_msgs::msg::Point& msg){
   Eigen::Vector3d ret(msg.x, msg.y, msg.z);
   return ret;
 }
 
 template <>
-inline Eigen::Quaterniond unwrapMsg(const geometry_msgs::msg::Quaternion& msg){
+inline Eigen::Quaterniond fromMsg(const geometry_msgs::msg::Quaternion& msg){
   Eigen::Quaterniond ret(msg.w, msg.x, msg.y, msg.z);
   return ret;
 }
 
 template <>
-inline std::vector<double> unwrapMsg(const saf_msgs::msg::FloatArray& msg){
+inline std::vector<double> fromMsg(const saf_msgs::msg::FloatArray& msg){
   return msg.data;
 }
 
 template <>
-inline Eigen::Affine3d unwrapMsg(const geometry_msgs::msg::Transform& msg){
+inline Eigen::Affine3d fromMsg(const geometry_msgs::msg::Transform& msg){
   Eigen::Quaterniond q(msg.rotation.w, msg.rotation.x,
                        msg.rotation.y, msg.rotation.z);
   Eigen::Translation3d t(msg.translation.x, msg.translation.y, msg.translation.z);
@@ -128,7 +128,7 @@ inline Eigen::Affine3d unwrapMsg(const geometry_msgs::msg::Transform& msg){
 }
 
 template <>
-inline Eigen::Affine3d unwrapMsg(const geometry_msgs::msg::Pose& msg){
+inline Eigen::Affine3d fromMsg(const geometry_msgs::msg::Pose& msg){
   Eigen::Quaterniond q(msg.orientation.w, msg.orientation.x,
                        msg.orientation.y, msg.orientation.z);
   Eigen::Translation3d t(msg.position.x, msg.position.y, msg.position.z);
@@ -138,17 +138,17 @@ inline Eigen::Affine3d unwrapMsg(const geometry_msgs::msg::Pose& msg){
 
 // Conversion to ROS msg
 template<typename MsgT, typename DataT>
-inline MsgT wrapToMsg(const DataT& data);
+inline MsgT toMsg(const DataT& data);
 
 template <>
-inline std_msgs::msg::Float32 wrapToMsg(const double& data){
+inline std_msgs::msg::Float32 toMsg(const double& data){
   std_msgs::msg::Float32 msg;
   msg.data = data;
   return msg;
 }
 
 template <>
-inline sensor_msgs::msg::JointState wrapToMsg(const double& data){
+inline sensor_msgs::msg::JointState toMsg(const double& data){
   sensor_msgs::msg::JointState msg;
   msg.name.push_back("jaw");
   msg.position.push_back(data);
@@ -156,7 +156,7 @@ inline sensor_msgs::msg::JointState wrapToMsg(const double& data){
 }
 
 template <>
-inline geometry_msgs::msg::Vector3 wrapToMsg(const Eigen::Vector3d& data){
+inline geometry_msgs::msg::Vector3 toMsg(const Eigen::Vector3d& data){
   geometry_msgs::msg::Vector3 msg;
   msg.x = data.x();
   msg.y = data.y();
@@ -165,7 +165,7 @@ inline geometry_msgs::msg::Vector3 wrapToMsg(const Eigen::Vector3d& data){
 }
 
 template <>
-inline geometry_msgs::msg::Point wrapToMsg(const Eigen::Vector3d& data){
+inline geometry_msgs::msg::Point toMsg(const Eigen::Vector3d& data){
   geometry_msgs::msg::Point msg;
   msg.x = data.x();
   msg.y = data.y();
@@ -174,7 +174,7 @@ inline geometry_msgs::msg::Point wrapToMsg(const Eigen::Vector3d& data){
 }
 
 template <>
-inline geometry_msgs::msg::Quaternion wrapToMsg(const Eigen::Quaterniond& data){
+inline geometry_msgs::msg::Quaternion toMsg(const Eigen::Quaterniond& data){
   geometry_msgs::msg::Quaternion msg;
   msg.w = data.w();
   msg.x = data.x();
@@ -184,7 +184,7 @@ inline geometry_msgs::msg::Quaternion wrapToMsg(const Eigen::Quaterniond& data){
 }
 
 template <>
-inline geometry_msgs::msg::Transform wrapToMsg(const Eigen::Affine3d& data){
+inline geometry_msgs::msg::Transform toMsg(const Eigen::Affine3d& data){
   geometry_msgs::msg::Transform msg;
 
   Eigen::Vector3d translation(data.translation());

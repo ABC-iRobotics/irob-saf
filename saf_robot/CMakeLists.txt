@@ -39,7 +39,7 @@ target_include_directories(saf_dvrk_lib PUBLIC
 )
 
 ament_target_dependencies(saf_dvrk_lib
-        rclcpp geometry_msgs sensor_msgs Eigen3
+        rclcpp geometry_msgs sensor_msgs Eigen3 saf_utils
 )
 
 target_link_libraries(saf_dvrk_lib Eigen3::Eigen)

@@ -24,7 +24,7 @@ def generate_launch_description():
 
         # Dummy target node
         Node(
-            package='irob_vision_support',
+            package='saf_vision',
             executable='dummy_target_publisher_node',
             name='dummy_target_publisher',
             namespace='saf/vision',

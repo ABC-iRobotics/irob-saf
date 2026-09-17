@@ -4,7 +4,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     return LaunchDescription([
         Node(
-            package='irob_vision_support',
+            package='saf_vision',
             executable='dummy_image_processor_node',
             name='dummy_vision',
             namespace='saf/vision',

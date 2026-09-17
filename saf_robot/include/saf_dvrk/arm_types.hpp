@@ -1,45 +1,65 @@
-// include/saf_dvrk/arm_types.hpp
+/*
+ *  arm_types.hpp
+ *
+ *  Author(s): Tamas Levendovics
+ *  Created on: 2016-10-26
+ *  ROS 2 port: 2025-10-23
+ *
+ */
+
 #pragma once
 
 #include <string>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
+#include <vector>
+#include <saf_utils/tool_pose.hpp>
 
-namespace saf
-{
 
-    enum class ArmType
-    {
-        PSM,
-        MTM,
-        ECM,
-        Unknown
-      };
+namespace saf {
 
-    inline ArmType from_string(const std::string &name)
-    {
-        if (name == "PSM" || name == "psm") return ArmType::PSM;
-        if (name == "MTM" || name == "mtm") return ArmType::MTM;
-        if (name == "ECM" || name == "ecm") return ArmType::ECM;
-        return ArmType::Unknown;
-    }
+    class ArmTypes {
+    public:
+        // Enum value DECLARATIONS - they are defined later
+        static const ArmTypes MTML;
+        static const ArmTypes MTMR;
+        static const ArmTypes PSM1;
+        static const ArmTypes PSM2;
+        static const ArmTypes PSM3;
+        static const ArmTypes ECM;
 
-    inline std::string to_string(ArmType t)
-    {
-        switch (t)
+        // Attributes
+        const std::string name;
+        const int dof;
+        const ToolPose::Distance maxVelPose; // unit/sec
+        const std::vector<double> maxVelJoint; // unit/sec
+
+    private:
+        ArmTypes( std::string name, int dof, ToolPose::Distance maxVelPose, std::vector<double> maxVelJoint):
+                    name(name), dof(dof),
+                    maxVelPose(maxVelPose),
+                    maxVelJoint(maxVelJoint) { }
+
+    public:
+        static const ArmTypes fromString(std::string name)
         {
-        case ArmType::PSM: return "PSM";
-        case ArmType::MTM: return "MTM";
-        case ArmType::ECM: return "ECM";
-        default: return "Unknown";
+            if (name == MTML.name)
+                return MTML;
+            if (name == MTMR.name)
+                return MTMR;
+            if (name == PSM1.name)
+                return PSM1;
+            if (name == PSM2.name)
+                return PSM2;
+            if (name == PSM3.name)
+                return PSM3;
+            if (name == ECM.name)
+                return ECM;
+            return PSM1;
         }
-    }
 
-    struct ArmState
-    {
-        geometry_msgs::msg::PoseStamped pose;
-        sensor_msgs::msg::JointState joints;
-        bool connected{false};
+        bool operator==(const ArmTypes& other) const
+        {
+            return name == other.name;
+        }
     };
 
 }  // namespace saf

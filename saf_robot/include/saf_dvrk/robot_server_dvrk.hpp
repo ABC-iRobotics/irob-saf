@@ -1,27 +1,24 @@
 /*
- * 	robot_server_dvrk.hpp
+ *  robot_server_dvrk.hpp
  *
- *	Author(s): Tamas Levendovics
- *	Created on: 2016-11-07
+ *  Author(s): Tamas Levendovics
+ *  Created on: 2016-10-26
+ *  ROS 2 port: 2025-10-14
  *
  *  Base class for dVRK robot arms, itself usable for
  *  MTMs and ECM.
  *
  */
 
-#ifndef ROBOT_SERVER_DVRK_HPP_
-#define ROBOT_SERVER_DVRK_HPP_
+#pragma once
 
-#include <iostream>
-#include <sstream>
-#include <fstream>
 #include <vector>
 #include <cmath>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/Float32.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cmath>

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'irob_utils'
+package_name = 'saf_utils'
 
 setup(
     name=package_name,

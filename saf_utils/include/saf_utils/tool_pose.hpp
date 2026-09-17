@@ -107,19 +107,19 @@ template<> inline double distanceEuler(const ToolPose& x1, const ToolPose& x2) {
 }
 
 template <>
-inline ToolPose unwrapMsg(const saf_msgs::msg::ToolPose& msg){
+inline ToolPose fromMsg(const saf_msgs::msg::ToolPose& msg){
   ToolPose ret(msg);
   return ret;
 }
 
 template <>
-inline ToolPose unwrapMsg(const saf_msgs::msg::ToolPoseStamped& msg){
+inline ToolPose fromMsg(const saf_msgs::msg::ToolPoseStamped& msg){
   ToolPose ret(msg);
   return ret;
 }
 
 template <>
-inline saf_msgs::msg::ToolPose wrapToMsg(const ToolPose& data){
+inline saf_msgs::msg::ToolPose toMsg(const ToolPose& data){
   return data.toRosToolPose();
 }
 

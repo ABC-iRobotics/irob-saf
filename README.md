@@ -222,12 +222,12 @@ An example using the dVRK PSM simulation and a dummy target can be launched easi
 If the simulation is started, press *Home*.  
 Start a dummy target:
 
-    roslaunch irob_vision_support dummy_target.launch 
+    ros2 launch saf_vision dummy_target.launch.py 
     
 This command will start a node that publishes a marker position. To visualize this marker, in the RViz window's left panel press *Add*, chose *By topic*, and find */saf/vision/dummy_target_marker*. Now you should see a small green sphere in front of the PSM.  
 Start a dummy vision node, that will simply republish the position of this marker:
 
-    roslaunch irob_vision_support dummy_vision.launch 
+    ros2 launch saf_vision dummy_vision.launch.py 
     
 Start the high-level robot control node for the PSM by typing:
 

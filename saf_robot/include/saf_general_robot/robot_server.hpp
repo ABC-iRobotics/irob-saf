@@ -1,8 +1,9 @@
 /*
- * 	robot_server.hpp
+ *  robot_server.hpp
  *
- *	Author(s): Tamas Levendovics
+ *  Author(s): Tamas Levendovics
  *	Created on: 2016-11-07
+ *  ROS 2 port: 2025-10-14
  *
  *  Abstract base class for robot servers, interfacing saf_msgs/Robot actions to the actual robots.
  *
@@ -10,8 +11,8 @@
  *  in child class or main function!
  *
  */
-#ifndef ROBOT_SERVER_HPP_
-#define ROBOT_SERVER_HPP_
+
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -26,6 +27,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <cmath>
+#include <yaml-cpp/yaml.h>
 #include <saf_utils/tool_pose.hpp>
 #include <saf_utils/trajectory.hpp>
 #include <saf_utils/utils.hpp>
@@ -38,7 +40,7 @@
 
 namespace saf {
 
-class RobotServer {
+class RobotServer : public rclcpp::Node {
 
 public:
   // Constants
@@ -48,7 +50,6 @@ public:
 
 protected:
   const std::string arm_name;
-  rclcpp::Node::SharedPtr node;
   bool isActive;
 
   // Action server
@@ -72,11 +73,11 @@ protected:
 
   void advertiseHighLevelTopics() {
     // robot interface
-    measured_cp_pub = node->create_publisher<saf_msgs::msg::ToolPoseStamped>(
+    measured_cp_pub = this->create_publisher<saf_msgs::msg::ToolPoseStamped>(
         "robot/" + arm_name + "/position_cartesian_current_cf", 10);
-    measured_js_pub = node->create_publisher<sensor_msgs::msg::JointState>(
+    measured_js_pub = this->create_publisher<sensor_msgs::msg::JointState>(
         "robot/" + arm_name + "/joint_state_current", 10);
-    instrument_info_pub = node->create_publisher<saf_msgs::msg::InstrumentInfo>(
+    instrument_info_pub = this->create_publisher<saf_msgs::msg::InstrumentInfo>(
         "robot/" + arm_name + "/instrument_info", 10);
   }
 
@@ -111,12 +112,9 @@ public:
     std::thread(&RobotServer::publishInfo, this).detach();
   }
 
-  void loadRegistration(rclcpp::Node::SharedPtr priv_nh) {
-    std::vector<double> param_t;
-    priv_nh->get_parameter("t", param_t);
-
-    std::vector<double> param_R;
-    priv_nh->get_parameter("R", param_R);
+  void loadRegistration() {
+    auto param_t = get_parameter("t").as_double_array();
+    auto param_R = get_parameter("R").as_double_array();
 
     for (int i = 0; i < t.rows(); i++) {
       t(i) = param_t[i];
@@ -130,18 +128,16 @@ public:
 
     T_he = Eigen::Translation3d(t) * Eigen::Affine3d(R) * Eigen::Scaling(0.001);
 
-    RCLCPP_INFO_STREAM(
-        priv_nh->get_logger(),
-        "Registration read: " << std::endl << t << std::endl << R);
+    RCLCPP_INFO(get_logger(), "Registration read: " << std::endl << t << std::endl << R);
   }
 
-  void loadInstrumentInfo(rclcpp::Node::SharedPtr priv_nh) {
-    priv_nh->get_parameter("instrument/name", instrument_info.name);
-    priv_nh->get_parameter("instrument/jaw_length", instrument_info.jaw_length);
+  void loadInstrumentInfo() {
+    auto param_instrument_yaml = get_parameter("instrument_yaml").as_string();
 
-    std::string basic_type;
-    priv_nh->get_parameter("instrument/basic_type", basic_type);
-
+    YAML::Node config = YAML::LoadFile(param_instrument_yaml);
+    auto instr = config["instrument"];
+    instrument_info.name = instr["name"].as<std::string>();
+    auto basic_type = instr["basic_type"].as<std::string>();
     if (basic_type == "GRIPPER") {
       instrument_info.basic_type = saf_msgs::msg::InstrumentInfo::GRIPPER;
     } else if (basic_type == "SCISSORS") {
@@ -152,15 +148,17 @@ public:
       throw std::runtime_error("Invalid basic_type read from instrument info file.");
     }
 
-    int i = 0;
-    double probe;
-    while (priv_nh->get_parameter("instrument/jaw_parts/p" + std::to_string(i) + "/start", probe)) {
-      saf_msgs::msg::InstrumentJawPart jaw_part;
-      priv_nh->get_parameter("instrument/jaw_parts/p" + std::to_string(i) + "/start", jaw_part.start);
-      priv_nh->get_parameter("instrument/jaw_parts/p" + std::to_string(i) + "/end", jaw_part.end);
-      std::string type;
-      priv_nh->get_parameter("instrument/jaw_parts/p" + std::to_string(i) + "/type", type);
+    instrument_info.jaw_length = instr["jaw_length"].as<double>();
 
+    for (auto part : instr["jaw_parts"])
+    {
+      saf_msgs::msg::InstrumentJawPart jaw_part;
+      auto id = part.first.as<std::string>();
+      auto p = part.second;
+      jaw_part.start = p["start"].as<double>();
+      jaw_part.end = p["end"].as<double>();
+
+      auto type = p["type"].as<std::string>();
       if (type == "JOINT") {
         jaw_part.type = saf_msgs::msg::InstrumentJawPart::JOINT;
       } else if (type == "GRIPPER") {
@@ -172,12 +170,9 @@ public:
       }
 
       instrument_info.jaw_parts.push_back(jaw_part);
-      i++;
     }
 
-    RCLCPP_INFO_STREAM(
-        priv_nh->get_logger(),
-        "Instrument info read: " << std::endl << instrument_info);
+    RCLCPP_INFO_STREAM(get_logger(), "Instrument info read: " << std::endl << instrument_info);
   }
 
   virtual void resetPose(bool) = 0;
@@ -214,11 +209,15 @@ public:
   }
 
   // initRosCommunication must be called in child class or main function
-  RobotServer(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr priv_nh,
-              std::string arm_name, bool isActive)
-    : node(nh), arm_name(arm_name), isActive(isActive) {
-    loadRegistration(priv_nh);
-    loadInstrumentInfo(priv_nh);
+  RobotServer(std::string arm_name, bool isActive)
+    : rclcpp::Node("robot_server_" + arm_name), arm_name(arm_name), isActive(isActive) {
+      this->declare_parameter("t",  std::vector<double>(3, 0.0));
+      std::vector<double> default_R = {0.1, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+      this->declare_parameter("R",  default_R);
+      this->declare_parameter("instrument_yaml",  "default");
+
+      loadRegistration();
+      loadInstrumentInfo();
   }
 
   virtual ~RobotServer() {}
@@ -226,4 +225,3 @@ public:
 
 }  // namespace saf
 
-#endif /* ROBOT_SERVER_HPP_ */
